@@ -1,0 +1,274 @@
+﻿<UserControl x:Class="BigBoxNetflixUI.View.MainWindowView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:BigBoxNetflixUI.View"
+             xmlns:gif="http://wpfanimatedgif.codeplex.com" 
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch"
+             Name="MainWindowUserControl">
+    <UserControl.DataContext>
+        <local:MainWindowViewModel/>
+    </UserControl.DataContext>
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </UserControl.Resources>
+
+
+    <Canvas Background="Black"
+            VerticalAlignment="Stretch"
+            HorizontalAlignment="Stretch"
+            Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
+            Height="{Binding ActualHeight, ElementName=MainWindowUserControl}">
+
+        <!-- LOADING -->
+        <Grid   Background="Transparent"
+                VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch"
+                Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
+                Height="{Binding ActualHeight, ElementName=MainWindowUserControl}"
+                Visibility="{Binding IsInitializing, Converter={StaticResource BoolToVis}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <TextBlock Text="LOADING"
+                   Grid.Row="1"
+                   Foreground="GhostWhite"
+                   FontFamily="Impact Condensed"
+                   FontSize="60"
+                   HorizontalAlignment="Stretch"
+                   VerticalAlignment="Bottom"
+                   TextAlignment="Center"/>
+            <ProgressBar Name="ProgressBar_Loading"
+                         Grid.Row="2"
+                         Minimum="0"
+                         Maximum="{Binding TotalGameCount}"
+                         Value="{Binding InitializationGameCount}"
+                         Foreground="Yellow"
+                         Background="Red"
+                         Height="30"
+                         HorizontalAlignment="Stretch"
+                         VerticalAlignment="Stretch">
+            </ProgressBar>
+        </Grid>
+        <!-- END LOADING -->
+
+
+        <!-- DISPLAY ERROR -->
+        <Grid   Background="Transparent"
+                VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch"
+                Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
+                Height="{Binding ActualHeight, ElementName=MainWindowUserControl}"
+                Visibility="{Binding IsDisplayingError, Converter={StaticResource BoolToVis}}">
+            <TextBlock Text="{Binding ErrorMessage}"
+                   Foreground="GhostWhite"
+                   FontFamily="Calibri"
+                   FontSize="48"
+                   Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
+                   TextAlignment="Center"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"/>
+        </Grid>
+        <!-- END DISPLAY ERROR -->
+
+        <!-- PICKING CATEGORY -->
+        <Grid   Background="Transparent"
+                VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch"
+                Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
+                Height="{Binding ActualHeight, ElementName=MainWindowUserControl}"
+                Visibility="{Binding IsPickingCategory, Converter={StaticResource BoolToVis}}">
+            <!-- todo: replace test text -->
+            <TextBlock Text="SELECTING CATEGORY"
+                   Foreground="GhostWhite"
+                   FontFamily="Calibri"
+                   FontSize="48"
+                   Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
+                   TextAlignment="Center"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"/>
+        </Grid>
+        <!-- END PICKING CATEGORY -->
+        
+
+        <!-- DISPLAY FEATURE -->
+        <Grid   Background="Transparent"
+                VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch"
+                Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
+                Height="{Binding ActualHeight, ElementName=MainWindowUserControl}"
+                Visibility="{Binding IsDisplayingFeature, Converter={StaticResource BoolToVis}}">
+            <!-- todo: replace test text -->
+            <TextBlock Text="DISPLAYING FEATURED GAME"
+                   Foreground="GhostWhite"
+                   FontFamily="Calibri"
+                   FontSize="48"
+                   Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
+                   TextAlignment="Center"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"/>
+        </Grid>
+        <!-- END DISPLAY FEATURE -->
+        
+        
+
+        <!-- DISPLAYING RESULTS -->
+        <Grid   Background="Transparent"
+                VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch"
+                Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
+                Height="{Binding ActualHeight, ElementName=MainWindowUserControl}"
+                Visibility="{Binding IsDisplayingResults, Converter={StaticResource BoolToVis}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="{Binding CurrentGameList.ListDescription}"
+                                        FontSize="20"
+                                        Grid.Row="0"
+                                        Grid.Column="0"
+                                        Grid.ColumnSpan="32"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Stretch"
+                                        TextAlignment="Center"
+                                        Foreground="WhiteSmoke"/>
+
+            <TextBlock Text="{Binding NextGameList.ListDescription}"
+                                        FontSize="20"
+                                        Grid.Row="1"
+                                        Grid.Column="0"
+                                        Grid.ColumnSpan="32"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Stretch"
+                                        TextAlignment="Center"
+                                        Foreground="Purple"/>
+
+            <ListBox Name="ListBoxCurrentGames"
+                ItemsSource="{Binding CurrentGameList.MatchingGames}"
+                Background="Transparent"
+                Grid.Row="10"
+                Grid.RowSpan="5"
+                Grid.Column="1"
+                Grid.ColumnSpan="31"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel IsItemsHost="True" VirtualizationMode="Recycling"  Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <Border BorderThickness="2" BorderBrush="AntiqueWhite">
+                                <Image Name="Image_Selected_BoxFront"
+                                    Source="{Binding FrontImage}"
+                                    HorizontalAlignment="Center" 
+                                    VerticalAlignment="Stretch"
+                                       Height="{Binding ActualHeight, ElementName=ListBoxCurrentGames}"
+                                    RenderOptions.BitmapScalingMode="HighQuality" 
+                                    Margin="2,2,2,2"
+                                    Stretch="Uniform"/>
+                            </Border>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+        <!-- END DISPLAYING RESULTS -->
+
+        <!-- RECOGNIZING -->
+        <Grid   Background="Transparent"
+                VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch"
+                Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
+                Height="{Binding ActualHeight, ElementName=MainWindowUserControl}"
+                Visibility="{Binding IsRecognizing, Converter={StaticResource BoolToVis}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <TextBlock  Text="RECOGNIZING"
+                        Background="Transparent"
+                        Foreground="GhostWhite"
+                        FontFamily="Impact Condensed"
+                        FontSize="48"
+                        TextAlignment="Center"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"                   
+                        Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
+                        Grid.Row="1"/>
+            <Image Name="Image_Listening"
+                Grid.Row="0"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Stretch="Uniform"
+                RenderOptions.BitmapScalingMode="HighQuality" 
+                gif:ImageBehavior.AnimatedSource="{Binding VoiceRecognitionGif}"/>
+        </Grid>
+        <!-- END RECOGNIZING -->
+
+    </Canvas>
+</UserControl>

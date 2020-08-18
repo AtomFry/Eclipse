@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>propin</Title>
+      <Author>Adam Fry</Author>
+      <Description>Adds a full property that fires the PropertyChanged event</Description>
+    </Header>
+    <Snippet>
+      <Code Language="CSharp">
+        <![CDATA[private $Type$ $propertyName$; public $Type$ $PropertyName${ get { return $propertyName$; } set { if ($propertyName$ != value) { $propertyName$ = value; PropertyChanged(this, new PropertyChangedEventArgs("$PropertyName$"));  }}}]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>
