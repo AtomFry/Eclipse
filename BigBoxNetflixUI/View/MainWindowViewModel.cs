@@ -20,7 +20,6 @@ namespace BigBoxNetflixUI.View
     class MainWindowViewModel : INotifyPropertyChanged
     {
         private ListCycle<GameList> listCycle;
-        private ListCycle<GameMatch> gameCycle;
 
         private List<GameList> TempGameLists { get; set; }
         private SpeechRecognitionEngine Recognizer { get; set; }
@@ -194,11 +193,11 @@ namespace BigBoxNetflixUI.View
                                     where game.Platform.Equals(platform.Name)
                                     select new GameMatch(game, TitleMatchType.None);
 
-                GameList gameList = new GameList();
-                gameList.ListDescription = platform.Name;
-                gameList.MatchingGames = new List<GameMatch>(platformGames);
+                var orderedGames = platformGames.OrderBy(s => s.Game.SortTitleOrTitle);
+                GameList gameList = new GameList(platform.Name, new List<GameMatch>(orderedGames));
                 listOfPlatformGames.Add(gameList);
             }
+
             GameLists = listOfPlatformGames;
             listCycle = new ListCycle<GameList>(GameLists, 3);
             RefreshGameLists();
@@ -404,8 +403,6 @@ namespace BigBoxNetflixUI.View
         {
             CurrentGameList = listCycle.GetItem(0);
             NextGameList = listCycle.GetItem(1);
-
-            gameCycle = new ListCycle<GameMatch>(CurrentGameList.MatchingGames, 15);
         }
 
         private void CycleListBackward()
@@ -457,30 +454,50 @@ namespace BigBoxNetflixUI.View
 
         public void DoLeft(bool held)
         {
-            if(isDisplayingResults)
+            // if picking category and going left then close the category and keep going left
+            if(IsPickingCategory)
             {
-                // todo: display category category options
-                // todo: cycle left to prior game if other than 1st game
+                IsPickingCategory = false;
                 CurrentGameList.CycleBackward();
+                return;
+            }
+
+            // if current game is the first game then going left displays the category options
+            if(isDisplayingResults && CurrentGameList.CurrentGameIndex == 0)
+            {
+                IsPickingCategory = true;
+                return;
+            }
+
+            // cycle left to prior game if 1st game is other than index 0 Index1 != 0
+            if (IsDisplayingResults && CurrentGameList.CurrentGameIndex != 0)
+            {
+                CurrentGameList.CycleBackward();
+                return;
             }
 
             if (IsDisplayingFeature)
             {
-                // todo: expand category options
+                // display category options
+                IsPickingCategory = true;
+                return;
             }
         }
 
         public void DoRight(bool held)
         {
-            if(isDisplayingResults)
+            // if picking category, going right closes category selection
+            if (IsPickingCategory)
             {
-                CurrentGameList.CycleForward();
-                // todo: cycle right to next game
+                IsPickingCategory = false;
+                return;
             }
 
-            if (isPickingCategory)
+            if (IsDisplayingResults)
             {
-                // todo: collapse category options
+                // cycle right to next game
+                CurrentGameList.CycleForward();
+                return;
             }
         }
 

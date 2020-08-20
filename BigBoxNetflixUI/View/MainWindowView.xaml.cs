@@ -9,6 +9,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -51,6 +52,12 @@ namespace BigBoxNetflixUI.View
         public bool OnLeft(bool held)
         {
             mainWindowViewModel.DoLeft(held);
+
+            // todo: check conditions for fade out and video pause
+            ((Storyboard)FindResource("BackgroundImageFadeOut")).Begin(Image_Selected_BackgroundImage);
+            ((Storyboard)FindResource("BackgroundImageFadeOut")).Begin(Image_Selected_Background_Black);
+            if (Video_SelectedGame != null) Video_SelectedGame.Pause();
+
             return true;
         }
 
@@ -69,6 +76,12 @@ namespace BigBoxNetflixUI.View
         public bool OnRight(bool held)
         {
             mainWindowViewModel.DoRight(held);
+
+            // todo: check conditions for fade out and video pause
+            ((Storyboard)FindResource("BackgroundImageFadeOut")).Begin(Image_Selected_BackgroundImage);
+            ((Storyboard)FindResource("BackgroundImageFadeOut")).Begin(Image_Selected_Background_Black);
+            if (Video_SelectedGame != null) Video_SelectedGame.Pause();
+
             return true;
         }
 
@@ -80,6 +93,25 @@ namespace BigBoxNetflixUI.View
         {
             mainWindowViewModel.DoUp(held);
             return true;
+        }
+
+        private void Video_SelectedGame_MediaEnded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (mainWindowViewModel?.CurrentGameList?.Game1 != null)
+            {
+                ((Storyboard)FindResource("BackgroundImageFadeIn")).Begin(Image_Selected_BackgroundImage);
+                ((Storyboard)FindResource("BackgroundImageFadeIn")).Begin(Image_Selected_Background_Black);
+            }
+        }
+
+        private void BackgroundImageFadeIn_Completed(object sender, EventArgs e)
+        {
+            if (Video_SelectedGame != null) Video_SelectedGame.Pause();
+        }
+
+        private void BackgroundImageFadeOut_Completed(object sender, EventArgs e)
+        {
+            if (Video_SelectedGame != null) Video_SelectedGame.Play();
         }
     }
 }

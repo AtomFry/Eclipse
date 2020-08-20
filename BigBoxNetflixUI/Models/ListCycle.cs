@@ -1,4 +1,5 @@
 ﻿using System;
+
 using System.Collections.Generic;
 
 namespace BigBoxNetflixUI.Models
@@ -23,11 +24,13 @@ namespace BigBoxNetflixUI.Models
         {
             if (GenericList != null)
             {
-                int lastIndex = -1;
-                for (int i = 0; i < indices.Length; i++)
+                // index 0 is used for the prior game so start with lastindex at the count/length of the generic list
+                int lastIndex = GenericList.Count - 1;
+                indices[0] = lastIndex;
+                for (int i = 1; i < indices.Length; i++)
                 {
                     indices[i] = GetNextIndex(lastIndex);
-                    lastIndex = i;
+                    lastIndex = indices[i];
                 }
             }
         }
@@ -52,9 +55,29 @@ namespace BigBoxNetflixUI.Models
             return currentIndex;
         }
 
+        public int GetIndexValue(int index)
+        {
+            return indices[index];
+        }
+
         public T GetItem(int index)
         {
-            if(index >= indices.Length)
+            if(indices == null)
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+
+            if (index >= indices.Length)
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+
+            if(GenericList == null)
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+
+            if(indices[index] >= GenericList.Count)
             {
                 throw new ArgumentOutOfRangeException();
             }
@@ -91,5 +114,7 @@ namespace BigBoxNetflixUI.Models
                 }
             }
         }
+
+
     }
 }
