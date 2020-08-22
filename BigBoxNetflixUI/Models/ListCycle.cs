@@ -24,10 +24,8 @@ namespace BigBoxNetflixUI.Models
         {
             if (GenericList != null)
             {
-                // index 0 is used for the prior game so start with lastindex at the count/length of the generic list
-                int lastIndex = GenericList.Count - 1;
-                indices[0] = lastIndex;
-                for (int i = 1; i < indices.Length; i++)
+                int lastIndex = -1;
+                for (int i = 0; i < indices.Length; i++)
                 {
                     indices[i] = GetNextIndex(lastIndex);
                     lastIndex = indices[i];

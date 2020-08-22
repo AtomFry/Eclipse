@@ -232,7 +232,6 @@ namespace BigBoxNetflixUI.View
 
             GameLists = listOfPlatformGames;
             listCycle = new ListCycle<GameList>(GameLists, 2);
-            listCycle.CycleForward();
             RefreshGameLists();
         }
 

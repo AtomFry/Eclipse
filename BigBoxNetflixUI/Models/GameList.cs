@@ -42,6 +42,7 @@ namespace BigBoxNetflixUI.Models
             ListDescription = _listDescription;
             MatchingGames = _matchingGames;
             gameCycle = new ListCycle<GameMatch>(MatchingGames, 13);
+            gameCycle.CycleBackward();
             RefreshGames();
         }
 
