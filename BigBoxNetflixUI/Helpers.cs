@@ -9,6 +9,9 @@ namespace BigBoxNetflixUI
 {
     public static class Helpers
     {
+        public static string ApplicationPath = Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
+        public static string MediaFolder = $"{ApplicationPath}\\Plugins\\BigBoxNetflixUI\\Media";
+
         public static void Log(string logMessage)
         {
             using (StreamWriter w = File.AppendText("BigBoxNetflixUI.txt"))

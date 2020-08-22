@@ -204,6 +204,77 @@
                 <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
 
+            <!-- Category Options -->
+            <StackPanel Name="StackPanel_Options"
+                        Grid.Row="4" Grid.RowSpan="5" 
+                        Grid.Column="0" Grid.ColumnSpan="1"
+                        Orientation="Vertical"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Opacity="0.250"
+                        Panel.ZIndex="1000">
+                <TextBlock Text="P" 
+                           FontSize="28"
+                           FontFamily="Arial" 
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           TextAlignment="Center"
+                           Foreground="AntiqueWhite"
+                           Margin="2,2,2,2"/>
+                <TextBlock Text="G" 
+                           FontSize="28"
+                           FontFamily="Arial" 
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           TextAlignment="Center"
+                           Foreground="AntiqueWhite"
+                           Margin="2,2,2,2"/>
+                <TextBlock Text="P" 
+                           FontSize="28"
+                           FontFamily="Arial" 
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           TextAlignment="Center"
+                           Foreground="AntiqueWhite"
+                           Margin="2,2,2,2"/>
+                <TextBlock Text="S" 
+                           FontSize="28"
+                           FontFamily="Arial" 
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           TextAlignment="Center"
+                           Foreground="AntiqueWhite"
+                           Margin="2,2,2,2"/>
+                <!--<Image Name="Image_Category_Platform" 
+                       Source="{Binding CategoryPlatformImage}"
+                       HorizontalAlignment="Stretch" 
+                       VerticalAlignment="Center"
+                       RenderOptions.BitmapScalingMode="HighQuality" 
+                       Margin="2,2,2,2"
+                       Stretch="Uniform"/>
+                <Image Name="Image_Category_Genre"
+                       Source="{Binding CategoryGenreImage}"
+                       HorizontalAlignment="Stretch" 
+                       VerticalAlignment="Center"
+                       RenderOptions.BitmapScalingMode="HighQuality" 
+                       Margin="2,2,2,2"
+                       Stretch="Uniform"/>
+                <Image Name="Image_Category_Playlist" 
+                       Source="{Binding CategoryPlaylistImage}"
+                       HorizontalAlignment="Stretch" 
+                       VerticalAlignment="Center"
+                       RenderOptions.BitmapScalingMode="HighQuality" 
+                       Margin="2,2,2,2"
+                       Stretch="Uniform"/>
+                <Image Name="Image_Category_Series" 
+                       Source="{Binding CategorySeriesImage}"
+                       HorizontalAlignment="Stretch" 
+                       VerticalAlignment="Center"
+                       RenderOptions.BitmapScalingMode="HighQuality" 
+                       Margin="2,2,2,2"
+                       Stretch="Uniform"/>-->
+            </StackPanel>
+
             <!-- Selected game clear logo -->
             <Image Name="Image_Selected_GameClearLogo"
                    Source="{Binding CurrentGameList.Game1.ClearLogo}"
@@ -301,11 +372,12 @@
             </StackPanel>
 
             <!-- Selected game platform -->
-            <StackPanel Grid.Row="6" Grid.RowSpan="1" Grid.Column="1" Grid.ColumnSpan="15"
-                Orientation="Horizontal"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                Panel.ZIndex="100">
+            <StackPanel Grid.Row="6" Grid.RowSpan="1" 
+                        Grid.Column="1" Grid.ColumnSpan="15"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Panel.ZIndex="100">
                 <TextBlock  Name="TextBlock_Platform"
                         Text="{Binding CurrentGameList.Game1.Game.Platform}"
                         FontFamily="Arial" 

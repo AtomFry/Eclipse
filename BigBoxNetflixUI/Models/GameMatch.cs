@@ -13,7 +13,6 @@ namespace BigBoxNetflixUI.Models
 {
     public class GameMatch
     {
-        private static string _appPath = Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
         public IGame Game { get; set; }
         public TitleMatchType TitleMatchType { get; set; }
      
@@ -69,7 +68,7 @@ namespace BigBoxNetflixUI.Models
                 if(communityStarRatingImage == null)
                 {
                     double rating = Math.Round(Game.CommunityStarRating, 1);
-                    string path = _appPath + $"\\Plugins\\BigBoxNetflixUI\\Media\\StarRating\\{rating}.png";
+                    string path = $"{Helpers.MediaFolder}\\StarRating\\{rating}.png";
                     // todo: set fallback image to local resource if not found
                     communityStarRatingImage = new Uri(path);
                 }
@@ -84,7 +83,7 @@ namespace BigBoxNetflixUI.Models
             {
                 if (playModeImage == null)
                 {
-                    string path = _appPath + $"\\Plugins\\BigBoxNetflixUI\\Media\\PlayMode\\{Game.PlayMode}.png";
+                    string path = $"{Helpers.MediaFolder}\\PlayMode\\{Game.PlayMode}.png";
                     // todo: set fallback image to local resource if not found
                     playModeImage = new Uri(path);
                 }

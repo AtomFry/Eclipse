@@ -14,6 +14,7 @@ using BigBoxNetflixUI.Models;
 using System.Speech.Recognition;
 using System.Security.Cryptography;
 using Unbroken.LaunchBox.Plugins.RetroAchievements;
+using System.IO;
 
 namespace BigBoxNetflixUI.View
 {
@@ -166,6 +167,22 @@ namespace BigBoxNetflixUI.View
             }
         }
 
+        private ListCycle<ListCategory> categoryCycle;
+        private List<ListCategory> categoryList;
+        public List<ListCategory> CategoryList
+        {
+            get { return categoryList; }
+            set
+            {
+                if (categoryList != value)
+                {
+                    categoryList = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("CategoryList"));
+                }
+            }
+        }
+
+
         private List<GameList> gameLists;
         public List<GameList> GameLists
         {
@@ -178,6 +195,21 @@ namespace BigBoxNetflixUI.View
                     PropertyChanged(this, new PropertyChangedEventArgs("GameLists"));
                 }
             }
+        }
+
+        private void GetCategoryList()
+        {
+            List<ListCategory> listCategories = new List<ListCategory>();
+            listCategories.Add(new ListCategory { Name = "Platform", ListCategoryType=ListCategoryType.Group, SortOrder=1, ShortDescription="Platform", LongDescription="Platform" });
+            listCategories.Add(new ListCategory { Name = "Genre", ListCategoryType = ListCategoryType.Group, SortOrder =2, ShortDescription="Genre", LongDescription="Genre" });
+            listCategories.Add(new ListCategory { Name = "Series", ListCategoryType = ListCategoryType.Group, SortOrder =3, ShortDescription="Series", LongDescription="Series" });
+            listCategories.Add(new ListCategory { Name = "Playlist", ListCategoryType = ListCategoryType.Group, SortOrder =4, ShortDescription="Playlist", LongDescription="Playlist" });
+            listCategories.Add(new ListCategory { Name = "Voice search", ListCategoryType = ListCategoryType.VoiceSearch, SortOrder =5, ShortDescription="Voice", LongDescription="Voice search" });
+            listCategories.Add(new ListCategory { Name = "Play mode", ListCategoryType = ListCategoryType.Group, SortOrder =6, ShortDescription="Mode", LongDescription="Play mode" });
+            listCategories.Add(new ListCategory { Name = "Developer", ListCategoryType = ListCategoryType.Group, SortOrder =7, ShortDescription="Dev", LongDescription="Developer" });
+            listCategories.Add(new ListCategory { Name = "Publisher", ListCategoryType = ListCategoryType.Group, SortOrder =8, ShortDescription="Pub", LongDescription="Publisher" });
+            listCategories.Add(new ListCategory { Name = "Year", ListCategoryType = ListCategoryType.Group, SortOrder =9, ShortDescription="Year", LongDescription="Release year" });
+            listCategories.Add(new ListCategory { Name = "Random", ListCategoryType = ListCategoryType.RandomGame, SortOrder =10, ShortDescription="Random", LongDescription="Random game" });
         }
 
         private void GetGamesByPlatform()
@@ -199,7 +231,8 @@ namespace BigBoxNetflixUI.View
             }
 
             GameLists = listOfPlatformGames;
-            listCycle = new ListCycle<GameList>(GameLists, 3);
+            listCycle = new ListCycle<GameList>(GameLists, 2);
+            listCycle.CycleForward();
             RefreshGameLists();
         }
 

@@ -56,6 +56,7 @@
     <Compile Include="Helpers.cs" />
     <Compile Include="Models\GameMatch.cs" />
     <Compile Include="Models\GameTitleGrammarBuilder.cs" />
+    <Compile Include="Models\ListCategory.cs" />
     <Compile Include="Models\ListCycle.cs" />
     <Compile Include="Models\TitleMatchType.cs" />
     <Compile Include="Models\GameList.cs" />
