@@ -12,6 +12,8 @@
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -35,7 +37,10 @@
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Speech" />
+    <Reference Include="System.Speech, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -56,7 +61,7 @@
     <Compile Include="Helpers.cs" />
     <Compile Include="Models\GameMatch.cs" />
     <Compile Include="Models\GameTitleGrammarBuilder.cs" />
-    <Compile Include="Models\ListCategory.cs" />
+    <Compile Include="Models\Option.cs" />
     <Compile Include="Models\ListCycle.cs" />
     <Compile Include="Models\TitleMatchType.cs" />
     <Compile Include="Models\GameList.cs" />
@@ -82,6 +87,13 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\VoiceRecognitionGif.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\SettingsIcon_Grey.png" />
+    <Resource Include="Resources\SettingsIcon_White.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\NES_BoxFront_Template.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

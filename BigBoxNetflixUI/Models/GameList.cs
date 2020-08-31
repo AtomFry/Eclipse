@@ -8,9 +8,18 @@ using Unbroken.LaunchBox.Plugins.RetroAchievements;
 
 namespace BigBoxNetflixUI.Models
 {
+    // a set of gamelists for browsing games by different categories (i.e. games by platform, games by genre, etc...)
+    public class GameListSet
+    {
+        public List<GameList> GameLists { get; set; }
+        public ListCategoryType ListCategoryType { get; set; }
+    }
+
     public class GameList : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged = delegate { };
         private ListCycle<GameMatch> gameCycle;
+
         private List<GameMatch> matchingGames;
         public List<GameMatch> MatchingGames
         {
@@ -20,6 +29,11 @@ namespace BigBoxNetflixUI.Models
                 if (matchingGames != value)
                 {
                     matchingGames = value;
+
+                    gameCycle = new ListCycle<GameMatch>(MatchingGames, 13);
+                    gameCycle.CycleBackward();
+                    RefreshGames();
+
                     PropertyChanged(this, new PropertyChangedEventArgs("MatchingGames"));
                 }
             }
@@ -41,9 +55,6 @@ namespace BigBoxNetflixUI.Models
         {
             ListDescription = _listDescription;
             MatchingGames = _matchingGames;
-            gameCycle = new ListCycle<GameMatch>(MatchingGames, 13);
-            gameCycle.CycleBackward();
-            RefreshGames();
         }
 
         public void CycleForward()
@@ -122,7 +133,6 @@ namespace BigBoxNetflixUI.Models
                 return MatchingGames.Max(game => game.TitleMatchType);
             }
         }
-
 
         public Brush Brush
         {
@@ -342,9 +352,21 @@ namespace BigBoxNetflixUI.Models
             }
         }
 
+        public bool MoreImagesToLoad { get; set; } = true;
+        public int CurrentGameImageIndex { get; set; } = 0;
+        public void LoadNextGameImage()
+        {
+            // if all game images are loaded then flag it as no more images to load
+            if (CurrentGameImageIndex >= MatchCount)
+            {
+                MoreImagesToLoad = false;
+                return;
+            }
 
-
-
-        public event PropertyChangedEventHandler PropertyChanged = delegate { };
+            // load the next image and increment the counter
+            GameMatch gameMatch = MatchingGames[CurrentGameImageIndex];
+            gameMatch.SetupFrontImage();
+            CurrentGameImageIndex += 1;
+        }
    }
 }

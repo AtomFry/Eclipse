@@ -11,6 +11,7 @@ namespace BigBoxNetflixUI
     {
         public static string ApplicationPath = Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
         public static string MediaFolder = $"{ApplicationPath}\\Plugins\\BigBoxNetflixUI\\Media";
+        public static string ResourceFolder = "pack://application:,,,/BigBoxNetflixUI;component/resources";
 
         public static void Log(string logMessage)
         {

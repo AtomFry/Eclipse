@@ -1,8 +1,31 @@
-﻿using System;
+﻿using BigBoxNetflixUI.Models;
+using System;
+using System.Globalization;
 using System.Windows.Data;
 
 namespace BigBoxNetflixUI.Converters
 {
+    public class GameMatchToSettingsOpacityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            GameMatch gameMatch = value as GameMatch;
+            if(gameMatch == null)
+            {
+                return 1;
+            }
+            else
+            {
+                return 0.25;
+            }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class DivideByConverter : IValueConverter
     {
         public double A { get; set; }

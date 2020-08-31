@@ -1,18 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
+﻿using BigBoxNetflixUI.View;
+using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Unbroken.LaunchBox.Plugins.Data;
-using Unbroken.LaunchBox.Plugins.RetroAchievements;
 
 namespace BigBoxNetflixUI.Models
 {
-    public class GameMatch
+    public class GameMatch : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged = delegate { };
+
+        public static Uri GameFrontDummy = new Uri($"{Helpers.ResourceFolder}/NES_BoxFront_Template.png");
+
         public IGame Game { get; set; }
         public TitleMatchType TitleMatchType { get; set; }
      
@@ -24,27 +24,45 @@ namespace BigBoxNetflixUI.Models
         {
             Game = game;
             TitleMatchType = titleMatchType;
+            frontImage = GameFrontDummy;
         }
 
-        private BitmapImage frontImage;
-        public BitmapImage FrontImage
+        public void SetupFrontImage()
+        {
+            string frontImagePath = Game?.FrontImagePath;
+            if(!string.IsNullOrWhiteSpace(frontImagePath))
+            {
+                FrontImage = new Uri(frontImagePath);
+            }
+            // todo: implement fall back image
+        }
+
+        private Uri frontImage;
+        public Uri FrontImage
         {
             get
             {
-                if (frontImage == null)
+                return (frontImage);
+            }
+            set
+            {
+                try
                 {
-                    if (!string.IsNullOrWhiteSpace(Game.FrontImagePath))
+                    if (frontImage != value)
                     {
-                        // todo: set fallback image to local resource if not found
-                        frontImage = new BitmapImage(new Uri(Game.FrontImagePath));
+                        frontImage = value;
+                        PropertyChanged(this, new PropertyChangedEventArgs("FrontImage"));
                     }
                 }
-                return frontImage;
+                catch(Exception ex)
+                {
+                    Helpers.LogException(ex, $"Setting front image for {Game.Title}");
+                }
             }
         }
 
-        private BitmapImage clearLogo;
-        public BitmapImage ClearLogo
+        private Uri clearLogo;
+        public Uri ClearLogo
         {
             get
             {
@@ -53,7 +71,7 @@ namespace BigBoxNetflixUI.Models
                     if(!string.IsNullOrWhiteSpace(Game.ClearLogoImagePath))
                     {
                         // todo: set fallback image to local resource if not found
-                        clearLogo = new BitmapImage(new Uri(Game.ClearLogoImagePath));
+                        clearLogo = new Uri(Game.ClearLogoImagePath);
                     }
                 }
                 return (clearLogo);
@@ -91,8 +109,8 @@ namespace BigBoxNetflixUI.Models
             }
         }
 
-        private BitmapImage backgroundImage;
-        public BitmapImage BackgroundImage
+        private Uri backgroundImage;
+        public Uri BackgroundImage
         {
             get
             {
@@ -101,7 +119,7 @@ namespace BigBoxNetflixUI.Models
                     if (!string.IsNullOrWhiteSpace(Game.BackgroundImagePath))
                     {
                         // todo: set fallback image to local resource if not found
-                        backgroundImage = new BitmapImage(new Uri(Game.BackgroundImagePath));
+                        backgroundImage = new Uri(Game.BackgroundImagePath);
                     }
                 }
                 return backgroundImage;
