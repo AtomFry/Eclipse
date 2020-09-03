@@ -10,16 +10,42 @@ using System.Data;
 using BigBoxNetflixUI.Models;
 using System.Speech.Recognition;
 using System.Windows.Media.Imaging;
+using System.Security.RightsManagement;
+using System.Runtime.CompilerServices;
+using System.Diagnostics;
 
 namespace BigBoxNetflixUI.View
 {
     public delegate void AnimateGameChangeFunction();
+    public delegate void LoadImagesFunction();
+
+    public static class Extensions
+    {
+        public static void AddGame(this Dictionary<string, List<GameMatch>> dictionary, string key, GameMatch gameMatch)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                return;
+            }
+
+            if (!dictionary.ContainsKey(key))
+            {
+                dictionary.Add(key, new List<GameMatch>());
+            }
+
+            if (!dictionary[key].Contains(gameMatch))
+            {
+                dictionary[key].Add(gameMatch);
+            }
+        }
+
+    }
 
     class MainWindowViewModel : INotifyPropertyChanged
     {
         private List<Option> listCategories;
-
         private ListCycle<GameList> listCycle;
+        public List<GameListSet> GameListSets { get; set; }
 
         private List<GameList> TempGameLists { get; set; }
         private SpeechRecognitionEngine Recognizer { get; set; }
@@ -32,6 +58,7 @@ namespace BigBoxNetflixUI.View
         private Dictionary<string, List<GameMatch>> PlayModeGameDictionary;
 
         public AnimateGameChangeFunction GameChangeFunction{ get; set; }
+        public LoadImagesFunction LoadImagesFunction { get; set; }
 
         private List<IGame> allGames;
         public List<IGame> AllGames
@@ -190,142 +217,16 @@ namespace BigBoxNetflixUI.View
         }
 
 
-        private List<GameList> gameLists;
-        public List<GameList> GameLists
+        private GameListSet currentGameListSet;
+        public GameListSet CurrentGameListSet
         {
-            get { return gameLists; }
+            get { return currentGameListSet; }
             set
             {
-                if(gameLists != value)
+                if(currentGameListSet != value)
                 {
-                    gameLists = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("GameLists"));
-                }
-            }
-        }
-
-        private List<GameList> platformGameLists;
-        public List<GameList> PlatformGameLists
-        {
-            get { return platformGameLists; }
-            set
-            {
-                if (platformGameLists != value)
-                {
-                    platformGameLists = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("PlatformGameLists"));
-                }
-            }
-        }
-
-        private List<GameList> genreGameLists;
-        public List<GameList> GenreGameLists
-        {
-            get { return genreGameLists; }
-            set
-            {
-                if (genreGameLists != value)
-                {
-                    genreGameLists = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("GenreGameLists"));
-                }
-            }
-        }
-
-        private List<GameList> seriesGameLists;
-        public List<GameList> SeriesGameLists
-        {
-            get { return seriesGameLists; }
-            set
-            {
-                if (seriesGameLists != value)
-                {
-                    seriesGameLists = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("SeriesGameLists"));
-                }
-            }
-        }
-
-        private List<GameList> voiceSearchGameLists;
-        public List<GameList> VoiceSearchGameLists
-        {
-            get { return voiceSearchGameLists; }
-            set
-            {
-                if (voiceSearchGameLists != value)
-                {
-                    voiceSearchGameLists = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("VoiceSearchGameLists"));
-                }
-            }
-        }
-
-        private List<GameList> releaseYearGameLists;
-        public List<GameList> ReleaseYearGameLists
-        {
-            get { return releaseYearGameLists; }
-            set
-            {
-                if (releaseYearGameLists != value)
-                {
-                    releaseYearGameLists = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("ReleaseYearGameLists"));
-                }
-            }
-        }
-
-        private List<GameList> playlistGameLists;
-        public List<GameList> PlaylistGameLists
-        {
-            get { return playlistGameLists; }
-            set
-            {
-                if (playlistGameLists != value)
-                {
-                    playlistGameLists = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("PlaylistGameLists"));
-                }
-            }
-        }
-
-        private List<GameList> playModeGameLists;
-        public List<GameList> PlayModeGameLists
-        {
-            get { return playModeGameLists; }
-            set
-            {
-                if (playModeGameLists != value)
-                {
-                    playModeGameLists = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("PlayModeGameLists"));
-                }
-            }
-        }
-
-        private List<GameList> developerGameLists;
-        public List<GameList> DeveloperGameLists
-        {
-            get { return developerGameLists; }
-            set
-            {
-                if (developerGameLists != value)
-                {
-                    developerGameLists = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("DeveloperGameLists"));
-                }
-            }
-        }
-
-        private List<GameList> publisherGameLists;
-        public List<GameList> PublisherGameLists
-        {
-            get { return publisherGameLists; }
-            set
-            {
-                if (publisherGameLists != value)
-                {
-                    publisherGameLists = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("PublisherGameLists"));
+                    currentGameListSet = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("CurrentGameListSet"));
                 }
             }
         }
@@ -378,7 +279,7 @@ namespace BigBoxNetflixUI.View
 
                 listOfPlatformGames.Add(gameList);
             }
-            PlatformGameLists = listOfPlatformGames;
+            GameListSets.Add(new GameListSet { GameLists = listOfPlatformGames, ListCategoryType = ListCategoryType.Platform });
         }
 
         private void GetGamesByYear()
@@ -397,7 +298,7 @@ namespace BigBoxNetflixUI.View
                 GameList gameList = new GameList(year, orderedGames);
                 listOfYearGames.Add(gameList);
             }
-            ReleaseYearGameLists = listOfYearGames.OrderBy(list => list.ListDescription).ToList();
+            GameListSets.Add(new GameListSet { GameLists = listOfYearGames.OrderBy(list => list.ListDescription).ToList(), ListCategoryType = ListCategoryType.ReleaseYear});
         }
 
         private void GetGamesByDeveloper()
@@ -409,7 +310,7 @@ namespace BigBoxNetflixUI.View
                 GameList gameList = new GameList(developerGroup.Key, orderedGames);
                 listOfDeveloperGames.Add(gameList);
             }
-            DeveloperGameLists = listOfDeveloperGames.OrderBy(list => list.ListDescription).ToList();
+            GameListSets.Add(new GameListSet { GameLists = listOfDeveloperGames.OrderBy(list => list.ListDescription).ToList(), ListCategoryType = ListCategoryType.Developer });
         }
 
         private void GetGamesByPlayMode()
@@ -421,7 +322,7 @@ namespace BigBoxNetflixUI.View
                 GameList gameList = new GameList(playModeGroup.Key, orderedGames);
                 listOfPlayModeGames.Add(gameList);
             }
-            PlayModeGameLists = listOfPlayModeGames.OrderBy(list => list.ListDescription).ToList();
+            GameListSets.Add(new GameListSet { GameLists = listOfPlayModeGames.OrderBy(list => list.ListDescription).ToList(), ListCategoryType = ListCategoryType.PlayMode });
         }
 
         private void GetGamesByPlaylist()
@@ -441,7 +342,7 @@ namespace BigBoxNetflixUI.View
                     listOfPlayListGames.Add(gameList);
                 }
             }
-            PlaylistGameLists = listOfPlayListGames;
+            GameListSets.Add(new GameListSet { GameLists = listOfPlayListGames, ListCategoryType = ListCategoryType.Playlist });
         }
 
         private void GetGamesByPublisher()
@@ -453,7 +354,7 @@ namespace BigBoxNetflixUI.View
                 GameList gameList = new GameList(publisherGroup.Key, orderedGames);
                 listOfPublisherGames.Add(gameList);
             }
-            PublisherGameLists = listOfPublisherGames.OrderBy(list => list.ListDescription).ToList();
+            GameListSets.Add(new GameListSet { GameLists = listOfPublisherGames.OrderBy(list => list.ListDescription).ToList(), ListCategoryType = ListCategoryType.Publisher });
         }
 
         private void GetGamesByGenre()
@@ -465,7 +366,7 @@ namespace BigBoxNetflixUI.View
                 GameList gameList = new GameList(genreGroup.Key, orderedGames);
                 listOfGenreGames.Add(gameList);
             }
-            GenreGameLists = listOfGenreGames.OrderBy(list => list.ListDescription).ToList();
+            GameListSets.Add(new GameListSet { GameLists = listOfGenreGames.OrderBy(list => list.ListDescription).ToList(), ListCategoryType = ListCategoryType.Genre });
         }
 
         private void GetGamesBySeries()
@@ -480,7 +381,7 @@ namespace BigBoxNetflixUI.View
                     listOfSeriesGames.Add(gameList);
                 }
             }
-            SeriesGameLists = listOfSeriesGames.OrderBy(list => list.ListDescription).ToList();
+            GameListSets.Add(new GameListSet { GameLists = listOfSeriesGames.OrderBy(list => list.ListDescription).ToList(), ListCategoryType = ListCategoryType.Series });
         }
 
         public MainWindowViewModel()
@@ -501,8 +402,6 @@ namespace BigBoxNetflixUI.View
         {
             try
             {
-                IsInitializing = true;
-
                 DeveloperGameDictionary = new Dictionary<string, List<GameMatch>>();
                 PublisherGameDictionary = new Dictionary<string, List<GameMatch>>();
                 GenreGameDictionary = new Dictionary<string, List<GameMatch>>();
@@ -521,35 +420,34 @@ namespace BigBoxNetflixUI.View
                     // create a dictionary of play modes and game matches
                     foreach (string playMode in game.PlayModes)
                     {
-                        AddGameToPlayModeDictionary(playMode, new GameMatch(game, TitleMatchType.None));
+                        PlayModeGameDictionary.AddGame(playMode, new GameMatch(game, TitleMatchType.None));
                     }
 
                     // create a dictionary of Genres and game matches
                     foreach (string genre in game.Genres)
                     {
-                        AddGameToGenreDictionary(genre, new GameMatch(game, TitleMatchType.None));
+                        GenreGameDictionary.AddGame(genre, new GameMatch(game, TitleMatchType.None));
                     }
 
                     // create a dictionary of publishers and game matches
                     foreach (string publisher in game.Publishers)
                     {
-                        AddGameToPublisherDictionary(publisher, new GameMatch(game, TitleMatchType.None));
+                        PublisherGameDictionary.AddGame(publisher, new GameMatch(game, TitleMatchType.None));
                     }
 
                     // create a dictionary of developers and game matches
                     foreach (string developer in game.Developers)
                     {
-                        AddGameToDeveloperDictionary(developer, new GameMatch(game, TitleMatchType.None));
+                        DeveloperGameDictionary.AddGame(developer, new GameMatch(game, TitleMatchType.None));
                     }
 
                     // create a dictionary of series and game matches
                     foreach (string series in game.SeriesValues)
                     {
-                        AddGameToSeriesDictionary(series, new GameMatch(game, TitleMatchType.None));
+                        SeriesGameDictionary.AddGame(series, new GameMatch(game, TitleMatchType.None));
                     }
 
                     GameTitleGrammarBuilder gameTitleGrammarBuilder = new GameTitleGrammarBuilder(game);
-
                     if (!string.IsNullOrWhiteSpace(gameTitleGrammarBuilder.Title))
                     {
                         AddGameToVoiceDictionary(gameTitleGrammarBuilder.Title, new GameMatch(game, TitleMatchType.FullTitleMatch));
@@ -586,6 +484,7 @@ namespace BigBoxNetflixUI.View
                 SetupCategoryList();
 
                 // prepare lists of games by different categories
+                GameListSets = new List<GameListSet>();
                 GetGamesByPlatform();
                 GetGamesByYear();
                 GetGamesByGenre();
@@ -596,7 +495,7 @@ namespace BigBoxNetflixUI.View
                 GetGamesByPlaylist();
 
                 // default to display games by platform
-                ResetGameLists(PlatformGameLists);
+                ResetGameLists(ListCategoryType.Platform);
 
                 // flag initialization complete - display results
                 IsInitializing = false;
@@ -703,101 +602,12 @@ namespace BigBoxNetflixUI.View
                 }
             }
 
-            VoiceSearchGameLists = voiceRecognitionResults;
-            ResetGameLists(VoiceSearchGameLists);
+            GameListSets.RemoveAll(set => set.ListCategoryType == ListCategoryType.VoiceSearch);
+            GameListSets.Add(new GameListSet { GameLists = voiceRecognitionResults, ListCategoryType = ListCategoryType.VoiceSearch });
+            ResetGameLists(ListCategoryType.VoiceSearch);
             IsDisplayingResults = true;
         }
 
-
-        private void AddGameToGenreDictionary(string genre, GameMatch gameMatch)
-        {
-            if(string.IsNullOrWhiteSpace(genre))
-            {
-                return;
-            }
-
-            if(!GenreGameDictionary.ContainsKey(genre))
-            {
-                GenreGameDictionary.Add(genre, new List<GameMatch>());
-            }
-
-            if(!GenreGameDictionary[genre].Contains(gameMatch))
-            {
-                GenreGameDictionary[genre].Add(gameMatch);
-            }
-        }
-
-        private void AddGameToPlayModeDictionary(string playMode, GameMatch gameMatch)
-        {
-            if (string.IsNullOrWhiteSpace(playMode))
-            {
-                return;
-            }
-
-            if (!PlayModeGameDictionary.ContainsKey(playMode))
-            {
-                PlayModeGameDictionary.Add(playMode, new List<GameMatch>());
-            }
-
-            if (!PlayModeGameDictionary[playMode].Contains(gameMatch))
-            {
-                PlayModeGameDictionary[playMode].Add(gameMatch);
-            }
-        }
-
-        private void AddGameToDeveloperDictionary(string developer, GameMatch gameMatch)
-        {
-            if (string.IsNullOrWhiteSpace(developer))
-            {
-                return;
-            }
-
-            if (!DeveloperGameDictionary.ContainsKey(developer))
-            {
-                DeveloperGameDictionary.Add(developer, new List<GameMatch>());
-            }
-
-            if (!DeveloperGameDictionary[developer].Contains(gameMatch))
-            {
-                DeveloperGameDictionary[developer].Add(gameMatch);
-            }
-        }
-
-        private void AddGameToPublisherDictionary(string publisher, GameMatch gameMatch)
-        {
-            if (string.IsNullOrWhiteSpace(publisher))
-            {
-                return;
-            }
-
-            if (!PublisherGameDictionary.ContainsKey(publisher))
-            {
-                PublisherGameDictionary.Add(publisher, new List<GameMatch>());
-            }
-
-            if (!PublisherGameDictionary[publisher].Contains(gameMatch))
-            {
-                PublisherGameDictionary[publisher].Add(gameMatch);
-            }
-        }
-
-        private void AddGameToSeriesDictionary(string series, GameMatch gameMatch)
-        {
-            if (string.IsNullOrWhiteSpace(series))
-            {
-                return;
-            }
-
-            if (!SeriesGameDictionary.ContainsKey(series))
-            {
-                SeriesGameDictionary.Add(series, new List<GameMatch>());
-            }
-
-            if (!SeriesGameDictionary[series].Contains(gameMatch))
-            {
-                SeriesGameDictionary[series].Add(gameMatch);
-            }
-        }
 
         private void AddGameToVoiceDictionary(string phrase, GameMatch gameMatch)
         {
@@ -850,6 +660,14 @@ namespace BigBoxNetflixUI.View
             if(GameChangeFunction != null)
             {
                 GameChangeFunction();
+            }
+        }
+
+        private void CallLoadImageFunction()
+        {
+            if(LoadImagesFunction != null)
+            {
+                LoadImagesFunction();
             }
         }
 
@@ -970,11 +788,20 @@ namespace BigBoxNetflixUI.View
             DoRecognize();
         }
 
-        private void ResetGameLists(List<GameList> _gamelists)
+        private void ResetGameLists(ListCategoryType listCategoryType)            
         {
-            GameLists = _gamelists;
-            listCycle = new ListCycle<GameList>(GameLists, 2);
-            RefreshGameLists();
+            // get the game list from the GameListSet for the given listCategoryType
+            var query = from gameList in GameListSets
+                        where gameList.ListCategoryType == listCategoryType
+                        select gameList;
+
+            CurrentGameListSet = query?.FirstOrDefault();
+            if (CurrentGameListSet != null)
+            {
+                listCycle = new ListCycle<GameList>(CurrentGameListSet.GameLists, 2);
+                RefreshGameLists();
+                CallLoadImageFunction();
+            }
         }
 
         public void DoEnter()
@@ -993,35 +820,35 @@ namespace BigBoxNetflixUI.View
                         break;
 
                     case ListCategoryType.ReleaseYear:
-                        ResetGameLists(ReleaseYearGameLists);
+                        ResetGameLists(ListCategoryType.ReleaseYear);
                         break;
 
                     case ListCategoryType.Platform:
-                        ResetGameLists(PlatformGameLists);
+                        ResetGameLists(ListCategoryType.Platform);
                         break;
 
                     case ListCategoryType.Developer:
-                        ResetGameLists(DeveloperGameLists);
+                        ResetGameLists(ListCategoryType.Developer);
                         break;
 
                     case ListCategoryType.Genre:
-                        ResetGameLists(GenreGameLists);
+                        ResetGameLists(ListCategoryType.Genre);
                         break;
 
                     case ListCategoryType.Playlist:
-                        ResetGameLists(PlaylistGameLists);
+                        ResetGameLists(ListCategoryType.Playlist);
                         break;
 
                     case ListCategoryType.PlayMode:
-                        ResetGameLists(PlayModeGameLists);
+                        ResetGameLists(ListCategoryType.PlayMode);
                         break;
 
                     case ListCategoryType.Publisher:
-                        ResetGameLists(PublisherGameLists);
+                        ResetGameLists(ListCategoryType.Publisher);
                         break;
 
                     case ListCategoryType.Series:
-                        ResetGameLists(SeriesGameLists);
+                        ResetGameLists(ListCategoryType.Series);
                         break;
                 }
 
@@ -1041,7 +868,6 @@ namespace BigBoxNetflixUI.View
                 IGame currentGame = CurrentGameList?.Game1?.Game;
                 if (currentGame != null)
                 {
-                    // todo: show or start game depending on settings?
                     PluginHelper.BigBoxMainViewModel.PlayGame(currentGame, null, null, null);
                 }
                 return;
@@ -1081,29 +907,11 @@ namespace BigBoxNetflixUI.View
             }
         }
 
-        public Uri VoiceRecognitionGif
-        {
-            get
-            {
-                return new Uri("pack://application:,,,/BigBoxNetflixUI;component/resources/VoiceRecognitionGif.gif");
-            }
-        }
+        public Uri VoiceRecognitionGif { get; } = ResourceImages.VoiceRecognitionGif;
 
-        public Uri SettingsIconGrey
-        {
-            get
-            {
-                return new Uri("pack://application:,,,/BigBoxNetflixUI;component/resources/SettingsIcon_Grey.png");
-            }
-        }
+        public Uri SettingsIconGrey { get; } = ResourceImages.SettingsIconGrey;
 
-        public Uri SettingsIconWhite
-        {
-            get
-            {
-                return new Uri("pack://application:,,,/BigBoxNetflixUI;component/resources/SettingsIcon_White.png");
-            }
-        }
+        public Uri SettingsIconWhite { get; } = ResourceImages.SettingsIconWhite;
 
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
     }

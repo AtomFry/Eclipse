@@ -36,108 +36,89 @@ namespace BigBoxNetflixUI.View
             // pass in the animation function that can be called whenever a game changes
             mainWindowViewModel.GameChangeFunction = DoAnimateGameChange;
 
+            // pass in the function that can be called whenever voice recognition loads games and images need to be loaded
+            mainWindowViewModel.LoadImagesFunction = SetupGameImage;
+
             // get a handle on the background fade animations
             imageFadeOut = FindResource("BackgroundImageFadeOut") as Storyboard;
             imageFadeIn = FindResource("BackgroundImageFadeIn") as Storyboard;
 
-
-            // todo: try setting up images async
-            Helpers.Log("MainWindowViewConstructor");
+            // setting up images async
             Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new SetupGameImageDelegate(this.SetupGameImage));
         }
 
-        // todo: test variables for testing async image loading
         public delegate void SetupGameImageDelegate();
-        GameList currentGameList;
-        bool startedLoading = false;
         
         public void SetupGameImage()
         {
-            currentGameList = null;
-            if (mainWindowViewModel == null)
+            GameList gameListToProcess = null;
+
+            // keep looping until the view model has been initialize
+            if (mainWindowViewModel == null || mainWindowViewModel.IsInitializing) 
             {
                 Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new SetupGameImageDelegate(this.SetupGameImage));
+                return;
             }
 
             // process current game list first 
-            if (mainWindowViewModel.CurrentGameList != null)
+            if ((mainWindowViewModel.CurrentGameList != null) 
+                && (mainWindowViewModel.CurrentGameList.MoreImagesToLoad))
             {
-                if (mainWindowViewModel.CurrentGameList.MoreImagesToLoad)
-                {
-                    currentGameList = mainWindowViewModel.CurrentGameList;
-                }
+                gameListToProcess = mainWindowViewModel.CurrentGameList;
             }
 
             // if current game list is done then process the next game list
-            if (currentGameList == null)
+            if ((gameListToProcess == null)
+                && (mainWindowViewModel.NextGameList != null)
+                && (mainWindowViewModel.NextGameList.MoreImagesToLoad))
             {
-                if(mainWindowViewModel.NextGameList != null)
+                gameListToProcess = mainWindowViewModel.NextGameList;
+            }
+
+            // todo: if current and next game list are processed then process any game list in the current/selected list set that has unprocessed images
+            if(gameListToProcess == null)
+            {
+                List<GameList> currentGameLists = mainWindowViewModel?.CurrentGameListSet?.GameLists;
+                if (currentGameLists != null)
                 {
-                    if (mainWindowViewModel.NextGameList.MoreImagesToLoad)
+                    var query = from gameList in currentGameLists
+                                where gameList.MoreImagesToLoad
+                                select gameList;
+
+                    gameListToProcess = query?.FirstOrDefault();
+                }
+            }
+
+            if (gameListToProcess == null)
+            {
+                List<GameListSet> allGameListSets = mainWindowViewModel?.GameListSets;
+                if(allGameListSets != null)
+                {
+                    foreach(GameListSet gameListSet in allGameListSets)
                     {
-                        currentGameList = mainWindowViewModel.NextGameList;
+                        List<GameList> gameLists = gameListSet.GameLists;
+                        if(gameLists != null)
+                        {
+                            var query = from gameList in gameLists
+                                        where gameList.MoreImagesToLoad
+                                        select gameList;
+
+                            gameListToProcess = query?.FirstOrDefault();
+                            if (gameListToProcess != null)
+                            {
+                                break;
+                            }
+                        }
                     }
                 }
             }
 
-            // if current and next game list are processed then process any game list that has unloaded images
-            if (currentGameList == null)
+            if(gameListToProcess != null)
             {
-                if (mainWindowViewModel.PlatformGameLists != null)
-                {
-                    var gameListQuery = from list in mainWindowViewModel.PlatformGameLists
-                                        where list.MoreImagesToLoad
-                                        select list;
-
-                    currentGameList = gameListQuery.FirstOrDefault();
-                }
-            }
-
-
-            if(currentGameList != null)
-            {
-                currentGameList.LoadNextGameImage();
+                gameListToProcess.LoadNextGameImage();
                 Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new SetupGameImageDelegate(this.SetupGameImage));
-                startedLoading = true;
                 return;
             }
-
-            if(!startedLoading)
-            {
-                Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new SetupGameImageDelegate(this.SetupGameImage));
-            }
-
-            /*
-            if (mainWindowViewModel.VoiceSearchGameLists != null)
-            {
-
-            }
-
-            if(mainWindowViewModel.GenreGameLists != null)
-            {
-
-            }
-
-            if(mainWindowViewModel.SeriesGameLists != null)
-            {
-
-            }
-
-            if(mainWindowViewModel.ReleaseYearGameLists != null)
-            {
-
-            }
-
-            if(mainWindowViewModel.PlaylistGameLists != null)
-            {
-
-            }
-
-            if(mainWindowViewModel.PlayModeGameLists != null)
-            {
-
-            }
-            */
         }
 
 

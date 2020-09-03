@@ -61,6 +61,7 @@
     <Compile Include="Helpers.cs" />
     <Compile Include="Models\GameMatch.cs" />
     <Compile Include="Models\GameTitleGrammarBuilder.cs" />
+    <Compile Include="Models\ResourceImages.cs" />
     <Compile Include="Models\Option.cs" />
     <Compile Include="Models\ListCycle.cs" />
     <Compile Include="Models\TitleMatchType.cs" />

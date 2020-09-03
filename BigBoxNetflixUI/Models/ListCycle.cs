@@ -60,26 +60,6 @@ namespace BigBoxNetflixUI.Models
 
         public T GetItem(int index)
         {
-            if(indices == null)
-            {
-                throw new ArgumentOutOfRangeException();
-            }
-
-            if (index >= indices.Length)
-            {
-                throw new ArgumentOutOfRangeException();
-            }
-
-            if(GenericList == null)
-            {
-                throw new ArgumentOutOfRangeException();
-            }
-
-            if(indices[index] >= GenericList.Count)
-            {
-                throw new ArgumentOutOfRangeException();
-            }
-
             return GenericList[indices[index]];
         }
 

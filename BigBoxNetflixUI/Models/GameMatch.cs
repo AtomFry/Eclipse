@@ -11,8 +11,6 @@ namespace BigBoxNetflixUI.Models
     {
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
 
-        public static Uri GameFrontDummy = new Uri($"{Helpers.ResourceFolder}/NES_BoxFront_Template.png");
-
         public IGame Game { get; set; }
         public TitleMatchType TitleMatchType { get; set; }
      
@@ -24,7 +22,7 @@ namespace BigBoxNetflixUI.Models
         {
             Game = game;
             TitleMatchType = titleMatchType;
-            frontImage = GameFrontDummy;
+            frontImage = ResourceImages.GameFrontDummy;
         }
 
         public void SetupFrontImage()
