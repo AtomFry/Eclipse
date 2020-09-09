@@ -19,27 +19,42 @@
         <myconverters:DivideByConverter x:Key="DivideBy3" A="3"/>
         <myconverters:DivideByConverter x:Key="DivideByNegative1" A="-1"/>
         <myconverters:GameMatchToSettingsOpacityConverter x:Key="SettingsOpacityConverter"/>
-        <Storyboard x:Key="BackgroundImageFadeOut">
+        <myconverters:DisplayingFeatureOffsetConverter x:Key="FeatureOffsetConverter"/>
+        
+        <!-- 1-second image fade in - call when video ends -->
+        <Storyboard x:Key="BackgroundImageFadeInSlow">
             <DoubleAnimation BeginTime="0:0:0" 
                              Storyboard.TargetProperty="Opacity" 
                              From="0" To="1" 
-                             Duration="0:0:0.2"/>
-            <DoubleAnimation BeginTime="0:0:2" 
-                            Storyboard.TargetProperty="Opacity" 
-                            From="1" To="0" 
-                            Duration="0:0:1" Completed="BackgroundImageFadeOut_Completed"/>
+                             Duration="0:0:1"/>
         </Storyboard>
-        <Storyboard x:Key="BackgroundImageFadeIn">
+
+        <!-- 1-second image fade out - call when reset fade out delay ends-->
+        <Storyboard x:Key="BackgroundImageFadeOutSlow">
             <DoubleAnimation BeginTime="0:0:0" 
                              Storyboard.TargetProperty="Opacity" 
+                             From="1" To="0" 
+                             Duration="0:0:1"/>
+        </Storyboard>
+        
+        <!-- Reset opacity, delay 2 seconds, then kick off fade out -->
+        <Storyboard x:Key="BackgroundImageFadeOutDelay">
+            <!-- Quickly fade in -->
+            <!--<DoubleAnimation BeginTime="0:0:0" 
+                             Storyboard.TargetProperty="Opacity" 
                              From="0" To="1" 
-                             Duration="0:0:1" Completed="BackgroundImageFadeIn_Completed"/>
+                             Duration="0:0:0.2"/>-->
+            
+            <!-- 2 second timer before and then trigger the fade out -->
+            <DoubleAnimation BeginTime="0:0:0"
+                             Storyboard.TargetProperty="Opacity"
+                             From="1" To="1"
+                             Duration="0:0:2"
+                             Completed="BackgroundImageFadeOutDelay_Completed"/>
         </Storyboard>
     </UserControl.Resources>
 
-    <Canvas Background="Black"
-            VerticalAlignment="Stretch"
-            HorizontalAlignment="Stretch"
+    <Canvas Background="Black" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
             Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
             Height="{Binding ActualHeight, ElementName=MainWindowUserControl}">
 
@@ -79,7 +94,6 @@
         </Grid>
         <!-- END LOADING -->
 
-
         <!-- DISPLAY ERROR -->
         <Grid   Background="Transparent"
                 VerticalAlignment="Stretch"
@@ -98,50 +112,6 @@
         </Grid>
         <!-- END DISPLAY ERROR -->
 
-        <!-- PICKING CATEGORY -->
-        <Grid   Background="Transparent"
-                VerticalAlignment="Stretch"
-                HorizontalAlignment="Stretch"
-                Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
-                Height="{Binding ActualHeight, ElementName=MainWindowUserControl}"
-                Visibility="{Binding IsPickingCategory, Converter={StaticResource BoolToVis}}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="31*"/>
-            </Grid.ColumnDefinitions>
-            <!-- todo: replace test text -->
-            <TextBlock Text="SELECTING CATEGORY"
-                   Foreground="GhostWhite"
-                   FontFamily="Calibri"
-                   FontSize="48"
-                   Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
-                   TextAlignment="Center"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"/>
-        </Grid>
-        <!-- END PICKING CATEGORY -->
-        
-
-        <!-- DISPLAY FEATURE -->
-        <Grid   Background="Transparent"
-                VerticalAlignment="Stretch"
-                HorizontalAlignment="Stretch"
-                Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
-                Height="{Binding ActualHeight, ElementName=MainWindowUserControl}"
-                Visibility="{Binding IsDisplayingFeature, Converter={StaticResource BoolToVis}}">
-            <!-- todo: replace test text -->
-            <TextBlock Text="DISPLAYING FEATURED GAME"
-                   Foreground="GhostWhite"
-                   FontFamily="Calibri"
-                   FontSize="48"
-                   Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
-                   TextAlignment="Center"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"/>
-        </Grid>
-        <!-- END DISPLAY FEATURE -->
-        
-        
 
         <!-- DISPLAYING RESULTS -->
         <Grid   Background="Transparent"
@@ -150,6 +120,7 @@
                 Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
                 Height="{Binding ActualHeight, ElementName=MainWindowUserControl}"
                 Visibility="{Binding IsDisplayingResults, Converter={StaticResource BoolToVis}}">
+            <!-- 18 rows -->
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*"/>
                 <RowDefinition Height="1*"/>
@@ -170,6 +141,7 @@
                 <RowDefinition Height="1*"/>
                 <RowDefinition Height="1*"/>
             </Grid.RowDefinitions>
+            <!-- 32 columns -->
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*"/>
                 <ColumnDefinition Width="1*"/>
@@ -213,7 +185,7 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         Opacity="{Binding CurrentGameList.Game0, Converter={StaticResource SettingsOpacityConverter}}"
-                        Panel.ZIndex="1000">
+                        Panel.ZIndex="800">
                 <Image Name="Image_SettingsIcon" 
                        Source="{Binding SettingsIconWhite}"
                        HorizontalAlignment="Stretch" 
@@ -223,12 +195,12 @@
                        Margin="2,2,2,2"
                        Stretch="Uniform"/>
             </StackPanel>
-            
-            <!-- Picking Options -->
+
+            <!-- Picking Category -->
             <Grid Name="Grid_PickingOptions"
                   Grid.Row="0" Grid.RowSpan="18"
-                  Grid.Column="0" Grid.ColumnSpan="20"
-                  Panel.ZIndex="10000"
+                  Grid.Column="0" Grid.ColumnSpan="8"
+                  Panel.ZIndex="900"
                   Visibility="{Binding IsPickingCategory, Converter={StaticResource BoolToVis}}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="2*"/>
@@ -265,7 +237,7 @@
                         </LinearGradientBrush>
                     </Rectangle.OpacityMask>
                 </Rectangle>
-                <TextBlock Text="Select a category"
+                <TextBlock Text="Options"
                            Grid.Row="0"
                            Grid.Column="1"
                            Grid.ColumnSpan="2"
@@ -276,7 +248,6 @@
                            TextAlignment="Center"
                            HorizontalAlignment="Left"
                            VerticalAlignment="Center"/>
-
                 <TextBlock Text="{Binding OptionList.Option6.LongDescription}"
                            Grid.Row="1"
                            Grid.Column="1" Grid.ColumnSpan="2"
@@ -287,7 +258,6 @@
                             TextAlignment="Left"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"/>
-                
                 <TextBlock Text="{Binding OptionList.Option7.LongDescription}"
                            Grid.Row="2"
                            Grid.Column="1" Grid.ColumnSpan="2"
@@ -378,29 +348,36 @@
                            TextAlignment="Left"
                            HorizontalAlignment="Left"
                            VerticalAlignment="Center"/>
-
             </Grid>
 
-            <!-- Selected game clear logo -->
-            <Image Name="Image_Selected_GameClearLogo"
+            <!-- Selected game logo and details -->
+            <Grid Name="Grid_Selected_Game_Heading"
+                  Grid.Row="1" Grid.RowSpan="8"
+                  Grid.Column="1" Grid.ColumnSpan="15"
+                  Panel.ZIndex="500"
+                  Background="Transparent">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="4*"/>
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="1*" />
+                </Grid.RowDefinitions>
+                <!-- Selected game clear logo -->
+                <Image Name="Image_Selected_GameClearLogo"
                    Source="{Binding CurrentGameList.Game1.ClearLogo}"
-                   Grid.Row="1"
-                   Grid.RowSpan="4"
-                   Grid.Column="1"
-                   Grid.ColumnSpan="15"
+                   Grid.Row="0"
                    HorizontalAlignment="Left" 
                    VerticalAlignment="Bottom"
                    RenderOptions.BitmapScalingMode="HighQuality" 
-                   Panel.ZIndex="100"
                    Stretch="Uniform"/>
 
-            <!-- Selected game details-->
-            <StackPanel Grid.Row="5" Grid.RowSpan="1" Grid.Column="1" Grid.ColumnSpan="15"
+                <!-- Selected game details-->
+                <StackPanel Grid.Row="1"
                 Orientation="Horizontal"
                 HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                Panel.ZIndex="100">
-                <TextBlock Name="TextBlock_MatchPercentage"
+                VerticalAlignment="Stretch">
+                    <TextBlock Name="TextBlock_MatchPercentage"
                        Text="{Binding CurrentGameList.Game1.MatchDescription}"
                        FontFamily="Arial" 
                         FontWeight="Regular"
@@ -412,7 +389,7 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"/>
 
-                <TextBlock Name="TextBlock_Divider1"
+                    <TextBlock Name="TextBlock_Divider1"
                        Text=" | "
                        FontFamily="Arial" 
                         FontWeight="Regular"
@@ -424,7 +401,7 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"/>
 
-                <TextBlock Name="TextBlock_ReleaseYear"
+                    <TextBlock Name="TextBlock_ReleaseYear"
                        Text="{Binding CurrentGameList.Game1.ReleaseDate}"
                        FontFamily="Arial" 
                         FontWeight="Regular"
@@ -436,7 +413,7 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"/>
 
-                <TextBlock Name="TextBlock_Divider2"
+                    <TextBlock Name="TextBlock_Divider2"
                             Text=" | "
                             FontFamily="Arial " 
                             FontWeight="Regular"
@@ -448,7 +425,7 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"/>
 
-                <Image Name="Image_CommunityStarRating"
+                    <Image Name="Image_CommunityStarRating"
                     Source="{Binding CurrentGameList.Game1.CommunityStarRatingImage}"
                     RenderOptions.BitmapScalingMode="HighQuality" 
                     Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
@@ -456,7 +433,7 @@
                     VerticalAlignment="Center"
                     Stretch="Uniform"/>
 
-                <TextBlock  Name="TextBlock_Divider3"
+                    <TextBlock  Name="TextBlock_Divider3"
                             Text=" | "
                             FontFamily="Arial " 
                             FontWeight="Regular"
@@ -468,23 +445,21 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"/>
 
-                <Image  Name="Image_Playmode"
+                    <Image  Name="Image_Playmode"
                         Source="{Binding CurrentGameList.Game1.PlayModeImage}"
                         Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
                         RenderOptions.BitmapScalingMode="HighQuality" 
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Stretch="Uniform"/>
-            </StackPanel>
+                </StackPanel>
 
-            <!-- Selected game platform -->
-            <StackPanel Grid.Row="6" Grid.RowSpan="1" 
-                        Grid.Column="1" Grid.ColumnSpan="15"
+                <!-- Selected game platform -->
+                <StackPanel Grid.Row="2" 
                         Orientation="Horizontal"
                         HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch"
-                        Panel.ZIndex="100">
-                <TextBlock  Name="TextBlock_Platform"
+                        VerticalAlignment="Stretch">
+                    <TextBlock  Name="TextBlock_Platform"
                         Text="{Binding CurrentGameList.Game1.Game.Platform}"
                         FontFamily="Arial" 
                         FontWeight="Regular"
@@ -495,52 +470,90 @@
                         TextAlignment="Center"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Top"/>
-            </StackPanel>
+                </StackPanel>
+            </Grid>
+
+            <!-- Selected game background image -->
+            <Grid Name="Grid_Selected_Game_Background"
+                  Grid.Row="0" Grid.RowSpan="10"
+                  Grid.Column="12" Grid.ColumnSpan="20"
+                  Panel.ZIndex="200">
+                
+                <!-- Black background behind selected game background image to make gradient opacity mask work -->
+                <Rectangle Name="Image_Selected_Background_Black"
+                           HorizontalAlignment="Stretch" 
+                           VerticalAlignment="Stretch">
+                    <Rectangle.Fill>
+                        <SolidColorBrush Color="Black"/>
+                    </Rectangle.Fill>
+                </Rectangle>
+
+                <!-- Background image for selected game -->
+                <Image Name="Image_Selected_BackgroundImage"
+                       Source="{Binding CurrentGameList.Game1.BackgroundImage}"
+                       HorizontalAlignment="Stretch" 
+                       VerticalAlignment="Stretch" 
+                       Stretch="UniformToFill"
+                       RenderOptions.BitmapScalingMode="HighQuality" >
+                    <Image.OpacityMask>
+                        <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                            <LinearGradientBrush.GradientStops>
+                                <GradientStop Offset="0" Color="Transparent"/>
+                                <GradientStop Offset="0.25" Color="Black"/>
+                                <GradientStop Offset="0.75" Color="Black"/>
+                                <GradientStop Offset="1" Color="Transparent"/>
+                            </LinearGradientBrush.GradientStops>
+                        </LinearGradientBrush>
+                    </Image.OpacityMask>
+                </Image>
+            </Grid>
 
             <!-- Selected game video -->
-            <MediaElement Name="Video_SelectedGame"
+            <Grid Name="Grid_Selected_Game_Video"
+                  Grid.Row="0" Grid.RowSpan="10"
+                  Grid.Column="12" Grid.ColumnSpan="20"
+                  Panel.ZIndex="100">
+                <MediaElement Name="Video_SelectedGame"
                           Source="{Binding CurrentGameList.Game1.VideoPath}"
-                          Grid.Row="0"
-                           Grid.RowSpan="10"
-                           Grid.Column="12"
-                           Grid.ColumnSpan="20"
-                           HorizontalAlignment="Stretch" 
-                           VerticalAlignment="Stretch"
-                          Stretch="Uniform"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Stretch="Uniform"
                           LoadedBehavior="Manual"
                           MediaEnded="Video_SelectedGame_MediaEnded">
-                <MediaElement.OpacityMask>
-                    <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
-                        <LinearGradientBrush.GradientStops>
-                            <GradientStop Offset="0" Color="Transparent"/>
-                            <GradientStop Offset="0.25" Color="Black"/>
-                            <GradientStop Offset="0.75" Color="Black"/>
-                            <GradientStop Offset="1" Color="Transparent"/>
-                        </LinearGradientBrush.GradientStops>
-                    </LinearGradientBrush>
-                </MediaElement.OpacityMask>
-            </MediaElement>
+                    <MediaElement.OpacityMask>
+                        <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                            <LinearGradientBrush.GradientStops>
+                                <GradientStop Offset="0" Color="Transparent"/>
+                                <GradientStop Offset="0.25" Color="Black"/>
+                                <GradientStop Offset="0.75" Color="Black"/>
+                                <GradientStop Offset="1" Color="Transparent"/>
+                            </LinearGradientBrush.GradientStops>
+                        </LinearGradientBrush>
+                    </MediaElement.OpacityMask>
+                </MediaElement>
+            </Grid>
 
 
+
+            <!-- feature game background - this may make more sense moved elsewhere -->
             <!-- Black background behind selected game background image to make gradient opacity mask work -->
-            <Rectangle Name="Image_Selected_Background_Black"
+            <Rectangle Name="Image_Feature_Background_Black"
                         Grid.Row="0"
-                        Grid.RowSpan="10"
-                        Grid.Column="12"
-                        Grid.ColumnSpan="20"
+                        Grid.RowSpan="16"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="32"
+                        Visibility="{Binding IsDisplayingFeature, Converter={StaticResource BoolToVis}}"
                         HorizontalAlignment="Stretch" 
                         VerticalAlignment="Stretch">
                 <Rectangle.Fill>
                     <SolidColorBrush Color="Black"/>
                 </Rectangle.Fill>
             </Rectangle>
-
-            <Image Name="Image_Selected_BackgroundImage"
+            <Image Name="Image_Feature_BackgroundImage"
                    Source="{Binding CurrentGameList.Game1.BackgroundImage}"
                    Grid.Row="0"
-                   Grid.RowSpan="10"
-                   Grid.Column="12"
-                   Grid.ColumnSpan="20"
+                   Grid.RowSpan="16"
+                   Grid.Column="0"
+                   Grid.ColumnSpan="32"
+                   Visibility="{Binding IsDisplayingFeature, Converter={StaticResource BoolToVis}}"
                    HorizontalAlignment="Stretch" 
                    VerticalAlignment="Stretch"
                    RenderOptions.BitmapScalingMode="HighQuality" 
@@ -556,29 +569,77 @@
                     </LinearGradientBrush>
                 </Image.OpacityMask>
             </Image>
+            <!-- todo: add featured game media ended handler to fade image back in -->
+            <MediaElement Name="Video_FeatureGame"
+                          Source="{Binding CurrentGameList.Game1.VideoPath}"                          
+                          Visibility="{Binding IsDisplayingFeature, Converter={StaticResource BoolToVis}}"
+                          Grid.Row="0"
+                           Grid.RowSpan="16"
+                           Grid.Column="0"
+                           Grid.ColumnSpan="32"
+                           HorizontalAlignment="Stretch" 
+                           VerticalAlignment="Stretch"
+                          Stretch="Uniform"
+                          LoadedBehavior="Manual">
+                <MediaElement.OpacityMask>
+                    <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                        <LinearGradientBrush.GradientStops>
+                            <GradientStop Offset="0" Color="Transparent"/>
+                            <GradientStop Offset="0.25" Color="Black"/>
+                            <GradientStop Offset="0.75" Color="Black"/>
+                            <GradientStop Offset="1" Color="Transparent"/>
+                        </LinearGradientBrush.GradientStops>
+                    </LinearGradientBrush>
+                </MediaElement.OpacityMask>
+            </MediaElement>
 
 
 
-            <!-- Current List Games -->
-            <Grid Name="CurrentListGrid"
+
+
+
+            <Grid Name="GameListGrid"
                   Grid.Row="9"
-                  Grid.RowSpan="6"
+                  Grid.RowSpan="9"
                   Grid.Column="0"
                   Grid.ColumnSpan="32"
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Stretch">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="5*"/>
+                    <RowDefinition Height="6*"/>
+                    <!-- current games List -->
+                    <RowDefinition Height="3*"/>
+                    <!-- next games list -->
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*"/>
                     <ColumnDefinition Width="31*"/>
                 </Grid.ColumnDefinitions>
+                <Grid.RenderTransform>
+                    <TranslateTransform>
+                        <TranslateTransform.Y>
+                            <MultiBinding Converter="{StaticResource FeatureOffsetConverter}">
+                                <Binding Path="IsDisplayingFeature"/>
+                                <Binding ElementName="CurrentListGrid" Path="ActualHeight"/>
+                            </MultiBinding>
+                        </TranslateTransform.Y>
+                    </TranslateTransform>
+                </Grid.RenderTransform>
 
-                <TextBlock  
+                <!-- Current List Games -->
+                <Grid Name="CurrentListGrid"
+                  Grid.Row="0"
+                  Grid.RowSpan="1"
+                  Grid.Column="1"
+                  Grid.ColumnSpan="1"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="5*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock  
                         Name="TextBlock_CurrentGameListDescription"
-                        Grid.Column="1"  
                         Grid.Row="0"
                         Grid.RowSpan="1"
                         FontFamily="Calibri" 
@@ -590,140 +651,130 @@
                         TextAlignment="Left"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Bottom">
-                    <TextBlock.Text>
-                        <MultiBinding StringFormat=" {0} ({1})">
-                            <Binding Path="CurrentGameList.ListDescription"/>
-                            <Binding Path="CurrentGameList.MatchCount"/>
-                        </MultiBinding>
-                    </TextBlock.Text>
-                </TextBlock>
-
-                <StackPanel Name="GameImages" 
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat=" {0} ({1})">
+                                <Binding Path="CurrentGameList.ListDescription"/>
+                                <Binding Path="CurrentGameList.MatchCount"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                    <StackPanel Name="GameImages" 
                         Grid.Row="1"
                         Grid.RowSpan="1"
-                        Grid.Column="1"
-                        Grid.ColumnSpan="1"
                         Orientation="Horizontal"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch">
-                    <Border BorderThickness="2" BorderBrush="AntiqueWhite">
-                        <Image Name="Image_Game1"
+                        <Border BorderThickness="2" BorderBrush="AntiqueWhite">
+                            <Image Name="Image_Game1"
                                Source="{Binding CurrentGameList.Game1.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
-                    </Border>
+                        </Border>
 
-                    <Image Source="{Binding CurrentGameList.Game2.FrontImage}"
+                        <Image Source="{Binding CurrentGameList.Game2.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                    <Image Source="{Binding CurrentGameList.Game3.FrontImage}"
+                        <Image Source="{Binding CurrentGameList.Game3.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                    <Image Source="{Binding CurrentGameList.Game4.FrontImage}"
+                        <Image Source="{Binding CurrentGameList.Game4.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                    <Image Source="{Binding CurrentGameList.Game5.FrontImage}"
+                        <Image Source="{Binding CurrentGameList.Game5.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                    <Image Source="{Binding CurrentGameList.Game6.FrontImage}"
+                        <Image Source="{Binding CurrentGameList.Game6.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                    <Image Source="{Binding CurrentGameList.Game7.FrontImage}"
+                        <Image Source="{Binding CurrentGameList.Game7.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                    <Image Source="{Binding CurrentGameList.Game8.FrontImage}"
+                        <Image Source="{Binding CurrentGameList.Game8.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                    <Image Source="{Binding CurrentGameList.Game9.FrontImage}"
+                        <Image Source="{Binding CurrentGameList.Game9.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                    <Image Source="{Binding CurrentGameList.Game10.FrontImage}"
+                        <Image Source="{Binding CurrentGameList.Game10.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                    <Image Source="{Binding CurrentGameList.Game11.FrontImage}"
+                        <Image Source="{Binding CurrentGameList.Game11.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                    <Image Source="{Binding CurrentGameList.Game12.FrontImage}"
+                        <Image Source="{Binding CurrentGameList.Game12.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
-                </StackPanel>
-            </Grid>
+                    </StackPanel>
+                </Grid>
 
-            <!-- Previous game in current list -->
-            <Grid Name="CurrentListPrev1GameGrid"
-                  Grid.Row="9"
-                  Grid.RowSpan="6"
-                  Grid.Column="0"
-                  Grid.ColumnSpan="32"
+                <!-- Previous game in current list -->
+                <Grid Name="CurrentListPrev1GameGrid"
+                  Grid.Row="0"
+                  Grid.RowSpan="1"
+                  Grid.Column="1"
+                  Grid.ColumnSpan="1"
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Stretch">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="5*"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="31*"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RenderTransform>
-                    <TranslateTransform X="{Binding ActualWidth, ElementName=Image_PreviousGame, Converter={StaticResource DivideByNegative1}}"/>
-                </Grid.RenderTransform>
-
-                <StackPanel Name="CurrentListPrev1GameImage" 
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="5*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.RenderTransform>
+                        <TranslateTransform X="{Binding ActualWidth, ElementName=Image_PreviousGame, Converter={StaticResource DivideByNegative1}}"/>
+                    </Grid.RenderTransform>
+                    <StackPanel Name="CurrentListPrev1GameImage" 
                         Grid.Row="1"
                         Grid.RowSpan="1"
-                        Grid.Column="1"
-                        Grid.ColumnSpan="1"
                         Orientation="Horizontal"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch">
-                    <Image Name="Image_PreviousGame"
+                        <Image Name="Image_PreviousGame"
                        Source="{Binding CurrentGameList.Game0.FrontImage}"
                        HorizontalAlignment="Left" 
                        VerticalAlignment="Stretch"
@@ -731,35 +782,27 @@
                        Opacity="0.25"
                        Margin="2,2,2,2"
                        Stretch="Uniform">
-                    </Image>
-                </StackPanel>
-            </Grid>
+                        </Image>
+                    </StackPanel>
+                </Grid>
 
-            <!-- Next list game images -->
-            <Grid Name="NextListGrid"
-                  Grid.Row="9"
-                  Grid.RowSpan="6"
-                  Grid.Column="0"
-                  Grid.ColumnSpan="32"
+                <!-- Next list game images -->
+                <Grid Name="NextListGrid"
+                  Grid.Row="0"
+                  Grid.RowSpan="1"
+                  Grid.Column="1"
+                  Grid.ColumnSpan="1"
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Stretch">
-
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="5*"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="31*"/>
-                </Grid.ColumnDefinitions>
-
-                <Grid.RenderTransform>
-                    <TranslateTransform Y="{Binding ActualHeight,ElementName=NextListGrid}"/>
-                </Grid.RenderTransform>
-
-                <TextBlock  
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="5*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.RenderTransform>
+                        <TranslateTransform Y="{Binding ActualHeight,ElementName=NextListGrid}"/>
+                    </Grid.RenderTransform>
+                    <TextBlock  
                         Name="TextBlock_NextGameListDescription"
-                        Grid.Column="1"  
                         Grid.Row="0"
                         Grid.RowSpan="1"
                         FontFamily="Calibri" 
@@ -771,140 +814,131 @@
                         TextAlignment="Left"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Bottom">
-                    <TextBlock.Text>
-                        <MultiBinding StringFormat=" {0} ({1})">
-                            <Binding Path="NextGameList.ListDescription"/>
-                            <Binding Path="NextGameList.MatchCount"/>
-                        </MultiBinding>
-                    </TextBlock.Text>
-                </TextBlock>
-
-                <StackPanel Name="NextListGameImages" 
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat=" {0} ({1})">
+                                <Binding Path="NextGameList.ListDescription"/>
+                                <Binding Path="NextGameList.MatchCount"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                    <StackPanel Name="NextListGameImages" 
                         Grid.Row="1"
                         Grid.RowSpan="1"
-                        Grid.Column="1"
-                        Grid.ColumnSpan="1"
                         Orientation="Horizontal"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch">
-                    <Border BorderThickness="2" BorderBrush="AntiqueWhite">
-                        <Image Name="Image_NextListGame1"
+                        <Border BorderThickness="2" BorderBrush="AntiqueWhite">
+                            <Image Name="Image_NextListGame1"
                                Source="{Binding NextGameList.Game1.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
-                    </Border>
+                        </Border>
 
-                    <Image Source="{Binding NextGameList.Game2.FrontImage}"
+                        <Image Source="{Binding NextGameList.Game2.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                    <Image Source="{Binding NextGameList.Game3.FrontImage}"
+                        <Image Source="{Binding NextGameList.Game3.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                    <Image Source="{Binding NextGameList.Game4.FrontImage}"
+                        <Image Source="{Binding NextGameList.Game4.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                    <Image Source="{Binding NextGameList.Game5.FrontImage}"
+                        <Image Source="{Binding NextGameList.Game5.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                    <Image Source="{Binding NextGameList.Game6.FrontImage}"
+                        <Image Source="{Binding NextGameList.Game6.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                    <Image Source="{Binding NextGameList.Game7.FrontImage}"
+                        <Image Source="{Binding NextGameList.Game7.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                    <Image Source="{Binding NextGameList.Game8.FrontImage}"
+                        <Image Source="{Binding NextGameList.Game8.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                    <Image Source="{Binding NextGameList.Game9.FrontImage}"
+                        <Image Source="{Binding NextGameList.Game9.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                    <Image Source="{Binding NextGameList.Game10.FrontImage}"
+                        <Image Source="{Binding NextGameList.Game10.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                    <Image Source="{Binding NextGameList.Game11.FrontImage}"
+                        <Image Source="{Binding NextGameList.Game11.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                    <Image Source="{Binding NextGameList.Game12.FrontImage}"
+                        <Image Source="{Binding NextGameList.Game12.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
-                </StackPanel>
-            </Grid>
+                    </StackPanel>
+                </Grid>
 
-            <!-- Previous game in current list -->
-            <Grid Name="NextListPrev1GameGrid"
-                  Grid.Row="9"
-                  Grid.RowSpan="6"
-                  Grid.Column="0"
-                  Grid.ColumnSpan="32"
+                <!-- Previous game in current list -->
+                <Grid Name="NextListPrev1GameGrid"
+                  Grid.Row="0"
+                  Grid.RowSpan="1"
+                  Grid.Column="1"
+                  Grid.ColumnSpan="1"
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Stretch">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="5*"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="31*"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RenderTransform>
-                    <TranslateTransform X="{Binding ActualWidth, ElementName=Image_NextListPreviousGame, Converter={StaticResource DivideByNegative1}}"
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="5*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.RenderTransform>
+                        <TranslateTransform X="{Binding ActualWidth, ElementName=Image_NextListPreviousGame, Converter={StaticResource DivideByNegative1}}"
                                         Y="{Binding ActualHeight,ElementName=NextListPrev1GameGrid}"/>
-                </Grid.RenderTransform>
-                <StackPanel Name="NextListPrev1GameImage" 
+                    </Grid.RenderTransform>
+                    <StackPanel Name="NextListPrev1GameImage" 
                         Grid.Row="1"
                         Grid.RowSpan="1"
-                        Grid.Column="1"
-                        Grid.ColumnSpan="1"
                         Orientation="Horizontal"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch">
-                    <Image Name="Image_NextListPreviousGame"
+                        <Image Name="Image_NextListPreviousGame"
                        Source="{Binding NextGameList.Game0.FrontImage}"
                        HorizontalAlignment="Left" 
                        VerticalAlignment="Stretch"
@@ -912,8 +946,9 @@
                        Opacity="0.25"
                        Margin="2,2,2,2"
                        Stretch="Uniform">
-                    </Image>
-                </StackPanel>
+                        </Image>
+                    </StackPanel>
+                </Grid>
             </Grid>
         </Grid>
         <!-- END DISPLAYING RESULTS -->

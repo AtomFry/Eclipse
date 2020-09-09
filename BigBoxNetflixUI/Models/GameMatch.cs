@@ -83,7 +83,7 @@ namespace BigBoxNetflixUI.Models
             {
                 if(communityStarRatingImage == null)
                 {
-                    double rating = Math.Round(Game.CommunityStarRating, 1);
+                    double rating = Math.Round(Game.CommunityOrLocalStarRating, 1);
                     string path = $"{Helpers.MediaFolder}\\StarRating\\{rating}.png";
                     // todo: set fallback image to local resource if not found
                     communityStarRatingImage = new Uri(path);
@@ -137,9 +137,17 @@ namespace BigBoxNetflixUI.Models
         {
             get 
             {
+                // todo: probably create subclass for voice match and override the calculation
+                // for non-voice match, match percentage = start rating (0-5) * 20
+                // for voice match, lots to consider...
+                /*
+                 * Confidence of spoken phrase (0-1)
+                 * Match level (full title (100), main title (95), subtitle (90), phrase (70+?))
+                 * For partial phrase match - would like to increase it - maybe max out at 95 so 70 + (29 * (length of phrase / length of title))
+                 * Length of phrase vs length of title?  (0-1)
+                 */
                 // todo: define match as percentage (based on match type) of confidence
-                // todo: define visibility and only display if matching
-                int tempMatch = 98;
+                int tempMatch = (int)((Game?.CommunityOrLocalStarRating ?? 3) * 20);
                 return $"{tempMatch}% match";
             }
         }

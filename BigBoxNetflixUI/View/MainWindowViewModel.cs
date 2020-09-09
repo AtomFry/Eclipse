@@ -694,6 +694,11 @@ namespace BigBoxNetflixUI.View
             if (isDisplayingResults)
             {
                 // todo: if displaying first list - change to featured game
+                if(listCycle.GetIndexValue(0) == 0)
+                {
+                    IsDisplayingFeature = true;
+                    return;
+                }
 
                 // cycle to prior list
                 CycleListBackward();
@@ -711,7 +716,7 @@ namespace BigBoxNetflixUI.View
 
             if (isDisplayingFeature)
             {
-                // todo: change to displaying first result
+                IsDisplayingFeature = false;
                 return;
             }
 
