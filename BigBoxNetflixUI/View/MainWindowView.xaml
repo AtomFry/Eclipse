@@ -20,37 +20,30 @@
         <myconverters:DivideByConverter x:Key="DivideByNegative1" A="-1"/>
         <myconverters:GameMatchToSettingsOpacityConverter x:Key="SettingsOpacityConverter"/>
         <myconverters:DisplayingFeatureOffsetConverter x:Key="FeatureOffsetConverter"/>
-        
-        <!-- 1-second image fade in - call when video ends -->
+
+        <!-- 1-second image fade in - call when game changes -->
         <Storyboard x:Key="BackgroundImageFadeInSlow">
             <DoubleAnimation BeginTime="0:0:0" 
                              Storyboard.TargetProperty="Opacity" 
                              From="0" To="1" 
+                             Duration="0:0:0.5"
+                             Completed="BackgroundImageFadeInSlow_Completed"/>
+        </Storyboard>
+
+        <!-- 1 second image fade out -->
+        <Storyboard x:Key="BackgroundImageFadeOutSlow">
+            <DoubleAnimation BeginTime="0:0:0"
+                             Storyboard.TargetProperty="Opacity"
+                             From="1" To="0"
                              Duration="0:0:1"/>
         </Storyboard>
 
-        <!-- 1-second image fade out - call when reset fade out delay ends-->
-        <Storyboard x:Key="BackgroundImageFadeOutSlow">
+        <!-- 1-second image fade in - call when video ends -->
+        <Storyboard x:Key="BackgroundImageFadeInAfterVideo">
             <DoubleAnimation BeginTime="0:0:0" 
                              Storyboard.TargetProperty="Opacity" 
-                             From="1" To="0" 
-                             Duration="0:0:1"/>
-        </Storyboard>
-        
-        <!-- Reset opacity, delay 2 seconds, then kick off fade out -->
-        <Storyboard x:Key="BackgroundImageFadeOutDelay">
-            <!-- Quickly fade in -->
-            <!--<DoubleAnimation BeginTime="0:0:0" 
-                             Storyboard.TargetProperty="Opacity" 
                              From="0" To="1" 
-                             Duration="0:0:0.2"/>-->
-            
-            <!-- 2 second timer before and then trigger the fade out -->
-            <DoubleAnimation BeginTime="0:0:0"
-                             Storyboard.TargetProperty="Opacity"
-                             From="1" To="1"
-                             Duration="0:0:2"
-                             Completed="BackgroundImageFadeOutDelay_Completed"/>
+                             Duration="0:0:0.5"/>
         </Storyboard>
     </UserControl.Resources>
 
@@ -482,18 +475,38 @@
                 <!-- Black background behind selected game background image to make gradient opacity mask work -->
                 <Rectangle Name="Image_Selected_Background_Black"
                            HorizontalAlignment="Stretch" 
-                           VerticalAlignment="Stretch">
+                           VerticalAlignment="Stretch"
+                           Panel.ZIndex="210">
                     <Rectangle.Fill>
                         <SolidColorBrush Color="Black"/>
                     </Rectangle.Fill>
                 </Rectangle>
 
                 <!-- Background image for selected game -->
-                <Image Name="Image_Selected_BackgroundImage"
-                       Source="{Binding CurrentGameList.Game1.BackgroundImage}"
+                <Image Name="Image_Displayed_BackgroundImage"
                        HorizontalAlignment="Stretch" 
                        VerticalAlignment="Stretch" 
                        Stretch="UniformToFill"
+                       Panel.ZIndex="220"
+                       RenderOptions.BitmapScalingMode="HighQuality" >
+                    <Image.OpacityMask>
+                        <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                            <LinearGradientBrush.GradientStops>
+                                <GradientStop Offset="0" Color="Transparent"/>
+                                <GradientStop Offset="0.25" Color="Black"/>
+                                <GradientStop Offset="0.75" Color="Black"/>
+                                <GradientStop Offset="1" Color="Transparent"/>
+                            </LinearGradientBrush.GradientStops>
+                        </LinearGradientBrush>
+                    </Image.OpacityMask>
+                </Image>
+
+                <Image Name="Image_Active_BackgroundImage"
+                       HorizontalAlignment="Stretch" 
+                       VerticalAlignment="Stretch" 
+                       Stretch="UniformToFill"
+                       Panel.ZIndex="230"
+                       Opacity="0"
                        RenderOptions.BitmapScalingMode="HighQuality" >
                     <Image.OpacityMask>
                         <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
@@ -517,6 +530,7 @@
                           Source="{Binding CurrentGameList.Game1.VideoPath}"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Stretch="Uniform"
                           LoadedBehavior="Manual"
+                          Panel.ZIndex="110"
                           MediaEnded="Video_SelectedGame_MediaEnded">
                     <MediaElement.OpacityMask>
                         <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
@@ -594,17 +608,14 @@
             </MediaElement>
 
 
-
-
-
-
             <Grid Name="GameListGrid"
                   Grid.Row="9"
                   Grid.RowSpan="9"
                   Grid.Column="0"
                   Grid.ColumnSpan="32"
                   HorizontalAlignment="Stretch"
-                  VerticalAlignment="Stretch">
+                  VerticalAlignment="Stretch"
+                  Panel.ZIndex="700">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="6*"/>
                     <!-- current games List -->

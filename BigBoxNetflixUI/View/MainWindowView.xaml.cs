@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -24,18 +25,36 @@ namespace BigBoxNetflixUI.View
     /// </summary>
     public partial class MainWindowView : UserControl, IBigBoxThemeElementPlugin
     {
-        Storyboard backgroundImageFadeInSlow_image;
-        Storyboard backgroundImageFadeInSlow_black;
-
-        Storyboard backgroundImageFadeOutSlow_image;
-        Storyboard backgroundImageFadeOutSlow_black;
-
-        Storyboard backgroundImageFadeOutDelay;
         MainWindowViewModel mainWindowViewModel;
+        private Timer backgroundImageChangeDelay;
+        private Timer fadeOutForMovieDelay;
+
+        private BitmapImage activeBackgroundImage;
+
+        private Storyboard BackgroundImageFadeInSlowStoryBoard;
+        private Storyboard BackgroundImageFadeOutSlowStoryBoard;
+        private Storyboard BackgroundImageFadeInAfterVideoStoryBoard;
+
 
         public MainWindowView()
         {
             InitializeComponent();
+
+            // create a timer to delay swapping background images
+            backgroundImageChangeDelay = new Timer(1000);
+            backgroundImageChangeDelay.Elapsed += BackgroundImageChangeDelay_Elapsed;
+            backgroundImageChangeDelay.AutoReset = false;
+
+            // create a timer to delay playing movie and fading out background images
+            fadeOutForMovieDelay = new Timer(2000);
+            fadeOutForMovieDelay.Elapsed += FadeOutForMovieDelay_Elapsed;
+            fadeOutForMovieDelay.AutoReset = false;
+
+            BackgroundImageFadeInSlowStoryBoard = FindResource("BackgroundImageFadeInSlow") as Storyboard;
+            BackgroundImageFadeOutSlowStoryBoard = FindResource("BackgroundImageFadeOutSlow") as Storyboard;
+            BackgroundImageFadeInAfterVideoStoryBoard = FindResource("BackgroundImageFadeInAfterVideo") as Storyboard;
+
+            // get handle on the view model 
             mainWindowViewModel = DataContext as MainWindowViewModel;
 
             // pass in the animation function that can be called whenever a game changes
@@ -44,18 +63,11 @@ namespace BigBoxNetflixUI.View
             // pass in the function that can be called whenever voice recognition loads games and images need to be loaded
             mainWindowViewModel.LoadImagesFunction = SetupGameImage;
 
-            // get a handle on the background fade animations
-            backgroundImageFadeOutSlow_black = FindResource("BackgroundImageFadeOutSlow") as Storyboard;
-            backgroundImageFadeOutSlow_image = FindResource("BackgroundImageFadeOutSlow") as Storyboard;
-
-            backgroundImageFadeInSlow_black = FindResource("BackgroundImageFadeInSlow") as Storyboard;
-            backgroundImageFadeInSlow_image = FindResource("BackgroundImageFadeInSlow") as Storyboard;
-
-            backgroundImageFadeOutDelay = FindResource("BackgroundImageFadeOutDelay") as Storyboard;
-
             // setting up images async
             Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new SetupGameImageDelegate(this.SetupGameImage));
         }
+
+
 
         public delegate void SetupGameImageDelegate();
         
@@ -183,18 +195,6 @@ namespace BigBoxNetflixUI.View
             return true;
         }
 
-        private void Video_SelectedGame_MediaEnded(object sender, System.Windows.RoutedEventArgs e)
-        {
-            if (mainWindowViewModel?.CurrentGameList?.Game1 != null)
-            {
-                    backgroundImageFadeInSlow_image.Stop();
-                    backgroundImageFadeInSlow_black.Stop();
-                    backgroundImageFadeInSlow_image.Begin(Image_Selected_BackgroundImage);
-                    backgroundImageFadeInSlow_black.Begin(Image_Selected_Background_Black);
-                    // todo: do we need to pause when media ends? 
-                    // PauseVideo(Video_SelectedGame);
-            }
-        }
 
         private void PauseVideo(MediaElement video)
         {
@@ -212,6 +212,27 @@ namespace BigBoxNetflixUI.View
             }
         }
 
+        private void DimBackground()
+        {
+            if (Image_Displayed_BackgroundImage.Opacity != 0.25)
+            {
+                DoubleAnimation dimmingDisplayedBackground = new DoubleAnimation(Image_Displayed_BackgroundImage.Opacity, 0.25, TimeSpan.FromMilliseconds(25));
+                Image_Displayed_BackgroundImage.BeginAnimation(Image.OpacityProperty, dimmingDisplayedBackground);
+            }
+
+            if (Image_Selected_Background_Black.Opacity != 1)
+            {
+                DoubleAnimation dimmingBlackBackground = new DoubleAnimation(Image_Selected_Background_Black.Opacity, 1.00, TimeSpan.FromMilliseconds(25));
+                Image_Selected_Background_Black.BeginAnimation(Image.OpacityProperty, dimmingBlackBackground);
+            }
+
+            if (Image_Active_BackgroundImage.Opacity != 0)
+            {
+                DoubleAnimation dimmingActiveBackground = new DoubleAnimation(Image_Active_BackgroundImage.Opacity, 0, TimeSpan.FromMilliseconds(25));
+                Image_Active_BackgroundImage.BeginAnimation(Image.OpacityProperty, dimmingActiveBackground);
+            }
+        }
+
         private void DoAnimateGameChange()
         {
             Dispatcher.Invoke(() =>
@@ -224,26 +245,26 @@ namespace BigBoxNetflixUI.View
                     }
                     else if(mainWindowViewModel.IsDisplayingResults)
                     {
-                        // reset opacity 
-                        Image_Selected_BackgroundImage.Opacity = 1;
-                        Image_Selected_Background_Black.Opacity = 1;
+                        // dim background image
+                        DimBackground();
 
-                        // stop animations
-                        backgroundImageFadeOutDelay.Stop();
-                        backgroundImageFadeInSlow_image.Stop();
-                        backgroundImageFadeInSlow_black.Stop();
-                        backgroundImageFadeOutSlow_image.Stop();
-                        backgroundImageFadeOutSlow_black.Stop();
+                        // pause the video
+                        PauseVideo(Video_SelectedGame);
+                        
+                        // stop timers
+                        fadeOutForMovieDelay.Stop();
+                        backgroundImageChangeDelay.Stop();
 
-                        if (Video_SelectedGame != null)
+                        // update the active background image
+                        activeBackgroundImage = null;
+                        Uri uri = mainWindowViewModel?.CurrentGameList?.Game1?.BackgroundImage;
+                        if (uri != null)
                         {
-                            PauseVideo(Video_SelectedGame);
+                            activeBackgroundImage = new BitmapImage(uri);
+                        }
 
-                            if(backgroundImageFadeOutDelay != null)
-                            {
-                                backgroundImageFadeOutDelay.Begin(Image_Selected_BackgroundImage);
-                            }
-                        }                        
+                        // start the timer - when it goes off, fade in the new background image
+                        backgroundImageChangeDelay.Start();
                     }
                 }
                 catch (Exception ex)
@@ -253,14 +274,86 @@ namespace BigBoxNetflixUI.View
             });
         }
 
-        private void BackgroundImageFadeOutDelay_Completed(object sender, EventArgs e)
+        // delay for an interval when selecting games and then fade in the current selected game
+        private void BackgroundImageChangeDelay_Elapsed(object sender, ElapsedEventArgs e)
         {
-            PlayVideo(Video_SelectedGame);
+            Dispatcher.Invoke(() =>
+            {
+                try
+                {
+                    if (Image_Active_BackgroundImage != null)
+                    {
+                        Image_Active_BackgroundImage.Opacity = 0;
+                        Image_Active_BackgroundImage.Source = activeBackgroundImage;
+                    }
 
-            backgroundImageFadeOutSlow_image.Stop();
-            backgroundImageFadeOutSlow_black.Stop();
-            backgroundImageFadeOutSlow_image.Begin(Image_Selected_BackgroundImage);
-            backgroundImageFadeOutSlow_black.Begin(Image_Selected_Background_Black);
+                    // fade in the active background image 
+                    BackgroundImageFadeInSlowStoryBoard.Begin(Image_Active_BackgroundImage);
+                }
+                catch (Exception ex)
+                {
+                    Helpers.LogException(ex, "BackgroundImageChangeDelay_Elapsed");
+                }
+            });
+        }
+
+        private void BackgroundImageFadeInSlow_Completed(object sender, EventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                try
+                {
+                    // swap displayed image to current active image
+                    Image_Displayed_BackgroundImage.Source = Image_Active_BackgroundImage.Source;
+
+                    // hide the active image
+                    Image_Active_BackgroundImage.Opacity = 0;
+
+                    // start timer to delay to fade out image and play video
+                    fadeOutForMovieDelay.Start();
+                }
+                catch (Exception ex)
+                {
+                    Helpers.LogException(ex, "BackgroundImageFadeInSlow_Completed");
+                }
+            });
+        }
+
+        private void FadeOutForMovieDelay_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            try
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    if (Video_SelectedGame != null)
+                    {
+                        PlayVideo(Video_SelectedGame);
+                        BackgroundImageFadeOutSlowStoryBoard.Begin(Image_Displayed_BackgroundImage);
+                        BackgroundImageFadeOutSlowStoryBoard.Begin(Image_Active_BackgroundImage);
+                        BackgroundImageFadeOutSlowStoryBoard.Begin(Image_Selected_Background_Black);
+                    }
+                });
+            }
+            catch(Exception ex)
+            {
+                Helpers.LogException(ex, "FadeOutForMovieDelay_Elapsed");
+            }
+        }
+
+        private void Video_SelectedGame_MediaEnded(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    BackgroundImageFadeInAfterVideoStoryBoard.Begin(Image_Selected_Background_Black);
+                    BackgroundImageFadeInAfterVideoStoryBoard.Begin(Image_Displayed_BackgroundImage);
+                });
+            }
+            catch(Exception ex)
+            {
+                Helpers.LogException(ex, "Video_SelectedGame_MediaEnded");
+            }
         }
     }
 }
