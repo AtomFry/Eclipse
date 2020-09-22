@@ -67,8 +67,6 @@ namespace BigBoxNetflixUI.View
             Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new SetupGameImageDelegate(this.SetupGameImage));
         }
 
-
-
         public delegate void SetupGameImageDelegate();
         
         public void SetupGameImage()
@@ -151,12 +149,18 @@ namespace BigBoxNetflixUI.View
 
         public bool OnEnter()
         {
+            // pause the video
+            PauseVideo(Video_SelectedGame);
+
             mainWindowViewModel.DoEnter();
             return true;
         }
 
         public bool OnEscape()
         {
+            // pause the video
+            PauseVideo(Video_SelectedGame);
+
             mainWindowViewModel.DoEscape();
             return false;
         }
@@ -169,12 +173,18 @@ namespace BigBoxNetflixUI.View
 
         public bool OnPageDown()
         {
+            // pause the video
+            PauseVideo(Video_SelectedGame);
+
             mainWindowViewModel.DoPageDown();
             return true;
         }
 
         public bool OnPageUp()
         {
+            // pause the video
+            PauseVideo(Video_SelectedGame);
+
             mainWindowViewModel.DoPageUp();
             return true;
         }
