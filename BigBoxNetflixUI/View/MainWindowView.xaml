@@ -20,6 +20,9 @@
         <myconverters:DivideByConverter x:Key="DivideByNegative1" A="-1"/>
         <myconverters:GameMatchToSettingsOpacityConverter x:Key="SettingsOpacityConverter"/>
         <myconverters:DisplayingFeatureOffsetConverter x:Key="FeatureOffsetConverter"/>
+        <myconverters:IsFeatureToRowSpanConverter x:Key="FeatureToRowSpanConverter"/>
+        <myconverters:IsFeatureToColumnSpanConverter x:Key="FeatureToColumnSpanConverter"/>
+        <myconverters:IsFeatureToColumnStartConverter x:Key="FeatureToColumnStartConverter"/>
 
         <!-- 1-second image fade in - call when game changes -->
         <Storyboard x:Key="BackgroundImageFadeInSlow">
@@ -468,10 +471,12 @@
 
             <!-- Selected game background image -->
             <Grid Name="Grid_Selected_Game_Background"
-                  Grid.Row="0" Grid.RowSpan="10"
-                  Grid.Column="12" Grid.ColumnSpan="20"
+                  Grid.Row="0" 
+                  Grid.RowSpan="{Binding IsDisplayingFeature, Converter={StaticResource FeatureToRowSpanConverter}}" 
+                  Grid.Column="{Binding IsDisplayingFeature, Converter={StaticResource FeatureToColumnStartConverter}}"
+                  Grid.ColumnSpan="{Binding IsDisplayingFeature, Converter={StaticResource FeatureToColumnSpanConverter}}"
                   Panel.ZIndex="200">
-                
+
                 <!-- Black background behind selected game background image to make gradient opacity mask work -->
                 <Rectangle Name="Image_Selected_Background_Black"
                            HorizontalAlignment="Stretch" 
@@ -523,8 +528,10 @@
 
             <!-- Selected game video -->
             <Grid Name="Grid_Selected_Game_Video"
-                  Grid.Row="0" Grid.RowSpan="10"
-                  Grid.Column="12" Grid.ColumnSpan="20"
+                  Grid.Row="0" 
+                  Grid.RowSpan="{Binding IsDisplayingFeature, Converter={StaticResource FeatureToRowSpanConverter}}" 
+                  Grid.Column="{Binding IsDisplayingFeature, Converter={StaticResource FeatureToColumnStartConverter}}"
+                  Grid.ColumnSpan="{Binding IsDisplayingFeature, Converter={StaticResource FeatureToColumnSpanConverter}}"
                   Panel.ZIndex="100">
                 <MediaElement Name="Video_SelectedGame"
                           Source="{Binding CurrentGameList.Game1.VideoPath}"
@@ -544,69 +551,6 @@
                     </MediaElement.OpacityMask>
                 </MediaElement>
             </Grid>
-
-
-
-            <!-- feature game background - this may make more sense moved elsewhere -->
-            <!-- Black background behind selected game background image to make gradient opacity mask work -->
-            <Rectangle Name="Image_Feature_Background_Black"
-                        Grid.Row="0"
-                        Grid.RowSpan="16"
-                        Grid.Column="0"
-                        Grid.ColumnSpan="32"
-                        Visibility="{Binding IsDisplayingFeature, Converter={StaticResource BoolToVis}}"
-                        HorizontalAlignment="Stretch" 
-                        VerticalAlignment="Stretch">
-                <Rectangle.Fill>
-                    <SolidColorBrush Color="Black"/>
-                </Rectangle.Fill>
-            </Rectangle>
-            <Image Name="Image_Feature_BackgroundImage"
-                   Source="{Binding CurrentGameList.Game1.BackgroundImage}"
-                   Grid.Row="0"
-                   Grid.RowSpan="16"
-                   Grid.Column="0"
-                   Grid.ColumnSpan="32"
-                   Visibility="{Binding IsDisplayingFeature, Converter={StaticResource BoolToVis}}"
-                   HorizontalAlignment="Stretch" 
-                   VerticalAlignment="Stretch"
-                   RenderOptions.BitmapScalingMode="HighQuality" 
-                   Stretch="UniformToFill">
-                <Image.OpacityMask>
-                    <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
-                        <LinearGradientBrush.GradientStops>
-                            <GradientStop Offset="0" Color="Transparent"/>
-                            <GradientStop Offset="0.25" Color="Black"/>
-                            <GradientStop Offset="0.75" Color="Black"/>
-                            <GradientStop Offset="1" Color="Transparent"/>
-                        </LinearGradientBrush.GradientStops>
-                    </LinearGradientBrush>
-                </Image.OpacityMask>
-            </Image>
-            <!-- todo: add featured game media ended handler to fade image back in -->
-            <MediaElement Name="Video_FeatureGame"
-                          Source="{Binding CurrentGameList.Game1.VideoPath}"                          
-                          Visibility="{Binding IsDisplayingFeature, Converter={StaticResource BoolToVis}}"
-                          Grid.Row="0"
-                           Grid.RowSpan="16"
-                           Grid.Column="0"
-                           Grid.ColumnSpan="32"
-                           HorizontalAlignment="Stretch" 
-                           VerticalAlignment="Stretch"
-                          Stretch="Uniform"
-                          LoadedBehavior="Manual">
-                <MediaElement.OpacityMask>
-                    <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
-                        <LinearGradientBrush.GradientStops>
-                            <GradientStop Offset="0" Color="Transparent"/>
-                            <GradientStop Offset="0.25" Color="Black"/>
-                            <GradientStop Offset="0.75" Color="Black"/>
-                            <GradientStop Offset="1" Color="Transparent"/>
-                        </LinearGradientBrush.GradientStops>
-                    </LinearGradientBrush>
-                </MediaElement.OpacityMask>
-            </MediaElement>
-
 
             <Grid Name="GameListGrid"
                   Grid.Row="9"
@@ -941,7 +885,7 @@
                     </Grid.RowDefinitions>
                     <Grid.RenderTransform>
                         <TranslateTransform X="{Binding ActualWidth, ElementName=Image_NextListPreviousGame, Converter={StaticResource DivideByNegative1}}"
-                                        Y="{Binding ActualHeight,ElementName=NextListPrev1GameGrid}"/>
+                                            Y="{Binding ActualHeight,ElementName=NextListPrev1GameGrid}"/>
                     </Grid.RenderTransform>
                     <StackPanel Name="NextListPrev1GameImage" 
                         Grid.Row="1"

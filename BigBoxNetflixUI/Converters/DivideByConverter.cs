@@ -7,6 +7,10 @@ using System.Windows.Data;
 
 namespace BigBoxNetflixUI.Converters
 {
+    // specifies the amount to offset the game list
+    // intended to take isFeature as a parameter and the height of the gamelist
+    // if displaying the feature game then we offset the gamelist by the height of the gamelist
+    // if not displaying the feature game then offset is 0
     public class DisplayingFeatureOffsetConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -22,6 +26,10 @@ namespace BigBoxNetflixUI.Converters
         }
     }
 
+    // toggles settings icon opacity between 100 and 10%
+    // it's intended to pass in game0 which is the previous 1 game
+    // the previous 1 game is null when at the start of a list
+    // if previous 1 game is null, show icon at 100%, otherwise show at 10%
     public class GameMatchToSettingsOpacityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -33,7 +41,7 @@ namespace BigBoxNetflixUI.Converters
             }
             else
             {
-                return 0.25;
+                return 0.10;
             }
         }
 
@@ -43,6 +51,7 @@ namespace BigBoxNetflixUI.Converters
         }
     }
 
+    // converter to divide value x by value a
     public class DivideByConverter : IValueConverter
     {
         public double A { get; set; }
@@ -78,4 +87,50 @@ namespace BigBoxNetflixUI.Converters
             return a;
         }
     }
+
+    public class IsFeatureToRowSpanConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            bool isFeature = (bool)value;
+            if (isFeature) return Helpers.BackgroundRowSpanFeature;
+            else return Helpers.BackgroundRowSpanNormal;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class IsFeatureToColumnSpanConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            bool isFeature = (bool)value;
+            if (isFeature) return Helpers.BackgroundColumnSpanFeature;
+            else return Helpers.BackgroundColumnSpanNormal;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class IsFeatureToColumnStartConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            bool isFeature = (bool)value;
+            if (isFeature) return Helpers.BackgroundColumnStartFeature;
+            else return Helpers.BackgroundColumnStartNormal;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
 }

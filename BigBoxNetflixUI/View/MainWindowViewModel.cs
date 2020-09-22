@@ -555,6 +555,7 @@ namespace BigBoxNetflixUI.View
                 });
             }
         }
+
         void RecognizeCompleted(object sender, RecognizeCompletedEventArgs e)
         {
             IsRecognizing = false;
@@ -596,17 +597,26 @@ namespace BigBoxNetflixUI.View
                     List<GameMatch> matches;
                     if(GameTitlePhrases.TryGetValue(gameList.ListDescription, out matches))
                     {
-                        gameList.MatchingGames = matches;
+                        gameList.MatchingGames = matches.OrderBy(match => match.TitleMatchType).ToList();
+
                         voiceRecognitionResults.Add(gameList);
                     }
                 }
             }
 
             GameListSets.RemoveAll(set => set.ListCategoryType == ListCategoryType.VoiceSearch);
-            GameListSets.Add(new GameListSet { GameLists = voiceRecognitionResults, ListCategoryType = ListCategoryType.VoiceSearch });
+            GameListSets.Add(new GameListSet 
+            { 
+                GameLists = voiceRecognitionResults
+                                .OrderBy(list => list.MaxTitleMatchType)
+                                .ThenByDescending(list => list.Confidence)
+                                .ToList(), ListCategoryType = ListCategoryType.VoiceSearch 
+            });
+
             ResetGameLists(ListCategoryType.VoiceSearch);
             IsDisplayingResults = true;
         }
+
 
 
         private void AddGameToVoiceDictionary(string phrase, GameMatch gameMatch)
@@ -806,6 +816,11 @@ namespace BigBoxNetflixUI.View
                 listCycle = new ListCycle<GameList>(CurrentGameListSet.GameLists, 2);
                 RefreshGameLists();
                 CallLoadImageFunction();
+                CallGameChangeFunction();
+
+                // this is hacky as shit but i cant seem to get the first game to load up
+                CycleListForward();
+                CycleListBackward();
             }
         }
 
