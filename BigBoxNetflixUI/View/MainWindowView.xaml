@@ -33,6 +33,15 @@
                              Completed="BackgroundImageFadeInSlow_Completed"/>
         </Storyboard>
 
+        <!-- 1-second clear logo fade in - call when game changes -->
+        <Storyboard x:Key="ClearLogoFadeInSlow">
+            <DoubleAnimation BeginTime="0:0:0" 
+                             Storyboard.TargetProperty="Opacity" 
+                             From="0" To="1" 
+                             Duration="0:0:0.5"
+                             Completed="ClearLogoFadeInSlow_Completed"/>
+        </Storyboard>
+
         <!-- 1 second image fade out -->
         <Storyboard x:Key="BackgroundImageFadeOutSlow">
             <DoubleAnimation BeginTime="0:0:0"
@@ -352,6 +361,17 @@
                   Grid.Column="1" Grid.ColumnSpan="15"
                   Panel.ZIndex="500"
                   Background="Transparent">
+                <Grid.RenderTransform>
+                    <TranslateTransform>
+                        <TranslateTransform.Y>
+                            <MultiBinding Converter="{StaticResource FeatureOffsetConverter}">
+                                <Binding Path="IsDisplayingFeature"/>
+                                <Binding ElementName="CurrentListGrid" Path="ActualHeight"/>
+                            </MultiBinding>
+                        </TranslateTransform.Y>
+                    </TranslateTransform>
+                </Grid.RenderTransform>
+
                 <Grid.RowDefinitions>
                     <RowDefinition Height="4*"/>
                     <RowDefinition Height="1*" />
@@ -359,20 +379,31 @@
                     <RowDefinition Height="1*" />
                     <RowDefinition Height="1*" />
                 </Grid.RowDefinitions>
-                <!-- Selected game clear logo -->
-                <Image Name="Image_Selected_GameClearLogo"
-                   Source="{Binding CurrentGameList.Game1.ClearLogo}"
-                   Grid.Row="0"
-                   HorizontalAlignment="Left" 
-                   VerticalAlignment="Bottom"
-                   RenderOptions.BitmapScalingMode="HighQuality" 
-                   Stretch="Uniform"/>
+                
+                <!-- Displaying the game clear logo for the selected game -->
+                <Image Name="Image_Displayed_GameClearLogo"
+                        Grid.Row="0"
+                        Panel.ZIndex="510"
+                        HorizontalAlignment="Left" 
+                        VerticalAlignment="Bottom"
+                        RenderOptions.BitmapScalingMode="HighQuality" 
+                        Stretch="Uniform"/>                
+
+                <!-- Active clear logo to fade in once you stop moving around -->
+                <Image Name="Image_Active_GameClearLogo"
+                        Grid.Row="0"
+                        Opacity="0"
+                        Panel.ZIndex="520"
+                        HorizontalAlignment="Left" 
+                        VerticalAlignment="Bottom"
+                        RenderOptions.BitmapScalingMode="HighQuality" 
+                        Stretch="Uniform"/>
 
                 <!-- Selected game details-->
                 <StackPanel Grid.Row="1"
-                Orientation="Horizontal"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch">
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch">
                     <TextBlock Name="TextBlock_MatchPercentage"
                        Text="{Binding CurrentGameList.Game1.MatchDescription}"
                        FontFamily="Arial" 
@@ -782,15 +813,13 @@
                         Orientation="Horizontal"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch">
-                        <Border BorderThickness="2" BorderBrush="AntiqueWhite">
-                            <Image Name="Image_NextListGame1"
-                               Source="{Binding NextGameList.Game1.FrontImage}"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Stretch"
-                               RenderOptions.BitmapScalingMode="HighQuality" 
-                               Margin="2,2,2,2"
-                               Stretch="Uniform"/>
-                        </Border>
+                        <Image Name="Image_NextListGame1"
+                            Source="{Binding NextGameList.Game1.FrontImage}"
+                            HorizontalAlignment="Center" 
+                            VerticalAlignment="Stretch"
+                            RenderOptions.BitmapScalingMode="HighQuality" 
+                            Margin="2,2,2,2"
+                            Stretch="Uniform"/>
 
                         <Image Source="{Binding NextGameList.Game2.FrontImage}"
                                HorizontalAlignment="Center" 

@@ -68,31 +68,12 @@ namespace BigBoxNetflixUI.Models
         {
             get
             {
-                if(clearLogo == null)
+                if (clearLogo == null)
                 {
-                    if(!string.IsNullOrWhiteSpace(Game.ClearLogoImagePath))
+                    string clearLogoPath = Game.ClearLogoImagePath;
+                    if (!string.IsNullOrWhiteSpace(clearLogoPath))
                     {
-                        string customPath = Game.ClearLogoImagePath.Replace(Helpers.ApplicationPath, Helpers.MediaFolder);
-                        if(!string.IsNullOrWhiteSpace(customPath))
-                        {
-                            clearLogo = new Uri(customPath);
-                        }
-                    }
-                }
-                return (clearLogo);
-            }
-        }
-
-        private Uri clearLogoBig;
-        public Uri ClearLogoBig
-        {
-            get
-            {
-                if (clearLogoBig == null)
-                {
-                    if (!string.IsNullOrWhiteSpace(Game.ClearLogoImagePath))
-                    {
-                        clearLogo = new Uri(Game.ClearLogoImagePath);
+                        clearLogo = new Uri(clearLogoPath);
                     }
                 }
                 return (clearLogo);
@@ -137,31 +118,11 @@ namespace BigBoxNetflixUI.Models
             {
                 if (backgroundImage == null)
                 {
-                    if (!string.IsNullOrWhiteSpace(Game.BackgroundImagePath))
-                    {
-                        string customPath = Game.BackgroundImagePath.Replace(Helpers.ApplicationPath, Helpers.MediaFolder);
-                        if(!string.IsNullOrWhiteSpace(customPath))
-                        {
-                            backgroundImage = new Uri(customPath);
-                        }
-                        // todo: set fallback image to local resource if not found
-                    }
-                }
-                return backgroundImage;
-            }
-        }
-
-        private Uri backgroundImageBig;
-        public Uri BackgroundImageBig
-        {
-            get
-            {
-                if (backgroundImageBig == null)
-                {
-                    if (!string.IsNullOrWhiteSpace(Game.BackgroundImagePath))
+                    string backgroundImagePath = Game.BackgroundImagePath;
+                    if (!string.IsNullOrWhiteSpace(backgroundImagePath))
                     {
                         // todo: set fallback image to local resource if not found
-                        backgroundImage = new Uri(Game.BackgroundImagePath);
+                        backgroundImage = new Uri(backgroundImagePath);
                     }
                 }
                 return backgroundImage;

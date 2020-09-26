@@ -30,11 +30,13 @@ namespace BigBoxNetflixUI.View
         private Timer fadeOutForMovieDelay;
 
         private BitmapImage activeBackgroundImage;
+        private BitmapImage activeClearLogo;
 
         private Storyboard BackgroundImageFadeInSlowStoryBoard;
         private Storyboard BackgroundImageFadeOutSlowStoryBoard;
         private Storyboard BackgroundImageFadeInAfterVideoStoryBoard;
 
+        private Storyboard ClearLogoFadeInSlowStoryBoard;
 
         public MainWindowView()
         {
@@ -53,6 +55,8 @@ namespace BigBoxNetflixUI.View
             BackgroundImageFadeInSlowStoryBoard = FindResource("BackgroundImageFadeInSlow") as Storyboard;
             BackgroundImageFadeOutSlowStoryBoard = FindResource("BackgroundImageFadeOutSlow") as Storyboard;
             BackgroundImageFadeInAfterVideoStoryBoard = FindResource("BackgroundImageFadeInAfterVideo") as Storyboard;
+
+            ClearLogoFadeInSlowStoryBoard = FindResource("ClearLogoFadeInSlow") as Storyboard;
 
             // get handle on the view model 
             mainWindowViewModel = DataContext as MainWindowViewModel;
@@ -149,8 +153,7 @@ namespace BigBoxNetflixUI.View
 
         public bool OnEnter()
         {
-            // pause the video
-            PauseVideo(Video_SelectedGame);
+            StopEverything();
 
             mainWindowViewModel.DoEnter();
             return true;
@@ -158,8 +161,7 @@ namespace BigBoxNetflixUI.View
 
         public bool OnEscape()
         {
-            // pause the video
-            PauseVideo(Video_SelectedGame);
+            StopEverything();
 
             mainWindowViewModel.DoEscape();
             return false;
@@ -173,8 +175,7 @@ namespace BigBoxNetflixUI.View
 
         public bool OnPageDown()
         {
-            // pause the video
-            PauseVideo(Video_SelectedGame);
+            StopEverything();
 
             mainWindowViewModel.DoPageDown();
             return true;
@@ -182,8 +183,7 @@ namespace BigBoxNetflixUI.View
 
         public bool OnPageUp()
         {
-            // pause the video
-            PauseVideo(Video_SelectedGame);
+            StopEverything();
 
             mainWindowViewModel.DoPageUp();
             return true;
@@ -243,27 +243,68 @@ namespace BigBoxNetflixUI.View
             }
         }
 
+        private void DimLogo()
+        {
+            if (Image_Displayed_GameClearLogo.Opacity != 0.25)
+            {
+                DoubleAnimation dimmingDisplayedClearLogo = new DoubleAnimation(Image_Displayed_GameClearLogo.Opacity, 0.25, TimeSpan.FromMilliseconds(25));
+                Image_Displayed_GameClearLogo.BeginAnimation(Image.OpacityProperty, dimmingDisplayedClearLogo);
+            }
+
+            if (Image_Active_GameClearLogo.Opacity != 0)
+            {
+                DoubleAnimation dimmingActiveClearLogo = new DoubleAnimation(Image_Active_GameClearLogo.Opacity, 0, TimeSpan.FromMilliseconds(25));
+                Image_Active_GameClearLogo.BeginAnimation(Image.OpacityProperty, dimmingActiveClearLogo);
+            }
+        }
+
+        private void DimLogoSlow()
+        {
+            if (Image_Displayed_GameClearLogo.Opacity != 0.10)
+            {
+                DoubleAnimation dimmingDisplayedClearLogo = new DoubleAnimation(Image_Displayed_GameClearLogo.Opacity, 0.10, TimeSpan.FromMilliseconds(3000));
+                Image_Displayed_GameClearLogo.BeginAnimation(Image.OpacityProperty, dimmingDisplayedClearLogo);
+            }
+
+            if (Image_Active_GameClearLogo.Opacity != 0)
+            {
+                DoubleAnimation dimmingActiveClearLogo = new DoubleAnimation(Image_Active_GameClearLogo.Opacity, 0, TimeSpan.FromMilliseconds(3000));
+                Image_Active_GameClearLogo.BeginAnimation(Image.OpacityProperty, dimmingActiveClearLogo);
+            }
+        }
+
+        private void BrightenLogo()
+        {
+            if (Image_Displayed_GameClearLogo.Opacity != 1)
+            {
+                DoubleAnimation dimmingDisplayedClearLogo = new DoubleAnimation(Image_Displayed_GameClearLogo.Opacity, 1, TimeSpan.FromMilliseconds(25));
+                Image_Displayed_GameClearLogo.BeginAnimation(Image.OpacityProperty, dimmingDisplayedClearLogo);
+            }
+
+            if (Image_Active_GameClearLogo.Opacity != 0)
+            {
+                DoubleAnimation dimmingActiveClearLogo = new DoubleAnimation(Image_Active_GameClearLogo.Opacity, 0, TimeSpan.FromMilliseconds(25));
+                Image_Displayed_GameClearLogo.BeginAnimation(Image.OpacityProperty, dimmingActiveClearLogo);
+            }
+        }
+
+
+
         private void DoAnimateGameChange()
         {
             Dispatcher.Invoke(() =>
             {
                 try
                 {
-                    if (mainWindowViewModel.IsDisplayingFeature)
-                    {
-                        // todo: animate for feature game
-                    }
-                    else if(mainWindowViewModel.IsDisplayingResults)
+                    if(mainWindowViewModel.IsDisplayingResults)
                     {
                         // dim background image
                         DimBackground();
 
-                        // pause the video
-                        PauseVideo(Video_SelectedGame);
-                        
-                        // stop timers
-                        fadeOutForMovieDelay.Stop();
-                        backgroundImageChangeDelay.Stop();
+                        // dim logo image
+                        DimLogo();
+
+                        StopEverything();
 
                         // update the active background image
                         activeBackgroundImage = null;
@@ -271,6 +312,14 @@ namespace BigBoxNetflixUI.View
                         if (uri != null)
                         {
                             activeBackgroundImage = new BitmapImage(uri);
+                        }
+
+                        // update the clear logo image 
+                        activeClearLogo = null;
+                        Uri clearLogoUri = mainWindowViewModel?.CurrentGameList?.Game1.ClearLogo;
+                        if(clearLogoUri != null)
+                        {
+                            activeClearLogo = new BitmapImage(clearLogoUri);
                         }
 
                         // start the timer - when it goes off, fade in the new background image
@@ -282,6 +331,24 @@ namespace BigBoxNetflixUI.View
                     Helpers.LogException(ex, "MainWindowView.xaml.cs.DoAnimateGameChange");
                 }
             });
+        }
+
+        private void StopEverything()
+        {
+            // pause the video
+            PauseVideo(Video_SelectedGame);
+
+            // stop timers
+            fadeOutForMovieDelay.Stop();
+            backgroundImageChangeDelay.Stop();
+
+
+            BackgroundImageFadeInSlowStoryBoard.Stop();
+            BackgroundImageFadeOutSlowStoryBoard.Stop();
+            BackgroundImageFadeInAfterVideoStoryBoard.Stop();
+
+            ClearLogoFadeInSlowStoryBoard.Stop();
+
         }
 
         // delay for an interval when selecting games and then fade in the current selected game
@@ -297,8 +364,17 @@ namespace BigBoxNetflixUI.View
                         Image_Active_BackgroundImage.Source = activeBackgroundImage;
                     }
 
+                    if(Image_Active_GameClearLogo != null)
+                    {
+                        Image_Active_GameClearLogo.Opacity = 0;
+                        Image_Active_GameClearLogo.Source = activeClearLogo;
+                    }
+
                     // fade in the active background image 
                     BackgroundImageFadeInSlowStoryBoard.Begin(Image_Active_BackgroundImage);
+
+                    // fade in the active clear logo
+                    ClearLogoFadeInSlowStoryBoard.Begin(Image_Active_GameClearLogo);
                 }
                 catch (Exception ex)
                 {
@@ -329,6 +405,25 @@ namespace BigBoxNetflixUI.View
             });
         }
 
+        private void ClearLogoFadeInSlow_Completed(object sender, EventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                try
+                {
+                    // swap displayed image to current active image
+                    Image_Displayed_GameClearLogo.Source = Image_Active_GameClearLogo.Source;
+
+                    // hide the active image
+                    Image_Active_GameClearLogo.Opacity = 0;
+                }
+                catch (Exception ex)
+                {
+                    Helpers.LogException(ex, "BackgroundImageFadeInSlow_Completed");
+                }
+            });
+        }
+
         private void FadeOutForMovieDelay_Elapsed(object sender, ElapsedEventArgs e)
         {
             try
@@ -338,9 +433,17 @@ namespace BigBoxNetflixUI.View
                     if (Video_SelectedGame != null)
                     {
                         PlayVideo(Video_SelectedGame);
+
+                        // fade background images while the video plays
                         BackgroundImageFadeOutSlowStoryBoard.Begin(Image_Displayed_BackgroundImage);
                         BackgroundImageFadeOutSlowStoryBoard.Begin(Image_Active_BackgroundImage);
                         BackgroundImageFadeOutSlowStoryBoard.Begin(Image_Selected_Background_Black);
+
+                        // dim clear logo during video? 
+                        if (mainWindowViewModel.IsDisplayingFeature)
+                        {
+                            DimLogoSlow();
+                        }
                     }
                 });
             }
@@ -358,6 +461,9 @@ namespace BigBoxNetflixUI.View
                 {
                     BackgroundImageFadeInAfterVideoStoryBoard.Begin(Image_Selected_Background_Black);
                     BackgroundImageFadeInAfterVideoStoryBoard.Begin(Image_Displayed_BackgroundImage);
+
+                    // undim clear logo during video? 
+                    BrightenLogo();
                 });
             }
             catch(Exception ex)

@@ -88,6 +88,7 @@ namespace BigBoxNetflixUI.Converters
         }
     }
 
+    // this is lame but i'm lazy and it works - sets the background row span to 10 for normal results and 16 for displaying featured game
     public class IsFeatureToRowSpanConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -103,6 +104,7 @@ namespace BigBoxNetflixUI.Converters
         }
     }
 
+    // this is lame but i'm lazy and it works - sets the background column span to 20 for normal results and 32 for displaying featured game
     public class IsFeatureToColumnSpanConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -118,6 +120,7 @@ namespace BigBoxNetflixUI.Converters
         }
     }
 
+    // this is lame but i'm lazy and it works - sets the background column to 12 for normal results and 0 for displaying featured game
     public class IsFeatureToColumnStartConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

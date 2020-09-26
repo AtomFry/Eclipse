@@ -33,6 +33,19 @@ namespace BigBoxNetflixUI.Models
             }
         }
 
+
+        public void SetCurrentIndex(int index)
+        {
+            indices[0] = index;
+            int lastIndex = index;
+            for(int i = 1; i < indices.Length; i++)
+            {
+                indices[i] = GetNextIndex(lastIndex);
+                lastIndex = indices[i];
+            }
+        }
+
+
         private int GetNextIndex(int currentIndex)
         {
             currentIndex += 1;
@@ -92,7 +105,5 @@ namespace BigBoxNetflixUI.Models
                 }
             }
         }
-
-
     }
 }

@@ -9,10 +9,6 @@ using Unbroken.LaunchBox.Plugins.Data;
 using System.Data;
 using BigBoxNetflixUI.Models;
 using System.Speech.Recognition;
-using System.Windows.Media.Imaging;
-using System.Security.RightsManagement;
-using System.Runtime.CompilerServices;
-using System.Diagnostics;
 
 namespace BigBoxNetflixUI.View
 {
@@ -494,14 +490,17 @@ namespace BigBoxNetflixUI.View
                 GetGamesByPlayMode();
                 GetGamesByPlaylist();
 
-                // default to display games by platform
-                ResetGameLists(ListCategoryType.Platform);
-
                 // flag initialization complete - display results
                 IsInitializing = false;
                 IsDisplayingResults = true;
+
+                // default to display games by platform
+                ResetGameLists(ListCategoryType.Platform);
+
+                // start off with a random game
+                DoRandomGame();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Helpers.LogException(ex, "Initializion_loadData");
             }
@@ -615,6 +614,8 @@ namespace BigBoxNetflixUI.View
 
             ResetGameLists(ListCategoryType.VoiceSearch);
             IsDisplayingResults = true;
+            IsDisplayingFeature = true;
+            CallGameChangeFunction();
         }
 
 
@@ -695,111 +696,137 @@ namespace BigBoxNetflixUI.View
 
         public void DoUp(bool held)
         {
-            if (isPickingCategory)
+            try
             {
-                OptionList.CycleBackward();
-                return;
-            }
-
-            if (isDisplayingResults)
-            {
-                // todo: if displaying first list - change to featured game
-                if(listCycle.GetIndexValue(0) == 0)
+                if (isPickingCategory)
                 {
-                    IsDisplayingFeature = true;
+                    OptionList.CycleBackward();
                     return;
                 }
 
-                // cycle to prior list
-                CycleListBackward();
-                return;
+                if (isDisplayingResults)
+                {
+                    // todo: if displaying first list - change to featured game
+                    if (listCycle.GetIndexValue(0) == 0)
+                    {
+                        IsDisplayingFeature = true;
+                        return;
+                    }
+
+                    // cycle to prior list
+                    CycleListBackward();
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                Helpers.LogException(ex, "DoUp");
             }
         }
 
         public void DoDown(bool held)
         {
-            if (isPickingCategory)
+            try
             {
-                OptionList.CycleForward();
-                return;
-            }
+                if (isPickingCategory)
+                {
+                    OptionList.CycleForward();
+                    return;
+                }
 
-            if (isDisplayingFeature)
-            {
-                IsDisplayingFeature = false;
-                return;
-            }
+                if (isDisplayingFeature)
+                {
+                    IsDisplayingFeature = false;
+                    return;
+                }
 
-            if (isDisplayingResults)
+                if (isDisplayingResults)
+                {
+                    // cycle to next list
+                    CycleListForward();
+                    return;
+                }
+            }
+            catch (Exception ex)
             {
-                // cycle to next list
-                CycleListForward();
-                return;
+                Helpers.LogException(ex, "DoDown");
             }
         }
 
         public void DoLeft(bool held)
         {
-            // if picking category and going left then close the category and keep going left
-            if(IsPickingCategory)
+            try
             {
-                IsPickingCategory = false;
-                CurrentGameList.CycleBackward();
-                CallGameChangeFunction();
-                return;
-            }
+                // if picking category and going left then close the category and keep going left
+                if (IsPickingCategory)
+                {
+                    IsPickingCategory = false;
+                    CurrentGameList.CycleBackward();
+                    CallGameChangeFunction();
+                    return;
+                }
 
-            // if current game is the first game then going left displays the category options
-            if(IsDisplayingResults && CurrentGameList.CurrentGameIndex == 0)
-            {
-                IsPickingCategory = true;
-                return;
-            }
+                // if current game is the first game then going left displays the category options
+                if (IsDisplayingResults && CurrentGameList.CurrentGameIndex == 0)
+                {
+                    IsPickingCategory = true;
+                    return;
+                }
 
-            // cycle left to prior game if 1st game is other than index 0 Index1 != 0
-            if (IsDisplayingResults && CurrentGameList.CurrentGameIndex != 0)
-            {
-                CurrentGameList.CycleBackward();
-                CallGameChangeFunction();
-                return;
-            }
+                // cycle left to prior game if 1st game is other than index 0 Index1 != 0
+                if (IsDisplayingResults && CurrentGameList.CurrentGameIndex != 0)
+                {
+                    CurrentGameList.CycleBackward();
+                    CallGameChangeFunction();
+                    return;
+                }
 
-            if (IsDisplayingFeature)
+                if (IsDisplayingFeature)
+                {
+                    // display category options
+                    IsPickingCategory = true;
+                    return;
+                }
+            }
+            catch(Exception ex)
             {
-                // display category options
-                IsPickingCategory = true;
-                return;
+                Helpers.LogException(ex, "DoLeft");
             }
         }
 
         public void DoRight(bool held)
         {
-            // if picking category, going right closes category selection
-            if (IsPickingCategory)
+            try
             {
-                IsPickingCategory = false;
-                CallGameChangeFunction();
-                return;
-            }
+                // if picking category, going right closes category selection
+                if (IsPickingCategory)
+                {
+                    IsPickingCategory = false;
+                    CallGameChangeFunction();
+                    return;
+                }
 
-            if (IsDisplayingResults)
+                if (IsDisplayingResults)
+                {
+                    // cycle right to next game
+                    CurrentGameList.CycleForward();
+                    CallGameChangeFunction();
+                    return;
+                }
+            }
+            catch(Exception ex)
             {
-                // cycle right to next game
-                CurrentGameList.CycleForward();
-                CallGameChangeFunction();
-                return;
+                Helpers.LogException(ex, "DoRight");
             }
         }
 
         public void DoPageUp()
         {
-            // do voice recognition
-            DoRecognize();
+            DoRandomGame();
         }
 
         public void DoPageDown()
         {
-            // do voice recognition
             DoRecognize();
         }
 
@@ -817,17 +844,43 @@ namespace BigBoxNetflixUI.View
                 RefreshGameLists();
                 CallLoadImageFunction();
                 CallGameChangeFunction();
-
-                // this is hacky as shit but i cant seem to get the first game to load up
-                CycleListForward();
-                CycleListBackward();
             }
+        }
+
+        private static readonly Random random = new Random();
+        public void DoRandomGame()
+        {
+            // get a random list from the current list set
+            GameListSet randomGameListSet = CurrentGameListSet;
+            int listCount = randomGameListSet.GameLists.Count;
+            int randomListIndex = random.Next(0, listCount);
+
+            // get a random game from the random list
+            GameList randomGameList = randomGameListSet.GameLists[randomListIndex];
+            int gameCount = randomGameList.MatchingGames.Count;
+            int randomGameIndex = random.Next(0, gameCount);
+            
+            // setup the cycle to the random list
+            listCycle.SetCurrentIndex(randomListIndex);
+
+            // refresh the game lists so we can get a handle on the current list
+            CurrentGameList = listCycle.GetItem(0);
+            NextGameList = listCycle.GetItem(1);
+
+            // setup the game list to the random game index 
+            CurrentGameList.SetGameIndex(randomGameIndex);
+
+            // call the game change function to refresh things
+            CallGameChangeFunction();
+            IsDisplayingFeature = true;
         }
 
         public void DoEnter()
         {
             if(isPickingCategory)
             {
+                IsPickingCategory = false;
+
                 Option option = OptionList.Option0;
                 switch (option.ListCategoryType)
                 {
@@ -836,7 +889,7 @@ namespace BigBoxNetflixUI.View
                         break;
 
                     case ListCategoryType.RandomGame:
-                        // todo: implement random game
+                        DoRandomGame();
                         break;
 
                     case ListCategoryType.ReleaseYear:
@@ -872,17 +925,10 @@ namespace BigBoxNetflixUI.View
                         break;
                 }
 
-                IsPickingCategory = false;
                 return;
             }
 
-            if (isDisplayingFeature)
-            {
-                // todo: start featured game
-                return;
-            }
-
-            if(isDisplayingResults)
+            if ((isDisplayingFeature) || (isDisplayingResults))
             {
                 // start the current game
                 IGame currentGame = CurrentGameList?.Game1?.Game;
@@ -905,7 +951,6 @@ namespace BigBoxNetflixUI.View
             get { return currentGameList; }
             set
             {
-                if (currentGameList != value)
                 {
                     currentGameList = value;
                     PropertyChanged(this, new PropertyChangedEventArgs("CurrentGameList"));
