@@ -284,7 +284,7 @@ namespace BigBoxNetflixUI.View
             if (Image_Active_GameClearLogo.Opacity != 0)
             {
                 DoubleAnimation dimmingActiveClearLogo = new DoubleAnimation(Image_Active_GameClearLogo.Opacity, 0, TimeSpan.FromMilliseconds(25));
-                Image_Displayed_GameClearLogo.BeginAnimation(Image.OpacityProperty, dimmingActiveClearLogo);
+                Image_Active_GameClearLogo.BeginAnimation(Image.OpacityProperty, dimmingActiveClearLogo);
             }
         }
 
