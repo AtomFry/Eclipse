@@ -1,6 +1,7 @@
 ﻿using BigBoxNetflixUI.View;
 using System;
 using System.ComponentModel;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Unbroken.LaunchBox.Plugins.Data;
@@ -87,9 +88,8 @@ namespace BigBoxNetflixUI.Models
             {
                 if(communityStarRatingImage == null)
                 {
-                    double rating = Math.Round(Game.CommunityOrLocalStarRating, 1);
-                    string path = $"{Helpers.MediaFolder}\\StarRating\\{rating}.png";
-                    // todo: set fallback image to local resource if not found
+                    string ratingFormatted = String.Format("{0:0.0}", Math.Round(Game.CommunityOrLocalStarRating, 1));
+                    string path = $"{Helpers.MediaFolder}\\StarRating\\{ratingFormatted}.png";
                     communityStarRatingImage = new Uri(path);
                 }
                 return communityStarRatingImage;
@@ -104,7 +104,10 @@ namespace BigBoxNetflixUI.Models
                 if (playModeImage == null)
                 {
                     string path = $"{Helpers.MediaFolder}\\PlayMode\\{Game.PlayMode}.png";
-                    // todo: set fallback image to local resource if not found
+                    if(!File.Exists(path))
+                    {
+                        path = $"{Helpers.MediaFolder}\\PlayMode\\Fallback.png";
+                    }
                     playModeImage = new Uri(path);
                 }
                 return playModeImage;
@@ -138,22 +141,30 @@ namespace BigBoxNetflixUI.Models
             }
         }
 
+        private string matchDescription;
         public string MatchDescription
         {
             get 
             {
-                // todo: probably create subclass for voice match and override the calculation
-                // for non-voice match, match percentage = start rating (0-5) * 20
-                // for voice match, lots to consider...
-                /*
-                 * Confidence of spoken phrase (0-1)
-                 * Match level (full title (100), main title (95), subtitle (90), phrase (70+?))
-                 * For partial phrase match - would like to increase it - maybe max out at 95 so 70 + (29 * (length of phrase / length of title))
-                 * Length of phrase vs length of title?  (0-1)
-                 */
-                // todo: define match as percentage (based on match type) of confidence
-                int tempMatch = (int)((Game?.CommunityOrLocalStarRating ?? 3) * 20);
-                return $"{tempMatch}% match";
+                if(matchDescription == null)
+                {
+                    // todo: probably create subclass for voice match and override the calculation
+                    // for non-voice match, match percentage = start rating (0-5) * 20
+                    // for voice match, lots to consider...
+
+                    /*
+                     * Confidence of spoken phrase (0-1)
+                     * Match level (full title (100), main title (95), subtitle (90), phrase (70+?))
+                     * For partial phrase match - would like to increase it - maybe max out at 95 so 70 + (29 * (length of phrase / length of title))
+                     * Length of phrase vs length of title?  (0-1)
+                     */
+                    // todo: define match as percentage (based on match type) of confidence
+                    int tempMatch = (int)(Game.CommunityOrLocalStarRating * 20);
+
+                    // prefix with space if less than 10 
+                    matchDescription = $"{string.Format("{0:00}", tempMatch)}% match";
+                }
+                return matchDescription;
             }
         }
 
@@ -163,7 +174,7 @@ namespace BigBoxNetflixUI.Models
             {
                 if (Game.ReleaseDate?.Year == null)
                 {
-                    return ("");
+                    return ("    ");
                 }
                 return (Game.ReleaseDate?.Year.ToString());
             }
