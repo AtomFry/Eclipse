@@ -33,15 +33,6 @@
                              Completed="BackgroundImageFadeInSlow_Completed"/>
         </Storyboard>
 
-        <!-- 1-second clear logo fade in - call when game changes -->
-        <Storyboard x:Key="ClearLogoFadeInSlow">
-            <DoubleAnimation BeginTime="0:0:0" 
-                             Storyboard.TargetProperty="Opacity" 
-                             From="0" To="1" 
-                             Duration="0:0:0.5"
-                             Completed="ClearLogoFadeInSlow_Completed"/>
-        </Storyboard>
-
         <!-- 1 second image fade out -->
         <Storyboard x:Key="BackgroundImageFadeOutSlow">
             <DoubleAnimation BeginTime="0:0:0"
@@ -387,24 +378,25 @@
                         HorizontalAlignment="Left" 
                         VerticalAlignment="Bottom"
                         RenderOptions.BitmapScalingMode="HighQuality" 
-                        Stretch="Uniform"/>                
-
-                <!-- Active clear logo to fade in once you stop moving around -->
-                <Image Name="Image_Active_GameClearLogo"
-                        Grid.Row="0"
-                        Opacity="0"
-                        Panel.ZIndex="520"
-                        HorizontalAlignment="Left" 
-                        VerticalAlignment="Bottom"
-                        RenderOptions.BitmapScalingMode="HighQuality" 
                         Stretch="Uniform"/>
 
-                <!-- Selected game details-->
-                <StackPanel Grid.Row="1"
+                <Grid Name="Grid_SelectedGameDetails"
+                      Grid.Row="1"
+                      Grid.RowSpan="4">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*" />
+                        <RowDefinition Height="1*" />
+                        <RowDefinition Height="1*" />
+                        <RowDefinition Height="1*" />
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Selected game details-->
+                    <StackPanel Name="StackPanel_SelectedGameDetails"
+                            Grid.Row="0"
                             Orientation="Horizontal"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch">
-                    <TextBlock Name="TextBlock_MatchPercentage"
+                        <TextBlock Name="TextBlock_MatchPercentage"
                        Text="{Binding CurrentGameList.Game1.MatchDescription}"
                        FontFamily="Arial" 
                         FontWeight="Regular"
@@ -416,7 +408,7 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"/>
 
-                    <TextBlock Name="TextBlock_Divider1"
+                        <TextBlock Name="TextBlock_Divider1"
                        Text=" | "
                        FontFamily="Arial" 
                         FontWeight="Regular"
@@ -428,7 +420,7 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"/>
 
-                    <TextBlock Name="TextBlock_ReleaseYear"
+                        <TextBlock Name="TextBlock_ReleaseYear"
                        Text="{Binding CurrentGameList.Game1.ReleaseDate}"
                        FontFamily="Arial" 
                         FontWeight="Regular"
@@ -440,7 +432,7 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"/>
 
-                    <TextBlock Name="TextBlock_Divider2"
+                        <TextBlock Name="TextBlock_Divider2"
                             Text=" | "
                             FontFamily="Arial " 
                             FontWeight="Regular"
@@ -452,15 +444,15 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"/>
 
-                    <Image Name="Image_CommunityStarRating"
-                    Source="{Binding CurrentGameList.Game1.CommunityStarRatingImage}"
-                    RenderOptions.BitmapScalingMode="HighQuality" 
-                    Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Stretch="Uniform"/>
+                        <Image Name="Image_CommunityStarRating"
+                            Source="{Binding CurrentGameList.Game1.CommunityStarRatingImage}"
+                            RenderOptions.BitmapScalingMode="HighQuality" 
+                            Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Stretch="Uniform"/>
 
-                    <TextBlock  Name="TextBlock_Divider3"
+                        <TextBlock  Name="TextBlock_Divider3"
                             Text=" | "
                             FontFamily="Arial " 
                             FontWeight="Regular"
@@ -472,21 +464,21 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"/>
 
-                    <Image  Name="Image_Playmode"
+                        <Image  Name="Image_Playmode"
                         Source="{Binding CurrentGameList.Game1.PlayModeImage}"
                         Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
                         RenderOptions.BitmapScalingMode="HighQuality" 
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Stretch="Uniform"/>
-                </StackPanel>
+                    </StackPanel>
 
-                <!-- Selected game platform -->
-                <StackPanel Grid.Row="2" 
+                    <!-- Selected game platform -->
+                    <StackPanel Grid.Row="1" 
                         Orientation="Horizontal"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch">
-                    <TextBlock  Name="TextBlock_Platform"
+                        <TextBlock  Name="TextBlock_Platform"
                         Text="{Binding CurrentGameList.Game1.Game.Platform}"
                         FontFamily="Arial" 
                         FontWeight="Regular"
@@ -497,7 +489,10 @@
                         TextAlignment="Center"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Top"/>
-                </StackPanel>
+                    </StackPanel>
+
+                </Grid>
+
             </Grid>
 
             <!-- Selected game background image -->
