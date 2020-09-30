@@ -34,10 +34,12 @@ namespace BigBoxNetflixUI.Models
                 string customPath = frontImagePath.Replace(Helpers.ApplicationPath, Helpers.MediaFolder);
                 if(!string.IsNullOrWhiteSpace(customPath))
                 {
-                    FrontImage = new Uri(customPath);
+                    if (File.Exists(customPath))
+                    {
+                        FrontImage = new Uri(customPath);
+                    }
                 }
             }
-            // todo: implement fall back image
         }
 
         private Uri frontImage;
@@ -49,17 +51,10 @@ namespace BigBoxNetflixUI.Models
             }
             set
             {
-                try
+                if (frontImage != value)
                 {
-                    if (frontImage != value)
-                    {
-                        frontImage = value;
-                        PropertyChanged(this, new PropertyChangedEventArgs("FrontImage"));
-                    }
-                }
-                catch(Exception ex)
-                {
-                    Helpers.LogException(ex, $"Setting front image for {Game.Title}");
+                    frontImage = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("FrontImage"));
                 }
             }
         }
@@ -121,7 +116,7 @@ namespace BigBoxNetflixUI.Models
             {
                 if (backgroundImage == null)
                 {
-                    string backgroundImagePath = Game.BackgroundImagePath;
+                    string backgroundImagePath = Game.BackgroundImagePath ?? Game.ScreenshotImagePath;
                     if (!string.IsNullOrWhiteSpace(backgroundImagePath))
                     {
                         // todo: set fallback image to local resource if not found

@@ -12,6 +12,7 @@ using System.Speech.Recognition;
 
 namespace BigBoxNetflixUI.View
 {
+    public delegate void FeatureChangeFunction();
     public delegate void AnimateGameChangeFunction();
     public delegate void LoadImagesFunction();
 
@@ -53,6 +54,7 @@ namespace BigBoxNetflixUI.View
         private Dictionary<string, List<GameMatch>> SeriesGameDictionary;
         private Dictionary<string, List<GameMatch>> PlayModeGameDictionary;
 
+        public FeatureChangeFunction FeatureChangeFunction { get; set; }
         public AnimateGameChangeFunction GameChangeFunction{ get; set; }
         public LoadImagesFunction LoadImagesFunction { get; set; }
 
@@ -396,14 +398,26 @@ namespace BigBoxNetflixUI.View
 
         void Initialization_LoadData(object sender, DoWorkEventArgs e)
         {
+            // prescale box front images
             try
             {
-                DeveloperGameDictionary = new Dictionary<string, List<GameMatch>>();
-                PublisherGameDictionary = new Dictionary<string, List<GameMatch>>();
-                GenreGameDictionary = new Dictionary<string, List<GameMatch>>();
-                GameTitlePhrases = new Dictionary<string, List<GameMatch>>();
-                SeriesGameDictionary = new Dictionary<string, List<GameMatch>>();
-                PlayModeGameDictionary = new Dictionary<string, List<GameMatch>>();
+                ImageScaler.ScaleImages();
+            }
+            catch(Exception ex)
+            {
+                Helpers.LogException(ex, "Initialization_LoadData_ScalingImages");
+            }
+
+
+
+            try
+            {
+                DeveloperGameDictionary = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
+                PublisherGameDictionary = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
+                GenreGameDictionary = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
+                GameTitlePhrases = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
+                SeriesGameDictionary = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
+                PlayModeGameDictionary = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
 
                 AllGames = DataService.GetGames();
                 TotalGameCount = AllGames?.Count ?? 0;
@@ -584,6 +598,8 @@ namespace BigBoxNetflixUI.View
                 return;
             }
 
+            // speech hypothesized adds phrases that it heard to the TempGameLists collection
+            // for each phrase, get the set of matching games from the GameTitlePhrases dictionary
             if (TempGameLists?.Count() > 0)
             {
                 // in case the same phrase was recognized multiple times, group by phrase and keep only the max confidence
@@ -591,27 +607,34 @@ namespace BigBoxNetflixUI.View
                     .GroupBy(s => s.ListDescription)
                     .Select(s => new GameList { ListDescription = s.Key, Confidence = s.Max(m => m.Confidence) }).ToList();
 
+                // loop through the gamelists (one list for each hypothesized phrase)
                 foreach(var gameList in distinctGameLists)
                 {
+                    // get the list of matching games for the phrase from the GameTitlePhrases dictionary 
                     List<GameMatch> matches;
                     if(GameTitlePhrases.TryGetValue(gameList.ListDescription, out matches))
                     {
-                        gameList.MatchingGames = matches.OrderBy(match => match.TitleMatchType).ToList();
+                        gameList.MatchingGames = matches.OrderBy(match => match.TitleMatchType)
+                                                        // todo: test with adding sub-sort on length of game title - longer titles first
+                                                        .ThenByDescending(match => match.Game.Title.Length).ToList();
 
                         voiceRecognitionResults.Add(gameList);
                     }
                 }
             }
 
+            // remove any prior voice search set and then add these results in the voice search category
             GameListSets.RemoveAll(set => set.ListCategoryType == ListCategoryType.VoiceSearch);
             GameListSets.Add(new GameListSet 
             { 
                 GameLists = voiceRecognitionResults
-                                .OrderBy(list => list.MaxTitleMatchType)
+                                .OrderBy(list => list.MinTitleMatchType)
+                                .ThenBy(list => list.MaxTitleLength)
                                 .ThenByDescending(list => list.Confidence)
                                 .ToList(), ListCategoryType = ListCategoryType.VoiceSearch 
             });
 
+            // display voice search results
             ResetGameLists(ListCategoryType.VoiceSearch);
             IsDisplayingResults = true;
             IsDisplayingFeature = true;
@@ -674,6 +697,14 @@ namespace BigBoxNetflixUI.View
             }
         }
 
+        private void CallFeatureChangeFunction()
+        {
+            if(FeatureChangeFunction != null)
+            {
+                FeatureChangeFunction();
+            }
+        }
+
         private void CallLoadImageFunction()
         {
             if(LoadImagesFunction != null)
@@ -698,6 +729,10 @@ namespace BigBoxNetflixUI.View
         {
             try
             {
+                // stop displaying error
+                IsDisplayingError = false;
+
+
                 if (isPickingCategory)
                 {
                     OptionList.CycleBackward();
@@ -706,10 +741,30 @@ namespace BigBoxNetflixUI.View
 
                 if (isDisplayingResults)
                 {
-                    // todo: if displaying first list - change to featured game
-                    if (listCycle.GetIndexValue(0) == 0)
+                    // if displaying first list 
+                    if ((listCycle.GetIndexValue(0) == 0))
                     {
-                        IsDisplayingFeature = true;
+                        // if it's not displaying featured - change to display feature mode
+                        if (!IsDisplayingFeature)
+                        {
+                            IsDisplayingFeature = true;
+                            CallFeatureChangeFunction();
+                            return;
+                        }
+                        // if it is displaying feature mode - change to regular results mode and go to prior list
+                        else
+                        {
+                            IsDisplayingFeature = false;
+                            CallFeatureChangeFunction();
+                            CycleListBackward();
+                            return;
+                        }
+                    }
+
+                    if(IsDisplayingFeature)
+                    {
+                        IsDisplayingFeature = false;
+                        CallFeatureChangeFunction();
                         return;
                     }
 
@@ -728,6 +783,10 @@ namespace BigBoxNetflixUI.View
         {
             try
             {
+                // stop displaying error
+                IsDisplayingError = false;
+
+
                 if (isPickingCategory)
                 {
                     OptionList.CycleForward();
@@ -737,6 +796,7 @@ namespace BigBoxNetflixUI.View
                 if (isDisplayingFeature)
                 {
                     IsDisplayingFeature = false;
+                    CallFeatureChangeFunction();
                     return;
                 }
 
@@ -757,6 +817,9 @@ namespace BigBoxNetflixUI.View
         {
             try
             {
+                // stop displaying error
+                IsDisplayingError = false;
+
                 // if picking category and going left then close the category and keep going left
                 if (IsPickingCategory)
                 {
@@ -798,6 +861,9 @@ namespace BigBoxNetflixUI.View
         {
             try
             {
+                // stop displaying error
+                IsDisplayingError = false;
+
                 // if picking category, going right closes category selection
                 if (IsPickingCategory)
                 {
@@ -822,11 +888,18 @@ namespace BigBoxNetflixUI.View
 
         public void DoPageUp()
         {
+            // stop displaying error
+            IsDisplayingError = false;
+
+
             DoRandomGame();
         }
 
         public void DoPageDown()
         {
+            // stop displaying error
+            IsDisplayingError = false;
+
             DoRecognize();
         }
 
@@ -877,7 +950,10 @@ namespace BigBoxNetflixUI.View
 
         public void DoEnter()
         {
-            if(isPickingCategory)
+            // stop displaying error
+            IsDisplayingError = false;
+
+            if (isPickingCategory)
             {
                 IsPickingCategory = false;
 
@@ -943,6 +1019,9 @@ namespace BigBoxNetflixUI.View
         public void DoEscape()
         {
             // todo: TBD - maybe nothing - maybe go back to prior setting
+            // stop displaying error
+            IsDisplayingError = false;
+
         }
 
         private GameList currentGameList;

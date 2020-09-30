@@ -69,6 +69,9 @@ namespace BigBoxNetflixUI.View
             // pass in the function that can be called whenever voice recognition loads games and images need to be loaded
             mainWindowViewModel.LoadImagesFunction = SetupGameImage;
 
+            // pass in the function that can be called whenever the featured game function changes
+            mainWindowViewModel.FeatureChangeFunction = ChangedFeatureSetting;
+
             // setting up images async
             Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new SetupGameImageDelegate(this.SetupGameImage));
         }
@@ -255,6 +258,21 @@ namespace BigBoxNetflixUI.View
             }
         }
 
+        private void StopEverything()
+        {
+            // pause the video
+            PauseVideo(Video_SelectedGame);
+
+            // stop timers
+            fadeOutForMovieDelay.Stop();
+            backgroundImageChangeDelay.Stop();
+
+
+            BackgroundImageFadeInSlowStoryBoard.Stop();
+            BackgroundImageFadeOutSlowStoryBoard.Stop();
+            BackgroundImageFadeInAfterVideoStoryBoard.Stop();
+        }
+
         private void DoAnimateGameChange()
         {
             Dispatcher.Invoke(() =>
@@ -271,6 +289,8 @@ namespace BigBoxNetflixUI.View
 
                         // dim logo image
                         FadeFrameworkElementOpacity(Image_Displayed_GameClearLogo, 0.15, 25);
+
+                        // dim game details
                         FadeFrameworkElementOpacity(Grid_SelectedGameDetails, 0.15, 25);
 
                         // get a handle on the active game's background image
@@ -319,20 +339,7 @@ namespace BigBoxNetflixUI.View
             });
         }
 
-        private void StopEverything()
-        {
-            // pause the video
-            PauseVideo(Video_SelectedGame);
 
-            // stop timers
-            fadeOutForMovieDelay.Stop();
-            backgroundImageChangeDelay.Stop();
-
-
-            BackgroundImageFadeInSlowStoryBoard.Stop();
-            BackgroundImageFadeOutSlowStoryBoard.Stop();
-            BackgroundImageFadeInAfterVideoStoryBoard.Stop();
-        }
 
         // delay for an interval when selecting games and then fade in the current selected game
         private void BackgroundImageChangeDelay_Elapsed(object sender, ElapsedEventArgs e)
@@ -381,8 +388,11 @@ namespace BigBoxNetflixUI.View
                     // hide the active image
                     Image_Active_BackgroundImage.Opacity = 0;
 
-                    // start timer to delay to fade out image and play video
-                    fadeOutForMovieDelay.Start();
+                    // start timer to delay to fade out image and play video if there is a video
+                    if (Video_SelectedGame?.Source != null)
+                    {
+                        fadeOutForMovieDelay.Start();
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -438,6 +448,22 @@ namespace BigBoxNetflixUI.View
             catch(Exception ex)
             {
                 Helpers.LogException(ex, "Video_SelectedGame_MediaEnded");
+            }
+        }
+
+        public void ChangedFeatureSetting()
+        {
+            if(mainWindowViewModel.IsDisplayingFeature)
+            {
+                // undim clear logo during video
+                FadeFrameworkElementOpacity(Image_Displayed_GameClearLogo, .15, 3000);
+                FadeFrameworkElementOpacity(Grid_SelectedGameDetails, .15, 2000);
+            }
+            else
+            {
+                // undim clear logo during video
+                FadeFrameworkElementOpacity(Image_Displayed_GameClearLogo, 1, 25);
+                FadeFrameworkElementOpacity(Grid_SelectedGameDetails, 1, 25);
             }
         }
     }

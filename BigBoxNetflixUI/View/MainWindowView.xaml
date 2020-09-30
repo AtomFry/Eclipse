@@ -389,7 +389,7 @@
                         <RowDefinition Height="1*" />
                         <RowDefinition Height="1*" />
                     </Grid.RowDefinitions>
-                    
+
                     <!-- Selected game details-->
                     <StackPanel Name="StackPanel_SelectedGameDetails"
                             Grid.Row="0"
@@ -397,40 +397,38 @@
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch">
                         <TextBlock Name="TextBlock_MatchPercentage"
-                       Text="{Binding CurrentGameList.Game1.MatchDescription}"
-                       FontFamily="Arial" 
-                        FontWeight="Regular"
-                        FontSize="20" 
-                        Foreground="Green"
-                        TextTrimming="None"
-                        TextWrapping="NoWrap"
-                        TextAlignment="Center"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"/>
+                            FontFamily="Arial" 
+                            FontWeight="Regular"
+                            FontSize="20" 
+                            Foreground="Green"
+                            TextTrimming="None"
+                            TextWrapping="NoWrap"
+                            TextAlignment="Center"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"/>
 
                         <TextBlock Name="TextBlock_Divider1"
-                       Text=" | "
-                       FontFamily="Arial" 
-                        FontWeight="Regular"
-                        FontSize="20" 
-                        Foreground="DarkSlateGray"
-                        TextTrimming="None"
-                        TextWrapping="NoWrap"
-                        TextAlignment="Center"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"/>
+                            Text=" | "
+                            FontFamily="Arial" 
+                            FontWeight="Regular"
+                            FontSize="20" 
+                            Foreground="DarkSlateGray"
+                            TextTrimming="None"
+                            TextWrapping="NoWrap"
+                            TextAlignment="Center"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"/>
 
                         <TextBlock Name="TextBlock_ReleaseYear"
-                       Text="{Binding CurrentGameList.Game1.ReleaseDate}"
-                       FontFamily="Arial" 
-                        FontWeight="Regular"
-                        FontSize="20" 
-                        Foreground="White"
-                        TextTrimming="None"
-                        TextWrapping="NoWrap"
-                        TextAlignment="Center"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"/>
+                            FontFamily="Arial" 
+                            FontWeight="Regular"
+                            FontSize="20" 
+                            Foreground="White"
+                            TextTrimming="None"
+                            TextWrapping="NoWrap"
+                            TextAlignment="Center"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"/>
 
                         <TextBlock Name="TextBlock_Divider2"
                             Text=" | "
@@ -445,7 +443,6 @@
                             VerticalAlignment="Center"/>
 
                         <Image Name="Image_CommunityStarRating"
-                            Source="{Binding CurrentGameList.Game1.CommunityStarRatingImage}"
                             RenderOptions.BitmapScalingMode="HighQuality" 
                             Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
                             HorizontalAlignment="Center"
@@ -465,12 +462,11 @@
                             VerticalAlignment="Center"/>
 
                         <Image  Name="Image_Playmode"
-                        Source="{Binding CurrentGameList.Game1.PlayModeImage}"
-                        Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
-                        RenderOptions.BitmapScalingMode="HighQuality" 
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Stretch="Uniform"/>
+                            Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
+                            RenderOptions.BitmapScalingMode="HighQuality" 
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Stretch="Uniform"/>
                     </StackPanel>
 
                     <!-- Selected game platform -->
@@ -479,20 +475,17 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch">
                         <TextBlock  Name="TextBlock_Platform"
-                        Text="{Binding CurrentGameList.Game1.Game.Platform}"
-                        FontFamily="Arial" 
-                        FontWeight="Regular"
-                        FontSize="26" 
-                        Foreground="White"
-                        TextTrimming="None"
-                        TextWrapping="NoWrap"
-                        TextAlignment="Center"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Top"/>
+                            FontFamily="Arial" 
+                            FontWeight="Regular"
+                            FontSize="26" 
+                            Foreground="White"
+                            TextTrimming="None"
+                            TextWrapping="NoWrap"
+                            TextAlignment="Center"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Top"/>
                     </StackPanel>
-
                 </Grid>
-
             </Grid>
 
             <!-- Selected game background image -->
@@ -515,8 +508,8 @@
 
                 <!-- Background image for selected game -->
                 <Image Name="Image_Displayed_BackgroundImage"
-                       HorizontalAlignment="Stretch" 
-                       VerticalAlignment="Stretch" 
+                       HorizontalAlignment="Center" 
+                       VerticalAlignment="Center" 
                        Stretch="UniformToFill"
                        Panel.ZIndex="220"
                        RenderOptions.BitmapScalingMode="HighQuality" >
@@ -533,8 +526,8 @@
                 </Image>
 
                 <Image Name="Image_Active_BackgroundImage"
-                       HorizontalAlignment="Stretch" 
-                       VerticalAlignment="Stretch" 
+                       HorizontalAlignment="Center" 
+                       VerticalAlignment="Center" 
                        Stretch="UniformToFill"
                        Panel.ZIndex="230"
                        Opacity="0"

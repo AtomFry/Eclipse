@@ -130,14 +130,25 @@ namespace BigBoxNetflixUI.Models
             }
         }
 
-        public TitleMatchType MaxTitleMatchType
+        public TitleMatchType MinTitleMatchType
         {
             get
             {
                 if (MatchingGames == null)
                     return TitleMatchType.None;
 
-                return MatchingGames.Max(game => game.TitleMatchType);
+                return MatchingGames.Min(game => game.TitleMatchType);
+            }
+        }
+
+        public int MaxTitleLength
+        {
+            get
+            {
+                if (MatchingGames == null)
+                    return 0;
+
+                return MatchingGames.Max(game => game.Game.Title.Length);
             }
         }
 
