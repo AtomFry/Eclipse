@@ -16,6 +16,18 @@ namespace BigBoxNetflixUI.Service
         {
             // enumerate platform directories 
             IEnumerable<string> platformImageDirectories = Directory.EnumerateDirectories(Helpers.LaunchboxImagesPath);
+
+            /*
+             *                                      = (5/18)*Height - 4         =Height / 2         =(4/18)*Height
+             * Resolution	Width	Height	        Game Front Height	        Background Height	Logo Height
+                Laptop	    1366	768	            209.3333333	                384	                170.6666667
+                1080	    1920	1080	        296	                        540	                240
+                1440	    2560	1440	        396	                        720	                320
+                4K	        3840	2160	        596	                        1080	            480
+             */
+            // todo: currently picking up primary display but should check for the screen in the big box settings for PrimaryMonitorIndex
+            int desiredHeight = (int)(System.Windows.SystemParameters.PrimaryScreenHeight * 5 / 18) - 4;
+
             foreach (string platformImageDirectory in platformImageDirectories)
             {
                 IEnumerable<string> imageDirectories = Directory.EnumerateDirectories(platformImageDirectory);
@@ -33,16 +45,7 @@ namespace BigBoxNetflixUI.Service
                     || imageDirectory.EndsWith("Fanart - Box - Front", StringComparison.InvariantCultureIgnoreCase)
                     || imageDirectory.EndsWith("Steam Banner", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        // todo: determine desired height from the system resolution
-                        /*
-                         *                                      = (5/18)*Height - 4         =Height / 2         =(4/18)*Height
-                         * Resolution	Width	Height	        Game Front Height	        Background Height	Logo Height
-                            Laptop	    1366	768	            209.3333333	                384	                170.6666667
-                            1080	    1920	1080	        296	                        540	                240
-                            1440	    2560	1440	        396	                        720	                320
-                            4K	        3840	2160	        596	                        1080	            480
-                         */
-                        ProcessImagesInDirectory(imageDirectory, 209);
+                        ProcessImagesInDirectory(imageDirectory, desiredHeight);
                     }
                 }
             }
