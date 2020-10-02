@@ -1,18 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using BigBoxNetflixUI.View;
+using System;
+using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Unbroken.LaunchBox.Plugins.Data;
-using Unbroken.LaunchBox.Plugins.RetroAchievements;
 
 namespace BigBoxNetflixUI.Models
 {
-    public class GameMatch
+    public class GameMatch : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged = delegate { };
+
         public IGame Game { get; set; }
         public TitleMatchType TitleMatchType { get; set; }
      
@@ -24,36 +23,53 @@ namespace BigBoxNetflixUI.Models
         {
             Game = game;
             TitleMatchType = titleMatchType;
+            frontImage = ResourceImages.GameFrontDummy;
         }
 
-        private BitmapImage frontImage;
-        public BitmapImage FrontImage
+        public void SetupFrontImage()
         {
-            get
+            string frontImagePath = Game?.FrontImagePath;
+            if(!string.IsNullOrWhiteSpace(frontImagePath))
             {
-                if (frontImage == null)
+                string customPath = frontImagePath.Replace(Helpers.ApplicationPath, Helpers.MediaFolder);
+                if(!string.IsNullOrWhiteSpace(customPath))
                 {
-                    if (!string.IsNullOrWhiteSpace(Game.FrontImagePath))
+                    if (File.Exists(customPath))
                     {
-                        // todo: set fallback image to local resource if not found
-                        frontImage = new BitmapImage(new Uri(Game.FrontImagePath));
+                        FrontImage = new Uri(customPath);
                     }
                 }
-                return frontImage;
             }
         }
 
-        private BitmapImage clearLogo;
-        public BitmapImage ClearLogo
+        private Uri frontImage;
+        public Uri FrontImage
         {
             get
             {
-                if(clearLogo == null)
+                return (frontImage);
+            }
+            set
+            {
+                if (frontImage != value)
                 {
-                    if(!string.IsNullOrWhiteSpace(Game.ClearLogoImagePath))
+                    frontImage = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("FrontImage"));
+                }
+            }
+        }
+
+        private Uri clearLogo;
+        public Uri ClearLogo
+        {
+            get
+            {
+                if (clearLogo == null)
+                {
+                    string clearLogoPath = Game.ClearLogoImagePath;
+                    if (!string.IsNullOrWhiteSpace(clearLogoPath))
                     {
-                        // todo: set fallback image to local resource if not found
-                        clearLogo = new BitmapImage(new Uri(Game.ClearLogoImagePath));
+                        clearLogo = new Uri(clearLogoPath);
                     }
                 }
                 return (clearLogo);
@@ -67,9 +83,8 @@ namespace BigBoxNetflixUI.Models
             {
                 if(communityStarRatingImage == null)
                 {
-                    double rating = Math.Round(Game.CommunityStarRating, 1);
-                    string path = $"{Helpers.MediaFolder}\\StarRating\\{rating}.png";
-                    // todo: set fallback image to local resource if not found
+                    string ratingFormatted = String.Format("{0:0.0}", Math.Round(Game.CommunityOrLocalStarRating, 1));
+                    string path = $"{Helpers.MediaFolder}\\StarRating\\{ratingFormatted}.png";
                     communityStarRatingImage = new Uri(path);
                 }
                 return communityStarRatingImage;
@@ -84,24 +99,28 @@ namespace BigBoxNetflixUI.Models
                 if (playModeImage == null)
                 {
                     string path = $"{Helpers.MediaFolder}\\PlayMode\\{Game.PlayMode}.png";
-                    // todo: set fallback image to local resource if not found
+                    if(!File.Exists(path))
+                    {
+                        path = $"{Helpers.MediaFolder}\\PlayMode\\Fallback.png";
+                    }
                     playModeImage = new Uri(path);
                 }
                 return playModeImage;
             }
         }
 
-        private BitmapImage backgroundImage;
-        public BitmapImage BackgroundImage
+        private Uri backgroundImage;
+        public Uri BackgroundImage
         {
             get
             {
                 if (backgroundImage == null)
                 {
-                    if (!string.IsNullOrWhiteSpace(Game.BackgroundImagePath))
+                    string backgroundImagePath = Game.BackgroundImagePath ?? Game.ScreenshotImagePath;
+                    if (!string.IsNullOrWhiteSpace(backgroundImagePath))
                     {
                         // todo: set fallback image to local resource if not found
-                        backgroundImage = new BitmapImage(new Uri(Game.BackgroundImagePath));
+                        backgroundImage = new Uri(backgroundImagePath);
                     }
                 }
                 return backgroundImage;
@@ -117,14 +136,30 @@ namespace BigBoxNetflixUI.Models
             }
         }
 
+        private string matchDescription;
         public string MatchDescription
         {
             get 
             {
-                // todo: define match as percentage (based on match type) of confidence
-                // todo: define visibility and only display if matching
-                int tempMatch = 98;
-                return $"{tempMatch}% match";
+                if(matchDescription == null)
+                {
+                    // todo: probably create subclass for voice match and override the calculation
+                    // for non-voice match, match percentage = start rating (0-5) * 20
+                    // for voice match, lots to consider...
+
+                    /*
+                     * Confidence of spoken phrase (0-1)
+                     * Match level (full title (100), main title (95), subtitle (90), phrase (70+?))
+                     * For partial phrase match - would like to increase it - maybe max out at 95 so 70 + (29 * (length of phrase / length of title))
+                     * Length of phrase vs length of title?  (0-1)
+                     */
+                    // todo: define match as percentage (based on match type) of confidence
+                    int tempMatch = (int)(Game.CommunityOrLocalStarRating * 20);
+
+                    // prefix with space if less than 10 
+                    matchDescription = $"{string.Format("{0:00}", tempMatch)}% match";
+                }
+                return matchDescription;
             }
         }
 
@@ -134,7 +169,7 @@ namespace BigBoxNetflixUI.Models
             {
                 if (Game.ReleaseDate?.Year == null)
                 {
-                    return ("");
+                    return ("    ");
                 }
                 return (Game.ReleaseDate?.Year.ToString());
             }

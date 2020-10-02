@@ -33,6 +33,19 @@ namespace BigBoxNetflixUI.Models
             }
         }
 
+
+        public void SetCurrentIndex(int index)
+        {
+            indices[0] = index;
+            int lastIndex = index;
+            for(int i = 1; i < indices.Length; i++)
+            {
+                indices[i] = GetNextIndex(lastIndex);
+                lastIndex = indices[i];
+            }
+        }
+
+
         private int GetNextIndex(int currentIndex)
         {
             currentIndex += 1;
@@ -60,26 +73,6 @@ namespace BigBoxNetflixUI.Models
 
         public T GetItem(int index)
         {
-            if(indices == null)
-            {
-                throw new ArgumentOutOfRangeException();
-            }
-
-            if (index >= indices.Length)
-            {
-                throw new ArgumentOutOfRangeException();
-            }
-
-            if(GenericList == null)
-            {
-                throw new ArgumentOutOfRangeException();
-            }
-
-            if(indices[index] >= GenericList.Count)
-            {
-                throw new ArgumentOutOfRangeException();
-            }
-
             return GenericList[indices[index]];
         }
 
@@ -112,7 +105,5 @@ namespace BigBoxNetflixUI.Models
                 }
             }
         }
-
-
     }
 }
