@@ -12,11 +12,8 @@ namespace Eclipse.Service
 {
     public class ImageScaler
     {
-        public static void ScaleImages()
+        public static int GetDesiredHeight()
         {
-            // enumerate platform directories 
-            IEnumerable<string> platformImageDirectories = Directory.EnumerateDirectories(Helpers.LaunchboxImagesPath);
-
             /*
              *                                      = (5/18)*Height - 4         =Height / 2         =(4/18)*Height
              * Resolution	Width	Height	        Game Front Height	        Background Height	Logo Height
@@ -26,7 +23,14 @@ namespace Eclipse.Service
                 4K	        3840	2160	        596	                        1080	            480
              */
             // todo: currently picking up primary display but should check for the screen in the big box settings for PrimaryMonitorIndex
-            int desiredHeight = (int)(System.Windows.SystemParameters.PrimaryScreenHeight * 5 / 18) - 4;
+            return (int)(System.Windows.SystemParameters.PrimaryScreenHeight * 5 / 18) - 4;
+        }
+
+        public static List<string> GetImageDirectories()
+        {
+            // enumerate platform directories 
+            IEnumerable<string> platformImageDirectories = Directory.EnumerateDirectories(Helpers.LaunchboxImagesPath);
+            List<string> foldersToProcess = new List<string>();
 
             foreach (string platformImageDirectory in platformImageDirectories)
             {
@@ -45,16 +49,22 @@ namespace Eclipse.Service
                     || imageDirectory.EndsWith("Fanart - Box - Front", StringComparison.InvariantCultureIgnoreCase)
                     || imageDirectory.EndsWith("Steam Banner", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        ProcessImagesInDirectory(imageDirectory, desiredHeight);
+                        IEnumerable<string> folders = Directory.EnumerateDirectories(imageDirectory);
+                        foreach(string folder in folders)
+                        {
+                            foldersToProcess.Add(folder);
+                        }
+                        foldersToProcess.Add(imageDirectory);
                     }
                 }
             }
+            return foldersToProcess;
         }
 
-        public static System.Drawing.Bitmap ResizeImage(System.Drawing.Image image, int width, int height)
+        public static Bitmap ResizeImage(Image image, int width, int height)
         {
             var destRect = new Rectangle(0, 0, width, height);
-            var destImage = new System.Drawing.Bitmap(width, height);
+            var destImage = new Bitmap(width, height);
 
             destImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
 
@@ -75,15 +85,6 @@ namespace Eclipse.Service
             return destImage;
         }
 
-        public static void ProcessImagesInDirectory(string directory, int desiredHeight)
-        {
-            IEnumerable<string> folders = Directory.EnumerateDirectories(directory);
-            foreach (string folder in folders)
-            {
-                ProcessDirectory(folder, desiredHeight);
-            }
-            ProcessDirectory(directory, desiredHeight);
-        }
 
 
         public static void ProcessDirectory(string directory, int desiredHeight)
@@ -118,14 +119,14 @@ namespace Eclipse.Service
                     int originalHeight, originalWidth, desiredWidth;
                     double scale;
 
-                    using (System.Drawing.Image originalImage = System.Drawing.Bitmap.FromFile(file))
+                    using (Image originalImage = Image.FromFile(file))
                     {
                         originalHeight = originalImage.Height;
                         originalWidth = originalImage.Width;
                         scale = (double)((double)desiredHeight / (double)originalHeight);
                         desiredWidth = (int)(originalWidth * scale);
 
-                        using (System.Drawing.Bitmap newBitmap = ResizeImage(originalImage, desiredWidth, desiredHeight))
+                        using (Bitmap newBitmap = ResizeImage(originalImage, desiredWidth, desiredHeight))
                         {
                             string newFileName = file.Replace(Helpers.ApplicationPath, Helpers.MediaFolder);
                             string newFolder = Path.GetDirectoryName(newFileName);
@@ -149,11 +150,11 @@ namespace Eclipse.Service
     // This implementation defines a very simple comparison  
     // between two FileInfo objects. It only compares the name  
     // of the files being compared  
-    class FileCompare : System.Collections.Generic.IEqualityComparer<System.IO.FileInfo>
+    class FileCompare : IEqualityComparer<FileInfo>
     {
         public FileCompare() { }
 
-        public bool Equals(System.IO.FileInfo f1, System.IO.FileInfo f2)
+        public bool Equals(FileInfo f1, FileInfo f2)
         {
             return (f1.Name == f2.Name);
         }
@@ -163,7 +164,7 @@ namespace Eclipse.Service
         // also be equal. Because equality as defined here is a simple value equality, not  
         // reference identity, it is possible that two or more objects will produce the same  
         // hash code.  
-        public int GetHashCode(System.IO.FileInfo fi)
+        public int GetHashCode(FileInfo fi)
         {
             string s = $"{fi.Name}";
             return s.GetHashCode();

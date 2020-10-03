@@ -10,7 +10,7 @@ namespace Eclipse
     public static class Helpers
     {
         public static string ApplicationPath = Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
-        public static string LogFile = $"{ApplicationPath}\\Plugins\\Eclipse\\Logs\\Log.txt";
+        public static string LogFile = $"Eclipse.txt";
         public static string MediaFolder = $"{ApplicationPath}\\Plugins\\Eclipse\\Media";
         public static string LaunchboxImagesPath = $"{ApplicationPath}\\Images";
         public static string PluginImagesPath = $"{MediaFolder}\\Images";

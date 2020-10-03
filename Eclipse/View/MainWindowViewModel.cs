@@ -401,14 +401,24 @@ namespace Eclipse.View
             // prescale box front images
             try
             {
-                ImageScaler.ScaleImages();
+                int desiredHeight = ImageScaler.GetDesiredHeight();
+
+                List<string> foldersToProcess = ImageScaler.GetImageDirectories();
+
+                TotalGameCount = foldersToProcess?.Count ?? 0;
+                InitializationGameCount = 0;
+
+                // process the folders 
+                foreach (string folder in foldersToProcess)
+                {
+                    InitializationGameCount += 1;
+                    ImageScaler.ProcessDirectory(folder, desiredHeight);
+                }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Helpers.LogException(ex, "Initialization_LoadData_ScalingImages");
             }
-
-
 
             try
             {
