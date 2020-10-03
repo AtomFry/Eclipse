@@ -1,11 +1,11 @@
-﻿using BigBoxNetflixUI.Models;
+﻿using Eclipse.Models;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Data;
 
-namespace BigBoxNetflixUI.Converters
+namespace Eclipse.Converters
 {
     // specifies the amount to offset the game list
     // intended to take isFeature as a parameter and the height of the gamelist

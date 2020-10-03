@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 
-namespace BigBoxNetflixUI.Models
+namespace Eclipse.Models
 {
     public class ListCycle<T>
     {

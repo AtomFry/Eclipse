@@ -1,4 +1,4 @@
-﻿using BigBoxNetflixUI.Service;
+﻿using Eclipse.Service;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,10 +7,10 @@ using System.Text;
 using Unbroken.LaunchBox.Plugins;
 using Unbroken.LaunchBox.Plugins.Data;
 using System.Data;
-using BigBoxNetflixUI.Models;
+using Eclipse.Models;
 using System.Speech.Recognition;
 
-namespace BigBoxNetflixUI.View
+namespace Eclipse.View
 {
     public delegate void FeatureChangeFunction();
     public delegate void AnimateGameChangeFunction();
@@ -274,7 +274,7 @@ namespace BigBoxNetflixUI.View
 
                 var orderedGames = platformGames.OrderBy(s => s.Game.SortTitleOrTitle);
                 GameList gameList = new GameList(platform.Name, new List<GameMatch>(orderedGames));
-
+                
                 listOfPlatformGames.Add(gameList);
             }
             GameListSets.Add(new GameListSet { GameLists = listOfPlatformGames, ListCategoryType = ListCategoryType.Platform });

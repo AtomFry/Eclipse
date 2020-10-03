@@ -6,7 +6,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Unbroken.LaunchBox.Plugins.RetroAchievements;
 
-namespace BigBoxNetflixUI.Models
+namespace Eclipse.Models
 {
     // a set of gamelists for browsing games by different categories (i.e. games by platform, games by genre, etc...)
     public class GameListSet

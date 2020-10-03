@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Unbroken.LaunchBox.Plugins;
 using Unbroken.LaunchBox.Plugins.Data;
 
-namespace BigBoxNetflixUI.Service
+namespace Eclipse.Service
 {
     public class DataService
     {

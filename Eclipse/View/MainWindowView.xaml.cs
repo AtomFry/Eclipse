@@ -1,4 +1,4 @@
-﻿using BigBoxNetflixUI.Models;
+﻿using Eclipse.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +18,7 @@ using System.Windows.Shapes;
 using Unbroken.LaunchBox.Plugins;
 using Unbroken.LaunchBox.Plugins.Data;
 
-namespace BigBoxNetflixUI.View
+namespace Eclipse.View
 {
     /// <summary>
     /// Interaction logic for MainWindowView.xaml

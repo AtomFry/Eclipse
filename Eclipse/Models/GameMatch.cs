@@ -1,4 +1,4 @@
-﻿using BigBoxNetflixUI.View;
+﻿using Eclipse.View;
 using System;
 using System.ComponentModel;
 using System.IO;
@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Unbroken.LaunchBox.Plugins.Data;
 
-namespace BigBoxNetflixUI.Models
+namespace Eclipse.Models
 {
     public class GameMatch : INotifyPropertyChanged
     {

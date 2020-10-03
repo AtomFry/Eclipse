@@ -5,15 +5,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BigBoxNetflixUI
+namespace Eclipse
 {
     public static class Helpers
     {
         public static string ApplicationPath = Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
-        public static string MediaFolder = $"{ApplicationPath}\\Plugins\\BigBoxNetflixUI\\Media";
+        public static string LogFile = $"{ApplicationPath}\\Plugins\\Eclipse\\Logs\\Log.txt";
+        public static string MediaFolder = $"{ApplicationPath}\\Plugins\\Eclipse\\Media";
         public static string LaunchboxImagesPath = $"{ApplicationPath}\\Images";
         public static string PluginImagesPath = $"{MediaFolder}\\Images";
-        public static string ResourceFolder = "pack://application:,,,/BigBoxNetflixUI;component/resources";
+        public static string ResourceFolder = "pack://application:,,,/Eclipse;component/resources";
 
 
 
@@ -27,7 +28,7 @@ namespace BigBoxNetflixUI
 
         public static void Log(string logMessage)
         {
-            using (StreamWriter w = File.AppendText("BigBoxNetflixUI.txt"))
+            using (StreamWriter w = File.AppendText(LogFile))
             {
                 w.Write("\r\nLog Entry : ");
                 w.WriteLine($"{DateTime.Now.ToLongTimeString()} {DateTime.Now.ToLongDateString()}");

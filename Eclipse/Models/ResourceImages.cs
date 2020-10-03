@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BigBoxNetflixUI.Models
+namespace Eclipse.Models
 {
     public class ResourceImages
     {

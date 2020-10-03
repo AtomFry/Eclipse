@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Unbroken.LaunchBox.Plugins.Data;
 
-namespace BigBoxNetflixUI.Models
+namespace Eclipse.Models
 {
     // creates the components of the voice search grammar for each game
     public class GameTitleGrammarBuilder

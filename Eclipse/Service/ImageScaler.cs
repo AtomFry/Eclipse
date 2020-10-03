@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BigBoxNetflixUI.Service
+namespace Eclipse.Service
 {
     public class ImageScaler
     {
