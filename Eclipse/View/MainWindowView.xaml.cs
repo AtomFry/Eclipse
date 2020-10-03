@@ -44,6 +44,8 @@ namespace Eclipse.View
 
         public MainWindowView()
         {
+            Helpers.Log("MainWindowView - start");
+
             InitializeComponent();
 
             // create a timer to delay swapping background images
@@ -66,14 +68,14 @@ namespace Eclipse.View
             // pass in the animation function that can be called whenever a game changes
             mainWindowViewModel.GameChangeFunction = DoAnimateGameChange;
 
-            // pass in the function that can be called whenever voice recognition loads games and images need to be loaded
+            // pass in the function that can be called whenever game front images need to be loaded
             mainWindowViewModel.LoadImagesFunction = SetupGameImage;
 
             // pass in the function that can be called whenever the featured game function changes
             mainWindowViewModel.FeatureChangeFunction = ChangedFeatureSetting;
 
-            // setting up images async
-            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new SetupGameImageDelegate(this.SetupGameImage));
+            // sets up the game lists and voice recognition
+            mainWindowViewModel.InitializeData();
         }
 
         public delegate void SetupGameImageDelegate();

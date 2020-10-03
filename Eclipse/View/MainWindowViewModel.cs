@@ -9,12 +9,14 @@ using Unbroken.LaunchBox.Plugins.Data;
 using System.Data;
 using Eclipse.Models;
 using System.Speech.Recognition;
+using System.IO;
 
 namespace Eclipse.View
 {
     public delegate void FeatureChangeFunction();
     public delegate void AnimateGameChangeFunction();
     public delegate void LoadImagesFunction();
+    public delegate void IncrementLoadingProgressFunction();
 
     public static class Extensions
     {
@@ -185,6 +187,33 @@ namespace Eclipse.View
             }
         }
 
+        private string loadingMessage1;
+        public string LoadingMessage1
+        {
+            get { return loadingMessage1; }
+            set
+            {
+                if(loadingMessage1 != value)
+                {
+                    loadingMessage1 = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("LoadingMessage1"));
+                }
+            }
+        }
+
+        private string loadingMessage2;
+        public string LoadingMessage2
+        {
+            get { return loadingMessage2; }
+            set
+            {
+                if (loadingMessage2 != value)
+                {
+                    loadingMessage2 = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("LoadingMessage2"));
+                }
+            }
+        }
 
         private int initializationGameCount;
         public int InitializationGameCount
@@ -385,10 +414,18 @@ namespace Eclipse.View
         public MainWindowViewModel()
         {
             IsInitializing = true;
-            InitializeData();
+            DeveloperGameDictionary = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
+            PublisherGameDictionary = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
+            GenreGameDictionary = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
+            GameTitlePhrases = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
+            SeriesGameDictionary = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
+            PlayModeGameDictionary = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
+
+            // get all the games from the launchbox install
+            AllGames = DataService.GetGames();
         }
 
-        private void InitializeData()
+        public void InitializeData()
         {
             BackgroundWorker worker = new BackgroundWorker();
             worker.WorkerReportsProgress = true;
@@ -398,41 +435,35 @@ namespace Eclipse.View
 
         void Initialization_LoadData(object sender, DoWorkEventArgs e)
         {
-            // prescale box front images
             try
             {
+                // get the total count of games for the progress bar
+                TotalGameCount = AllGames?.Count ?? 0;
+
+                // prescale box front images - doing this here so it's easier to update the progress bar
+                LoadingMessage1 = $"PRESCALING IMAGES";
+
+                // get the height of box images based on the monitor's resolution
                 int desiredHeight = ImageScaler.GetDesiredHeight();
 
-                List<string> foldersToProcess = ImageScaler.GetImageDirectories();
+                // get list of image files in launchbox folders that are missing from the plug-in folders
+                List<FileInfo> filesToProcess = ImageScaler.GetMissingImageFiles();
 
-                TotalGameCount = foldersToProcess?.Count ?? 0;
+                // add the count of missing files
+                TotalGameCount += (filesToProcess?.Count ?? 0);
                 InitializationGameCount = 0;
 
                 // process the folders 
-                foreach (string folder in foldersToProcess)
+                foreach (FileInfo fileInfo in filesToProcess)
                 {
                     InitializationGameCount += 1;
-                    ImageScaler.ProcessDirectory(folder, desiredHeight);
+                    ImageScaler.ScaleImage(fileInfo, desiredHeight);
                 }
-            }
-            catch (Exception ex)
-            {
-                Helpers.LogException(ex, "Initialization_LoadData_ScalingImages");
-            }
 
-            try
-            {
-                DeveloperGameDictionary = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
-                PublisherGameDictionary = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
-                GenreGameDictionary = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
-                GameTitlePhrases = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
-                SeriesGameDictionary = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
-                PlayModeGameDictionary = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
+                LoadingMessage1 = null;
 
-                AllGames = DataService.GetGames();
-                TotalGameCount = AllGames?.Count ?? 0;
 
-                InitializationGameCount = 0;
+                // load up game dictionaries to prepare lists and voice recognition
                 foreach (IGame game in AllGames)
                 {
                     InitializationGameCount += 1;
@@ -682,6 +713,8 @@ namespace Eclipse.View
                 return;
 
             IsRecognizing = true;
+
+            // TODO: look into leaving the IsDisplayingResults true and overlaying the recognition on top with progress bar to indicate how long it's listening
             IsDisplayingResults = false;
             IsDisplayingError = false;
 

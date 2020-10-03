@@ -87,6 +87,25 @@
                          HorizontalAlignment="Stretch"
                          VerticalAlignment="Stretch">
             </ProgressBar>
+            <TextBlock Name="TextBlock_Loading_Message1"
+                   Text="{Binding LoadingMessage1}"
+                   Grid.Row="3"
+                   Foreground="DarkSlateGray"
+                   FontFamily="Impact Condensed"
+                   FontSize="25"
+                   HorizontalAlignment="Stretch"
+                   VerticalAlignment="Stretch"
+                   TextAlignment="Center"/>
+            <TextBlock Name="TextBlock_Loading_Message2"
+                   Text="{Binding LoadingMessage2}"
+                   Grid.Row="4"
+                   Foreground="GhostWhite"
+                   FontFamily="Impact Condensed"
+                   FontSize="25"
+                   HorizontalAlignment="Stretch"
+                   VerticalAlignment="Stretch"
+                   TextAlignment="Center"/>
+
         </Grid>
         <!-- END LOADING -->
 

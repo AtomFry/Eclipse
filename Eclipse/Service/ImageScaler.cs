@@ -26,11 +26,12 @@ namespace Eclipse.Service
             return (int)(System.Windows.SystemParameters.PrimaryScreenHeight * 5 / 18) - 4;
         }
 
-        public static List<string> GetImageDirectories()
+        public static List<FileInfo> GetMissingImageFiles()
         {
             // enumerate platform directories 
             IEnumerable<string> platformImageDirectories = Directory.EnumerateDirectories(Helpers.LaunchboxImagesPath);
             List<string> foldersToProcess = new List<string>();
+            List<FileInfo> filesToProcess = new List<FileInfo>();
 
             foreach (string platformImageDirectory in platformImageDirectories)
             {
@@ -58,7 +59,14 @@ namespace Eclipse.Service
                     }
                 }
             }
-            return foldersToProcess;
+
+            // get the list of files that are in the launchbox image folders but not in the plug-in image folders
+            foreach(string folder in foldersToProcess)
+            {
+                filesToProcess.AddRange(GetMissingFilesInFolder(folder));
+            }
+
+            return filesToProcess;
         }
 
         public static Bitmap ResizeImage(Image image, int width, int height)
@@ -87,7 +95,7 @@ namespace Eclipse.Service
 
 
 
-        public static void ProcessDirectory(string directory, int desiredHeight)
+        public static IEnumerable<FileInfo> GetMissingFilesInFolder(string directory)
         {
             string pathA = directory;
             string pathB = directory.Replace(Helpers.ApplicationPath, Helpers.MediaFolder);
@@ -107,45 +115,45 @@ namespace Eclipse.Service
             FileCompare fileCompare = new FileCompare();
 
             // Find the files in the LB folder that are not in the plugin folder
-            var queryList1Only = (from file in list1
-                                  select file).Except(list2, fileCompare);
+            return (from file in list1 select file).Except(list2, fileCompare);
+        }
 
-
-            foreach (var v in queryList1Only)
+        public static void ScaleImage(FileInfo fileInfo, int desiredHeight)
+        {
+            try
             {
-                try
+                string file = fileInfo.FullName;
+                int originalHeight, originalWidth, desiredWidth;
+                double scale;
+
+                using (Image originalImage = Image.FromFile(file))
                 {
-                    string file = v.FullName;
-                    int originalHeight, originalWidth, desiredWidth;
-                    double scale;
+                    originalHeight = originalImage.Height;
+                    originalWidth = originalImage.Width;
+                    scale = (double)((double)desiredHeight / (double)originalHeight);
+                    desiredWidth = (int)(originalWidth * scale);
 
-                    using (Image originalImage = Image.FromFile(file))
+                    using (Bitmap newBitmap = ResizeImage(originalImage, desiredWidth, desiredHeight))
                     {
-                        originalHeight = originalImage.Height;
-                        originalWidth = originalImage.Width;
-                        scale = (double)((double)desiredHeight / (double)originalHeight);
-                        desiredWidth = (int)(originalWidth * scale);
+                        string newFileName = file.Replace(Helpers.ApplicationPath, Helpers.MediaFolder);
+                        string newFolder = Path.GetDirectoryName(newFileName);
 
-                        using (Bitmap newBitmap = ResizeImage(originalImage, desiredWidth, desiredHeight))
+                        if (!Directory.Exists(newFolder))
                         {
-                            string newFileName = file.Replace(Helpers.ApplicationPath, Helpers.MediaFolder);
-                            string newFolder = Path.GetDirectoryName(newFileName);
-
-                            if (!Directory.Exists(newFolder))
-                            {
-                                Directory.CreateDirectory(newFolder);
-                            }
-                            newBitmap.Save(newFileName);
+                            Directory.CreateDirectory(newFolder);
                         }
+                        newBitmap.Save(newFileName);
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"An error occurred: {0}", ex.Message);
-                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred while scaling an image: {0}", ex.Message);
             }
         }
+
     }
+
 
     // This implementation defines a very simple comparison  
     // between two FileInfo objects. It only compares the name  
