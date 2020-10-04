@@ -426,15 +426,20 @@ namespace Eclipse.View
                 TotalGameCount = AllGames?.Count ?? 0;
 
                 // prescale box front images - doing this here so it's easier to update the progress bar
-                LoadingMessage = $"PRESCALING IMAGES";
-
-                // get the height of box images based on the monitor's resolution
-                int desiredHeight = ImageScaler.GetDesiredHeight();
 
                 // get list of image files in launchbox folders that are missing from the plug-in folders
                 List<FileInfo> filesToProcess = ImageScaler.GetMissingImageFiles();
 
-                // add the count of missing files
+                // get the desired height of pre-scaled box images based on the monitor's resolution
+                // only need this if we have anything to process
+                int desiredHeight = 0;
+                if (filesToProcess.Count > 0)
+                {
+                    LoadingMessage = $"PRESCALING IMAGES";
+                    desiredHeight = ImageScaler.GetDesiredHeight();
+                }
+
+                // add the count of missing files for the loading progress bar
                 TotalGameCount += (filesToProcess?.Count ?? 0);
                 InitializationGameCount = 0;
 
@@ -446,7 +451,6 @@ namespace Eclipse.View
                 }
 
                 LoadingMessage = null;
-
 
                 // load up game dictionaries to prepare lists and voice recognition
                 foreach (IGame game in AllGames)

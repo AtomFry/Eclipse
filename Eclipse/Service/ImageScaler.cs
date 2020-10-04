@@ -8,6 +8,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+// pre-scale images so that we dont incur the cost of scaling while moving around in the front end
+// see formula below for logic 
+// only scaling the game front images - background and logo images do not incur such a performance 
+// hit because they load up far less frequently
 namespace Eclipse.Service
 {
     public class ImageScaler
@@ -22,8 +26,11 @@ namespace Eclipse.Service
                 1440	    2560	1440	        396	                        720	                320
                 4K	        3840	2160	        596	                        1080	            480
              */
-            // todo: currently picking up primary display but should check for the screen in the big box settings for PrimaryMonitorIndex
-            return (int)(System.Windows.SystemParameters.PrimaryScreenHeight * 5 / 18) - 4;
+            // pick up the monitor from the big box settings file and determine it's height
+            // then set the desired size of box images to 5/18 -4 of that size
+            // front end UI has 18 rows.  The boxes scale to fit 5 rows and have a 2 pixel border on all sides 
+            // so the scaled image height should be = (monitor height * 5/18) - 4
+            return (int)(BigBoxSettingsReader.GetMonitorHeight() * 5 / 18) - 4;
         }
 
         public static List<FileInfo> GetMissingImageFiles()
