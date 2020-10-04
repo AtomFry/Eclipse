@@ -187,34 +187,19 @@ namespace Eclipse.View
             }
         }
 
-        private string loadingMessage1;
-        public string LoadingMessage1
+        private string loadingMessage;
+        public string LoadingMessage
         {
-            get { return loadingMessage1; }
+            get { return loadingMessage; }
             set
             {
-                if(loadingMessage1 != value)
+                if(loadingMessage != value)
                 {
-                    loadingMessage1 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("LoadingMessage1"));
+                    loadingMessage = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("LoadingMessage"));
                 }
             }
         }
-
-        private string loadingMessage2;
-        public string LoadingMessage2
-        {
-            get { return loadingMessage2; }
-            set
-            {
-                if (loadingMessage2 != value)
-                {
-                    loadingMessage2 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("LoadingMessage2"));
-                }
-            }
-        }
-
         private int initializationGameCount;
         public int InitializationGameCount
         {
@@ -441,7 +426,7 @@ namespace Eclipse.View
                 TotalGameCount = AllGames?.Count ?? 0;
 
                 // prescale box front images - doing this here so it's easier to update the progress bar
-                LoadingMessage1 = $"PRESCALING IMAGES";
+                LoadingMessage = $"PRESCALING IMAGES";
 
                 // get the height of box images based on the monitor's resolution
                 int desiredHeight = ImageScaler.GetDesiredHeight();
@@ -460,7 +445,7 @@ namespace Eclipse.View
                     ImageScaler.ScaleImage(fileInfo, desiredHeight);
                 }
 
-                LoadingMessage1 = null;
+                LoadingMessage = null;
 
 
                 // load up game dictionaries to prepare lists and voice recognition
