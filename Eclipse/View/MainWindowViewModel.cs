@@ -958,25 +958,28 @@ namespace Eclipse.View
         private static readonly Random random = new Random();
         public void DoRandomGame()
         {
-            // get a random list from the current list set
-            GameListSet randomGameListSet = CurrentGameListSet;
-            int listCount = randomGameListSet.GameLists.Count;
-            int randomListIndex = random.Next(0, listCount);
-
-            // get a random game from the random list
-            GameList randomGameList = randomGameListSet.GameLists[randomListIndex];
-            int gameCount = randomGameList.MatchingGames.Count;
-            int randomGameIndex = random.Next(0, gameCount);
+            // get a game index from the current list set
+            int randomIndex = random.Next(0, CurrentGameListSet.TotalGameCount);
             
-            // setup the cycle to the random list
-            listCycle.SetCurrentIndex(randomListIndex);
+            // find the index of which list it's in 
+            for(int listIndex = 0; listIndex < CurrentGameListSet.GameLists.Count; listIndex++)
+            {
+                GameList gameList = CurrentGameListSet.GameLists[listIndex];
+                
+                if(gameList.ListSetStartIndex <= randomIndex && gameList.ListSetEndIndex >= randomIndex)
+                {
+                    // once found, cycle to that list
+                    listCycle.SetCurrentIndex(listIndex);
 
-            // refresh the game lists so we can get a handle on the current list
-            CurrentGameList = listCycle.GetItem(0);
-            NextGameList = listCycle.GetItem(1);
+                    // refresh the game lists so we can get a handle on the current list
+                    CurrentGameList = listCycle.GetItem(0);
+                    NextGameList = listCycle.GetItem(1);
 
-            // setup the game list to the random game index 
-            CurrentGameList.SetGameIndex(randomGameIndex);
+                    // setup the game list to the random game index 
+                    CurrentGameList.SetGameIndex(randomIndex - gameList.ListSetStartIndex);
+                    break;
+                }
+            }
 
             // call the game change function to refresh things
             CallGameChangeFunction();

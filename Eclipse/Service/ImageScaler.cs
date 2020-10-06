@@ -7,6 +7,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Xml.Linq;
 
 // pre-scale images so that we dont incur the cost of scaling while moving around in the front end
 // see formula below for logic 
@@ -30,7 +32,7 @@ namespace Eclipse.Service
             // then set the desired size of box images to 5/18 -4 of that size
             // front end UI has 18 rows.  The boxes scale to fit 5 rows and have a 2 pixel border on all sides 
             // so the scaled image height should be = (monitor height * 5/18) - 4
-            return (int)(BigBoxSettingsHelper.GetMonitorHeight() * 5 / 18) - 4;
+            return (int)(GetMonitorHeight() * 5 / 18) - 4;
         }
 
         public static List<FileInfo> GetMissingImageFiles()
@@ -39,7 +41,7 @@ namespace Eclipse.Service
             IEnumerable<string> platformImageDirectories = Directory.EnumerateDirectories(Helpers.LaunchboxImagesPath);
             List<string> foldersToProcess = new List<string>();
             List<FileInfo> filesToProcess = new List<FileInfo>();
-            string[] imageFolders = BigBoxSettingsHelper.GetFrontImageFolders();
+            string[] imageFolders = GetFrontImageFolders();
 
             // loop through platform folders
             foreach (string platformImageDirectory in platformImageDirectories)
@@ -150,6 +152,64 @@ namespace Eclipse.Service
             {
                 Console.WriteLine($"An error occurred while scaling an image: {0}", ex.Message);
             }
+        }
+
+        // gets the index of the monitor from the big box settings file and returns it's height
+        // defaults to 1080 if anything goes wrong
+        // this height is used for prescaling images to the right size
+        public static int GetMonitorHeight()
+        {
+            int defaultHeight = 1440;
+            int monitorHeight;
+            try
+            {
+                monitorHeight = Screen.FromHandle(System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle).Bounds.Height;
+            }
+            catch (Exception ex)
+            {
+                Helpers.LogException(ex, "GetMonitorHeight");
+                Helpers.Log($"Monitor height not found - defaulting to {defaultHeight}");
+                monitorHeight = defaultHeight;
+            }
+
+            return monitorHeight;
+        }
+
+        public static string[] GetFrontImageFolders()
+        {
+            string[] imageFrontFolders;
+            try
+            {
+                // get the index from the big box xml file
+                var launchBoxSettingsDocument = XDocument.Load(Helpers.LaunchBoxSettingsFile);
+                var setting = from xmlElement in launchBoxSettingsDocument.Root.Descendants("Settings")
+                              select xmlElement.Element("FrontImageTypePriorities").Value;
+                string value = setting.FirstOrDefault();
+
+                string[] splitter = new string[] { "," };
+                imageFrontFolders = value.Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+            }
+            catch (Exception ex)
+            {
+                Helpers.LogException(ex, "GetFrontImageFolders");
+
+                // default folders 
+                imageFrontFolders = new string[]
+                {
+                    "GOG Poster",
+                    "Steam Poster",
+                    "Epic Games Poster",
+                    "Box - Front",
+                    "Box - Front - Reconstructed",
+                    "Advertisement Flyer - Front",
+                    "Origin Poster",
+                    "Uplay Thumbnail",
+                    "Fanart - Box - Front",
+                    "Steam Banner"
+                };
+            }
+
+            return imageFrontFolders;
         }
 
     }

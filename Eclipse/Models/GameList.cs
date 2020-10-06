@@ -11,8 +11,42 @@ namespace Eclipse.Models
     // a set of gamelists for browsing games by different categories (i.e. games by platform, games by genre, etc...)
     public class GameListSet
     {
-        public List<GameList> GameLists { get; set; }
+        private List<GameList> gameLists;
+        public List<GameList> GameLists 
+        { 
+            get
+            {
+                return gameLists;
+            }
+            set
+            {
+                gameLists = value;
+
+                // when the collection of lists are set, setup their start/end index - used for random searches
+                int nextStart = 0;
+                foreach(GameList gameList in gameLists)
+                {
+                    gameList.ListSetStartIndex = nextStart;
+                    nextStart = gameList.ListSetEndIndex + 1;
+                }
+            }
+        }
         public ListCategoryType ListCategoryType { get; set; }
+
+        // get total count of games across all lists
+        private int? totalGameCount;
+        public int TotalGameCount
+        {
+            get
+            {
+                if(totalGameCount == null)
+                {
+                    totalGameCount = gameLists.Sum(gameList => gameList.MatchCount);
+                }
+
+                return totalGameCount.GetValueOrDefault();
+            }
+        }
     }
 
     public class GameList : INotifyPropertyChanged
@@ -199,6 +233,15 @@ namespace Eclipse.Models
 
                 return MatchingGames.Count();
             }
+        }
+
+        public int ListSetStartIndex { get; set; }
+        public int ListSetEndIndex 
+        {
+            get
+            {
+                return ListSetStartIndex + MatchCount - 1;
+            } 
         }
 
         private GameMatch game0;
