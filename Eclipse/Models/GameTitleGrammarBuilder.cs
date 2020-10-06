@@ -55,9 +55,8 @@ namespace Eclipse.Models
                 Subtitle = Title.Substring(indexOfTitleSplit + 1).Trim();
             }
 
-            // when replacing the colon with a space, we may have introduced two spaces, this is a lame hack but I got shit to do so fuck it
+            // when replacing the colon with a space, we may have introduced two spaces, this is a lame hack but it works
             Title = Title.Replace("  ", " ");
-
         }
 
         public static bool IsNoiseWord(string wLower)
@@ -101,8 +100,9 @@ namespace Eclipse.Models
                     return "8";
                 case "IX":
                     return "9";
-                case "X":
-                    return "10";
+                // there is a large majority of games with X in the title that are not roman numerals, sorry final fantasy X
+                // case "X":
+                //     return "10";
                 case "XI":
                     return "11";
                 case "XII":

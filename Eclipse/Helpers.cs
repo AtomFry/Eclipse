@@ -16,6 +16,7 @@ namespace Eclipse
         public static string PluginImagesPath = $"{MediaFolder}\\Images";
         public static string ResourceFolder = "pack://application:,,,/Eclipse;component/resources";
         public static string BigBoxSettingsFile = $"{ApplicationPath}\\Data\\BigBoxSettings.xml";
+        public static string LaunchBoxSettingsFile = $"{ApplicationPath}\\Data\\Settings.xml";
 
 
 

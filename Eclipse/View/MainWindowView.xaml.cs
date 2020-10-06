@@ -44,8 +44,6 @@ namespace Eclipse.View
 
         public MainWindowView()
         {
-            Helpers.Log("MainWindowView - start");
-
             InitializeComponent();
 
             // create a timer to delay swapping background images
@@ -106,7 +104,7 @@ namespace Eclipse.View
                 gameListToProcess = mainWindowViewModel.NextGameList;
             }
 
-            // todo: if current and next game list are processed then process any game list in the current/selected list set that has unprocessed images
+            // if current and next game list are processed then process any game list in the current/selected list set that has unprocessed images
             if(gameListToProcess == null)
             {
                 List<GameList> currentGameLists = mainWindowViewModel?.CurrentGameListSet?.GameLists;

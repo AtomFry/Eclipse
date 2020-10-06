@@ -130,14 +130,25 @@ namespace Eclipse.Models
             }
         }
 
-        public TitleMatchType MinTitleMatchType
+        public TitleMatchType MaxTitleMatchType
         {
             get
             {
                 if (MatchingGames == null)
                     return TitleMatchType.None;
 
-                return MatchingGames.Min(game => game.TitleMatchType);
+                return MatchingGames.Max(game => game.TitleMatchType);
+            }
+        }
+
+        public float? MaxMatchPercentage
+        {
+            get
+            {
+                if (MatchingGames == null)
+                    return 0;
+
+                return MatchingGames.Max(game => game.matchPercentage);
             }
         }
 
@@ -148,7 +159,9 @@ namespace Eclipse.Models
                 if (MatchingGames == null)
                     return 0;
 
-                return MatchingGames.Max(game => game.Game.Title.Length);
+                // get max title length for games having the maximum match percentage
+                return matchingGames.Where(game => game.matchPercentage == MaxMatchPercentage)
+                                    .Max(game => game.Game.Title.Length);
             }
         }
 

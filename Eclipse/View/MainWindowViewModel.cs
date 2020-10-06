@@ -490,17 +490,17 @@ namespace Eclipse.View
                     GameTitleGrammarBuilder gameTitleGrammarBuilder = new GameTitleGrammarBuilder(game);
                     if (!string.IsNullOrWhiteSpace(gameTitleGrammarBuilder.Title))
                     {
-                        AddGameToVoiceDictionary(gameTitleGrammarBuilder.Title, new GameMatch(game, TitleMatchType.FullTitleMatch));
+                        AddGameToVoiceDictionary(gameTitleGrammarBuilder.Title, new GameMatch(game, TitleMatchType.FullTitleMatch, gameTitleGrammarBuilder.Title));
                     }
 
                     if (!string.IsNullOrWhiteSpace(gameTitleGrammarBuilder.MainTitle))
                     {
-                        AddGameToVoiceDictionary(gameTitleGrammarBuilder.MainTitle, new GameMatch(game, TitleMatchType.MainTitleMatch));
+                        AddGameToVoiceDictionary(gameTitleGrammarBuilder.MainTitle, new GameMatch(game, TitleMatchType.MainTitleMatch, gameTitleGrammarBuilder.Title));
                     }
 
                     if (!string.IsNullOrWhiteSpace(gameTitleGrammarBuilder.Subtitle))
                     {
-                        AddGameToVoiceDictionary(gameTitleGrammarBuilder.Subtitle, new GameMatch(game, TitleMatchType.SubtitleMatch));
+                        AddGameToVoiceDictionary(gameTitleGrammarBuilder.Subtitle, new GameMatch(game, TitleMatchType.SubtitleMatch, gameTitleGrammarBuilder.Title));
                     }
 
                     for (int i = 0; i < gameTitleGrammarBuilder.TitleWords.Count; i++)
@@ -511,7 +511,7 @@ namespace Eclipse.View
                             sb.Append($"{gameTitleGrammarBuilder.TitleWords[j]} ");
                             if (!GameTitleGrammarBuilder.IsNoiseWord(sb.ToString().Trim()))
                             {
-                                AddGameToVoiceDictionary(sb.ToString().Trim(), new GameMatch(game, TitleMatchType.FullTitleContains));
+                                AddGameToVoiceDictionary(sb.ToString().Trim(), new GameMatch(game, TitleMatchType.FullTitleContains, gameTitleGrammarBuilder.Title));
                             }
                         }
                     }
@@ -644,10 +644,13 @@ namespace Eclipse.View
                     List<GameMatch> matches;
                     if(GameTitlePhrases.TryGetValue(gameList.ListDescription, out matches))
                     {
-                        gameList.MatchingGames = matches.OrderBy(match => match.TitleMatchType)
-                                                        // todo: test with adding sub-sort on length of game title - longer titles first
-                                                        .ThenByDescending(match => match.Game.Title.Length).ToList();
+                        // override the match percentages for voice recognition 
+                        foreach(var game in matches)
+                        {
+                            game.SetupVoiceMatchPercentage(gameList.Confidence, gameList.ListDescription);
+                        }
 
+                        gameList.MatchingGames = matches.OrderByDescending(match => match.matchPercentage).ToList();
                         voiceRecognitionResults.Add(gameList);
                     }
                 }
@@ -656,12 +659,12 @@ namespace Eclipse.View
             // remove any prior voice search set and then add these results in the voice search category
             GameListSets.RemoveAll(set => set.ListCategoryType == ListCategoryType.VoiceSearch);
             GameListSets.Add(new GameListSet 
-            { 
+            {
+                ListCategoryType = ListCategoryType.VoiceSearch,
                 GameLists = voiceRecognitionResults
-                                .OrderBy(list => list.MinTitleMatchType)
-                                .ThenBy(list => list.MaxTitleLength)
-                                .ThenByDescending(list => list.Confidence)
-                                .ToList(), ListCategoryType = ListCategoryType.VoiceSearch 
+                                .OrderByDescending(list => list.MaxMatchPercentage)
+                                .ThenByDescending(list => list.MaxTitleLength)
+                                .ToList()
             });
 
             // display voice search results
@@ -1051,9 +1054,9 @@ namespace Eclipse.View
         public void DoEscape()
         {
             // todo: TBD - maybe nothing - maybe go back to prior setting
+
             // stop displaying error
             IsDisplayingError = false;
-
         }
 
         private GameList currentGameList;

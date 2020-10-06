@@ -8,10 +8,10 @@ namespace Eclipse.Models
 {
     public enum TitleMatchType
     {
-        FullTitleMatch = 0,
-        MainTitleMatch = 1,
-        SubtitleMatch = 2,
-        FullTitleContains = 3,
-        None = 100
+        FullTitleMatch = 100,
+        MainTitleMatch = 95,
+        SubtitleMatch = 90,
+        FullTitleContains = 60,
+        None = 0
     }
 }

@@ -30,7 +30,7 @@ namespace Eclipse.Service
             // then set the desired size of box images to 5/18 -4 of that size
             // front end UI has 18 rows.  The boxes scale to fit 5 rows and have a 2 pixel border on all sides 
             // so the scaled image height should be = (monitor height * 5/18) - 4
-            return (int)(BigBoxSettingsReader.GetMonitorHeight() * 5 / 18) - 4;
+            return (int)(BigBoxSettingsHelper.GetMonitorHeight() * 5 / 18) - 4;
         }
 
         public static List<FileInfo> GetMissingImageFiles()
@@ -39,30 +39,23 @@ namespace Eclipse.Service
             IEnumerable<string> platformImageDirectories = Directory.EnumerateDirectories(Helpers.LaunchboxImagesPath);
             List<string> foldersToProcess = new List<string>();
             List<FileInfo> filesToProcess = new List<FileInfo>();
+            string[] imageFolders = BigBoxSettingsHelper.GetFrontImageFolders();
 
+            // loop through platform folders
             foreach (string platformImageDirectory in platformImageDirectories)
             {
-                IEnumerable<string> imageDirectories = Directory.EnumerateDirectories(platformImageDirectory);
-                foreach (string imageDirectory in imageDirectories)
+                // loop through box front image folders 
+                foreach(string imageFolder in imageFolders)
                 {
-                    // todo: get list of directories from launchbox settings
-                    if (imageDirectory.EndsWith("GOG Poster", StringComparison.InvariantCultureIgnoreCase)
-                    || imageDirectory.EndsWith("Steam Poster", StringComparison.InvariantCultureIgnoreCase)
-                    || imageDirectory.EndsWith("Epic Games Poster", StringComparison.InvariantCultureIgnoreCase)
-                    || imageDirectory.EndsWith("Box - Front", StringComparison.InvariantCultureIgnoreCase)
-                    || imageDirectory.EndsWith("Box - Front - Reconstructed", StringComparison.InvariantCultureIgnoreCase)
-                    || imageDirectory.EndsWith("Advertisement Flyer - Front", StringComparison.InvariantCultureIgnoreCase)
-                    || imageDirectory.EndsWith("Origin Poster", StringComparison.InvariantCultureIgnoreCase)
-                    || imageDirectory.EndsWith("Uplay Thumbnail", StringComparison.InvariantCultureIgnoreCase)
-                    || imageDirectory.EndsWith("Fanart - Box - Front", StringComparison.InvariantCultureIgnoreCase)
-                    || imageDirectory.EndsWith("Steam Banner", StringComparison.InvariantCultureIgnoreCase))
+                    string path = Path.Combine(platformImageDirectory, imageFolder);
+                    if(Directory.Exists(path))
                     {
-                        IEnumerable<string> folders = Directory.EnumerateDirectories(imageDirectory);
-                        foreach(string folder in folders)
+                        IEnumerable<string> folders = Directory.EnumerateDirectories(path);
+                        foreach (string folder in folders)
                         {
                             foldersToProcess.Add(folder);
                         }
-                        foldersToProcess.Add(imageDirectory);
+                        foldersToProcess.Add(path);
                     }
                 }
             }

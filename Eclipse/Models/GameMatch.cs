@@ -3,6 +3,7 @@ using System;
 using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
+using System.Windows.Ink;
 using System.Windows.Media.Imaging;
 using Unbroken.LaunchBox.Plugins.Data;
 
@@ -14,16 +15,18 @@ namespace Eclipse.Models
 
         public IGame Game { get; set; }
         public TitleMatchType TitleMatchType { get; set; }
-     
+        public string ConvertedTitle { get; set; }
+
         public GameMatch()
         {
         }
 
-        public GameMatch(IGame game, TitleMatchType titleMatchType)
+        public GameMatch(IGame game, TitleMatchType titleMatchType, string convertedTitle = "")
         {
             Game = game;
             TitleMatchType = titleMatchType;
             frontImage = ResourceImages.GameFrontDummy;
+            ConvertedTitle = convertedTitle;
         }
 
         public void SetupFrontImage()
@@ -119,7 +122,6 @@ namespace Eclipse.Models
                     string backgroundImagePath = Game.BackgroundImagePath ?? Game.ScreenshotImagePath;
                     if (!string.IsNullOrWhiteSpace(backgroundImagePath))
                     {
-                        // todo: set fallback image to local resource if not found
                         backgroundImage = new Uri(backgroundImagePath);
                     }
                 }
@@ -136,28 +138,53 @@ namespace Eclipse.Models
             }
         }
 
+        public int? matchPercentage;
+        public void SetupVoiceMatchPercentage(float confidence, string phrase)
+        {
+            // todo: probably create subclass for voice match and override the calculation
+            // for non-voice match, match percentage = start rating (0-5) * 20
+            // for voice match, lots to consider...
+
+            /*
+             * Confidence of spoken phrase (0-1) - this will be multiplied by the final result 
+             * 
+             * Match level: full title (100), main title (95), subtitle (90), phrase (60)
+             * Bonus portion allows the percentage of the title that was matched (length of phrase / length of title) to be applied to available score
+             * 
+             * Examples 
+             * 1.  Full title match is 100 so there is no room for bonus
+             * 2.  Main title match is 95 so there are 5 bonus points available.  
+             * 3.  Title contains is 60 so there is 40 bonus points available.  For the phrase "super mario" against the game "super mario bros." you get bonus 40 * (11/17)
+
+             * Multiply the confidence by the final score 
+             * 
+             * Feels like this shit could be tweaked endlessly and never settle on an ideal solution?
+             */
+            var lengthMatchPercent = (float)((float)phrase.Length / (float)ConvertedTitle.Length);
+
+            int availableBonus = 100 - (int)TitleMatchType;
+            float bonusMatchTypePortion = availableBonus * lengthMatchPercent;
+
+            // subtracting 0.001 to make sure it's never 100% - probably impossible since the confidence is never 1 but just in case
+            var matchTypePortion = confidence * ((int)TitleMatchType + bonusMatchTypePortion - 0.001);
+            matchPercentage = (int)(matchTypePortion);
+        }
+
+
         private string matchDescription;
         public string MatchDescription
         {
             get 
             {
+                // default to match percentage based on star rating - it should be overridden for voice searches
+                if(matchPercentage == null)
+                {
+                    matchPercentage = (int)(Game.CommunityOrLocalStarRating * 20);
+                }
+
                 if(matchDescription == null)
                 {
-                    // todo: probably create subclass for voice match and override the calculation
-                    // for non-voice match, match percentage = start rating (0-5) * 20
-                    // for voice match, lots to consider...
-
-                    /*
-                     * Confidence of spoken phrase (0-1)
-                     * Match level (full title (100), main title (95), subtitle (90), phrase (70+?))
-                     * For partial phrase match - would like to increase it - maybe max out at 95 so 70 + (29 * (length of phrase / length of title))
-                     * Length of phrase vs length of title?  (0-1)
-                     */
-                    // todo: define match as percentage (based on match type) of confidence
-                    int tempMatch = (int)(Game.CommunityOrLocalStarRating * 20);
-
-                    // prefix with space if less than 10 
-                    matchDescription = $"{string.Format("{0:00}", tempMatch)}% match";
+                    matchDescription = $"{string.Format("{0:00}", matchPercentage)}% match";
                 }
                 return matchDescription;
             }
@@ -174,8 +201,6 @@ namespace Eclipse.Models
                 return (Game.ReleaseDate?.Year.ToString());
             }
         }
-
-
 
         public override bool Equals(object obj)
         {
