@@ -141,11 +141,8 @@ namespace Eclipse.Models
         public int? matchPercentage;
         public void SetupVoiceMatchPercentage(float confidence, string phrase)
         {
-            // todo: probably create subclass for voice match and override the calculation
-            // for non-voice match, match percentage = start rating (0-5) * 20
-            // for voice match, lots to consider...
-
             /*
+             * For voice matches...
              * Confidence of spoken phrase (0-1) - this will be multiplied by the final result 
              * 
              * Match level: full title (100), main title (95), subtitle (90), phrase (60)
@@ -179,6 +176,7 @@ namespace Eclipse.Models
                 // default to match percentage based on star rating - it should be overridden for voice searches
                 if(matchPercentage == null)
                 {
+                    // for non-voice match, match percentage = star rating (0-5) * 20
                     matchPercentage = (int)(Game.CommunityOrLocalStarRating * 20);
                 }
 
