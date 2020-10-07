@@ -945,19 +945,11 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <TextBlock  Text="RECOGNIZING"
-                        Background="Transparent"
-                        Foreground="GhostWhite"
-                        FontFamily="Impact Condensed"
-                        FontSize="48"
-                        TextAlignment="Center"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"                   
-                        Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
-                        Grid.Row="1"/>
             <Image Name="Image_Listening"
-                Grid.Row="0"
+                Grid.Row="1"
+                   Grid.RowSpan="2"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 Stretch="Uniform"

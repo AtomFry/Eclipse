@@ -1054,12 +1054,39 @@ namespace Eclipse.View
             }
         }
 
-        public void DoEscape()
+        public bool DoEscape()
         {
-            // todo: TBD - maybe nothing - maybe go back to prior setting
-
-            // stop displaying error
+            bool handledEvent = false;
+            
+            // stop displaying error if it was displaying
             IsDisplayingError = false;
+
+            if(IsPickingCategory)
+            {
+                return false;
+            }
+
+            // if displaying results - open settings 
+            if(IsDisplayingResults)
+            {
+                handledEvent = true;
+
+                if (CurrentGameListSet.ListCategoryType == ListCategoryType.VoiceSearch)
+                {
+                    // display voice search results
+                    ResetGameLists(ListCategoryType.Platform);
+                    IsDisplayingResults = true;
+                    IsDisplayingFeature = true;
+                    CallGameChangeFunction();
+                }
+                else
+                {
+                    IsPickingCategory = true;
+                }
+            }
+
+            // if displaying settings - do nothing - it will open the LB menu
+            return handledEvent;
         }
 
         private GameList currentGameList;

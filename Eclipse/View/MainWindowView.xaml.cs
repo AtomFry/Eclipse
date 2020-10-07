@@ -168,8 +168,7 @@ namespace Eclipse.View
         {
             StopEverything();
 
-            mainWindowViewModel.DoEscape();
-            return false;
+            return mainWindowViewModel.DoEscape();
         }
 
         public bool OnLeft(bool held)
@@ -258,6 +257,7 @@ namespace Eclipse.View
             }
         }
 
+        // todo: do this with a background worker and keep trying to stop for a few seconds?  maybe only in certain cases like launching into a game or escaping to settings menu
         private void StopEverything()
         {
             // pause the video
