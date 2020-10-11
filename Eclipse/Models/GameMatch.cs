@@ -72,12 +72,20 @@ namespace Eclipse.Models
                     string clearLogoPath = Game.ClearLogoImagePath;
                     if (!string.IsNullOrWhiteSpace(clearLogoPath))
                     {
-                        clearLogo = new Uri(clearLogoPath);
+                        string customPath = clearLogoPath.Replace(Helpers.ApplicationPath, Helpers.MediaFolder);
+                        if(!string.IsNullOrWhiteSpace(customPath))
+                        {
+                            if(File.Exists(customPath))
+                            {
+                                clearLogo = new Uri(customPath);
+                            }
+                        }
                     }
                 }
                 return (clearLogo);
             }
         }
+
 
         private Uri communityStarRatingImage;
         public Uri CommunityStarRatingImage
@@ -129,6 +137,29 @@ namespace Eclipse.Models
             }
         }
 
+        private Uri platformClearLogoImage;
+        public Uri PlatformClearLogoImage
+        {
+            get
+            {
+                if(platformClearLogoImage == null)
+                {
+                    string platformClearLogoImagePath = Game.PlatformClearLogoImagePath;
+                    if(!string.IsNullOrWhiteSpace(platformClearLogoImagePath))
+                    {
+                        string customPath = platformClearLogoImagePath.Replace(Helpers.ApplicationPath, Helpers.MediaFolder);
+                        if(!string.IsNullOrWhiteSpace(customPath))
+                        {
+                            if(File.Exists(customPath))
+                            {
+                                platformClearLogoImage = new Uri(customPath);
+                            }
+                        }
+                    }
+                }
+                return platformClearLogoImage;
+            }
+        }
 
         public string VideoPath
         {

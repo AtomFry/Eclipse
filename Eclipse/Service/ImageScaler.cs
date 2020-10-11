@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.VisualStyles;
 using System.Xml.Linq;
 
 // pre-scale images so that we dont incur the cost of scaling while moving around in the front end
@@ -35,7 +36,34 @@ namespace Eclipse.Service
             return (int)(GetMonitorHeight() * 5 / 18) - 4;
         }
 
-        public static List<FileInfo> GetMissingImageFiles()
+        public static List<FileInfo> GetMissingPlatformClearLogoFiles()
+        {
+            IEnumerable<string> platformImageDirectories = Directory.EnumerateDirectories(Helpers.PlatformImagesPath);
+            string[] imageFolders = GetClearLogoFolders();
+            List<string> foldersToProcess = new List<string>();
+            List<FileInfo> filesToProcess = new List<FileInfo>();
+
+            foreach(string platformImageDirectory in platformImageDirectories)
+            {
+                foreach(string imageFolder in imageFolders)
+                {
+                    string path = Path.Combine(platformImageDirectory, imageFolder);
+                    if(Directory.Exists(path))
+                    {
+                        foldersToProcess.Add(path);
+                    }
+                }
+            }
+
+            foreach(string folder in foldersToProcess)
+            {
+                filesToProcess.AddRange(GetMissingFilesInFolder(folder));
+            }
+
+            return filesToProcess;
+        }
+
+        public static List<FileInfo> GetMissingGameFrontImageFiles()
         {
             // enumerate platform directories 
             IEnumerable<string> platformImageDirectories = Directory.EnumerateDirectories(Helpers.LaunchboxImagesPath);
@@ -64,6 +92,42 @@ namespace Eclipse.Service
 
             // get the list of files that are in the launchbox image folders but not in the plug-in image folders
             foreach(string folder in foldersToProcess)
+            {
+                filesToProcess.AddRange(GetMissingFilesInFolder(folder));
+            }
+
+            return filesToProcess;
+        }
+
+        public static List<FileInfo> GetMissingGameClearLogoFiles()
+        {
+            // enumerate platform directories 
+            IEnumerable<string> platformImageDirectories = Directory.EnumerateDirectories(Helpers.LaunchboxImagesPath);
+            List<string> foldersToProcess = new List<string>();
+            List<FileInfo> filesToProcess = new List<FileInfo>();
+            string[] imageFolders = GetClearLogoFolders();
+
+            // loop through platform folders
+            foreach (string platformImageDirectory in platformImageDirectories)
+            {
+                // loop through box front image folders 
+                foreach (string imageFolder in imageFolders)
+                {
+                    string path = Path.Combine(platformImageDirectory, imageFolder);
+                    if (Directory.Exists(path))
+                    {
+                        IEnumerable<string> folders = Directory.EnumerateDirectories(path);
+                        foreach (string folder in folders)
+                        {
+                            foldersToProcess.Add(folder);
+                        }
+                        foldersToProcess.Add(path);
+                    }
+                }
+            }
+
+            // get the list of files that are in the launchbox image folders but not in the plug-in image folders
+            foreach (string folder in foldersToProcess)
             {
                 filesToProcess.AddRange(GetMissingFilesInFolder(folder));
             }
@@ -120,6 +184,39 @@ namespace Eclipse.Service
             return (from file in list1 select file).Except(list2, fileCompare);
         }
 
+        public static void CropImage(FileInfo fileInfo)
+        {
+            try
+            {
+                string file = fileInfo.FullName;
+                int originalHeight, originalWidth;
+
+                using (Image originalImage = Image.FromFile(file))
+                {
+                    originalHeight = originalImage.Height;
+                    originalWidth = originalImage.Width;
+
+                    using (Bitmap newBitmap = ResizeImage(originalImage, originalWidth, originalHeight))
+                    {
+                        string newFileName = file.Replace(Helpers.ApplicationPath, Helpers.MediaFolder);
+                        string newFolder = Path.GetDirectoryName(newFileName);
+
+                        if (!Directory.Exists(newFolder))
+                        {
+                            Directory.CreateDirectory(newFolder);
+                        }
+
+                        Bitmap croppedBitmap = Crop(newBitmap);
+                        croppedBitmap.Save(newFileName);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred while scaling an image: {0}", ex.Message);
+            }
+        }
+
         public static void ScaleImage(FileInfo fileInfo, int desiredHeight)
         {
             try
@@ -132,8 +229,10 @@ namespace Eclipse.Service
                 {
                     originalHeight = originalImage.Height;
                     originalWidth = originalImage.Width;
+                    
                     scale = (double)((double)desiredHeight / (double)originalHeight);
                     desiredWidth = (int)(originalWidth * scale);
+
 
                     using (Bitmap newBitmap = ResizeImage(originalImage, desiredWidth, desiredHeight))
                     {
@@ -175,6 +274,11 @@ namespace Eclipse.Service
             return monitorHeight;
         }
 
+        public static string[] GetClearLogoFolders()
+        {
+            return new string[] { Helpers.ClearLogoFolder };
+        }
+
         public static string[] GetFrontImageFolders()
         {
             string[] imageFrontFolders;
@@ -212,6 +316,112 @@ namespace Eclipse.Service
             return imageFrontFolders;
         }
 
+
+        public static Bitmap Crop(Bitmap bmp)
+        {
+            int w = bmp.Width;
+            int h = bmp.Height;
+
+            Func<int, bool> allWhiteRow = row =>
+            {
+                for (int i = 0; i < w; ++i)
+                {
+                    Color color = bmp.GetPixel(i, row);
+                    byte aValue = color.A;
+
+                    if(aValue != 0)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            };
+
+            Func<int, bool> allWhiteColumn = col =>
+            {
+                for (int i = 0; i < h; ++i)
+                {
+                    Color color = bmp.GetPixel(col, i);
+                    byte aValue = color.A;
+
+                    if(aValue != 0)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            };
+
+            int topmost = 0;
+            for (int row = 0; row < h; ++row)
+            {
+                if (allWhiteRow(row))
+                    topmost = row;
+                else break;
+            }
+
+            int bottommost = 0;
+            for (int row = h - 1; row >= 0; --row)
+            {
+                if (allWhiteRow(row))
+                    bottommost = row;
+                else break;
+            }
+
+            int leftmost = 0, rightmost = 0;
+            for (int col = 0; col < w; ++col)
+            {
+                if (allWhiteColumn(col))
+                    leftmost = col;
+                else
+                    break;
+            }
+
+            for (int col = w - 1; col >= 0; --col)
+            {
+                if (allWhiteColumn(col))
+                    rightmost = col;
+                else
+                    break;
+            }
+
+            if (rightmost == 0) rightmost = w; // As reached left
+            if (bottommost == 0) bottommost = h; // As reached top.
+
+            int croppedWidth = rightmost - leftmost;
+            int croppedHeight = bottommost - topmost;
+
+            if (croppedWidth == 0) // No border on left or right
+            {
+                leftmost = 0;
+                croppedWidth = w;
+            }
+
+            if (croppedHeight == 0) // No border on top or bottom
+            {
+                topmost = 0;
+                croppedHeight = h;
+            }
+
+            try
+            {
+                var target = new Bitmap(croppedWidth, croppedHeight);
+                using (Graphics g = Graphics.FromImage(target))
+                {
+                    g.DrawImage(bmp,
+                      new RectangleF(0, 0, croppedWidth, croppedHeight),
+                      new RectangleF(leftmost, topmost, croppedWidth, croppedHeight),
+                      GraphicsUnit.Pixel);
+                }
+                return target;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(
+                  string.Format("Values are topmost={0} btm={1} left={2} right={3} croppedWidth={4} croppedHeight={5}", topmost, bottommost, leftmost, rightmost, croppedWidth, croppedHeight),
+                  ex);
+            }
+        }
     }
 
 

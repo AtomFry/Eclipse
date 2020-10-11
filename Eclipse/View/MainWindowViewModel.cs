@@ -428,26 +428,44 @@ namespace Eclipse.View
                 // prescale box front images - doing this here so it's easier to update the progress bar
 
                 // get list of image files in launchbox folders that are missing from the plug-in folders
-                List<FileInfo> filesToProcess = ImageScaler.GetMissingImageFiles();
+                List<FileInfo> gameFrontFilesToProcess = ImageScaler.GetMissingGameFrontImageFiles();
+                List<FileInfo> platformLogosToProcess = ImageScaler.GetMissingPlatformClearLogoFiles();
+                List<FileInfo> gameClearLogosToProcess = ImageScaler.GetMissingGameClearLogoFiles();
 
                 // get the desired height of pre-scaled box images based on the monitor's resolution
                 // only need this if we have anything to process
                 int desiredHeight = 0;
-                if (filesToProcess.Count > 0)
+                if ((gameFrontFilesToProcess.Count > 0) || (platformLogosToProcess.Count > 0) || (gameClearLogosToProcess.Count > 0))
                 {
                     LoadingMessage = $"PRESCALING IMAGES";
                     desiredHeight = ImageScaler.GetDesiredHeight();
                 }
 
                 // add the count of missing files for the loading progress bar
-                TotalGameCount += (filesToProcess?.Count ?? 0);
+                TotalGameCount += (gameFrontFilesToProcess?.Count ?? 0);
+                TotalGameCount += (platformLogosToProcess?.Count ?? 0);
+                TotalGameCount += (gameClearLogosToProcess?.Count ?? 0);
                 InitializationGameCount = 0;
 
                 // process the folders 
-                foreach (FileInfo fileInfo in filesToProcess)
+                foreach (FileInfo fileInfo in gameFrontFilesToProcess)
                 {
                     InitializationGameCount += 1;
                     ImageScaler.ScaleImage(fileInfo, desiredHeight);
+                }
+
+                // crop platform clear logos 
+                foreach(FileInfo fileInfo in platformLogosToProcess)
+                {
+                    InitializationGameCount += 1;
+                    ImageScaler.CropImage(fileInfo);
+                }
+
+                // crop game clear logos 
+                foreach(FileInfo fileInfo in gameClearLogosToProcess)
+                {
+                    InitializationGameCount += 1;
+                    ImageScaler.CropImage(fileInfo);
                 }
 
                 LoadingMessage = null;
@@ -707,7 +725,8 @@ namespace Eclipse.View
             IsRecognizing = true;
 
             // TODO: look into leaving the IsDisplayingResults true and overlaying the recognition on top with progress bar to indicate how long it's listening
-            IsDisplayingResults = false;
+            // IsDisplayingResults = false;
+            IsPickingCategory = false;
             IsDisplayingError = false;
 
             // reset the results and the temporary results
@@ -719,6 +738,15 @@ namespace Eclipse.View
 
         private void RefreshGameLists()
         {
+            if(listCycle?.GenericList?.Count == 0)
+            {
+                IsDisplayingError = true;
+
+                // TODO: better message/handling of potential problems
+                ErrorMessage = "A problem occurred trying to refresh the list of games";
+                return;
+            }
+
             CurrentGameList = listCycle.GetItem(0);
             NextGameList = listCycle.GetItem(1);
             CallGameChangeFunction();
@@ -1055,38 +1083,25 @@ namespace Eclipse.View
         }
 
         public bool DoEscape()
-        {
-            bool handledEvent = false;
-            
+        {           
             // stop displaying error if it was displaying
             IsDisplayingError = false;
 
+            // let bigbox handle escape and go to the bigbox menu
             if(IsPickingCategory)
             {
                 return false;
             }
 
-            // if displaying results - open settings 
+            // if displaying results - open the settings 
             if(IsDisplayingResults)
             {
-                handledEvent = true;
-
-                if (CurrentGameListSet.ListCategoryType == ListCategoryType.VoiceSearch)
-                {
-                    // display voice search results
-                    ResetGameLists(ListCategoryType.Platform);
-                    IsDisplayingResults = true;
-                    IsDisplayingFeature = true;
-                    CallGameChangeFunction();
-                }
-                else
-                {
-                    IsPickingCategory = true;
-                }
+                IsPickingCategory = true;
+                return true;
             }
 
-            // if displaying settings - do nothing - it will open the LB menu
-            return handledEvent;
+            // let bigbox handle escape and go to the bigbox menu
+            return false;
         }
 
         private GameList currentGameList;
@@ -1122,6 +1137,6 @@ namespace Eclipse.View
 
         public Uri SettingsIconWhite { get; } = ResourceImages.SettingsIconWhite;
 
-        public event PropertyChangedEventHandler PropertyChanged = delegate { };
+        public event PropertyChangedEventHandler PropertyChanged = delegate {};
     }
 }

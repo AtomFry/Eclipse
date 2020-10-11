@@ -17,10 +17,11 @@ namespace Eclipse
         public static string ResourceFolder = "pack://application:,,,/Eclipse;component/resources";
         public static string BigBoxSettingsFile = $"{ApplicationPath}\\Data\\BigBoxSettings.xml";
         public static string LaunchBoxSettingsFile = $"{ApplicationPath}\\Data\\Settings.xml";
+        public static string PlatformImagesPath = $"{ApplicationPath}\\Images\\Platforms";
+        public static string ClearLogoFolder = $"Clear Logo";
 
 
-
-        // this is hacky as shit...defining some integers we can use in sizing the background image/video
+        // this is hacky as shit...the integers define the row/column span to use for background image/videos, dependent on whether we are in featured game or regular results mode
         public static int BackgroundRowSpanFeature = 16;
         public static int BackgroundRowSpanNormal = 10;
         public static int BackgroundColumnStartFeature = 0;

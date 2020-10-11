@@ -36,7 +36,7 @@ namespace Eclipse.View
         private BitmapImage activeCommunityStarRatingImage;
         private BitmapImage activePlayModeImage;
         private string activePlatformText;
-
+        private BitmapImage activePlatformLogoImage;
 
         private Storyboard BackgroundImageFadeInSlowStoryBoard;
         private Storyboard BackgroundImageFadeOutSlowStoryBoard;
@@ -315,6 +315,7 @@ namespace Eclipse.View
                         activePlatformText = mainWindowViewModel?.CurrentGameList?.Game1?.Game?.Platform;
                         activeCommunityStarRatingImage = null;
                         activePlayModeImage = null;
+                        activePlatformLogoImage = null;
 
                         Uri communityStarRatingUri = mainWindowViewModel?.CurrentGameList?.Game1?.CommunityStarRatingImage;
                         if(communityStarRatingUri != null)
@@ -326,6 +327,12 @@ namespace Eclipse.View
                         if(playModeUri != null)
                         {
                             activePlayModeImage = new BitmapImage(playModeUri);
+                        }
+
+                        Uri platformLogoUri = mainWindowViewModel?.CurrentGameList?.Game1.PlatformClearLogoImage;
+                        if(platformLogoUri != null)
+                        {
+                            activePlatformLogoImage = new BitmapImage(platformLogoUri);
                         }
 
                         // start the timer - when it goes off, fade in the new background image
@@ -366,7 +373,8 @@ namespace Eclipse.View
                     Image_Playmode.Source = activePlayModeImage;
                     TextBlock_MatchPercentage.Text = activeMatchPercentageText;
                     TextBlock_ReleaseYear.Text = activeReleaseYearText;
-                    TextBlock_Platform.Text = activePlatformText;
+                    // TextBlock_Platform.Text = activePlatformText;
+                    Image_PlatformLogo.Source = activePlatformLogoImage;
                     FadeFrameworkElementOpacity(Grid_SelectedGameDetails, 1, 500);
                 }
                 catch (Exception ex)
