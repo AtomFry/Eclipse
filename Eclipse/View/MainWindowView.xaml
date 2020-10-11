@@ -33,21 +33,6 @@
                              Completed="BackgroundImageFadeInSlow_Completed"/>
         </Storyboard>
 
-        <!-- 1 second image fade out -->
-        <Storyboard x:Key="BackgroundImageFadeOutSlow">
-            <DoubleAnimation BeginTime="0:0:0"
-                             Storyboard.TargetProperty="Opacity"
-                             From="1" To="0"
-                             Duration="0:0:1"/>
-        </Storyboard>
-
-        <!-- 1-second image fade in - call when video ends -->
-        <Storyboard x:Key="BackgroundImageFadeInAfterVideo">
-            <DoubleAnimation BeginTime="0:0:0" 
-                             Storyboard.TargetProperty="Opacity" 
-                             From="0" To="1" 
-                             Duration="0:0:0.5"/>
-        </Storyboard>
     </UserControl.Resources>
 
     <Canvas Background="Black" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"

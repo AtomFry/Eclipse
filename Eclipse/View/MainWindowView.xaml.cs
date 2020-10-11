@@ -39,8 +39,6 @@ namespace Eclipse.View
         private BitmapImage activePlatformLogoImage;
 
         private Storyboard BackgroundImageFadeInSlowStoryBoard;
-        private Storyboard BackgroundImageFadeOutSlowStoryBoard;
-        private Storyboard BackgroundImageFadeInAfterVideoStoryBoard;
 
         public MainWindowView()
         {
@@ -57,8 +55,6 @@ namespace Eclipse.View
             fadeOutForMovieDelay.AutoReset = false;
 
             BackgroundImageFadeInSlowStoryBoard = FindResource("BackgroundImageFadeInSlow") as Storyboard;
-            BackgroundImageFadeOutSlowStoryBoard = FindResource("BackgroundImageFadeOutSlow") as Storyboard;
-            BackgroundImageFadeInAfterVideoStoryBoard = FindResource("BackgroundImageFadeInAfterVideo") as Storyboard;
 
             // get handle on the view model 
             mainWindowViewModel = DataContext as MainWindowViewModel;
@@ -228,23 +224,9 @@ namespace Eclipse.View
 
         private void DimBackground()
         {
-            if (Image_Displayed_BackgroundImage.Opacity != 0.25)
-            {
-                DoubleAnimation dimmingDisplayedBackground = new DoubleAnimation(Image_Displayed_BackgroundImage.Opacity, 0.25, TimeSpan.FromMilliseconds(25));
-                Image_Displayed_BackgroundImage.BeginAnimation(OpacityProperty, dimmingDisplayedBackground);
-            }
-
-            if (Image_Selected_Background_Black.Opacity != 1)
-            {
-                DoubleAnimation dimmingBlackBackground = new DoubleAnimation(Image_Selected_Background_Black.Opacity, 1.00, TimeSpan.FromMilliseconds(25));
-                Image_Selected_Background_Black.BeginAnimation(OpacityProperty, dimmingBlackBackground);
-            }
-
-            if (Image_Active_BackgroundImage.Opacity != 0)
-            {
-                DoubleAnimation dimmingActiveBackground = new DoubleAnimation(Image_Active_BackgroundImage.Opacity, 0, TimeSpan.FromMilliseconds(25));
-                Image_Active_BackgroundImage.BeginAnimation(OpacityProperty, dimmingActiveBackground);
-            }
+            FadeFrameworkElementOpacity(Image_Displayed_BackgroundImage, 0.25, 25);
+            FadeFrameworkElementOpacity(Image_Selected_Background_Black, 1, 25);
+            FadeFrameworkElementOpacity(Image_Active_BackgroundImage, 0, 25);
         }
 
         // animates change in clear logo opacity to specified opacity value and given duration
@@ -266,11 +248,7 @@ namespace Eclipse.View
             // stop timers
             fadeOutForMovieDelay.Stop();
             backgroundImageChangeDelay.Stop();
-
-
             BackgroundImageFadeInSlowStoryBoard.Stop();
-            BackgroundImageFadeOutSlowStoryBoard.Stop();
-            BackgroundImageFadeInAfterVideoStoryBoard.Stop();
         }
 
         private void DoAnimateGameChange()
@@ -420,9 +398,9 @@ namespace Eclipse.View
                         PlayVideo(Video_SelectedGame);
 
                         // fade background images while the video plays
-                        BackgroundImageFadeOutSlowStoryBoard.Begin(Image_Displayed_BackgroundImage);
-                        BackgroundImageFadeOutSlowStoryBoard.Begin(Image_Active_BackgroundImage);
-                        BackgroundImageFadeOutSlowStoryBoard.Begin(Image_Selected_Background_Black);
+                        FadeFrameworkElementOpacity(Image_Displayed_BackgroundImage, 0, 1000);
+                        FadeFrameworkElementOpacity(Image_Active_BackgroundImage, 0, 1000);
+                        FadeFrameworkElementOpacity(Image_Selected_Background_Black, 0, 1000);
 
                         // dim clear logo during video for featured game 
                         if (mainWindowViewModel.IsDisplayingFeature)
@@ -445,8 +423,9 @@ namespace Eclipse.View
             {
                 Dispatcher.Invoke(() =>
                 {
-                    BackgroundImageFadeInAfterVideoStoryBoard.Begin(Image_Selected_Background_Black);
-                    BackgroundImageFadeInAfterVideoStoryBoard.Begin(Image_Displayed_BackgroundImage);
+                    // fade in background image
+                    FadeFrameworkElementOpacity(Image_Selected_Background_Black, 1, 500);
+                    FadeFrameworkElementOpacity(Image_Displayed_BackgroundImage, 1, 500);
 
                     // undim clear logo during video
                     FadeFrameworkElementOpacity(Image_Displayed_GameClearLogo, 1, 25);
