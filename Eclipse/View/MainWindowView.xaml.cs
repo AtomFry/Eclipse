@@ -246,13 +246,13 @@ namespace Eclipse.View
             FadeFrameworkElementOpacity(Image_Active_BackgroundImage, 0, 25);
         }
 
-        // animates change in clear logo opacity to specified opacity value and given duration
+        // animates change in opacity to specified opacity value and given duration
         private void FadeFrameworkElementOpacity(FrameworkElement element, double newOpacityValue, double durationInMilliseconds)
         {
             if (element.Opacity != newOpacityValue)
             {
-                DoubleAnimation dimmingDisplayedClearLogo = new DoubleAnimation(element.Opacity, newOpacityValue, TimeSpan.FromMilliseconds(durationInMilliseconds));
-                element.BeginAnimation(OpacityProperty, dimmingDisplayedClearLogo);
+                DoubleAnimation dimElement = new DoubleAnimation(element.Opacity, newOpacityValue, TimeSpan.FromMilliseconds(durationInMilliseconds));
+                element.BeginAnimation(OpacityProperty, dimElement);
             }
         }
 
@@ -422,10 +422,9 @@ namespace Eclipse.View
                         FadeFrameworkElementOpacity(Image_Active_BackgroundImage, 0, 1000);
                         FadeFrameworkElementOpacity(Image_Selected_Background_Black, 0, 1000);
 
-                        // dim clear logo during video for featured game 
+                        // dim game details during video for featured game 
                         if (mainWindowViewModel.IsDisplayingFeature)
                         {
-                            FadeFrameworkElementOpacity(Image_Displayed_GameClearLogo, 0.15, 3000);
                             FadeFrameworkElementOpacity(Grid_SelectedGameDetails, 0, 2000);
                         }
                     }
@@ -443,12 +442,13 @@ namespace Eclipse.View
             {
                 Dispatcher.Invoke(() =>
                 {
+                    Video_SelectedGame.Stop();
+
                     // fade in background image
                     FadeFrameworkElementOpacity(Image_Selected_Background_Black, 1, 500);
                     FadeFrameworkElementOpacity(Image_Displayed_BackgroundImage, 1, 500);
 
-                    // undim clear logo during video
-                    FadeFrameworkElementOpacity(Image_Displayed_GameClearLogo, 1, 25);
+                    // undim game details after video
                     FadeFrameworkElementOpacity(Grid_SelectedGameDetails, 1, 25);
                 });
             }
@@ -460,16 +460,14 @@ namespace Eclipse.View
 
         public void ChangedFeatureSetting()
         {
-            if(mainWindowViewModel.IsDisplayingFeature)
+            if ((Video_SelectedGame.Position.TotalSeconds > 0) && mainWindowViewModel.IsDisplayingFeature)
             {
-                // undim clear logo during video
-                FadeFrameworkElementOpacity(Image_Displayed_GameClearLogo, .15, 3000);
+                // dim game details during video if displaying feature
                 FadeFrameworkElementOpacity(Grid_SelectedGameDetails, .15, 2000);
             }
             else
             {
-                // undim clear logo during video
-                FadeFrameworkElementOpacity(Image_Displayed_GameClearLogo, 1, 25);
+                // undim game details if not feature and/or not video playing
                 FadeFrameworkElementOpacity(Grid_SelectedGameDetails, 1, 25);
             }
         }

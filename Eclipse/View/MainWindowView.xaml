@@ -20,10 +20,12 @@
         <myconverters:DivideByConverter x:Key="DivideByNegative1" A="-1"/>
         <myconverters:GameMatchToSettingsOpacityConverter x:Key="SettingsOpacityConverter"/>
         <myconverters:DisplayingFeatureOffsetConverter x:Key="FeatureOffsetConverter"/>
+        <myconverters:DisplayingFeatureLogoOffsetConverter x:Key="FeatureLogoOffsetConverter"/>
         <myconverters:IsFeatureToRowSpanConverter x:Key="FeatureToRowSpanConverter"/>
         <myconverters:IsFeatureToColumnSpanConverter x:Key="FeatureToColumnSpanConverter"/>
         <myconverters:IsFeatureToColumnStartConverter x:Key="FeatureToColumnStartConverter"/>
-
+        <myconverters:BooleanToVisibilityConverter x:Key="InvertBooleanToVisibilityConverter" True="Collapsed" False="Visible"/>
+    
         <!-- 1-second image fade in - call when game changes -->
         <Storyboard x:Key="BackgroundImageFadeInSlow">
             <DoubleAnimation BeginTime="0:0:0" 
@@ -349,14 +351,13 @@
                 <Grid.RenderTransform>
                     <TranslateTransform>
                         <TranslateTransform.Y>
-                            <MultiBinding Converter="{StaticResource FeatureOffsetConverter}">
+                            <MultiBinding Converter="{StaticResource FeatureLogoOffsetConverter}">
                                 <Binding Path="IsDisplayingFeature"/>
                                 <Binding ElementName="CurrentListGrid" Path="ActualHeight"/>
                             </MultiBinding>
                         </TranslateTransform.Y>
                     </TranslateTransform>
                 </Grid.RenderTransform>
-
                 <Grid.RowDefinitions>
                     <RowDefinition Height="5*"/>
                     <RowDefinition Height="3*" />
@@ -593,6 +594,7 @@
                     </Grid.RowDefinitions>
                     <TextBlock  
                         Name="TextBlock_CurrentGameListDescription"
+                        Visibility="{Binding IsDisplayingFeature, Converter={StaticResource InvertBooleanToVisibilityConverter}}"
                         Grid.Row="0"
                         Grid.RowSpan="1"
                         FontFamily="Calibri" 

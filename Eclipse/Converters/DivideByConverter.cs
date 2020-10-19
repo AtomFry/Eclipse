@@ -3,10 +3,40 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Windows;
 using System.Windows.Data;
 
 namespace Eclipse.Converters
 {
+    public class BooleanConverter<T> : IValueConverter
+    {
+        public T True { get; set; }
+        public T False { get; set; }
+
+        public BooleanConverter(T trueValue, T falseValue)
+        {
+            True = trueValue;
+            False = falseValue;
+        }
+
+        public virtual object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value is bool && ((bool)value) ? True : False;
+        }
+
+        public virtual object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value is T && EqualityComparer<T>.Default.Equals((T)value, True);
+        }
+    }
+
+    public sealed class BooleanToVisibilityConverter : BooleanConverter<Visibility>
+    {
+        public BooleanToVisibilityConverter() :
+            base(Visibility.Visible, Visibility.Collapsed)
+        { }
+    }
+
     // specifies the amount to offset the game list
     // intended to take isFeature as a parameter and the height of the gamelist
     // if displaying the feature game then we offset the gamelist by the height of the gamelist
@@ -18,7 +48,23 @@ namespace Eclipse.Converters
             bool isFeature = (bool) values[0];
             double offsetAmount = (double)values[1];
 
-            return isFeature ? offsetAmount : 0;
+            return isFeature ? offsetAmount + (offsetAmount/6.0) : 0;
+        }
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException("Going back is not supported");
+        }
+    }
+
+    // shifts the game logo down a 1/2 way when displaying feature
+    public class DisplayingFeatureLogoOffsetConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            bool isFeature = (bool)values[0];
+            double offsetAmount = (double)values[1];
+
+            return isFeature ? offsetAmount/2.0 : 0;
         }
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
         {
