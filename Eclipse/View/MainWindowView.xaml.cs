@@ -23,7 +23,7 @@ namespace Eclipse.View
     /// <summary>
     /// Interaction logic for MainWindowView.xaml
     /// </summary>
-    public partial class MainWindowView : UserControl, IBigBoxThemeElementPlugin
+    public partial class MainWindowView : UserControl, IBigBoxThemeElementPlugin, IGameLaunchingPlugin
     {
         MainWindowViewModel mainWindowViewModel;
         private Timer backgroundImageChangeDelay;
@@ -35,10 +35,13 @@ namespace Eclipse.View
         private string activeReleaseYearText;
         private BitmapImage activeCommunityStarRatingImage;
         private BitmapImage activePlayModeImage;
-        private string activePlatformText;
         private BitmapImage activePlatformLogoImage;
+        private BitmapImage activeGameBezelImage;
 
         private Storyboard BackgroundImageFadeInSlowStoryBoard;
+
+        private LinearGradientBrush opacityBrush = GetOpacityBrush();
+
 
         public MainWindowView()
         {
@@ -70,6 +73,18 @@ namespace Eclipse.View
 
             // sets up the game lists and voice recognition
             mainWindowViewModel.InitializeData();
+        }
+
+        public static LinearGradientBrush GetOpacityBrush()
+        {
+            LinearGradientBrush brush = new LinearGradientBrush();
+            brush.StartPoint = new Point(0, 0.5);
+            brush.EndPoint = new Point(1, 0.5);
+            brush.GradientStops.Add(new GradientStop(Colors.Transparent, 0.00));
+            brush.GradientStops.Add(new GradientStop(Colors.Black, 0.20));
+            brush.GradientStops.Add(new GradientStop(Colors.Black, 0.80));
+            brush.GradientStops.Add(new GradientStop(Colors.Black, 1.00));
+            return brush;
         }
 
         public delegate void SetupGameImageDelegate();
@@ -214,10 +229,12 @@ namespace Eclipse.View
             }
         }
 
-        private void PlayVideo(MediaElement video)
+        private void PlayVideo(MediaElement video, double volume = 0.5)
         {
             if (video != null)
             {
+                video.Volume = volume;
+                video.Position = TimeSpan.FromMilliseconds(0);
                 video.Play();
             }
         }
@@ -290,10 +307,10 @@ namespace Eclipse.View
                         // get a handle on the active game's details
                         activeMatchPercentageText = mainWindowViewModel?.CurrentGameList?.Game1?.MatchDescription;
                         activeReleaseYearText = mainWindowViewModel?.CurrentGameList?.Game1?.ReleaseDate;
-                        activePlatformText = mainWindowViewModel?.CurrentGameList?.Game1?.Game?.Platform;
                         activeCommunityStarRatingImage = null;
                         activePlayModeImage = null;
                         activePlatformLogoImage = null;
+                        activeGameBezelImage = null;
 
                         Uri communityStarRatingUri = mainWindowViewModel?.CurrentGameList?.Game1?.CommunityStarRatingImage;
                         if(communityStarRatingUri != null)
@@ -315,6 +332,9 @@ namespace Eclipse.View
 
                         // start the timer - when it goes off, fade in the new background image
                         backgroundImageChangeDelay.Start();
+
+                        // TODO: testing with starting to play the video silently so it's loaded when it's really time
+                        PlayVideo(Video_SelectedGame, 0);
                     }
                 }
                 catch (Exception ex)
@@ -351,8 +371,8 @@ namespace Eclipse.View
                     Image_Playmode.Source = activePlayModeImage;
                     TextBlock_MatchPercentage.Text = activeMatchPercentageText;
                     TextBlock_ReleaseYear.Text = activeReleaseYearText;
-                    // TextBlock_Platform.Text = activePlatformText;
                     Image_PlatformLogo.Source = activePlatformLogoImage;
+                    Image_Bezel.Source = activeGameBezelImage;
                     FadeFrameworkElementOpacity(Grid_SelectedGameDetails, 1, 500);
                 }
                 catch (Exception ex)
@@ -451,6 +471,78 @@ namespace Eclipse.View
                 // undim clear logo during video
                 FadeFrameworkElementOpacity(Image_Displayed_GameClearLogo, 1, 25);
                 FadeFrameworkElementOpacity(Grid_SelectedGameDetails, 1, 25);
+            }
+        }
+
+        public void OnBeforeGameLaunching(IGame game, IAdditionalApplication app, IEmulator emulator)
+        {
+            Helpers.Log("Before game launched");
+
+            StopEverything();
+
+            // todo: fade in startup screen 
+
+        }
+
+        public void OnAfterGameLaunched(IGame game, IAdditionalApplication app, IEmulator emulator)
+        {
+            Helpers.Log("After game launched");
+
+            StopEverything();
+
+            // todo: fade out startup screen 
+
+        }
+
+        public void OnGameExited()
+        {
+            Helpers.Log("Game exited");
+
+            // todo: fade in game over screen
+            // todo: fade out game over screen 
+            
+            // reset the current game image and video
+            // todo: why isn't this working?
+            DoAnimateGameChange();
+        }
+
+        // setup fallback bezels once the media opens so we can identify whether we need the horizontal or veritical bezel
+        private void Video_SelectedGame_MediaOpened(object sender, RoutedEventArgs e)
+        {
+            Uri gameBezelUri = mainWindowViewModel?.CurrentGameList?.Game1?.GameBezelImage;
+            if (gameBezelUri == null)
+            {
+                // fall back to platform or default bezel if no game bezel, based on height/width of game video if(width >= height) use horizontal, else use vertical
+                // do not load bezel if aspect ratio  16:9 (width/height > 1.7)
+                if (Video_SelectedGame.NaturalVideoHeight != 0)
+                {
+                    if((float)((float)(Video_SelectedGame.NaturalVideoWidth / (float)Video_SelectedGame.NaturalVideoHeight)) < 1.7)
+                    {
+                        BezelOrientation defaultBezelOrientation = BezelOrientation.Horizontal;
+                        if (Video_SelectedGame.NaturalVideoWidth < Video_SelectedGame.NaturalVideoHeight)
+                        {
+                            defaultBezelOrientation = BezelOrientation.Vertical;
+                        }
+                        gameBezelUri = mainWindowViewModel.GetDefaultBezel(BezelType.PlatformDefault, defaultBezelOrientation, mainWindowViewModel.CurrentGameList.Game1.Game.Platform);
+                    }
+                }
+            }
+
+            if (gameBezelUri != null)
+            {
+                activeGameBezelImage = new BitmapImage(gameBezelUri);
+            }
+
+            // set the opacity mask on the bezel if it's setup or on the video if no bezel
+            if (activeGameBezelImage != null)
+            {
+                Image_Bezel.OpacityMask = opacityBrush;
+                Video_SelectedGame.OpacityMask = null;
+            }
+            else
+            {
+                Image_Bezel.OpacityMask = null;
+                Video_SelectedGame.OpacityMask = opacityBrush;
             }
         }
     }

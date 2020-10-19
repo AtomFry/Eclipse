@@ -499,8 +499,8 @@
                         <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
                             <LinearGradientBrush.GradientStops>
                                 <GradientStop Offset="0" Color="Transparent"/>
-                                <GradientStop Offset="0.25" Color="Black"/>
-                                <GradientStop Offset="0.75" Color="Black"/>
+                                <GradientStop Offset="0.2" Color="Black"/>
+                                <GradientStop Offset="0.8" Color="Black"/>
                                 <GradientStop Offset="1" Color="Transparent"/>
                             </LinearGradientBrush.GradientStops>
                         </LinearGradientBrush>
@@ -518,9 +518,9 @@
                         <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
                             <LinearGradientBrush.GradientStops>
                                 <GradientStop Offset="0" Color="Transparent"/>
-                                <GradientStop Offset="0.25" Color="Black"/>
-                                <GradientStop Offset="0.75" Color="Black"/>
-                                <GradientStop Offset="1" Color="Transparent"/>
+                                <GradientStop Offset="0.2" Color="Black"/>
+                                <GradientStop Offset="0.8" Color="Black"/>
+                                <GradientStop Offset="1" Color="Black"/>
                             </LinearGradientBrush.GradientStops>
                         </LinearGradientBrush>
                     </Image.OpacityMask>
@@ -539,23 +539,20 @@
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Stretch="Uniform"
                           LoadedBehavior="Manual"
                           Panel.ZIndex="110"
+                          MediaOpened="Video_SelectedGame_MediaOpened"
                           MediaEnded="Video_SelectedGame_MediaEnded">
-                    <MediaElement.OpacityMask>
-                        <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
-                            <LinearGradientBrush.GradientStops>
-                                <GradientStop Offset="0" Color="Transparent"/>
-                                <GradientStop Offset="0.25" Color="Black"/>
-                                <GradientStop Offset="0.75" Color="Black"/>
-                                <GradientStop Offset="1" Color="Transparent"/>
-                            </LinearGradientBrush.GradientStops>
-                        </LinearGradientBrush>
-                    </MediaElement.OpacityMask>
                 </MediaElement>
+                <Image  Name="Image_Bezel"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Panel.ZIndex="120"
+                        Stretch="Uniform">
+                </Image>
             </Grid>
 
             <Grid Name="GameListGrid"
-                  Grid.Row="9"
-                  Grid.RowSpan="9"
+                  Grid.Row="8"
+                  Grid.RowSpan="10"
                   Grid.Column="0"
                   Grid.ColumnSpan="32"
                   HorizontalAlignment="Stretch"
@@ -932,7 +929,7 @@
                             <GradientStop Offset="0" Color="Transparent"/>
                             <GradientStop Offset="0.2" Color="Black"/>
                             <GradientStop Offset="0.8" Color="Black"/>
-                            <GradientStop Offset="1" Color="Transparent"/>
+                            <GradientStop Offset="1" Color="Black"/>
                         </LinearGradientBrush.GradientStops>
                     </LinearGradientBrush>
                 </Rectangle.OpacityMask>

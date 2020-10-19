@@ -2,9 +2,11 @@
 using System;
 using System.ComponentModel;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Ink;
 using System.Windows.Media.Imaging;
+using Unbroken.LaunchBox.Plugins;
 using Unbroken.LaunchBox.Plugins.Data;
 
 namespace Eclipse.Models
@@ -13,9 +15,28 @@ namespace Eclipse.Models
     {
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
 
+        public static char[] InvalidFileNameChars = Path.GetInvalidFileNameChars();
         public IGame Game { get; set; }
         public TitleMatchType TitleMatchType { get; set; }
         public string ConvertedTitle { get; set; }
+        private string titleToFileName;
+        public string TitleToFileName
+        {
+            get
+            {
+                if(titleToFileName == null)
+                {
+                    titleToFileName = Game.Title;
+                    foreach(char invalidChar in InvalidFileNameChars)
+                    {
+                        titleToFileName = titleToFileName.Replace(invalidChar, '_');
+                    }
+                }
+                return titleToFileName;
+            }
+        }
+
+        
 
         public GameMatch()
         {
@@ -158,6 +179,84 @@ namespace Eclipse.Models
                     }
                 }
                 return platformClearLogoImage;
+            }
+        }
+
+        private string bezelPath;
+        private void SetBezelPath()
+        {
+            try
+            {
+                // find game specific bezel
+                // Game Specific: ..\LaunchBox\Plugins\Eclipse\Media\Images\{PLATFORM}\Bezel\{TitleToFileName}.png
+                string gameBezelPath = Path.Combine(Helpers.PluginImagesPath, Game.Platform, "Bezel");
+                if (Directory.Exists(gameBezelPath))
+                {
+                    string[] gameBezelFiles = Directory.GetFiles(gameBezelPath, $"{TitleToFileName}.*", SearchOption.AllDirectories);
+                    if (gameBezelFiles != null && gameBezelFiles.Length > 0)
+                    {
+                        bezelPath = gameBezelFiles[0];
+                        if (!string.IsNullOrWhiteSpace(bezelPath) && File.Exists(bezelPath))
+                        {
+                            return;
+                        }
+                    }
+                }
+
+                // check for MAME or retroarch bezels
+                // MAME: ..\LaunchBox\Emulators\MAME\artwork\{game.ApplicationFilePath}\"Bezel.png"
+                // Retroarch: ..\LaunchBox\Emulators\Retroarch\overlays\GameBezels\{CONVERTTORETROARCHPLATFORM}\{game.ApplicationFilePath}.png
+                IEmulator emulator = PluginHelper.DataManager.GetEmulatorById(Game.EmulatorId);
+                if (!string.IsNullOrWhiteSpace(emulator?.ApplicationPath))
+                {
+                    string emulatorFolder = Path.GetDirectoryName(emulator.ApplicationPath);
+
+                    if (emulator.ApplicationPath.ToLower().Contains("mame"))
+                    {
+                        bezelPath = Path.Combine(Helpers.ApplicationPath, emulatorFolder, "artwork", Path.GetFileNameWithoutExtension(Game.ApplicationPath), "Bezel.png");
+                    }
+                    else if (emulator.ApplicationPath.ToLower().Contains("retroarch"))
+                    {
+                        string retroarchPlatformFolder = "";
+                        if (Helpers.RetroarchPlatformLookup.TryGetValue(Game.Platform, out retroarchPlatformFolder))
+                        {
+                            bezelPath = Path.Combine(Helpers.ApplicationPath, emulatorFolder, @"overlays\GameBezels", retroarchPlatformFolder, $"{Path.GetFileNameWithoutExtension(Game.ApplicationPath)}.png");
+                        }
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(bezelPath) && File.Exists(bezelPath))
+                    {
+                        return;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Helpers.LogException(ex, $"setting up bezel for {Game.Title}");
+            }
+        }
+
+        private Uri gameBezelImage;
+        public Uri GameBezelImage
+        {
+            get
+            {
+                if(bezelPath == null)
+                {
+                    SetBezelPath();
+                }
+
+                if (gameBezelImage == null)
+                {
+                    if(!string.IsNullOrWhiteSpace(bezelPath))
+                    {
+                        if (File.Exists(bezelPath))
+                        {
+                            gameBezelImage = new Uri(bezelPath);
+                        }
+                    }
+                }
+                return gameBezelImage;
             }
         }
 

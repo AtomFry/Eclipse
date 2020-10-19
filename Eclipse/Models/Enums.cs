@@ -14,4 +14,17 @@ namespace Eclipse.Models
         FullTitleContains = 60,
         None = 0
     }
+
+    public enum BezelType
+    {
+        Game,
+        PlatformDefault,
+        Default
+    }
+
+    public enum BezelOrientation
+    {
+        Horizontal,
+        Vertical
+    }
 }

@@ -55,6 +55,12 @@ namespace Eclipse.View
         private Dictionary<string, List<GameMatch>> DeveloperGameDictionary;
         private Dictionary<string, List<GameMatch>> SeriesGameDictionary;
         private Dictionary<string, List<GameMatch>> PlayModeGameDictionary;
+        
+        // store platform bezels and default bezels in dictionary for easy lookup
+        // this is probably terrible design but the problem is I won't know the video orientation in the GameMatch, I get that once the MediaElement is loaded over in the view
+        // TODO: add game title (or id) here to take care of all game bezels too - currently game specific bezels are loaded up in the GameMatch
+        // Key: <BezelType, BezelOrientation, Platform> 
+        private Dictionary<Tuple<BezelType, BezelOrientation, string>, Uri> BezelDictionary;
 
         public FeatureChangeFunction FeatureChangeFunction { get; set; }
         public AnimateGameChangeFunction GameChangeFunction{ get; set; }
@@ -273,6 +279,47 @@ namespace Eclipse.View
             OptionList = new OptionList(listCategories);
         }
 
+        // todo: test falling back to platform bezels if game bezel is not there
+        private void GetPlatformBezels()
+        {
+            // plaform bezel path
+            // ..\LaunchBox\Plugins\Eclipse\Media\Images\Platforms\{PLATFORM}\Bezel\Horizontal.png
+            // ..\LaunchBox\Plugins\Eclipse\Media\Images\Platforms\{PLATFORM}\Bezel\Vertical.png
+
+            List<IPlatform> platforms = new List<IPlatform>(PluginHelper.DataManager.GetAllPlatforms());
+            foreach (var platform in platforms)
+            {
+                Tuple<BezelType, BezelOrientation, string> platformHorizontalBezelKey = new Tuple<BezelType, BezelOrientation, string>(BezelType.PlatformDefault, BezelOrientation.Horizontal, platform.Name);
+                Tuple<BezelType, BezelOrientation, string> platformVerticalBezelKey = new Tuple<BezelType, BezelOrientation, string>(BezelType.PlatformDefault, BezelOrientation.Vertical, platform.Name);
+
+                string platformHorizontalBezelPath = Path.Combine(Helpers.PluginImagesPath, "Platforms", platform.Name, "Bezel", "Horizontal.png");
+                string platformVerticalBezelPath = Path.Combine(Helpers.PluginImagesPath, "Platforms", platform.Name, "Bezel", "Vertical.png");
+
+                Helpers.Log($"{platformHorizontalBezelPath}");
+
+                if(File.Exists(platformHorizontalBezelPath)) BezelDictionary.Add(platformHorizontalBezelKey, new Uri(platformHorizontalBezelPath));
+                if(File.Exists(platformVerticalBezelPath)) BezelDictionary.Add(platformVerticalBezelKey, new Uri(platformVerticalBezelPath));
+            }
+        }
+
+        // todo: test falling back to default bezels if game bezel and platform bezel is not there
+        private void GetDefaultBezels()
+        {
+            // default bezel path
+            // ..\LaunchBox\Plugins\Eclipse\Media\Images\Platforms\Default\Bezel\Horizontal.png
+            // ..\LaunchBox\Plugins\Eclipse\Media\Images\Platforms\Default\Bezel\Vertical.png
+            Tuple<BezelType, BezelOrientation, string> defaultHorizontalBezelKey = new Tuple<BezelType, BezelOrientation, string>(BezelType.Default, BezelOrientation.Horizontal, string.Empty);
+            Tuple<BezelType, BezelOrientation, string> defaultVerticalBezelKey = new Tuple<BezelType, BezelOrientation, string>(BezelType.Default, BezelOrientation.Vertical, string.Empty);
+
+            string defaultHorizontalBezelPath = Path.Combine(Helpers.PluginImagesPath, "Platforms", "Default", "Bezel", "Horizontal.png");
+            string defaultVerticalBezelPath = Path.Combine(Helpers.PluginImagesPath, "Platforms", "Default", "Bezel", "Vertical.png");
+
+            if (File.Exists(defaultHorizontalBezelPath)) BezelDictionary.Add(defaultHorizontalBezelKey, new Uri(defaultHorizontalBezelPath));
+            if (File.Exists(defaultVerticalBezelPath)) BezelDictionary.Add(defaultVerticalBezelKey, new Uri(defaultVerticalBezelPath));
+        }
+
+
+
         private void GetGamesByPlatform()
         {
             List<GameList> listOfPlatformGames = new List<GameList>();
@@ -405,9 +452,42 @@ namespace Eclipse.View
             GameTitlePhrases = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
             SeriesGameDictionary = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
             PlayModeGameDictionary = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
+            BezelDictionary = new Dictionary<Tuple<BezelType, BezelOrientation, string>, Uri>();
 
             // get all the games from the launchbox install
             AllGames = DataService.GetGames();
+        }
+
+        public Uri GetDefaultBezel(BezelType bezelType, BezelOrientation bezelOrientation, string platformName)
+        {
+            Helpers.Log($"GetDefaultBezel: {bezelType} - {bezelOrientation} - {platformName}");
+
+            Uri bezelUri = GetBezel(bezelType, bezelOrientation, platformName);
+            if(bezelUri != null)
+            {
+                Helpers.Log("Found platform bezel");
+
+                return bezelUri;
+            }
+
+            // try the default bezel
+            if(bezelType != BezelType.Default)
+            {
+                Helpers.Log("Platform bezel not found - checking for default bezel");
+                bezelUri = GetBezel(BezelType.Default, bezelOrientation, string.Empty);
+            }
+
+            return bezelUri;
+        }
+
+        private Uri GetBezel(BezelType bezelType, BezelOrientation bezelOrientation, string platformName)
+        {
+            Uri bezelUri;
+
+            Tuple<BezelType, BezelOrientation, string> bezelKey = new Tuple<BezelType, BezelOrientation, string>(bezelType, bezelOrientation, platformName);
+            BezelDictionary.TryGetValue(bezelKey, out bezelUri);
+
+            return bezelUri;
         }
 
         public void InitializeData()
@@ -422,6 +502,12 @@ namespace Eclipse.View
         {
             try
             {
+                // get platform bezels
+                GetPlatformBezels();
+                GetDefaultBezels();
+
+
+
                 // get the total count of games for the progress bar
                 TotalGameCount = AllGames?.Count ?? 0;
 

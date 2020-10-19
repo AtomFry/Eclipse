@@ -22,12 +22,12 @@ namespace Eclipse
 
 
         // this is hacky as shit...the integers define the row/column span to use for background image/videos, dependent on whether we are in featured game or regular results mode
-        public static int BackgroundRowSpanFeature = 16;
-        public static int BackgroundRowSpanNormal = 10;
+        public static int BackgroundRowSpanFeature = 18;
+        public static int BackgroundRowSpanNormal = 9;
         public static int BackgroundColumnStartFeature = 0;
-        public static int BackgroundColumnStartNormal = 12;
+        public static int BackgroundColumnStartNormal = 16;
         public static int BackgroundColumnSpanFeature = 32;
-        public static int BackgroundColumnSpanNormal = 20;
+        public static int BackgroundColumnSpanNormal = 16;
 
         public static void Log(string logMessage)
         {
@@ -46,5 +46,22 @@ namespace Eclipse
             Helpers.Log($"Exception message: {ex?.Message ?? "null"}");
             Helpers.Log($"Exception stack: {ex?.StackTrace ?? "null"}");
         }
+
+        // todo: read this from a config file so we can change it without needing to recompile
+        public static Dictionary<string, string> RetroarchPlatformLookup = new Dictionary<string, string>()
+        {
+            { "Atari Jaguar", "AtariJaguar" },
+            { "NEC TurboGrafx-16", "TG16" },
+            { "NEC TurboGrafx-CD", "TG-CD" },
+            { "Nintendo 64", "N64" },
+            { "Nintendo Entertainment System", "NES" },
+            { "Nintendo Game Boy Advance", "GBA" },
+            { "Nintendo Game Boy Color", "GBC" },
+            { "Sega CD", "SegaCD" },
+            { "Sega Genesis", "Megadrive" },
+            { "Sega Saturn", "Saturn" },
+            { "Sony Playstation", "PSX" },
+            { "Super Nintendo Entertainment System", "SNES" }
+        };
     }
 }
