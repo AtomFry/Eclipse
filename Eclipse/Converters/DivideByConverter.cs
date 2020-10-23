@@ -8,6 +8,34 @@ using System.Windows.Data;
 
 namespace Eclipse.Converters
 {
+    public class FeatureOptionConverter<T> : IValueConverter
+    {
+        public T PlayGameValue { get; set; }
+        public T MoreInfoValue { get; set; }
+
+        public FeatureOptionConverter(T playGameValue, T moreInfoValue)
+        {
+            PlayGameValue = playGameValue;
+            MoreInfoValue = moreInfoValue;
+        }
+
+        public virtual object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value is FeatureGameOption && ((FeatureGameOption)value == FeatureGameOption.PlayGame) ? PlayGameValue : MoreInfoValue;
+        }
+
+        public virtual object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value is T && EqualityComparer<T>.Default.Equals((T)value, PlayGameValue);
+        }
+    }
+
+    public sealed class FeatureOptionToDoubleConverter : FeatureOptionConverter<Double>
+    {
+        public FeatureOptionToDoubleConverter() : base(100, 0) { }
+    }
+
+
     public class BooleanConverter<T> : IValueConverter
     {
         public T True { get; set; }
@@ -37,6 +65,12 @@ namespace Eclipse.Converters
         { }
     }
 
+    public sealed class BooleanToDoubleConverter : BooleanConverter<double>
+    {
+        public BooleanToDoubleConverter() : base(0,100)
+        { }
+    }
+
     // specifies the amount to offset the game list
     // intended to take isFeature as a parameter and the height of the gamelist
     // if displaying the feature game then we offset the gamelist by the height of the gamelist
@@ -48,7 +82,7 @@ namespace Eclipse.Converters
             bool isFeature = (bool) values[0];
             double offsetAmount = (double)values[1];
 
-            return isFeature ? offsetAmount + (offsetAmount/6.0) : 0;
+            return isFeature ? offsetAmount - offsetAmount/6.0 : 0;
         }
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
         {

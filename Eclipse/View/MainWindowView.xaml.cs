@@ -84,6 +84,7 @@ namespace Eclipse.View
             brush.GradientStops.Add(new GradientStop(Colors.Black, 0.20));
             brush.GradientStops.Add(new GradientStop(Colors.Black, 0.80));
             brush.GradientStops.Add(new GradientStop(Colors.Black, 1.00));
+            brush.Freeze();
             return brush;
         }
 
@@ -169,8 +170,6 @@ namespace Eclipse.View
 
         public bool OnEnter()
         {
-            StopEverything();
-
             mainWindowViewModel.DoEnter();
             return true;
         }
@@ -421,12 +420,6 @@ namespace Eclipse.View
                         FadeFrameworkElementOpacity(Image_Displayed_BackgroundImage, 0, 1000);
                         FadeFrameworkElementOpacity(Image_Active_BackgroundImage, 0, 1000);
                         FadeFrameworkElementOpacity(Image_Selected_Background_Black, 0, 1000);
-
-                        // dim game details during video for featured game 
-                        if (mainWindowViewModel.IsDisplayingFeature)
-                        {
-                            FadeFrameworkElementOpacity(Grid_SelectedGameDetails, 0, 2000);
-                        }
                     }
                 });
             }
@@ -447,9 +440,6 @@ namespace Eclipse.View
                     // fade in background image
                     FadeFrameworkElementOpacity(Image_Selected_Background_Black, 1, 500);
                     FadeFrameworkElementOpacity(Image_Displayed_BackgroundImage, 1, 500);
-
-                    // undim game details after video
-                    FadeFrameworkElementOpacity(Grid_SelectedGameDetails, 1, 25);
                 });
             }
             catch(Exception ex)
@@ -460,42 +450,26 @@ namespace Eclipse.View
 
         public void ChangedFeatureSetting()
         {
-            if ((Video_SelectedGame.Position.TotalSeconds > 0) && mainWindowViewModel.IsDisplayingFeature)
-            {
-                // dim game details during video if displaying feature
-                FadeFrameworkElementOpacity(Grid_SelectedGameDetails, .15, 2000);
-            }
-            else
-            {
-                // undim game details if not feature and/or not video playing
-                FadeFrameworkElementOpacity(Grid_SelectedGameDetails, 1, 25);
-            }
+            // TODO: remove this?  
+
         }
 
         public void OnBeforeGameLaunching(IGame game, IAdditionalApplication app, IEmulator emulator)
         {
-            Helpers.Log("Before game launched");
-
             StopEverything();
 
             // todo: fade in startup screen 
-
         }
 
         public void OnAfterGameLaunched(IGame game, IAdditionalApplication app, IEmulator emulator)
         {
-            Helpers.Log("After game launched");
-
             StopEverything();
 
             // todo: fade out startup screen 
-
         }
 
         public void OnGameExited()
         {
-            Helpers.Log("Game exited");
-
             // todo: fade in game over screen
             // todo: fade out game over screen 
             

@@ -164,6 +164,20 @@ namespace Eclipse.View
             }
         }
 
+        private bool isDisplayingMoreInfo;
+        public bool IsDisplayingMoreInfo
+        {
+            get { return isDisplayingMoreInfo; }
+            set
+            {
+                if(isDisplayingMoreInfo != value)
+                {
+                    isDisplayingMoreInfo = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("IsDisplayingMoreInfo"));
+                }
+            }
+        }
+
         private string errorMessage;
         public string ErrorMessage
         {
@@ -294,8 +308,6 @@ namespace Eclipse.View
 
                 string platformHorizontalBezelPath = Path.Combine(Helpers.PluginImagesPath, "Platforms", platform.Name, "Bezel", "Horizontal.png");
                 string platformVerticalBezelPath = Path.Combine(Helpers.PluginImagesPath, "Platforms", platform.Name, "Bezel", "Vertical.png");
-
-                Helpers.Log($"{platformHorizontalBezelPath}");
 
                 if(File.Exists(platformHorizontalBezelPath)) BezelDictionary.Add(platformHorizontalBezelKey, new Uri(platformHorizontalBezelPath));
                 if(File.Exists(platformVerticalBezelPath)) BezelDictionary.Add(platformVerticalBezelKey, new Uri(platformVerticalBezelPath));
@@ -446,6 +458,8 @@ namespace Eclipse.View
         public MainWindowViewModel()
         {
             IsInitializing = true;
+            FeatureOption = FeatureGameOption.PlayGame;
+
             DeveloperGameDictionary = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
             PublisherGameDictionary = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
             GenreGameDictionary = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
@@ -460,20 +474,15 @@ namespace Eclipse.View
 
         public Uri GetDefaultBezel(BezelType bezelType, BezelOrientation bezelOrientation, string platformName)
         {
-            Helpers.Log($"GetDefaultBezel: {bezelType} - {bezelOrientation} - {platformName}");
-
             Uri bezelUri = GetBezel(bezelType, bezelOrientation, platformName);
             if(bezelUri != null)
             {
-                Helpers.Log("Found platform bezel");
-
                 return bezelUri;
             }
 
             // try the default bezel
             if(bezelType != BezelType.Default)
             {
-                Helpers.Log("Platform bezel not found - checking for default bezel");
                 bezelUri = GetBezel(BezelType.Default, bezelOrientation, string.Empty);
             }
 
@@ -967,15 +976,38 @@ namespace Eclipse.View
             try
             {
                 // stop displaying error
-                IsDisplayingError = false;
+                if (IsDisplayingError)
+                {
+                    IsDisplayingError = false;
+                    return;
+                }
 
                 // if picking category and going left then close the category and keep going left
                 if (IsPickingCategory)
                 {
-                    IsPickingCategory = false;
-                    CurrentGameList.CycleBackward();
-                    CallGameChangeFunction();
+                    // todo: play with not letting go left from the settings/category selection
+                    //IsPickingCategory = false;
+                    //CurrentGameList.CycleBackward();
+                    //CallGameChangeFunction();
                     return;
+                }
+
+                if (IsDisplayingFeature)
+                {
+                    // toggle the feature option
+                    if (FeatureOption == FeatureGameOption.MoreInfo)
+                    {
+                        FeatureOption = FeatureGameOption.PlayGame;
+                        return;
+                    }
+
+                    // open the settings/category menu
+                    if (FeatureOption == FeatureGameOption.PlayGame)
+                    {
+                        // display category options
+                        IsPickingCategory = true;
+                        return;
+                    }
                 }
 
                 // if current game is the first game then going left displays the category options
@@ -992,13 +1024,6 @@ namespace Eclipse.View
                     CallGameChangeFunction();
                     return;
                 }
-
-                if (IsDisplayingFeature)
-                {
-                    // display category options
-                    IsPickingCategory = true;
-                    return;
-                }
             }
             catch(Exception ex)
             {
@@ -1011,13 +1036,27 @@ namespace Eclipse.View
             try
             {
                 // stop displaying error
-                IsDisplayingError = false;
+                if (IsDisplayingError)
+                {
+                    IsDisplayingError = false;
+                    return;
+                }
 
                 // if picking category, going right closes category selection
                 if (IsPickingCategory)
                 {
                     IsPickingCategory = false;
                     CallGameChangeFunction();
+                    return;
+                }
+
+                // toggle the feature option
+                if(IsDisplayingFeature)
+                {
+                    if(FeatureOption == FeatureGameOption.PlayGame)
+                    {
+                        FeatureOption = FeatureGameOption.MoreInfo;
+                    }
                     return;
                 }
 
@@ -1156,6 +1195,12 @@ namespace Eclipse.View
                 return;
             }
 
+            if(isDisplayingFeature && FeatureOption == FeatureGameOption.MoreInfo)
+            {
+                IsDisplayingMoreInfo = true;
+                return;
+            }
+
             if ((isDisplayingFeature) || (isDisplayingResults))
             {
                 // start the current game
@@ -1171,10 +1216,14 @@ namespace Eclipse.View
         public bool DoEscape()
         {           
             // stop displaying error if it was displaying
-            IsDisplayingError = false;
+            if(IsDisplayingError)
+            {
+                IsDisplayingError = false;
+                return true;
+            }
 
             // let bigbox handle escape and go to the bigbox menu
-            if(IsPickingCategory)
+            if (IsPickingCategory)
             {
                 return false;
             }
@@ -1222,6 +1271,71 @@ namespace Eclipse.View
         public Uri SettingsIconGrey { get; } = ResourceImages.SettingsIconGrey;
 
         public Uri SettingsIconWhite { get; } = ResourceImages.SettingsIconWhite;
+
+        private FeatureGameOption featureOption;
+        public FeatureGameOption FeatureOption
+        {
+            get { return featureOption; }
+            set
+            {
+                if(featureOption != value)
+                {
+                    featureOption = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("FeatureOption"));
+                }
+                setButtonImages();
+            }
+        }
+
+        private void setButtonImages()
+        {
+            if (featureOption == FeatureGameOption.PlayGame)
+            {
+                PlayButtonImage = ResourceImages.PlayButtonSelected;
+                MoreInfoImage = ResourceImages.MoreInfoUnSelected;
+            }
+            else
+            {
+                PlayButtonImage = ResourceImages.PlayButtonUnSelected;
+                MoreInfoImage = ResourceImages.MoreInfoSelected;
+            }
+
+        }
+
+        private Uri playButtonImage;
+        public Uri PlayButtonImage
+        {
+            get
+            {
+                return playButtonImage;
+            }
+            set
+            {
+                if(playButtonImage != value)
+                {
+                    playButtonImage = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("PlayButtonImage"));
+                }
+            }
+        }
+
+        private Uri moreInfoImage;
+        public Uri MoreInfoImage
+        {
+            get
+            {
+                return moreInfoImage;
+            }
+
+            set
+            {
+                if(moreInfoImage != value)
+                {
+                    moreInfoImage = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("MoreInfoImage"));
+                }
+            }
+        }
 
         public event PropertyChangedEventHandler PropertyChanged = delegate {};
     }

@@ -25,7 +25,9 @@
         <myconverters:IsFeatureToColumnSpanConverter x:Key="FeatureToColumnSpanConverter"/>
         <myconverters:IsFeatureToColumnStartConverter x:Key="FeatureToColumnStartConverter"/>
         <myconverters:BooleanToVisibilityConverter x:Key="InvertBooleanToVisibilityConverter" True="Collapsed" False="Visible"/>
-    
+        <myconverters:FeatureOptionToDoubleConverter x:Key="PlayGameOpacityConverter" PlayGameValue="1.0" MoreInfoValue="0.5"/>
+        <myconverters:FeatureOptionToDoubleConverter x:Key="MoreInfoOpacityConverter" PlayGameValue="0.5" MoreInfoValue="1.0"/>
+
         <!-- 1-second image fade in - call when game changes -->
         <Storyboard x:Key="BackgroundImageFadeInSlow">
             <DoubleAnimation BeginTime="0:0:0" 
@@ -90,10 +92,38 @@
         <Grid   Background="Transparent"
                 VerticalAlignment="Stretch"
                 HorizontalAlignment="Stretch"
+                Panel.ZIndex="1000"
                 Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
                 Height="{Binding ActualHeight, ElementName=MainWindowUserControl}"
                 Visibility="{Binding IsDisplayingError, Converter={StaticResource BoolToVis}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Rectangle  Grid.Row="2"
+                        Grid.RowSpan="1"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"        
+                        Fill="Black">
+                <Rectangle.OpacityMask>
+                    <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                        <LinearGradientBrush.GradientStops>
+                            <GradientStop Offset="0" Color="Transparent"/>
+                            <GradientStop Offset="0.2" Color="Black"/>
+                            <GradientStop Offset="0.8" Color="Black"/>
+                            <GradientStop Offset="1" Color="Transparent"/>
+                        </LinearGradientBrush.GradientStops>
+                    </LinearGradientBrush>
+                </Rectangle.OpacityMask>
+            </Rectangle>            
+            
             <TextBlock Text="{Binding ErrorMessage}"
+                    Grid.Row="2"
+                    Grid.RowSpan="1"                       
                    Foreground="GhostWhite"
                    FontFamily="Calibri"
                    FontSize="48"
@@ -348,6 +378,12 @@
                   Grid.Column="1" Grid.ColumnSpan="15"
                   Panel.ZIndex="500"
                   Background="Transparent">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="5*"/>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="2*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
                 <Grid.RenderTransform>
                     <TranslateTransform>
                         <TranslateTransform.Y>
@@ -357,11 +393,7 @@
                             </MultiBinding>
                         </TranslateTransform.Y>
                     </TranslateTransform>
-                </Grid.RenderTransform>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="5*"/>
-                    <RowDefinition Height="3*" />
-                </Grid.RowDefinitions>
+                </Grid.RenderTransform>                
 
                 <!-- Displaying the game clear logo for the selected game -->
                 <Image Name="Image_Displayed_GameClearLogo"
@@ -372,16 +404,9 @@
                         RenderOptions.BitmapScalingMode="HighQuality" 
                         Stretch="Uniform"/>
 
-                <Grid Name="Grid_SelectedGameDetails"
-                      Grid.Row="1"
-                      Grid.RowSpan="4">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="1*" />
-                        <RowDefinition Height="1*" />
-                    </Grid.RowDefinitions>
+                <Grid Name="Grid_SelectedGameDetails" Grid.Row="1">
                     <!-- Selected game details-->
                     <StackPanel Name="StackPanel_SelectedGameDetails"
-                            Grid.Row="0"
                             Orientation="Horizontal"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch">
@@ -468,8 +493,41 @@
                             RenderOptions.BitmapScalingMode="HighQuality" 
                             Stretch="Uniform"/>
                     </StackPanel>
+
+                </Grid>
+
+                <Grid Grid.Row="2"
+                      Grid.RowSpan="1"
+                      Visibility="{Binding IsDisplayingFeature, Converter={StaticResource BoolToVis}}"
+                      Width="{Binding ActualWidth, ElementName=StackPanel_SelectedGameDetails}"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch">
+                    <StackPanel x:Name="StackPanel_FeatureButtons" 
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch">
+                        <Image  Name="Image_PlayButton" 
+                                RenderOptions.BitmapScalingMode="HighQuality" 
+                                Height="{Binding ActualHeight, ElementName=Grid_SelectedGameDetails}"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Stretch"
+                                Stretch="Uniform"
+                                Margin="5,5,5,5"
+                                Opacity="{Binding FeatureOption, Converter={StaticResource PlayGameOpacityConverter}}"
+                            Source="{Binding PlayButtonImage}"/>
+                        <Image Name="Image_MoreInfoButton" 
+                               RenderOptions.BitmapScalingMode="HighQuality" 
+                               Height="{Binding ActualHeight, ElementName=Grid_SelectedGameDetails}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Stretch"
+                               Stretch="Uniform"
+                               Margin="5,5,5,5"
+                               Opacity="{Binding FeatureOption, Converter={StaticResource MoreInfoOpacityConverter}}"
+                               Source="{Binding MoreInfoImage}"/>
+                    </StackPanel>
                 </Grid>
             </Grid>
+
 
             <!-- Selected game background image -->
             <Grid Name="Grid_Selected_Game_Background"
@@ -594,7 +652,6 @@
                     </Grid.RowDefinitions>
                     <TextBlock  
                         Name="TextBlock_CurrentGameListDescription"
-                        Visibility="{Binding IsDisplayingFeature, Converter={StaticResource InvertBooleanToVisibilityConverter}}"
                         Grid.Row="0"
                         Grid.RowSpan="1"
                         FontFamily="Calibri" 
@@ -920,24 +977,6 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <Rectangle  Grid.Row="1"
-                        Grid.RowSpan="3"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch"        
-                        Fill="Black">
-                <Rectangle.OpacityMask>
-                    <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                        <LinearGradientBrush.GradientStops>
-                            <GradientStop Offset="0" Color="Transparent"/>
-                            <GradientStop Offset="0.2" Color="Black"/>
-                            <GradientStop Offset="0.8" Color="Black"/>
-                            <GradientStop Offset="1" Color="Black"/>
-                        </LinearGradientBrush.GradientStops>
-                    </LinearGradientBrush>
-                </Rectangle.OpacityMask>
-
-            </Rectangle>
-
 
             <Image Name="Image_Listening"
                 Grid.Row="2"
@@ -946,7 +985,15 @@
                 VerticalAlignment="Stretch"
                 Stretch="Uniform"
                 RenderOptions.BitmapScalingMode="HighQuality" 
-                gif:ImageBehavior.AnimatedSource="{Binding VoiceRecognitionGif}"/>
+                gif:ImageBehavior.AnimatedSource="{Binding VoiceRecognitionGif}">
+                <Image.OpacityMask>
+                    <RadialGradientBrush Center="0.5,0.5">
+                        <GradientStop Offset="0" Color="Black"/>
+                        <GradientStop Offset="0.85" Color="Black"/>
+                        <GradientStop Offset="1.00" Color="Transparent"/>
+                    </RadialGradientBrush>
+                </Image.OpacityMask>
+            </Image>
         </Grid>
         <!-- END RECOGNIZING -->
 

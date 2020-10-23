@@ -27,4 +27,10 @@ namespace Eclipse.Models
         Horizontal,
         Vertical
     }
+
+    public enum FeatureGameOption
+    {
+        PlayGame,
+        MoreInfo
+    }
 }

@@ -289,6 +289,10 @@
     <Content Include="Media\StarRating\5.0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Resources\MoreInfo_Selected.png" />
+    <Resource Include="Resources\MoreInfo_Unselected.png" />
+    <Resource Include="Resources\PlayButton_Selected.png" />
+    <Resource Include="Resources\PlayButton_Unselected.png" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Media\Images\" />
