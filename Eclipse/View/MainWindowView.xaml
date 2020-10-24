@@ -21,6 +21,7 @@
         <myconverters:GameMatchToSettingsOpacityConverter x:Key="SettingsOpacityConverter"/>
         <myconverters:DisplayingFeatureOffsetConverter x:Key="FeatureOffsetConverter"/>
         <myconverters:DisplayingFeatureLogoOffsetConverter x:Key="FeatureLogoOffsetConverter"/>
+        <myconverters:DisplayingFeatureVideoOffsetConverter x:Key="FeatureVideoOffsetConverter"/>
         <myconverters:IsFeatureToRowSpanConverter x:Key="FeatureToRowSpanConverter"/>
         <myconverters:IsFeatureToColumnSpanConverter x:Key="FeatureToColumnSpanConverter"/>
         <myconverters:IsFeatureToColumnStartConverter x:Key="FeatureToColumnStartConverter"/>
@@ -28,6 +29,7 @@
         <myconverters:FeatureOptionToDoubleConverter x:Key="PlayGameOpacityConverter" PlayGameValue="1.0" MoreInfoValue="0.5"/>
         <myconverters:FeatureOptionToDoubleConverter x:Key="MoreInfoOpacityConverter" PlayGameValue="0.5" MoreInfoValue="1.0"/>
 
+        
         <!-- 1-second image fade in - call when game changes -->
         <Storyboard x:Key="BackgroundImageFadeInSlow">
             <DoubleAnimation BeginTime="0:0:0" 
@@ -36,7 +38,6 @@
                              Duration="0:0:0.5"
                              Completed="BackgroundImageFadeInSlow_Completed"/>
         </Storyboard>
-
     </UserControl.Resources>
 
     <Canvas Background="Black" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
@@ -452,7 +453,8 @@
                             TextAlignment="Center"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"/>
-                        <Image Name="Image_CommunityStarRating"
+
+                            <Image Name="Image_CommunityStarRating"
                             RenderOptions.BitmapScalingMode="HighQuality" 
                             Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
                             HorizontalAlignment="Center"
@@ -493,7 +495,6 @@
                             RenderOptions.BitmapScalingMode="HighQuality" 
                             Stretch="Uniform"/>
                     </StackPanel>
-
                 </Grid>
 
                 <Grid Grid.Row="2"
@@ -607,6 +608,16 @@
                         Panel.ZIndex="120"
                         Stretch="Uniform">
                 </Image>
+                <Grid.RenderTransform>
+                    <TranslateTransform>
+                        <TranslateTransform.Y>
+                            <MultiBinding Converter="{StaticResource FeatureVideoOffsetConverter}">
+                                <Binding Path="IsDisplayingFeature"/>
+                                <Binding ElementName="CurrentListGrid" Path="ActualHeight"/>
+                            </MultiBinding>
+                        </TranslateTransform.Y>
+                    </TranslateTransform>
+                </Grid.RenderTransform>
             </Grid>
 
             <Grid Name="GameListGrid"

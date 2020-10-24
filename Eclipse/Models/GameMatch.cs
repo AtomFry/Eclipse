@@ -1,5 +1,7 @@
 ﻿using Eclipse.View;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Text;
@@ -13,6 +15,8 @@ namespace Eclipse.Models
 {
     public class GameMatch : INotifyPropertyChanged
     {
+
+
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
 
         public static char[] InvalidFileNameChars = Path.GetInvalidFileNameChars();
@@ -50,21 +54,58 @@ namespace Eclipse.Models
             ConvertedTitle = convertedTitle;
         }
 
+        public static ConcurrentDictionary<string, Uri> GameFrontImages = new ConcurrentDictionary<string, Uri>();
+        // public static Dictionary<string, Uri> GameFrontImages = new Dictionary<string, Uri>();
+
         public void SetupFrontImage()
         {
-            string frontImagePath = Game?.FrontImagePath;
-            if(!string.IsNullOrWhiteSpace(frontImagePath))
+            Uri frontImage;
+            if (GameFrontImages.TryGetValue(Game.Id, out frontImage))
+            {
+                FrontImage = frontImage;
+            }
+            /*
+            else
+            {
+                string frontImagePath = Game?.FrontImagePath;
+                if (!string.IsNullOrWhiteSpace(frontImagePath))
+                {
+                    string customPath = frontImagePath.Replace(Helpers.ApplicationPath, Helpers.MediaFolder);
+                    if (!string.IsNullOrWhiteSpace(customPath))
+                    {
+                        if (File.Exists(customPath))
+                        {
+                            FrontImage = new Uri(customPath);
+                            GameFrontImages.TryAdd(Game.Id, FrontImage);
+                        }
+                    }
+                }
+            }
+            */
+        }
+
+        public static void AddGameToFrontImageDictionary(IGame game)
+        {
+            string frontImagePath = game?.FrontImagePath;
+            if (!string.IsNullOrWhiteSpace(frontImagePath))
             {
                 string customPath = frontImagePath.Replace(Helpers.ApplicationPath, Helpers.MediaFolder);
-                if(!string.IsNullOrWhiteSpace(customPath))
+                if (!string.IsNullOrWhiteSpace(customPath))
                 {
                     if (File.Exists(customPath))
                     {
-                        FrontImage = new Uri(customPath);
+                        // regular dictionary version 
+                        // GameFrontImages.Add(game.Id, new Uri(customPath));
+                        
+                        // concurrent dictionary version
+                        GameFrontImages.TryAdd(game.Id, new Uri(customPath));
                     }
                 }
             }
         }
+
+
+        public Func<string, Uri, Uri> GameFrontDictionaryUpdate = (string x, Uri y) => y;
 
         private Uri frontImage;
         public Uri FrontImage

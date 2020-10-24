@@ -82,7 +82,7 @@ namespace Eclipse.Converters
             bool isFeature = (bool) values[0];
             double offsetAmount = (double)values[1];
 
-            return isFeature ? offsetAmount - offsetAmount/6.0 : 0;
+            return isFeature ? offsetAmount : 0;
         }
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
         {
@@ -99,6 +99,22 @@ namespace Eclipse.Converters
             double offsetAmount = (double)values[1];
 
             return isFeature ? offsetAmount/2.0 : 0;
+        }
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException("Going back is not supported");
+        }
+    }
+
+    // shifts the game video and bezel up 1/2 way when displaying feature
+    public class DisplayingFeatureVideoOffsetConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            bool isFeature = (bool)values[0];
+            double offsetAmount = (double)values[1];
+
+            return isFeature ? -1 * offsetAmount / 6.0 : 0;
         }
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
         {

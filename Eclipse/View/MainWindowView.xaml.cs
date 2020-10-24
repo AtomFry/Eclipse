@@ -45,6 +45,8 @@ namespace Eclipse.View
 
         public MainWindowView()
         {
+            Helpers.Log($"Starting: {DateTime.Now}");
+
             InitializeComponent();
 
             // create a timer to delay swapping background images
@@ -130,6 +132,7 @@ namespace Eclipse.View
                 }
             }
 
+            // if all lists in the current list set are processed then look for any list with images to process
             if (gameListToProcess == null)
             {
                 List<GameListSet> allGameListSets = mainWindowViewModel?.GameListSets;
@@ -160,6 +163,7 @@ namespace Eclipse.View
                 Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new SetupGameImageDelegate(this.SetupGameImage));
                 return;
             }
+            Helpers.Log($"Finished loading images: {DateTime.Now}");
         }
 
         public bool OnDown(bool held)

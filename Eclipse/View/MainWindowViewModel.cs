@@ -10,6 +10,7 @@ using System.Data;
 using Eclipse.Models;
 using System.Speech.Recognition;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Eclipse.View
 {
@@ -515,8 +516,6 @@ namespace Eclipse.View
                 GetPlatformBezels();
                 GetDefaultBezels();
 
-
-
                 // get the total count of games for the progress bar
                 TotalGameCount = AllGames?.Count ?? 0;
 
@@ -565,10 +564,11 @@ namespace Eclipse.View
 
                 LoadingMessage = null;
 
-                // load up game dictionaries to prepare lists and voice recognition
                 foreach (IGame game in AllGames)
                 {
                     InitializationGameCount += 1;
+
+                    GameMatch.AddGameToFrontImageDictionary(game);
 
                     // create a dictionary of play modes and game matches
                     foreach (string playMode in game.PlayModes)
