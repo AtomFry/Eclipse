@@ -45,8 +45,6 @@ namespace Eclipse.View
 
         public MainWindowView()
         {
-            Helpers.Log($"Starting: {DateTime.Now}");
-
             InitializeComponent();
 
             // create a timer to delay swapping background images
@@ -163,7 +161,6 @@ namespace Eclipse.View
                 Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new SetupGameImageDelegate(this.SetupGameImage));
                 return;
             }
-            Helpers.Log($"Finished loading images: {DateTime.Now}");
         }
 
         public bool OnDown(bool held)
@@ -174,13 +171,17 @@ namespace Eclipse.View
 
         public bool OnEnter()
         {
+            // todo: stop everything in a different way - pass a function and only stop when we want to
+            // StopEverything();
+
             mainWindowViewModel.DoEnter();
             return true;
         }
 
         public bool OnEscape()
         {
-            StopEverything();
+            // todo: stop everything in a different way - pass a function and only stop when we want to
+            // StopEverything();
 
             return mainWindowViewModel.DoEscape();
         }

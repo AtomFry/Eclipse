@@ -5,9 +5,40 @@ using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Media;
 
 namespace Eclipse.Converters
 {
+    public class GameDetailOptionToBrushConverter : GameDetailOptionConverter<Brush>
+    {
+
+    }
+
+    public class GameDetailOptionConverter<T> : IValueConverter
+    {
+        public GameDetailOption GameDetailComparison { get; set; }
+        public T MatchingValue { get; set; }
+        public T UnmatchingValue { get; set; }
+
+
+        public virtual object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            GameDetailOption gameDetailFromBinding = (GameDetailOption)value;
+            if(gameDetailFromBinding == GameDetailComparison)
+            {
+                return MatchingValue;
+            }
+
+            return UnmatchingValue;
+        }
+
+        public virtual object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+
     public class FeatureOptionConverter<T> : IValueConverter
     {
         public T PlayGameValue { get; set; }
@@ -35,6 +66,109 @@ namespace Eclipse.Converters
         public FeatureOptionToDoubleConverter() : base(100, 0) { }
     }
 
+    public class StringLengthConverter<T> : IValueConverter
+    {
+        public T Empty { get; set; }
+        public T NonEmpty { get; set; }
+
+        public StringLengthConverter(T EmptyValue, T NonEmptyValue)
+        {
+            Empty = EmptyValue;
+            NonEmpty = NonEmpty;
+        }
+
+        public virtual object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            string param = value as string;
+            if(string.IsNullOrWhiteSpace(param))
+            {
+                return Empty;
+            }
+            else
+            {
+                return NonEmpty;
+            }
+        }
+
+        public virtual object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class StringLengthToVisibilityConverter : StringLengthConverter<Visibility>
+    {
+        public StringLengthToVisibilityConverter() : base(Visibility.Collapsed, Visibility.Visible) { }
+    }
+
+    public class FloatConverter<T> : IValueConverter
+    {
+        public T ZeroValue { get; set; }
+        public T NonZeroValue { get; set; }
+        public FloatConverter(T zeroValue, T nonZeroValue)
+        {
+            ZeroValue = zeroValue;
+            NonZeroValue = nonZeroValue;
+        }
+
+        public virtual object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            float parameterValue = (float)value;
+            if (parameterValue <= 0) { return ZeroValue; }
+            return NonZeroValue;
+        }
+        public virtual object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class UserRatingToBrushConverter : IMultiValueConverter
+    {
+        public Color LessThanOrEqualValue { get; set; } = Colors.WhiteSmoke;
+        public Color GreaterThanValue { get; set; } = Colors.Black;
+
+        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            float userRating = -1f;
+            if(values[0] is float)
+            {
+                userRating = (float)values[0];
+            }
+
+            float offset = -1f;
+            if(values[1] is float)
+            {
+                offset = (float)values[1];
+            }
+
+
+            int starNumber = -1;
+            if(values[2] is int)
+            {
+                starNumber = (int)values[2];
+            }
+
+            offset = offset + starNumber - 1;
+
+            if(userRating >= offset)
+            {
+                return GreaterThanValue;
+            }
+
+            return LessThanOrEqualValue;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException("Going back is not supported");
+        }
+    }
+
+    public class FloatToStringConverter : FloatConverter<string>
+    {
+        public FloatToStringConverter() : base(string.Empty, string.Empty) { }
+    }
 
     public class BooleanConverter<T> : IValueConverter
     {
@@ -54,21 +188,28 @@ namespace Eclipse.Converters
 
         public virtual object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return value is T && EqualityComparer<T>.Default.Equals((T)value, True);
+            throw new NotImplementedException();
         }
     }
 
     public sealed class BooleanToVisibilityConverter : BooleanConverter<Visibility>
     {
-        public BooleanToVisibilityConverter() :
-            base(Visibility.Visible, Visibility.Collapsed)
-        { }
+        public BooleanToVisibilityConverter() : base(Visibility.Visible, Visibility.Collapsed) { }
     }
 
     public sealed class BooleanToDoubleConverter : BooleanConverter<double>
     {
-        public BooleanToDoubleConverter() : base(0,100)
-        { }
+        public BooleanToDoubleConverter() : base(0,100) { }
+    }
+
+    public sealed class BooleanToStringConverter : BooleanConverter<string>
+    {
+        public BooleanToStringConverter() : base(string.Empty, string.Empty) { }
+    }
+
+    public sealed class BooleanToPointCollectionConverter : BooleanConverter<PointCollection>
+    {
+        public BooleanToPointCollectionConverter() : base(null, null) { }
     }
 
     // specifies the amount to offset the game list
@@ -80,10 +221,16 @@ namespace Eclipse.Converters
         public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             bool isFeature = (bool) values[0];
-            double offsetAmount = (double)values[1];
+            bool isMoreInfo = (bool)values[1];
+            double offsetAmount = (double)values[2];
 
-            return isFeature ? offsetAmount : 0;
+            if (isMoreInfo) return offsetAmount * 2;
+
+            if (isFeature) return offsetAmount;
+
+            return 0;
         }
+
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
         {
             throw new NotImplementedException("Going back is not supported");
@@ -96,9 +243,12 @@ namespace Eclipse.Converters
         public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             bool isFeature = (bool)values[0];
-            double offsetAmount = (double)values[1];
+            bool isMoreInfo = (bool)values[1];
+            double offsetAmount = (double)values[2];
 
-            return isFeature ? offsetAmount/2.0 : 0;
+            if (isMoreInfo) return 0;
+            if (isFeature) return offsetAmount / 2.0;
+            return 0;
         }
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
         {
@@ -112,9 +262,12 @@ namespace Eclipse.Converters
         public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             bool isFeature = (bool)values[0];
-            double offsetAmount = (double)values[1];
+            bool isMoreInfo = (bool)values[1];
+            double offsetAmount = (double)values[2];
 
-            return isFeature ? -1 * offsetAmount / 6.0 : 0;
+            if (isMoreInfo) return 0;
+            if (isFeature) return -1 * offsetAmount/6.0;
+            return 0;
         }
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
         {

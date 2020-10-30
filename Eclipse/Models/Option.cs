@@ -19,15 +19,16 @@ namespace Eclipse.Models
         Playlist,
         PlayMode,
         Developer,
-        Publisher
+        Publisher,
+        MoreLikeThis
     }
 
     public class OptionList : INotifyPropertyChanged
     {
-        private ListCycle<Option> optionCycle;
+        private ListCycle<Option<ListCategoryType>> optionCycle;
 
-        private List<Option> options;
-        public List<Option> Options
+        private List<Option<ListCategoryType>> options;
+        public List<Option<ListCategoryType>> Options
         {
             get { return options; }
             set
@@ -45,10 +46,10 @@ namespace Eclipse.Models
 
         }
 
-        public OptionList(List<Option> _optionList)
+        public OptionList(List<Option<ListCategoryType>> _optionList)
         {
             Options = _optionList;
-            optionCycle = new ListCycle<Option>(Options, 10);
+            optionCycle = new ListCycle<Option<ListCategoryType>>(Options, 10);
             RefreshOptions();
         }
 
@@ -78,8 +79,8 @@ namespace Eclipse.Models
             Option9 = optionCycle.GetItem(9);
         }
 
-        private Option option0;
-        public Option Option0
+        private Option<ListCategoryType> option0;
+        public Option<ListCategoryType> Option0
         {
             get { return option0; }
             set
@@ -92,8 +93,8 @@ namespace Eclipse.Models
             }
         }
 
-        private Option option1;
-        public Option Option1
+        private Option<ListCategoryType> option1;
+        public Option<ListCategoryType> Option1
         {
             get { return option1; }
             set
@@ -106,8 +107,8 @@ namespace Eclipse.Models
             }
         }
 
-        private Option option2;
-        public Option Option2
+        private Option<ListCategoryType> option2;
+        public Option<ListCategoryType> Option2
         {
             get { return option2; }
             set
@@ -120,8 +121,8 @@ namespace Eclipse.Models
             }
         }
 
-        private Option option3;
-        public Option Option3
+        private Option<ListCategoryType> option3;
+        public Option<ListCategoryType> Option3
         {
             get { return option3; }
             set
@@ -134,8 +135,8 @@ namespace Eclipse.Models
             }
         }
 
-        private Option option4;
-        public Option Option4
+        private Option<ListCategoryType> option4;
+        public Option<ListCategoryType> Option4
         {
             get { return option4; }
             set
@@ -148,8 +149,8 @@ namespace Eclipse.Models
             }
         }
 
-        private Option option5;
-        public Option Option5
+        private Option<ListCategoryType> option5;
+        public Option<ListCategoryType> Option5
         {
             get { return option5; }
             set
@@ -162,8 +163,8 @@ namespace Eclipse.Models
             }
         }
 
-        private Option option6;
-        public Option Option6
+        private Option<ListCategoryType> option6;
+        public Option<ListCategoryType> Option6
         {
             get { return option6; }
             set
@@ -176,8 +177,8 @@ namespace Eclipse.Models
             }
         }
 
-        private Option option7;
-        public Option Option7
+        private Option<ListCategoryType> option7;
+        public Option<ListCategoryType> Option7
         {
             get { return option7; }
             set
@@ -190,8 +191,8 @@ namespace Eclipse.Models
             }
         }
 
-        private Option option8;
-        public Option Option8
+        private Option<ListCategoryType> option8;
+        public Option<ListCategoryType> Option8
         {
             get { return option8; }
             set
@@ -204,8 +205,8 @@ namespace Eclipse.Models
             }
         }
 
-        private Option option9;
-        public Option Option9
+        private Option<ListCategoryType> option9;
+        public Option<ListCategoryType> Option9
         {
             get { return option9; }
             set

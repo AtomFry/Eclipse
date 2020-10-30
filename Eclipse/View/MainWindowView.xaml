@@ -26,9 +26,98 @@
         <myconverters:IsFeatureToColumnSpanConverter x:Key="FeatureToColumnSpanConverter"/>
         <myconverters:IsFeatureToColumnStartConverter x:Key="FeatureToColumnStartConverter"/>
         <myconverters:BooleanToVisibilityConverter x:Key="InvertBooleanToVisibilityConverter" True="Collapsed" False="Visible"/>
+        <myconverters:BooleanToStringConverter x:Key="FavoriteToFavoriteOptionConverter" True="Remove from favorites" False="Add to favorites"/>
         <myconverters:FeatureOptionToDoubleConverter x:Key="PlayGameOpacityConverter" PlayGameValue="1.0" MoreInfoValue="0.5"/>
         <myconverters:FeatureOptionToDoubleConverter x:Key="MoreInfoOpacityConverter" PlayGameValue="0.5" MoreInfoValue="1.0"/>
+        <myconverters:StringLengthToVisibilityConverter x:Key="StringLengthVisibilityConverter" Empty="Collapsed" NonEmpty="Visible"/>
+        <myconverters:FloatToStringConverter x:Key="StarRatingToStarRatingOptionConverter" ZeroValue="Rate this game" NonZeroValue="Change rating"/>
+        <myconverters:UserRatingToBrushConverter x:Key="UserRatingToBrush"/>
 
+
+        <myconverters:GameDetailOptionToBrushConverter x:Key="GameDetailPlayGameColorConverter" GameDetailComparison="Play">
+            <myconverters:GameDetailOptionToBrushConverter.MatchingValue>
+                <SolidColorBrush Color="Black"/>
+            </myconverters:GameDetailOptionToBrushConverter.MatchingValue>
+            <myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
+                <SolidColorBrush Color="WhiteSmoke"/>
+            </myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
+        </myconverters:GameDetailOptionToBrushConverter>
+
+        <myconverters:GameDetailOptionToBrushConverter x:Key="GameDetailFavoriteColorConverter" GameDetailComparison="Favorite">
+            <myconverters:GameDetailOptionToBrushConverter.MatchingValue>
+                <SolidColorBrush Color="Black"/>
+            </myconverters:GameDetailOptionToBrushConverter.MatchingValue>
+            <myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
+                <SolidColorBrush Color="WhiteSmoke"/>
+            </myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
+        </myconverters:GameDetailOptionToBrushConverter>
+
+        <myconverters:GameDetailOptionToBrushConverter x:Key="GameDetailRatingColorConverter" GameDetailComparison="Rating">
+            <myconverters:GameDetailOptionToBrushConverter.MatchingValue>
+                <SolidColorBrush Color="Black"/>
+            </myconverters:GameDetailOptionToBrushConverter.MatchingValue>
+            <myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
+                <SolidColorBrush Color="WhiteSmoke"/>
+            </myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
+        </myconverters:GameDetailOptionToBrushConverter>
+
+        <myconverters:GameDetailOptionToBrushConverter x:Key="GameDetailMoreLikeThisColorConverter" GameDetailComparison="MoreLikeThis">
+            <myconverters:GameDetailOptionToBrushConverter.MatchingValue>
+                <SolidColorBrush Color="Black"/>
+            </myconverters:GameDetailOptionToBrushConverter.MatchingValue>
+            <myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
+                <SolidColorBrush Color="WhiteSmoke"/>
+            </myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
+        </myconverters:GameDetailOptionToBrushConverter>
+
+        <myconverters:GameDetailOptionToBrushConverter x:Key="GameDetailPlayGameBorderColorConverter" GameDetailComparison="Play">
+            <myconverters:GameDetailOptionToBrushConverter.MatchingValue>
+                <SolidColorBrush Color="WhiteSmoke"/>
+            </myconverters:GameDetailOptionToBrushConverter.MatchingValue>
+            <myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
+                <SolidColorBrush Color="Transparent"/>
+            </myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
+        </myconverters:GameDetailOptionToBrushConverter>
+
+        <myconverters:GameDetailOptionToBrushConverter x:Key="GameDetailFavoriteBorderColorConverter" GameDetailComparison="Favorite">
+            <myconverters:GameDetailOptionToBrushConverter.MatchingValue>
+                <SolidColorBrush Color="WhiteSmoke"/>
+            </myconverters:GameDetailOptionToBrushConverter.MatchingValue>
+            <myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
+                <SolidColorBrush Color="Transparent"/>
+            </myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
+        </myconverters:GameDetailOptionToBrushConverter>
+
+        <myconverters:GameDetailOptionToBrushConverter x:Key="GameDetailRatingBorderColorConverter" GameDetailComparison="Rating">
+            <myconverters:GameDetailOptionToBrushConverter.MatchingValue>
+                <SolidColorBrush Color="WhiteSmoke"/>
+            </myconverters:GameDetailOptionToBrushConverter.MatchingValue>
+            <myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
+                <SolidColorBrush Color="Transparent"/>
+            </myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
+        </myconverters:GameDetailOptionToBrushConverter>
+
+        <myconverters:GameDetailOptionToBrushConverter x:Key="GameDetailMoreLikeThisBorderColorConverter" GameDetailComparison="MoreLikeThis">
+            <myconverters:GameDetailOptionToBrushConverter.MatchingValue>
+                <SolidColorBrush Color="WhiteSmoke"/>
+            </myconverters:GameDetailOptionToBrushConverter.MatchingValue>
+            <myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
+                <SolidColorBrush Color="Transparent"/>
+            </myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
+        </myconverters:GameDetailOptionToBrushConverter>
+
+        <myconverters:GameDetailOptionToBrushConverter x:Key="GameDetailMoreLikeThisIconStrokeConverter" GameDetailComparison="MoreLikeThis">
+            <myconverters:GameDetailOptionToBrushConverter.MatchingValue>
+                <SolidColorBrush Color="WhiteSmoke"/>
+            </myconverters:GameDetailOptionToBrushConverter.MatchingValue>
+            <myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
+                <SolidColorBrush Color="Black"/>
+            </myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
+        </myconverters:GameDetailOptionToBrushConverter>
+
+        <myconverters:BooleanToPointCollectionConverter x:Key="FavoriteDetailIconConverter" 
+                                                        False="20,0 30,0 30,20 50,20 50,30 30,30 30,50 20,50 20,30 0,30 0,20 20,20"
+                                                        True="0,20 30,20 30,25 0,25"/>
         
         <!-- 1-second image fade in - call when game changes -->
         <Storyboard x:Key="BackgroundImageFadeInSlow">
@@ -134,7 +223,6 @@
                    VerticalAlignment="Center"/>
         </Grid>
         <!-- END DISPLAY ERROR -->
-
 
         <!-- DISPLAYING RESULTS -->
         <Grid   Background="Transparent"
@@ -373,16 +461,28 @@
                            VerticalAlignment="Center"/>
             </Grid>
 
+            <!-- Darken the background when displaying more info (helps with text visibility) -->
+            <!-- TODO: maybe keep this visible all the time but just use an opacity mask to make it only darken at the logo and game details? -->
+            <Rectangle Grid.Row="0" Grid.RowSpan="18" Grid.Column="0" Grid.ColumnSpan="32" Fill="Black" Opacity="0.5" 
+                       Panel.ZIndex="499"
+                       Visibility="{Binding IsDisplayingMoreInfo, Converter={StaticResource BoolToVis}}">
+            </Rectangle>
+
             <!-- Selected game logo and details -->
             <Grid Name="Grid_Selected_Game_Heading"
-                  Grid.Row="1" Grid.RowSpan="8"
+                  Grid.Row="1" Grid.RowSpan="16"
                   Grid.Column="1" Grid.ColumnSpan="15"
                   Panel.ZIndex="500"
                   Background="Transparent">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="5*"/>
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="2*" />
+                    <RowDefinition Height="3*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <Grid.RenderTransform>
@@ -390,11 +490,12 @@
                         <TranslateTransform.Y>
                             <MultiBinding Converter="{StaticResource FeatureLogoOffsetConverter}">
                                 <Binding Path="IsDisplayingFeature"/>
+                                <Binding Path="IsDisplayingMoreInfo"/>
                                 <Binding ElementName="CurrentListGrid" Path="ActualHeight"/>
                             </MultiBinding>
                         </TranslateTransform.Y>
                     </TranslateTransform>
-                </Grid.RenderTransform>                
+                </Grid.RenderTransform>
 
                 <!-- Displaying the game clear logo for the selected game -->
                 <Image Name="Image_Displayed_GameClearLogo"
@@ -411,99 +512,62 @@
                             Orientation="Horizontal"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch">
+
                         <TextBlock Name="TextBlock_MatchPercentage"
                             FontFamily="Arial" 
                             FontWeight="Bold"
                             FontSize="22" 
-                            Foreground="Green"
-                            TextTrimming="None"
-                            TextWrapping="NoWrap"
-                            TextAlignment="Center"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"/>
-                        <TextBlock Name="TextBlock_Divider1"
-                            Text=" | "
-                            FontFamily="Arial" 
-                            FontWeight="Regular"
-                            FontSize="22" 
-                            Foreground="DarkSlateGray"
-                            TextTrimming="None"
-                            TextWrapping="NoWrap"
-                            TextAlignment="Center"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"/>
-                        <TextBlock Name="TextBlock_ReleaseYear"
-                            FontFamily="Arial" 
-                            FontWeight="Bold"
-                            FontSize="24" 
-                            Foreground="White"
-                            TextTrimming="None"
-                            TextWrapping="NoWrap"
-                            TextAlignment="Center"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"/>
-                        <TextBlock Name="TextBlock_Divider2"
-                            Text=" | "
-                            FontFamily="Arial " 
-                            FontWeight="Regular"
-                            FontSize="20" 
-                            Foreground="DarkSlateGray"
+                            Foreground="MediumSpringGreen"
                             TextTrimming="None"
                             TextWrapping="NoWrap"
                             TextAlignment="Center"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"/>
 
-                            <Image Name="Image_CommunityStarRating"
-                            RenderOptions.BitmapScalingMode="HighQuality" 
-                            Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Stretch="Uniform"/>
-                        <TextBlock  Name="TextBlock_Divider3"
-                            Text=" | "
-                            FontFamily="Arial " 
-                            FontWeight="Regular"
-                            FontSize="20" 
-                            Foreground="DarkSlateGray"
-                            TextTrimming="None"
-                            TextWrapping="NoWrap"
-                            TextAlignment="Center"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"/>
-                        <Image  Name="Image_Playmode"
-                            Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
-                            RenderOptions.BitmapScalingMode="HighQuality" 
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Stretch="Uniform"/>
-                        <TextBlock  Name="TextBlock_Divider4"
-                            Text=" | "
-                            FontFamily="Arial " 
-                            FontWeight="Regular"
-                            FontSize="20" 
-                            Foreground="DarkSlateGray"
-                            TextTrimming="None"
-                            TextWrapping="NoWrap"
-                            TextAlignment="Center"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"/>
+                        <TextBlock Name="TextBlock_ReleaseYear"
+                                   Margin="10,0,0,0"
+                                    FontFamily="Arial" 
+                                    FontWeight="Bold"
+                                    FontSize="24" 
+                                    Foreground="WhiteSmoke"
+                                    TextTrimming="None"
+                                    TextWrapping="NoWrap"
+                                    TextAlignment="Center"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"/>
+
+                        <Image Name="Image_CommunityStarRating"
+                               Margin="10,0,0,0" 
+                                RenderOptions.BitmapScalingMode="HighQuality" 
+                                Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Stretch="Uniform"/>
+
+                        <Image  Name="Image_Playmode"                                
+                                Margin="10,0,0,0" 
+                                Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
+                                RenderOptions.BitmapScalingMode="HighQuality" 
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Stretch="Uniform"/>
+
                         <Image Name="Image_PlatformLogo"
-                            Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
-                            HorizontalAlignment="Center" 
-                            VerticalAlignment="Center"
-                            RenderOptions.BitmapScalingMode="HighQuality" 
-                            Stretch="Uniform"/>
+                                Margin="10,0,0,0"                               
+                                Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
+                                HorizontalAlignment="Center" 
+                                VerticalAlignment="Center"
+                                RenderOptions.BitmapScalingMode="HighQuality" 
+                                Stretch="Uniform"/>
                     </StackPanel>
                 </Grid>
 
-                <Grid Grid.Row="2"
-                      Grid.RowSpan="1"
+                <Grid Grid.Row="2" Grid.RowSpan="1"
                       Visibility="{Binding IsDisplayingFeature, Converter={StaticResource BoolToVis}}"
                       Width="{Binding ActualWidth, ElementName=StackPanel_SelectedGameDetails}"
-                      HorizontalAlignment="Stretch"
-                      VerticalAlignment="Stretch">
+                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <StackPanel x:Name="StackPanel_FeatureButtons" 
+                                Visibility="{Binding IsDisplayingMoreInfo, Converter={StaticResource InvertBooleanToVisibilityConverter}}"
                                 Orientation="Horizontal"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Stretch">
@@ -527,8 +591,517 @@
                                Source="{Binding MoreInfoImage}"/>
                     </StackPanel>
                 </Grid>
-            </Grid>
 
+                <Grid Grid.Row="2"
+                      Grid.RowSpan="1"
+                      Visibility="{Binding IsDisplayingMoreInfo, Converter={StaticResource BoolToVis}}"
+                      Width="{Binding ActualWidth, ElementName=StackPanel_SelectedGameDetails}"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch">
+                    <StackPanel Orientation="Vertical"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                    Visibility="{Binding CurrentGameList.Game1.Genre, Converter={StaticResource StringLengthVisibilityConverter}}">
+                            <TextBlock Text="Genres:"                                   
+                                       Foreground="DarkGray" TextWrapping="Wrap" TextTrimming="None" 
+                                       VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" 
+                                       FontFamily="Arial" FontSize="20"/>
+                            <TextBlock Text="{Binding CurrentGameList.Game1.Genre}"
+                                   Foreground="WhiteSmoke" TextWrapping="Wrap" TextTrimming="None" 
+                                   Margin="10,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" 
+                                   FontFamily="Arial" FontSize="20"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                    Visibility="{Binding CurrentGameList.Game1.Series, Converter={StaticResource StringLengthVisibilityConverter}}">
+                            <TextBlock Text="Series:"                                   
+                                       Foreground="DarkGray" TextWrapping="Wrap" TextTrimming="None" 
+                                       VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" 
+                                       FontFamily="Arial" FontSize="20"/>
+                            <TextBlock Text="{Binding CurrentGameList.Game1.Series}"
+                                   Foreground="WhiteSmoke" TextWrapping="Wrap" TextTrimming="None" 
+                                   Margin="10,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" 
+                                   FontFamily="Arial" FontSize="20"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                    Visibility="{Binding CurrentGameList.Game1.Developer, Converter={StaticResource StringLengthVisibilityConverter}}">
+                            <TextBlock Text="Developer:"                                   
+                                       Foreground="DarkGray" TextWrapping="Wrap" TextTrimming="None" 
+                                       VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" 
+                                       FontFamily="Arial" FontSize="20"/>
+                            <TextBlock Text="{Binding CurrentGameList.Game1.Developer}"
+                                   Foreground="WhiteSmoke" TextWrapping="Wrap" TextTrimming="None" 
+                                   Margin="10,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" 
+                                   FontFamily="Arial" FontSize="20"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                    Visibility="{Binding CurrentGameList.Game1.Publisher, Converter={StaticResource StringLengthVisibilityConverter}}">
+                            <TextBlock Text="Publisher:"                                   
+                                       Foreground="DarkGray" TextWrapping="Wrap" TextTrimming="None" 
+                                       VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" 
+                                       FontFamily="Arial" FontSize="20"/>
+                            <TextBlock Text="{Binding CurrentGameList.Game1.Publisher}"
+                                   Foreground="WhiteSmoke" TextWrapping="Wrap" TextTrimming="None" 
+                                   Margin="10,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" 
+                                   FontFamily="Arial" FontSize="20"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Game Details - Play Button --> 
+                <Grid Grid.Row="3"
+                      Grid.RowSpan="1"
+                      Visibility="{Binding IsDisplayingMoreInfo, Converter={StaticResource BoolToVis}}"
+                      Width="{Binding ActualWidth, ElementName=StackPanel_SelectedGameDetails}"
+                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                      Margin="10,0,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="4*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="5*"/>
+                        <ColumnDefinition Width="3*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Background="{Binding GameDetailOption, Converter={StaticResource GameDetailPlayGameBorderColorConverter}}"
+                            CornerRadius="8,8,8,8"
+                            Grid.Row="0" Grid.RowSpan="3"
+                            Grid.Column="0" Grid.ColumnSpan="1"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="15,0,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16*"/>
+                            </Grid.ColumnDefinitions>
+                            <Polygon Points="10,10 10,70 70,40" 
+                                     Fill="{Binding GameDetailOption, Converter={StaticResource GameDetailPlayGameColorConverter}}"
+                                     Grid.Column="0" Grid.ColumnSpan="1"
+                                     HorizontalAlignment="Stretch" VerticalAlignment="Center" Stretch="Uniform"
+                                     RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Name="TextBlock_DetailPlayButton"
+                                       Text="Play"
+                                       Foreground="{Binding GameDetailOption, Converter={StaticResource GameDetailPlayGameColorConverter}}"
+                                       Grid.Column="1" Grid.ColumnSpan="1"
+                                       Margin="25,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Stretch" TextAlignment="Left" 
+                                       FontFamily="Arial" FontSize="24"/>                            
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- Game Details - Favorite/Unfavorite -->
+                <Grid Grid.Row="4" Grid.RowSpan="1"
+                      Visibility="{Binding IsDisplayingMoreInfo, Converter={StaticResource BoolToVis}}"
+                      Width="{Binding ActualWidth, ElementName=StackPanel_SelectedGameDetails}"
+                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                      Margin="10,0,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="4*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="5*"/>
+                        <ColumnDefinition Width="3*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Background="{Binding GameDetailOption, Converter={StaticResource GameDetailFavoriteBorderColorConverter}}"
+                            CornerRadius="8,8,8,8"
+                            Grid.Row="0" Grid.RowSpan="3"
+                            Grid.Column="0" Grid.ColumnSpan="1"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="15,0,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16*"/>
+                            </Grid.ColumnDefinitions>
+                            <Polygon Points="{Binding CurrentGameList.Game1.Favorite, Converter={StaticResource FavoriteDetailIconConverter}}" 
+                                     Fill="{Binding GameDetailOption, Converter={StaticResource GameDetailFavoriteColorConverter}}"
+                                     Grid.Column="0" Grid.ColumnSpan="1"
+                                     HorizontalAlignment="Stretch" VerticalAlignment="Center" Stretch="Uniform"
+                                     RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Name="TextBlock_DetailFavoriteButton"
+                                       Text="{Binding CurrentGameList.Game1.Favorite, Converter={StaticResource FavoriteToFavoriteOptionConverter}}"
+                                       Foreground="{Binding GameDetailOption, Converter={StaticResource GameDetailFavoriteColorConverter}}"
+                                       Grid.Column="1" Grid.ColumnSpan="1"
+                                       Margin="25,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Stretch" TextAlignment="Left" 
+                                       FontFamily="Arial" FontSize="24"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- Game Details - More Like This -->
+                <Grid Grid.Row="5"
+                      Grid.RowSpan="1"
+                      Visibility="{Binding IsDisplayingMoreInfo, Converter={StaticResource BoolToVis}}"
+                      Width="{Binding ActualWidth, ElementName=StackPanel_SelectedGameDetails}"
+                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                      Margin="10,0,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="4*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="5*"/>
+                        <ColumnDefinition Width="3*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Background="{Binding GameDetailOption, Converter={StaticResource GameDetailMoreLikeThisBorderColorConverter}}"
+                            CornerRadius="8,8,8,8"
+                            Grid.Row="0" Grid.RowSpan="3"
+                            Grid.Column="0" Grid.ColumnSpan="1"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="15,0,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16*"/>
+                            </Grid.ColumnDefinitions>
+                            <Polygon Points="20,20 60,20 60,60 20,60 20,20 
+                                             40,20 40,40 20,40 20,20
+                                             60,20 60,40 40,40 40,20
+                                             60,20 60,60 40,60 40,40 60,40 60,60
+                                             20,60 20,40 40,40 40,60 20,60 20,20"                                         
+                                     Stroke="{Binding GameDetailOption, Converter={StaticResource GameDetailMoreLikeThisIconStrokeConverter}}"
+                                     StrokeThickness="2"
+                                     Fill="{Binding GameDetailOption, Converter={StaticResource GameDetailMoreLikeThisColorConverter}}"
+                                     FillRule="Nonzero"
+                                     Grid.Column="0" Grid.ColumnSpan="1"
+                                     HorizontalAlignment="Stretch" VerticalAlignment="Center" Stretch="Uniform"
+                                     RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock  Name="TextBlock_DetailMoreLikeThisButton"
+                                        Text="More like this"
+                                        Foreground="{Binding GameDetailOption, Converter={StaticResource GameDetailMoreLikeThisColorConverter}}"
+                                        Grid.Column="1" Grid.ColumnSpan="1"
+                                        Margin="25,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Stretch" TextAlignment="Left" 
+                                        FontFamily="Arial" FontSize="24"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- Game Details - Add/Update rating -->
+                <Grid Grid.Row="6" Grid.RowSpan="1"
+                      Visibility="{Binding IsDisplayingMoreInfo, Converter={StaticResource BoolToVis}}"
+                      Width="{Binding ActualWidth, ElementName=StackPanel_SelectedGameDetails}"
+                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,0,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="4*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="5*"/>
+                        <ColumnDefinition Width="3*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Background="{Binding GameDetailOption, Converter={StaticResource GameDetailRatingBorderColorConverter}}"
+                            CornerRadius="8,8,8,8"
+                            Grid.Row="0" Grid.RowSpan="3"
+                            Grid.Column="0" Grid.ColumnSpan="1"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="15,0,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16*"/>
+                            </Grid.ColumnDefinitions>
+                            <Polygon Name="Polygon_Star_Icon"
+                                     Points="80,0 105,50 160,55 120,90 130,145 80,120 30,145 40,90 0,55 55,50"                                         
+                                     Fill="{Binding GameDetailOption, Converter={StaticResource GameDetailRatingColorConverter}}"
+                                     Grid.Column="0" Grid.ColumnSpan="1"
+                                     HorizontalAlignment="Stretch" VerticalAlignment="Center" Stretch="Uniform"
+                                     RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <StackPanel Height="{Binding ActualHeight, ElementName=TextBlock_DetailStarRatingButton}"
+                                        Grid.Column="1" Grid.ColumnSpan="1"
+                                        VerticalAlignment="Center" HorizontalAlignment="Stretch" 
+                                        Orientation="Horizontal"
+                                        Margin="25,0,0,0">
+                                
+                                <TextBlock Name="TextBlock_DetailStarRatingButton"
+                                       Text="Rating"
+                                       Foreground="{Binding GameDetailOption, Converter={StaticResource GameDetailRatingColorConverter}}"           
+                                       Margin="0,0,25,0"
+                                       VerticalAlignment="Center" HorizontalAlignment="Stretch" TextAlignment="Left" 
+                                       FontFamily="Arial" FontSize="24"/>
+
+                                <Polygon Points="80,0 105,50 160,55 120,90 130,145 80,120 30,145 40,90 0,55 55,50"
+                                         Visibility="{Binding IsRatingGame, Converter={StaticResource BoolToVis}}"
+                                         StrokeThickness="1" Stroke="Black" 
+                                         HorizontalAlignment="Stretch" VerticalAlignment="Center" Stretch="Uniform"
+                                         RenderOptions.BitmapScalingMode="HighQuality">
+                                    <Polygon.Fill>
+                                        <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                            <GradientStop Offset="0.0">
+                                                <GradientStop.Color>
+                                                    <MultiBinding Converter="{StaticResource UserRatingToBrush}">
+                                                        <Binding Path="CurrentGameList.Game1.UserRating"/>
+                                                        <Binding Path="StarOffset00"/>
+                                                        <Binding Path="Star1"/>
+                                                    </MultiBinding>
+                                                </GradientStop.Color>
+                                            </GradientStop>
+                                            <GradientStop Offset="0.001">
+                                                <GradientStop.Color>
+                                                    <MultiBinding Converter="{StaticResource UserRatingToBrush}">
+                                                        <Binding Path="CurrentGameList.Game1.UserRating"/>
+                                                        <Binding Path="StarOffset01"/>
+                                                        <Binding Path="Star1"/>
+                                                    </MultiBinding>
+                                                </GradientStop.Color>
+                                            </GradientStop>
+                                            <GradientStop Offset="0.5">
+                                                <GradientStop.Color>
+                                                    <MultiBinding Converter="{StaticResource UserRatingToBrush}">
+                                                        <Binding Path="CurrentGameList.Game1.UserRating"/>
+                                                        <Binding Path="StarOffset05"/>
+                                                        <Binding Path="Star1"/>
+                                                    </MultiBinding>
+                                                </GradientStop.Color>
+                                            </GradientStop>
+
+                                            <GradientStop Offset="0.501">
+                                                <GradientStop.Color>
+                                                    <MultiBinding Converter="{StaticResource UserRatingToBrush}">
+                                                        <Binding Path="CurrentGameList.Game1.UserRating"/>
+                                                        <Binding Path="StarOffset06"/>
+                                                        <Binding Path="Star1"/>
+                                                    </MultiBinding>
+                                                </GradientStop.Color>
+                                            </GradientStop>
+
+                                            <GradientStop Offset="1.0">
+                                                <GradientStop.Color>
+                                                    <MultiBinding Converter="{StaticResource UserRatingToBrush}">
+                                                        <Binding Path="CurrentGameList.Game1.UserRating"/>
+                                                        <Binding Path="StarOffset10"/>
+                                                        <Binding Path="Star1"/>
+                                                    </MultiBinding>
+                                                </GradientStop.Color>
+                                            </GradientStop>
+                                        </LinearGradientBrush>
+                                    </Polygon.Fill>
+                                </Polygon>
+                                <Polygon Points="80,0 105,50 160,55 120,90 130,145 80,120 30,145 40,90 0,55 55,50"                                         
+                                         StrokeThickness="1" Stroke="Black"                                         
+                                         Visibility="{Binding IsRatingGame, Converter={StaticResource BoolToVis}}"                                         
+                                         HorizontalAlignment="Stretch" VerticalAlignment="Center" Stretch="Uniform"
+                                         RenderOptions.BitmapScalingMode="HighQuality">
+                                    <Polygon.Fill>
+                                        <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                            <GradientStop Offset="0.0">
+                                                <GradientStop.Color>
+                                                    <MultiBinding Converter="{StaticResource UserRatingToBrush}">
+                                                        <Binding Path="CurrentGameList.Game1.UserRating"/>
+                                                        <Binding Path="StarOffset00"/>
+                                                        <Binding Path="Star2"/>
+                                                    </MultiBinding>
+                                                </GradientStop.Color>
+                                            </GradientStop>
+                                            <GradientStop Offset="0.001">
+                                                <GradientStop.Color>
+                                                    <MultiBinding Converter="{StaticResource UserRatingToBrush}">
+                                                        <Binding Path="CurrentGameList.Game1.UserRating"/>
+                                                        <Binding Path="StarOffset01"/>
+                                                        <Binding Path="Star2"/>
+                                                    </MultiBinding>
+                                                </GradientStop.Color>
+                                            </GradientStop>
+                                            <GradientStop Offset="0.5">
+                                                <GradientStop.Color>
+                                                    <MultiBinding Converter="{StaticResource UserRatingToBrush}">
+                                                        <Binding Path="CurrentGameList.Game1.UserRating"/>
+                                                        <Binding Path="StarOffset05"/>
+                                                        <Binding Path="Star2"/>
+                                                    </MultiBinding>
+                                                </GradientStop.Color>
+                                            </GradientStop>
+                                            <GradientStop Offset="0.501">
+                                                <GradientStop.Color>
+                                                    <MultiBinding Converter="{StaticResource UserRatingToBrush}">
+                                                        <Binding Path="CurrentGameList.Game1.UserRating"/>
+                                                        <Binding Path="StarOffset06"/>
+                                                        <Binding Path="Star2"/>
+                                                    </MultiBinding>
+                                                </GradientStop.Color>
+                                            </GradientStop>
+                                            <GradientStop Offset="1.0">
+                                                <GradientStop.Color>
+                                                    <MultiBinding Converter="{StaticResource UserRatingToBrush}">
+                                                        <Binding Path="CurrentGameList.Game1.UserRating"/>
+                                                        <Binding Path="StarOffset10"/>
+                                                        <Binding Path="Star2"/>
+                                                    </MultiBinding>
+                                                </GradientStop.Color>
+                                            </GradientStop>
+                                        </LinearGradientBrush>
+                                    </Polygon.Fill>
+                                </Polygon>
+                                <Polygon Points="80,0 105,50 160,55 120,90 130,145 80,120 30,145 40,90 0,55 55,50"                                         
+                                         StrokeThickness="1" Stroke="Black"                                         
+                                         Visibility="{Binding IsRatingGame, Converter={StaticResource BoolToVis}}"                                         
+                                         HorizontalAlignment="Stretch" VerticalAlignment="Center" Stretch="Uniform"
+                                         RenderOptions.BitmapScalingMode="HighQuality">
+                                    <Polygon.Fill>
+                                        <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                            <GradientStop Offset="0.0">
+                                                <GradientStop.Color>
+                                                    <MultiBinding Converter="{StaticResource UserRatingToBrush}">
+                                                        <Binding Path="CurrentGameList.Game1.UserRating"/>
+                                                        <Binding Path="StarOffset00"/>
+                                                        <Binding Path="Star3"/>
+                                                    </MultiBinding>
+                                                </GradientStop.Color>
+                                            </GradientStop>
+                                            <GradientStop Offset="0.001">
+                                                <GradientStop.Color>
+                                                    <MultiBinding Converter="{StaticResource UserRatingToBrush}">
+                                                        <Binding Path="CurrentGameList.Game1.UserRating"/>
+                                                        <Binding Path="StarOffset01"/>
+                                                        <Binding Path="Star3"/>
+                                                    </MultiBinding>
+                                                </GradientStop.Color>
+                                            </GradientStop>
+                                            <GradientStop Offset="0.5">
+                                                <GradientStop.Color>
+                                                    <MultiBinding Converter="{StaticResource UserRatingToBrush}">
+                                                        <Binding Path="CurrentGameList.Game1.UserRating"/>
+                                                        <Binding Path="StarOffset05"/>
+                                                        <Binding Path="Star3"/>
+                                                    </MultiBinding>
+                                                </GradientStop.Color>
+                                            </GradientStop>
+                                            <GradientStop Offset="0.501">
+                                                <GradientStop.Color>
+                                                    <MultiBinding Converter="{StaticResource UserRatingToBrush}">
+                                                        <Binding Path="CurrentGameList.Game1.UserRating"/>
+                                                        <Binding Path="StarOffset06"/>
+                                                        <Binding Path="Star3"/>
+                                                    </MultiBinding>
+                                                </GradientStop.Color>
+                                            </GradientStop>
+                                            <GradientStop Offset="1.0">
+                                                <GradientStop.Color>
+                                                    <MultiBinding Converter="{StaticResource UserRatingToBrush}">
+                                                        <Binding Path="CurrentGameList.Game1.UserRating"/>
+                                                        <Binding Path="StarOffset10"/>
+                                                        <Binding Path="Star3"/>
+                                                    </MultiBinding>
+                                                </GradientStop.Color>
+                                            </GradientStop>
+                                        </LinearGradientBrush>
+                                    </Polygon.Fill>
+                                </Polygon>
+                                <Polygon Points="80,0 105,50 160,55 120,90 130,145 80,120 30,145 40,90 0,55 55,50"                                         
+                                         StrokeThickness="1" Stroke="Black"
+                                         Visibility="{Binding IsRatingGame, Converter={StaticResource BoolToVis}}"                                         
+                                         HorizontalAlignment="Stretch" VerticalAlignment="Center" Stretch="Uniform"
+                                         RenderOptions.BitmapScalingMode="HighQuality">
+                                    <Polygon.Fill>
+                                        <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                            <GradientStop Offset="0.0">
+                                                <GradientStop.Color>
+                                                    <MultiBinding Converter="{StaticResource UserRatingToBrush}">
+                                                        <Binding Path="CurrentGameList.Game1.UserRating"/>
+                                                        <Binding Path="StarOffset00"/>
+                                                        <Binding Path="Star4"/>
+                                                    </MultiBinding>
+                                                </GradientStop.Color>
+                                            </GradientStop>
+                                            <GradientStop Offset="0.001">
+                                                <GradientStop.Color>
+                                                    <MultiBinding Converter="{StaticResource UserRatingToBrush}">
+                                                        <Binding Path="CurrentGameList.Game1.UserRating"/>
+                                                        <Binding Path="StarOffset01"/>
+                                                        <Binding Path="Star4"/>
+                                                    </MultiBinding>
+                                                </GradientStop.Color>
+                                            </GradientStop>
+                                            <GradientStop Offset="0.5">
+                                                <GradientStop.Color>
+                                                    <MultiBinding Converter="{StaticResource UserRatingToBrush}">
+                                                        <Binding Path="CurrentGameList.Game1.UserRating"/>
+                                                        <Binding Path="StarOffset05"/>
+                                                        <Binding Path="Star4"/>
+                                                    </MultiBinding>
+                                                </GradientStop.Color>
+                                            </GradientStop>
+                                            <GradientStop Offset="0.501">
+                                                <GradientStop.Color>
+                                                    <MultiBinding Converter="{StaticResource UserRatingToBrush}">
+                                                        <Binding Path="CurrentGameList.Game1.UserRating"/>
+                                                        <Binding Path="StarOffset06"/>
+                                                        <Binding Path="Star4"/>
+                                                    </MultiBinding>
+                                                </GradientStop.Color>
+                                            </GradientStop>
+                                            <GradientStop Offset="1.0">
+                                                <GradientStop.Color>
+                                                    <MultiBinding Converter="{StaticResource UserRatingToBrush}">
+                                                        <Binding Path="CurrentGameList.Game1.UserRating"/>
+                                                        <Binding Path="StarOffset10"/>
+                                                        <Binding Path="Star4"/>
+                                                    </MultiBinding>
+                                                </GradientStop.Color>
+                                            </GradientStop>
+                                        </LinearGradientBrush>
+                                    </Polygon.Fill>
+                                </Polygon>
+                                <Polygon Points="80,0 105,50 160,55 120,90 130,145 80,120 30,145 40,90 0,55 55,50"                                         
+                                         StrokeThickness="1" Stroke="Black"                                     
+                                         Visibility="{Binding IsRatingGame, Converter={StaticResource BoolToVis}}"                                         
+                                         HorizontalAlignment="Stretch" VerticalAlignment="Center" Stretch="Uniform"
+                                         RenderOptions.BitmapScalingMode="HighQuality">
+                                    <Polygon.Fill>
+                                        <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                            <GradientStop Offset="0.0">
+                                                <GradientStop.Color>
+                                                    <MultiBinding Converter="{StaticResource UserRatingToBrush}">
+                                                        <Binding Path="CurrentGameList.Game1.UserRating"/>
+                                                        <Binding Path="StarOffset00"/>
+                                                        <Binding Path="Star5"/>
+                                                    </MultiBinding>
+                                                </GradientStop.Color>
+                                            </GradientStop>
+                                            <GradientStop Offset="0.001">
+                                                <GradientStop.Color>
+                                                    <MultiBinding Converter="{StaticResource UserRatingToBrush}">
+                                                        <Binding Path="CurrentGameList.Game1.UserRating"/>
+                                                        <Binding Path="StarOffset01"/>
+                                                        <Binding Path="Star5"/>
+                                                    </MultiBinding>
+                                                </GradientStop.Color>
+                                            </GradientStop>
+                                            <GradientStop Offset="0.5">
+                                                <GradientStop.Color>
+                                                    <MultiBinding Converter="{StaticResource UserRatingToBrush}">
+                                                        <Binding Path="CurrentGameList.Game1.UserRating"/>
+                                                        <Binding Path="StarOffset05"/>
+                                                        <Binding Path="Star5"/>
+                                                    </MultiBinding>
+                                                </GradientStop.Color>
+                                            </GradientStop>
+                                            <GradientStop Offset="0.501">
+                                                <GradientStop.Color>
+                                                    <MultiBinding Converter="{StaticResource UserRatingToBrush}">
+                                                        <Binding Path="CurrentGameList.Game1.UserRating"/>
+                                                        <Binding Path="StarOffset06"/>
+                                                        <Binding Path="Star5"/>
+                                                    </MultiBinding>
+                                                </GradientStop.Color>
+                                            </GradientStop>
+                                            <GradientStop Offset="1.0">
+                                                <GradientStop.Color>
+                                                    <MultiBinding Converter="{StaticResource UserRatingToBrush}">
+                                                        <Binding Path="CurrentGameList.Game1.UserRating"/>
+                                                        <Binding Path="StarOffset10"/>
+                                                        <Binding Path="Star5"/>
+                                                    </MultiBinding>
+                                                </GradientStop.Color>
+                                            </GradientStop>
+                                        </LinearGradientBrush>
+                                    </Polygon.Fill>
+                                </Polygon>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
 
             <!-- Selected game background image -->
             <Grid Name="Grid_Selected_Game_Background"
@@ -613,6 +1186,7 @@
                         <TranslateTransform.Y>
                             <MultiBinding Converter="{StaticResource FeatureVideoOffsetConverter}">
                                 <Binding Path="IsDisplayingFeature"/>
+                                <Binding Path="IsDisplayingMoreInfo"/>
                                 <Binding ElementName="CurrentListGrid" Path="ActualHeight"/>
                             </MultiBinding>
                         </TranslateTransform.Y>
@@ -643,6 +1217,7 @@
                         <TranslateTransform.Y>
                             <MultiBinding Converter="{StaticResource FeatureOffsetConverter}">
                                 <Binding Path="IsDisplayingFeature"/>
+                                <Binding Path="IsDisplayingMoreInfo"/>
                                 <Binding ElementName="CurrentListGrid" Path="ActualHeight"/>
                             </MultiBinding>
                         </TranslateTransform.Y>

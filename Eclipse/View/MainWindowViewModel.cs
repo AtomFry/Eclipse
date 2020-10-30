@@ -11,6 +11,8 @@ using Eclipse.Models;
 using System.Speech.Recognition;
 using System.IO;
 using System.Threading.Tasks;
+using System.Collections.Concurrent;
+using System.Threading;
 
 namespace Eclipse.View
 {
@@ -21,7 +23,7 @@ namespace Eclipse.View
 
     public static class Extensions
     {
-        public static void AddGame(this Dictionary<string, List<GameMatch>> dictionary, string key, GameMatch gameMatch)
+        public static void AddGame(this ConcurrentDictionary<string, List<GameMatch>> dictionary, string key, GameMatch gameMatch)
         {
             if (string.IsNullOrWhiteSpace(key))
             {
@@ -30,7 +32,7 @@ namespace Eclipse.View
 
             if (!dictionary.ContainsKey(key))
             {
-                dictionary.Add(key, new List<GameMatch>());
+                dictionary.TryAdd(key, new List<GameMatch>());
             }
 
             if (!dictionary[key].Contains(gameMatch))
@@ -43,20 +45,21 @@ namespace Eclipse.View
 
     class MainWindowViewModel : INotifyPropertyChanged
     {
-        private List<Option> listCategories;
+        private List<Option<ListCategoryType>> listCategories;
         private ListCycle<GameList> listCycle;
         public List<GameListSet> GameListSets { get; set; }
 
         private List<GameList> TempGameLists { get; set; }
         private SpeechRecognitionEngine Recognizer { get; set; }
 
-        private Dictionary<string, List<GameMatch>> GameTitlePhrases;
-        private Dictionary<string, List<GameMatch>> GenreGameDictionary;
-        private Dictionary<string, List<GameMatch>> PublisherGameDictionary;
-        private Dictionary<string, List<GameMatch>> DeveloperGameDictionary;
-        private Dictionary<string, List<GameMatch>> SeriesGameDictionary;
-        private Dictionary<string, List<GameMatch>> PlayModeGameDictionary;
-        
+
+        private ConcurrentDictionary<string, List<GameMatch>> GameTitlePhrases;
+        private ConcurrentDictionary<string, List<GameMatch>> GenreGameDictionary;
+        private ConcurrentDictionary<string, List<GameMatch>> PublisherGameDictionary;
+        private ConcurrentDictionary<string, List<GameMatch>> DeveloperGameDictionary;
+        private ConcurrentDictionary<string, List<GameMatch>> SeriesGameDictionary;
+        private ConcurrentDictionary<string, List<GameMatch>> PlayModeGameDictionary;
+
         // store platform bezels and default bezels in dictionary for easy lookup
         // this is probably terrible design but the problem is I won't know the video orientation in the GameMatch, I get that once the MediaElement is loaded over in the view
         // TODO: add game title (or id) here to take care of all game bezels too - currently game specific bezels are loaded up in the GameMatch
@@ -64,8 +67,22 @@ namespace Eclipse.View
         private Dictionary<Tuple<BezelType, BezelOrientation, string>, Uri> BezelDictionary;
 
         public FeatureChangeFunction FeatureChangeFunction { get; set; }
-        public AnimateGameChangeFunction GameChangeFunction{ get; set; }
+        public AnimateGameChangeFunction GameChangeFunction { get; set; }
         public LoadImagesFunction LoadImagesFunction { get; set; }
+
+        private GameDetailOption gameDetailOption;
+        public GameDetailOption GameDetailOption
+        {
+            get { return gameDetailOption; }
+            set
+            {
+                {
+                    gameDetailOption = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("GameDetailOption"));
+                }
+            }
+        }
+
 
         private List<IGame> allGames;
         public List<IGame> AllGames
@@ -73,7 +90,7 @@ namespace Eclipse.View
             get { return allGames; }
             set
             {
-                if(allGames != value)
+                if (allGames != value)
                 {
                     allGames = value;
                     PropertyChanged(this, new PropertyChangedEventArgs("AllGames"));
@@ -101,7 +118,7 @@ namespace Eclipse.View
             get { return isPickingCategory; }
             set
             {
-                if(isPickingCategory != value)
+                if (isPickingCategory != value)
                 {
                     isPickingCategory = value;
                     PropertyChanged(this, new PropertyChangedEventArgs("IsPickingCategory"));
@@ -115,7 +132,7 @@ namespace Eclipse.View
             get { return isDisplayingFeature; }
             set
             {
-                if(isDisplayingFeature != value)
+                if (isDisplayingFeature != value)
                 {
                     isDisplayingFeature = value;
                     PropertyChanged(this, new PropertyChangedEventArgs("IsDisplayingFeature"));
@@ -171,7 +188,7 @@ namespace Eclipse.View
             get { return isDisplayingMoreInfo; }
             set
             {
-                if(isDisplayingMoreInfo != value)
+                if (isDisplayingMoreInfo != value)
                 {
                     isDisplayingMoreInfo = value;
                     PropertyChanged(this, new PropertyChangedEventArgs("IsDisplayingMoreInfo"));
@@ -185,7 +202,7 @@ namespace Eclipse.View
             get { return errorMessage; }
             set
             {
-                if(errorMessage != value)
+                if (errorMessage != value)
                 {
                     errorMessage = value;
                     PropertyChanged(this, new PropertyChangedEventArgs("ErrorMessage"));
@@ -214,7 +231,7 @@ namespace Eclipse.View
             get { return loadingMessage; }
             set
             {
-                if(loadingMessage != value)
+                if (loadingMessage != value)
                 {
                     loadingMessage = value;
                     PropertyChanged(this, new PropertyChangedEventArgs("LoadingMessage"));
@@ -249,6 +266,20 @@ namespace Eclipse.View
             }
         }
 
+        private bool isRatingGame;
+        public bool IsRatingGame
+        {
+            get { return isRatingGame; }
+            set
+            {
+                if(isRatingGame != value)
+                {
+                    isRatingGame = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("IsRatingGame"));
+                }
+            }
+        }
+
 
         private GameListSet currentGameListSet;
         public GameListSet CurrentGameListSet
@@ -256,7 +287,7 @@ namespace Eclipse.View
             get { return currentGameListSet; }
             set
             {
-                if(currentGameListSet != value)
+                if (currentGameListSet != value)
                 {
                     currentGameListSet = value;
                     PropertyChanged(this, new PropertyChangedEventArgs("CurrentGameListSet"));
@@ -270,7 +301,7 @@ namespace Eclipse.View
             get { return optionList; }
             set
             {
-                if(optionList != value)
+                if (optionList != value)
                 {
                     optionList = value;
                     PropertyChanged(this, new PropertyChangedEventArgs("OptionList"));
@@ -280,17 +311,17 @@ namespace Eclipse.View
 
         private void SetupCategoryList()
         {
-            listCategories = new List<Option>();
-            listCategories.Add(new Option { Name = "Platform", ListCategoryType=ListCategoryType.Platform, SortOrder=1, ShortDescription="Platform", LongDescription="Platform" });
-            listCategories.Add(new Option { Name = "Genre", ListCategoryType = ListCategoryType.Genre, SortOrder=2, ShortDescription="Genre", LongDescription="Genre" });
-            listCategories.Add(new Option { Name = "Series", ListCategoryType = ListCategoryType.Series, SortOrder=3, ShortDescription="Series", LongDescription="Series" });
-            listCategories.Add(new Option { Name = "Playlist", ListCategoryType = ListCategoryType.Playlist, SortOrder=4, ShortDescription="Playlist", LongDescription="Playlist" });
-            listCategories.Add(new Option { Name = "Voice search", ListCategoryType = ListCategoryType.VoiceSearch, SortOrder=5, ShortDescription="Voice", LongDescription="Voice search" });
-            listCategories.Add(new Option { Name = "Play mode", ListCategoryType = ListCategoryType.PlayMode, SortOrder=6, ShortDescription="Mode", LongDescription="Play mode" });
-            listCategories.Add(new Option { Name = "Developer", ListCategoryType = ListCategoryType.Developer, SortOrder=7, ShortDescription="Dev", LongDescription="Developer" });
-            listCategories.Add(new Option { Name = "Publisher", ListCategoryType = ListCategoryType.Publisher, SortOrder=8, ShortDescription="Pub", LongDescription="Publisher" });
-            listCategories.Add(new Option { Name = "Year", ListCategoryType = ListCategoryType.ReleaseYear, SortOrder=9, ShortDescription="Year", LongDescription="Release year" });
-            listCategories.Add(new Option { Name = "Random", ListCategoryType = ListCategoryType.RandomGame, SortOrder=10, ShortDescription="Random", LongDescription="Random game" });
+            listCategories = new List<Option<ListCategoryType>>();
+            listCategories.Add(new Option<ListCategoryType> { Name = "Platform", EnumOption = ListCategoryType.Platform, SortOrder = 1, ShortDescription = "Platform", LongDescription = "Platform" });
+            listCategories.Add(new Option<ListCategoryType> { Name = "Genre", EnumOption = ListCategoryType.Genre, SortOrder = 2, ShortDescription = "Genre", LongDescription = "Genre" });
+            listCategories.Add(new Option<ListCategoryType> { Name = "Series", EnumOption = ListCategoryType.Series, SortOrder = 3, ShortDescription = "Series", LongDescription = "Series" });
+            listCategories.Add(new Option<ListCategoryType> { Name = "Playlist", EnumOption = ListCategoryType.Playlist, SortOrder = 4, ShortDescription = "Playlist", LongDescription = "Playlist" });
+            listCategories.Add(new Option<ListCategoryType> { Name = "Voice search", EnumOption = ListCategoryType.VoiceSearch, SortOrder = 5, ShortDescription = "Voice", LongDescription = "Voice search" });
+            listCategories.Add(new Option<ListCategoryType> { Name = "Play mode", EnumOption = ListCategoryType.PlayMode, SortOrder = 6, ShortDescription = "Mode", LongDescription = "Play mode" });
+            listCategories.Add(new Option<ListCategoryType> { Name = "Developer", EnumOption = ListCategoryType.Developer, SortOrder = 7, ShortDescription = "Dev", LongDescription = "Developer" });
+            listCategories.Add(new Option<ListCategoryType> { Name = "Publisher", EnumOption = ListCategoryType.Publisher, SortOrder = 8, ShortDescription = "Pub", LongDescription = "Publisher" });
+            listCategories.Add(new Option<ListCategoryType> { Name = "Year", EnumOption = ListCategoryType.ReleaseYear, SortOrder = 9, ShortDescription = "Year", LongDescription = "Release year" });
+            listCategories.Add(new Option<ListCategoryType> { Name = "Random", EnumOption = ListCategoryType.RandomGame, SortOrder = 10, ShortDescription = "Random", LongDescription = "Random game" });
             OptionList = new OptionList(listCategories);
         }
 
@@ -310,8 +341,8 @@ namespace Eclipse.View
                 string platformHorizontalBezelPath = Path.Combine(Helpers.PluginImagesPath, "Platforms", platform.Name, "Bezel", "Horizontal.png");
                 string platformVerticalBezelPath = Path.Combine(Helpers.PluginImagesPath, "Platforms", platform.Name, "Bezel", "Vertical.png");
 
-                if(File.Exists(platformHorizontalBezelPath)) BezelDictionary.Add(platformHorizontalBezelKey, new Uri(platformHorizontalBezelPath));
-                if(File.Exists(platformVerticalBezelPath)) BezelDictionary.Add(platformVerticalBezelKey, new Uri(platformVerticalBezelPath));
+                if (File.Exists(platformHorizontalBezelPath)) BezelDictionary.Add(platformHorizontalBezelKey, new Uri(platformHorizontalBezelPath));
+                if (File.Exists(platformVerticalBezelPath)) BezelDictionary.Add(platformVerticalBezelKey, new Uri(platformVerticalBezelPath));
             }
         }
 
@@ -348,7 +379,7 @@ namespace Eclipse.View
 
                 var orderedGames = platformGames.OrderBy(s => s.Game.SortTitleOrTitle);
                 GameList gameList = new GameList(platform.Name, new List<GameMatch>(orderedGames));
-                
+
                 listOfPlatformGames.Add(gameList);
             }
             GameListSets.Add(new GameListSet { GameLists = listOfPlatformGames, ListCategoryType = ListCategoryType.Platform });
@@ -356,7 +387,7 @@ namespace Eclipse.View
 
         private void GetGamesByYear()
         {
-            List <GameList> listOfYearGames = new List<GameList>();
+            List<GameList> listOfYearGames = new List<GameList>();
             var gamesByYear = AllGames.GroupBy(game => game.ReleaseDate?.Year);
 
             foreach (var yearGameGroup in gamesByYear)
@@ -370,13 +401,13 @@ namespace Eclipse.View
                 GameList gameList = new GameList(year, orderedGames);
                 listOfYearGames.Add(gameList);
             }
-            GameListSets.Add(new GameListSet { GameLists = listOfYearGames.OrderBy(list => list.ListDescription).ToList(), ListCategoryType = ListCategoryType.ReleaseYear});
+            GameListSets.Add(new GameListSet { GameLists = listOfYearGames.OrderBy(list => list.ListDescription).ToList(), ListCategoryType = ListCategoryType.ReleaseYear });
         }
 
         private void GetGamesByDeveloper()
         {
             List<GameList> listOfDeveloperGames = new List<GameList>();
-            foreach(var developerGroup in DeveloperGameDictionary)
+            foreach (var developerGroup in DeveloperGameDictionary)
             {
                 var orderedGames = developerGroup.Value.OrderBy(game => game.Game.SortTitleOrTitle).ToList();
                 GameList gameList = new GameList(developerGroup.Key, orderedGames);
@@ -402,7 +433,7 @@ namespace Eclipse.View
             IPlaylist[] allPlaylists = PluginHelper.DataManager.GetAllPlaylists();
             List<GameList> listOfPlayListGames = new List<GameList>();
 
-            foreach(IPlaylist playlist in allPlaylists)
+            foreach (IPlaylist playlist in allPlaylists)
             {
                 if (playlist.HasGames(false, false))
                 {
@@ -420,7 +451,7 @@ namespace Eclipse.View
         private void GetGamesByPublisher()
         {
             List<GameList> listOfPublisherGames = new List<GameList>();
-            foreach(var publisherGroup in PublisherGameDictionary)
+            foreach (var publisherGroup in PublisherGameDictionary)
             {
                 var orderedGames = publisherGroup.Value.OrderBy(game => game.Game.SortTitleOrTitle).ToList();
                 GameList gameList = new GameList(publisherGroup.Key, orderedGames);
@@ -461,12 +492,12 @@ namespace Eclipse.View
             IsInitializing = true;
             FeatureOption = FeatureGameOption.PlayGame;
 
-            DeveloperGameDictionary = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
-            PublisherGameDictionary = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
-            GenreGameDictionary = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
-            GameTitlePhrases = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
-            SeriesGameDictionary = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
-            PlayModeGameDictionary = new Dictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
+            DeveloperGameDictionary = new ConcurrentDictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
+            PublisherGameDictionary = new ConcurrentDictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
+            GenreGameDictionary = new ConcurrentDictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
+            GameTitlePhrases = new ConcurrentDictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
+            SeriesGameDictionary = new ConcurrentDictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
+            PlayModeGameDictionary = new ConcurrentDictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
             BezelDictionary = new Dictionary<Tuple<BezelType, BezelOrientation, string>, Uri>();
 
             // get all the games from the launchbox install
@@ -476,13 +507,13 @@ namespace Eclipse.View
         public Uri GetDefaultBezel(BezelType bezelType, BezelOrientation bezelOrientation, string platformName)
         {
             Uri bezelUri = GetBezel(bezelType, bezelOrientation, platformName);
-            if(bezelUri != null)
+            if (bezelUri != null)
             {
                 return bezelUri;
             }
 
             // try the default bezel
-            if(bezelType != BezelType.Default)
+            if (bezelType != BezelType.Default)
             {
                 bezelUri = GetBezel(BezelType.Default, bezelOrientation, string.Empty);
             }
@@ -549,14 +580,14 @@ namespace Eclipse.View
                 }
 
                 // crop platform clear logos 
-                foreach(FileInfo fileInfo in platformLogosToProcess)
+                foreach (FileInfo fileInfo in platformLogosToProcess)
                 {
                     InitializationGameCount += 1;
                     ImageScaler.CropImage(fileInfo);
                 }
 
                 // crop game clear logos 
-                foreach(FileInfo fileInfo in gameClearLogosToProcess)
+                foreach (FileInfo fileInfo in gameClearLogosToProcess)
                 {
                     InitializationGameCount += 1;
                     ImageScaler.CropImage(fileInfo);
@@ -564,8 +595,9 @@ namespace Eclipse.View
 
                 LoadingMessage = null;
 
-                foreach (IGame game in AllGames)
+                Parallel.ForEach(AllGames, (game) =>
                 {
+                    // todo: now that we are parallel - we need to find a better way to report progress
                     InitializationGameCount += 1;
 
                     GameMatch.AddGameToFrontImageDictionary(game);
@@ -628,7 +660,8 @@ namespace Eclipse.View
                             }
                         }
                     }
-                }
+                });
+
 
                 // todo: fix create voice recognizer for 11.3 and later
                 CreateRecognizer();
@@ -691,7 +724,7 @@ namespace Eclipse.View
                 Recognizer.RecognizeAsyncCancel();
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Helpers.LogException(ex, "CreateRecognizer");
             }
@@ -751,14 +784,14 @@ namespace Eclipse.View
                     .Select(s => new GameList { ListDescription = s.Key, Confidence = s.Max(m => m.Confidence) }).ToList();
 
                 // loop through the gamelists (one list for each hypothesized phrase)
-                foreach(var gameList in distinctGameLists)
+                foreach (var gameList in distinctGameLists)
                 {
                     // get the list of matching games for the phrase from the GameTitlePhrases dictionary 
                     List<GameMatch> matches;
-                    if(GameTitlePhrases.TryGetValue(gameList.ListDescription, out matches))
+                    if (GameTitlePhrases.TryGetValue(gameList.ListDescription, out matches))
                     {
                         // override the match percentages for voice recognition 
-                        foreach(var game in matches)
+                        foreach (var game in matches)
                         {
                             game.SetupVoiceMatchPercentage(gameList.Confidence, gameList.ListDescription);
                         }
@@ -771,7 +804,7 @@ namespace Eclipse.View
 
             // remove any prior voice search set and then add these results in the voice search category
             GameListSets.RemoveAll(set => set.ListCategoryType == ListCategoryType.VoiceSearch);
-            GameListSets.Add(new GameListSet 
+            GameListSets.Add(new GameListSet
             {
                 ListCategoryType = ListCategoryType.VoiceSearch,
                 GameLists = voiceRecognitionResults
@@ -787,6 +820,181 @@ namespace Eclipse.View
             CallGameChangeFunction();
         }
 
+        void DoMoreLikeCurrentGame()
+        {
+            GameMatch currentGame = CurrentGameList?.Game1;
+            if (currentGame != null)
+            {
+                List<GameList> moreLikeThisResults = new List<GameList>();
+
+                // get lists for matching series
+                var seriesGameListSetQuery = from gameListSet in GameListSets
+                            where gameListSet.ListCategoryType == ListCategoryType.Series
+                            select gameListSet;
+
+                GameListSet seriesGameListSet = seriesGameListSetQuery?.FirstOrDefault();
+                if (seriesGameListSet != null)
+                {
+                    foreach (string series in currentGame?.Game?.SeriesValues)
+                    {
+                        var seriesGameListQuery = from seriesGameList in seriesGameListSet.GameLists
+                                     where seriesGameList.ListDescription.Equals(series, StringComparison.InvariantCultureIgnoreCase)
+                                     select seriesGameList;
+
+                        foreach(GameList gameList in seriesGameListQuery)
+                        {
+                            moreLikeThisResults.Add(gameList);
+                        }
+                    }
+                }
+
+
+                // get lists for matching genres
+                var genreGameListSetQuery = from gameListSet in GameListSets
+                                            where gameListSet.ListCategoryType == ListCategoryType.Genre
+                                            select gameListSet;
+
+                GameListSet genreGameListSet = genreGameListSetQuery?.FirstOrDefault();
+                if(genreGameListSet != null)
+                {
+                    foreach(string genre in currentGame?.Game?.Genres)
+                    {
+                        var genreGameListQuery = from genreGameList in genreGameListSet.GameLists
+                                                 where genreGameList.ListDescription.Equals(genre, StringComparison.InvariantCultureIgnoreCase)
+                                                 select genreGameList;
+
+                        foreach(GameList gameList in genreGameListQuery)
+                        {
+                            moreLikeThisResults.Add(gameList);
+                        }
+                    }
+                }
+
+
+                // get platform list 
+                var platformGameListSetQuery = from gameListSet in GameListSets
+                                            where gameListSet.ListCategoryType == ListCategoryType.Platform
+                                            select gameListSet;
+
+                GameListSet platformGameListSet = platformGameListSetQuery?.FirstOrDefault();
+                if (platformGameListSet != null)
+                {
+                    string platform = currentGame?.Game?.Platform;
+                    if (platform != null)
+                    {
+                        var platformGameListQuery = from platformGameList in platformGameListSet.GameLists
+                                                 where platformGameList.ListDescription.Equals(platform, StringComparison.InvariantCultureIgnoreCase)
+                                                 select platformGameList;
+
+                        foreach (GameList gameList in platformGameListQuery)
+                        {
+                            moreLikeThisResults.Add(gameList);
+                        }
+                    }
+                }
+
+                // get Developer list 
+                var developerGameListSetQuery = from gameListSet in GameListSets
+                                            where gameListSet.ListCategoryType == ListCategoryType.Developer
+                                            select gameListSet;
+
+                GameListSet developerGameListSet = developerGameListSetQuery?.FirstOrDefault();
+                if (developerGameListSet != null)
+                {
+                    foreach (string developer in currentGame?.Game?.Developers)
+                    {
+                        var developerGameListQuery = from developerGameList in developerGameListSet.GameLists
+                                                 where developerGameList.ListDescription.Equals(developer, StringComparison.InvariantCultureIgnoreCase)
+                                                 select developerGameList;
+
+                        foreach (GameList gameList in developerGameListQuery)
+                        {
+                            moreLikeThisResults.Add(gameList);
+                        }
+                    }
+                }
+
+                // get Publisher list
+                var publisherGameListSetQuery = from gameListSet in GameListSets
+                                                where gameListSet.ListCategoryType == ListCategoryType.Publisher
+                                                select gameListSet;
+
+                GameListSet publisherGameListSet = publisherGameListSetQuery?.FirstOrDefault();
+                if (publisherGameListSet != null)
+                {
+                    foreach (string publisher in currentGame?.Game?.Publishers)
+                    {
+                        var publisherGameListQuery = from publisherGameList in publisherGameListSet.GameLists
+                                                     where publisherGameList.ListDescription.Equals(publisher, StringComparison.InvariantCultureIgnoreCase)
+                                                     select publisherGameList;
+
+                        foreach (GameList gameList in publisherGameListQuery)
+                        {
+                            moreLikeThisResults.Add(gameList);
+                        }
+                    }
+                }
+
+                // get Play mode list
+                var playModeGameListSetQuery = from gameListSet in GameListSets
+                                                where gameListSet.ListCategoryType == ListCategoryType.PlayMode
+                                                select gameListSet;
+
+                GameListSet playModeGameListSet = playModeGameListSetQuery?.FirstOrDefault();
+                if (playModeGameListSet != null)
+                {
+                    foreach (string playMode in currentGame?.Game?.PlayModes)
+                    {
+                        var playModeGameListQuery = from playModeGameList in playModeGameListSet.GameLists
+                                                     where playModeGameList.ListDescription.Equals(playMode, StringComparison.InvariantCultureIgnoreCase)
+                                                     select playModeGameList;
+
+                        foreach (GameList gameList in playModeGameListQuery)
+                        {
+                            moreLikeThisResults.Add(gameList);
+                        }
+                    }
+                }
+
+                // get Release year list
+                var releaseYearGameListSetQuery = from gameListSet in GameListSets
+                                                where gameListSet.ListCategoryType == ListCategoryType.ReleaseYear
+                                                select gameListSet;
+
+                GameListSet releaseYearGameListSet = releaseYearGameListSetQuery?.FirstOrDefault();
+                if (releaseYearGameListSet != null)
+                {
+                    int? releaseYear = currentGame?.Game?.ReleaseDate?.Year;
+                    if(releaseYear != null)
+                    {
+                        var releaseYearGameListQuery = from releaseYearGameList in releaseYearGameListSet.GameLists
+                                                     where releaseYearGameList.ListDescription.Equals(releaseYear.ToString(), StringComparison.InvariantCultureIgnoreCase)
+                                                     select releaseYearGameList;
+
+                        foreach (GameList gameList in releaseYearGameListQuery)
+                        {
+                            moreLikeThisResults.Add(gameList);
+                        }
+                    }
+                }
+
+
+
+                // remove any prior "more like this" set and then add these results in the more like this category
+                GameListSets.RemoveAll(set => set.ListCategoryType == ListCategoryType.MoreLikeThis);
+                GameListSets.Add(new GameListSet
+                {
+                    ListCategoryType = ListCategoryType.MoreLikeThis,
+                    GameLists = moreLikeThisResults
+                }) ;
+
+                ResetGameLists(ListCategoryType.MoreLikeThis);
+                IsDisplayingResults = true;
+                IsDisplayingFeature = false;
+                IsDisplayingMoreInfo = false;
+                CallGameChangeFunction();
+            }
+        }
 
 
         private void AddGameToVoiceDictionary(string phrase, GameMatch gameMatch)
@@ -799,7 +1007,7 @@ namespace Eclipse.View
             // add the phrase if it's not in the dictionary
             if (!GameTitlePhrases.ContainsKey(phrase))
             {
-                GameTitlePhrases.Add(phrase, new List<GameMatch>());
+                GameTitlePhrases.TryAdd(phrase, new List<GameMatch>());
             }
 
             // add the game if it's not already in the collection of matching games
@@ -833,7 +1041,7 @@ namespace Eclipse.View
 
         private void RefreshGameLists()
         {
-            if(listCycle?.GenericList?.Count == 0)
+            if (listCycle?.GenericList?.Count == 0)
             {
                 IsDisplayingError = true;
 
@@ -849,7 +1057,7 @@ namespace Eclipse.View
 
         private void CallGameChangeFunction()
         {
-            if(GameChangeFunction != null)
+            if (GameChangeFunction != null)
             {
                 GameChangeFunction();
             }
@@ -857,7 +1065,7 @@ namespace Eclipse.View
 
         private void CallFeatureChangeFunction()
         {
-            if(FeatureChangeFunction != null)
+            if (FeatureChangeFunction != null)
             {
                 FeatureChangeFunction();
             }
@@ -865,7 +1073,7 @@ namespace Eclipse.View
 
         private void CallLoadImageFunction()
         {
-            if(LoadImagesFunction != null)
+            if (LoadImagesFunction != null)
             {
                 LoadImagesFunction();
             }
@@ -891,13 +1099,39 @@ namespace Eclipse.View
                 IsDisplayingError = false;
 
 
-                if (isPickingCategory)
+                if (IsPickingCategory)
                 {
                     OptionList.CycleBackward();
                     return;
                 }
 
-                if (isDisplayingResults)
+                if (IsDisplayingMoreInfo)
+                {
+                    switch (GameDetailOption)
+                    {
+                        case GameDetailOption.Play:
+                            GameDetailOption = GameDetailOption.Rating;
+                            IsRatingGame = true;
+                            break;
+
+                        case GameDetailOption.Favorite:
+                            GameDetailOption = GameDetailOption.Play;
+                            break;
+
+                        case GameDetailOption.MoreLikeThis:
+                            GameDetailOption = GameDetailOption.Favorite;
+                            break;
+
+                        case GameDetailOption.Rating:
+                            GameDetailOption = GameDetailOption.MoreLikeThis;
+                            IsRatingGame = false;
+                            SaveRatingCurrentGame();
+                            break;
+                    }
+                    return;
+                }
+
+                if (IsDisplayingResults)
                 {
                     // if displaying first list 
                     if ((listCycle.GetIndexValue(0) == 0))
@@ -919,7 +1153,7 @@ namespace Eclipse.View
                         }
                     }
 
-                    if(IsDisplayingFeature)
+                    if (IsDisplayingFeature)
                     {
                         IsDisplayingFeature = false;
                         CallFeatureChangeFunction();
@@ -948,6 +1182,32 @@ namespace Eclipse.View
                 if (isPickingCategory)
                 {
                     OptionList.CycleForward();
+                    return;
+                }
+
+                if (isDisplayingMoreInfo)
+                {
+                    switch (GameDetailOption)
+                    {
+                        case GameDetailOption.Play:
+                            GameDetailOption = GameDetailOption.Favorite;
+                            break;
+
+                        case GameDetailOption.Favorite:
+                            GameDetailOption = GameDetailOption.MoreLikeThis;
+                            break;
+
+                        case GameDetailOption.MoreLikeThis:
+                            GameDetailOption = GameDetailOption.Rating;
+                            IsRatingGame = true;
+                            break;
+
+                        case GameDetailOption.Rating:
+                            GameDetailOption = GameDetailOption.Play;
+                            IsRatingGame = false;
+                            SaveRatingCurrentGame();
+                            break;
+                    }
                     return;
                 }
 
@@ -992,6 +1252,13 @@ namespace Eclipse.View
                     return;
                 }
 
+                if (IsRatingGame)
+                {
+                    // increment the game rating by 0.1
+                    RateCurrentGame(-0.5f);
+                    return;
+                }
+
                 if (IsDisplayingFeature)
                 {
                     // toggle the feature option
@@ -1025,7 +1292,7 @@ namespace Eclipse.View
                     return;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Helpers.LogException(ex, "DoLeft");
             }
@@ -1050,10 +1317,17 @@ namespace Eclipse.View
                     return;
                 }
 
-                // toggle the feature option
-                if(IsDisplayingFeature)
+                if(IsRatingGame)
                 {
-                    if(FeatureOption == FeatureGameOption.PlayGame)
+                    // increment the game rating by 0.1
+                    RateCurrentGame(0.5f);
+                    return;
+                }
+
+                // toggle the feature option
+                if (IsDisplayingFeature)
+                {
+                    if (FeatureOption == FeatureGameOption.PlayGame)
                     {
                         FeatureOption = FeatureGameOption.MoreInfo;
                     }
@@ -1068,7 +1342,7 @@ namespace Eclipse.View
                     return;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Helpers.LogException(ex, "DoRight");
             }
@@ -1091,7 +1365,7 @@ namespace Eclipse.View
             DoRecognize();
         }
 
-        private void ResetGameLists(ListCategoryType listCategoryType)            
+        private void ResetGameLists(ListCategoryType listCategoryType)
         {
             // get the game list from the GameListSet for the given listCategoryType
             var query = from gameList in GameListSets
@@ -1113,13 +1387,13 @@ namespace Eclipse.View
         {
             // get a game index from the current list set
             int randomIndex = random.Next(0, CurrentGameListSet.TotalGameCount);
-            
+
             // find the index of which list it's in 
-            for(int listIndex = 0; listIndex < CurrentGameListSet.GameLists.Count; listIndex++)
+            for (int listIndex = 0; listIndex < CurrentGameListSet.GameLists.Count; listIndex++)
             {
                 GameList gameList = CurrentGameListSet.GameLists[listIndex];
-                
-                if(gameList.ListSetStartIndex <= randomIndex && gameList.ListSetEndIndex >= randomIndex)
+
+                if (gameList.ListSetStartIndex <= randomIndex && gameList.ListSetEndIndex >= randomIndex)
                 {
                     // once found, cycle to that list
                     listCycle.SetCurrentIndex(listIndex);
@@ -1139,17 +1413,65 @@ namespace Eclipse.View
             IsDisplayingFeature = true;
         }
 
+        private void PlayCurrentGame()
+        {
+            // start the current game
+            IGame currentGame = CurrentGameList?.Game1?.Game;
+            if (currentGame != null)
+            {
+                PluginHelper.BigBoxMainViewModel.PlayGame(currentGame, null, null, null);
+            }
+            return;
+        }
+
+        private void FavoriteCurrentGame()
+        {
+            GameMatch currentGame = CurrentGameList?.Game1;
+            if(currentGame != null)
+            {
+                currentGame.Favorite = !currentGame.Favorite;
+                PluginHelper.DataManager.Save(false);
+            }
+        }
+
+        private void RateCurrentGame(float changeAmount)
+        {
+            GameMatch currentGame = CurrentGameList?.Game1;
+            if(currentGame != null)
+            {
+                float newRating = currentGame.UserRating + changeAmount;
+                if (newRating > 5) newRating = 5.0f;
+                if (newRating < 0) newRating = 0.0f;
+
+                currentGame.UserRating = newRating;
+            }
+        }
+
+        private void SaveRatingCurrentGame()
+        {
+            GameMatch currentGame = CurrentGameList?.Game1;
+            if (currentGame != null)
+            {
+                PluginHelper.DataManager.Save(false);
+            }
+        }
+
+
         public void DoEnter()
         {
             // stop displaying error
-            IsDisplayingError = false;
+            if (IsDisplayingError)
+            {
+                IsDisplayingError = false;
+                return;
+            }
 
-            if (isPickingCategory)
+            if (IsPickingCategory)
             {
                 IsPickingCategory = false;
 
-                Option option = OptionList.Option0;
-                switch (option.ListCategoryType)
+                Option<ListCategoryType> option = OptionList.Option0;
+                switch (option.EnumOption)
                 {
                     case ListCategoryType.VoiceSearch:
                         DoRecognize();
@@ -1195,30 +1517,73 @@ namespace Eclipse.View
                 return;
             }
 
-            if(isDisplayingFeature && FeatureOption == FeatureGameOption.MoreInfo)
+            if (IsDisplayingMoreInfo)
             {
+                switch (GameDetailOption)
+                {
+                    case GameDetailOption.Play:
+                        PlayCurrentGame();
+                        break;
+
+                    case GameDetailOption.Favorite:
+                        FavoriteCurrentGame();
+                        break;
+
+                    case GameDetailOption.Rating:
+                        if (!IsRatingGame)
+                        {
+                            IsRatingGame = true;
+                        }
+                        else
+                        {
+                            SaveRatingCurrentGame();
+                            IsRatingGame = false;
+                        }
+                        break;
+
+                    case GameDetailOption.MoreLikeThis:
+                        DoMoreLikeCurrentGame();
+                        break;
+                }
+                return;
+            }
+
+            if (IsDisplayingFeature && FeatureOption == FeatureGameOption.MoreInfo)
+            {
+                GameDetailOption = GameDetailOption.Play;
                 IsDisplayingMoreInfo = true;
                 return;
             }
 
-            if ((isDisplayingFeature) || (isDisplayingResults))
+            if (isDisplayingFeature && FeatureOption == FeatureGameOption.PlayGame)
             {
                 // start the current game
-                IGame currentGame = CurrentGameList?.Game1?.Game;
-                if (currentGame != null)
-                {
-                    PluginHelper.BigBoxMainViewModel.PlayGame(currentGame, null, null, null);
-                }
+                PlayCurrentGame();
+                return;
+            }
+
+            if (isDisplayingResults)
+            {
+                GameDetailOption = GameDetailOption.Play;
+                IsDisplayingFeature = true;
+                IsDisplayingMoreInfo = true;
                 return;
             }
         }
 
         public bool DoEscape()
-        {           
+        {
             // stop displaying error if it was displaying
-            if(IsDisplayingError)
+            if (IsDisplayingError)
             {
                 IsDisplayingError = false;
+                return true;
+            }
+
+            if (IsDisplayingMoreInfo)
+            {
+                IsDisplayingMoreInfo = false;
+                IsRatingGame = false;
                 return true;
             }
 
@@ -1229,7 +1594,7 @@ namespace Eclipse.View
             }
 
             // if displaying results - open the settings 
-            if(IsDisplayingResults)
+            if (IsDisplayingResults)
             {
                 IsPickingCategory = true;
                 return true;
@@ -1278,7 +1643,7 @@ namespace Eclipse.View
             get { return featureOption; }
             set
             {
-                if(featureOption != value)
+                if (featureOption != value)
                 {
                     featureOption = value;
                     PropertyChanged(this, new PropertyChangedEventArgs("FeatureOption"));
@@ -1336,6 +1701,24 @@ namespace Eclipse.View
                 }
             }
         }
+
+        public int Star1 { get { return 1; } }
+        public int Star2 { get { return 2; } }
+        public int Star3 { get { return 3; } }
+        public int Star4 { get { return 4; } }
+        public int Star5 { get { return 5; } }
+
+        public float StarOffset00 { get { return 0.0f; } }
+        public float StarOffset01 { get { return 0.1f; } }
+        public float StarOffset02 { get { return 0.2f; } }
+        public float StarOffset03 { get { return 0.3f; } }
+        public float StarOffset04 { get { return 0.4f; } }
+        public float StarOffset05 { get { return 0.5f; } }
+        public float StarOffset06 { get { return 0.6f; } }
+        public float StarOffset07 { get { return 0.7f; } }
+        public float StarOffset08 { get { return 0.8f; } }
+        public float StarOffset09 { get { return 0.9f; } }
+        public float StarOffset10 { get { return 1.0f; } }
 
         public event PropertyChangedEventHandler PropertyChanged = delegate {};
     }

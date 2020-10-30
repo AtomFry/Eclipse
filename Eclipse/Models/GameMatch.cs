@@ -309,6 +309,145 @@ namespace Eclipse.Models
             }
         }
 
+
+        public bool Favorite
+        {
+            get { return Game.Favorite; }
+            set
+            {
+                if(Game.Favorite != value)
+                {
+                    Game.Favorite = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("Favorite"));
+                }
+            }
+        }
+
+        public float UserRating
+        {
+            get { return Game.StarRatingFloat; }
+            set
+            {
+                if(Game.StarRatingFloat != value)
+                {
+                    Game.StarRatingFloat = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("UserRating"));
+                }
+            }
+        }
+
+
+        public string developer;
+        public string Developer 
+        { 
+            get 
+            {
+                try
+                {
+                    if (string.IsNullOrEmpty(developer) && Game?.Developers?.Length != 0)
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        foreach (string developer in Game.Developers)
+                        {
+                            if (sb.Length != 0)
+                            {
+                                sb.Append(", ");
+                            }
+                            sb.Append(developer);
+                        }
+                        developer = sb.ToString();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Helpers.LogException(ex, "Setting up series");
+                }
+                return developer;
+            }
+        }
+
+        private string publisher;
+        public string Publisher 
+        {
+            get 
+            {
+                try
+                {
+                    if (string.IsNullOrEmpty(publisher) && Game?.Publishers?.Length != 0)
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        foreach (string publisher in Game.Publishers)
+                        {
+                            if (sb.Length != 0)
+                            {
+                                sb.Append(", ");
+                            }
+                            sb.Append(publisher);
+                        }
+                        publisher = sb.ToString();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Helpers.LogException(ex, "Setting up series");
+                }
+                return publisher;
+            } 
+        }
+
+        private string series;
+        public string Series 
+        { 
+            get 
+            {
+                try
+                {
+                    if (string.IsNullOrEmpty(series) && Game?.SeriesValues?.Length != 0)
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        foreach (string series in Game.SeriesValues)
+                        {
+                            if (sb.Length != 0)
+                            {
+                                sb.Append(", ");
+                            }
+                            sb.Append(series);
+                        }
+                        series = sb.ToString();
+                    }
+                }
+                catch(Exception ex)
+                {
+                    Helpers.LogException(ex, "Setting up series");
+                }
+                return series;
+            }
+        }
+
+
+        private string genre;
+        public string Genre 
+        { 
+            get 
+            {
+                if(string.IsNullOrEmpty(genre) && Game.Genres != null)
+                {
+                    StringBuilder sb = new StringBuilder();
+
+                    foreach(string genre in Game.Genres)
+                    {
+                        if(sb.Length != 0)
+                        {
+                            sb.Append(", ");
+                        }
+                        sb.Append(genre);
+                    }
+                    genre = sb.ToString();
+                }
+                return genre;
+            }
+        }
+
         public int? matchPercentage;
         public void SetupVoiceMatchPercentage(float confidence, string phrase)
         {
