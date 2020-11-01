@@ -1,7 +1,9 @@
 ﻿using Eclipse.Models;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Security.RightsManagement;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
@@ -23,7 +25,7 @@ namespace Eclipse.View
     /// <summary>
     /// Interaction logic for MainWindowView.xaml
     /// </summary>
-    public partial class MainWindowView : UserControl, IBigBoxThemeElementPlugin, IGameLaunchingPlugin
+    public partial class MainWindowView : UserControl, IBigBoxThemeElementPlugin
     {
         MainWindowViewModel mainWindowViewModel;
         private Timer backgroundImageChangeDelay;
@@ -41,7 +43,6 @@ namespace Eclipse.View
         private Storyboard BackgroundImageFadeInSlowStoryBoard;
 
         private LinearGradientBrush opacityBrush = GetOpacityBrush();
-
 
         public MainWindowView()
         {
@@ -71,6 +72,9 @@ namespace Eclipse.View
             // pass in the function that can be called whenever the featured game function changes
             mainWindowViewModel.FeatureChangeFunction = ChangedFeatureSetting;
 
+            // pass in a function that will stop animations and videos when games are started or voice recognition is happening
+            mainWindowViewModel.StopVideoAndAnimationsFunction = StopVideoAndAnimations;
+
             // sets up the game lists and voice recognition
             mainWindowViewModel.InitializeData();
         }
@@ -89,7 +93,7 @@ namespace Eclipse.View
         }
 
         public delegate void SetupGameImageDelegate();
-        
+
         public void SetupGameImage()
         {
             GameList gameListToProcess = null;
@@ -171,18 +175,12 @@ namespace Eclipse.View
 
         public bool OnEnter()
         {
-            // todo: stop everything in a different way - pass a function and only stop when we want to
-            // StopEverything();
-
             mainWindowViewModel.DoEnter();
             return true;
         }
 
         public bool OnEscape()
         {
-            // todo: stop everything in a different way - pass a function and only stop when we want to
-            // StopEverything();
-
             return mainWindowViewModel.DoEscape();
         }
 
@@ -194,16 +192,12 @@ namespace Eclipse.View
 
         public bool OnPageDown()
         {
-            StopEverything();
-
             mainWindowViewModel.DoPageDown();
             return true;
         }
 
         public bool OnPageUp()
         {
-            StopEverything();
-
             mainWindowViewModel.DoPageUp();
             return true;
         }
@@ -455,32 +449,34 @@ namespace Eclipse.View
 
         public void ChangedFeatureSetting()
         {
-            // TODO: remove this?  
-
+            // TODO: remove this?
         }
 
-        public void OnBeforeGameLaunching(IGame game, IAdditionalApplication app, IEmulator emulator)
+        public void StopVideoAndAnimations()
         {
-            StopEverything();
-
-            // todo: fade in startup screen 
+            BackgroundWorker worker = new BackgroundWorker();
+            worker.DoWork += StopVideoAndAnimationWorker;
+            worker.RunWorkerAsync();
         }
 
-        public void OnAfterGameLaunched(IGame game, IAdditionalApplication app, IEmulator emulator)
+        void StopVideoAndAnimationWorker(object sender, DoWorkEventArgs e)
         {
-            StopEverything();
-
-            // todo: fade out startup screen 
-        }
-
-        public void OnGameExited()
-        {
-            // todo: fade in game over screen
-            // todo: fade out game over screen 
-            
-            // reset the current game image and video
-            // todo: why isn't this working?
-            DoAnimateGameChange();
+            // every half second for 3 seconds, try to stop everything
+            for(int i = 0; i < 6; i++)
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    try
+                    {
+                        StopEverything();
+                        System.Threading.Thread.Sleep(500);
+                    }
+                    catch (Exception ex)
+                    {
+                        Helpers.LogException(ex, "StopVideoAndAnimationWorker");
+                    }
+                });
+            }
         }
 
         // setup fallback bezels once the media opens so we can identify whether we need the horizontal or veritical bezel

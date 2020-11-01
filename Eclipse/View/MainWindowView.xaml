@@ -295,6 +295,7 @@
                         Orientation="Vertical"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
+                        Visibility="{Binding IsDisplayingMoreInfo, Converter={StaticResource InvertBooleanToVisibilityConverter}}"
                         Opacity="{Binding CurrentGameList.Game0, Converter={StaticResource SettingsOpacityConverter}}"
                         Panel.ZIndex="800">
                 <Image Name="Image_SettingsIcon" 

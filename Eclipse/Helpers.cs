@@ -42,9 +42,17 @@ namespace Eclipse
 
         public static void LogException(Exception ex, string context)
         {
-            Helpers.Log($"An exception occurred while attempting to {context}");
-            Helpers.Log($"Exception message: {ex?.Message ?? "null"}");
-            Helpers.Log($"Exception stack: {ex?.StackTrace ?? "null"}");
+            if (ex != null)
+            {
+                Helpers.Log($"An exception occurred while attempting to {context}");
+                Helpers.Log($"Exception message: {ex?.Message ?? "null"}");
+                Helpers.Log($"Exception stack: {ex?.StackTrace ?? "null"}");
+
+                if (ex.InnerException != null)
+                {
+                    LogException(ex.InnerException, "Inner Exception");
+                }
+            }
         }
 
         // todo: read this from a config file so we can change it without needing to recompile

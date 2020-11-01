@@ -20,7 +20,8 @@ namespace Eclipse.Models
         PlayMode,
         Developer,
         Publisher,
-        MoreLikeThis
+        MoreLikeThis,
+        Favorites
     }
 
     public class OptionList : INotifyPropertyChanged

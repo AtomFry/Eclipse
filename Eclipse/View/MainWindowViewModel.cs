@@ -13,6 +13,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using System.Threading;
+using System.Security.Cryptography;
 
 namespace Eclipse.View
 {
@@ -20,6 +21,7 @@ namespace Eclipse.View
     public delegate void AnimateGameChangeFunction();
     public delegate void LoadImagesFunction();
     public delegate void IncrementLoadingProgressFunction();
+    public delegate void StopVideoAndAnimations();
 
     public static class Extensions
     {
@@ -59,6 +61,7 @@ namespace Eclipse.View
         private ConcurrentDictionary<string, List<GameMatch>> DeveloperGameDictionary;
         private ConcurrentDictionary<string, List<GameMatch>> SeriesGameDictionary;
         private ConcurrentDictionary<string, List<GameMatch>> PlayModeGameDictionary;
+        private ConcurrentDictionary<string, List<GameMatch>> FavoriteGameDictionary;
 
         // store platform bezels and default bezels in dictionary for easy lookup
         // this is probably terrible design but the problem is I won't know the video orientation in the GameMatch, I get that once the MediaElement is loaded over in the view
@@ -69,6 +72,7 @@ namespace Eclipse.View
         public FeatureChangeFunction FeatureChangeFunction { get; set; }
         public AnimateGameChangeFunction GameChangeFunction { get; set; }
         public LoadImagesFunction LoadImagesFunction { get; set; }
+        public StopVideoAndAnimations StopVideoAndAnimationsFunction { get; set; }
 
         private GameDetailOption gameDetailOption;
         public GameDetailOption GameDetailOption
@@ -368,6 +372,14 @@ namespace Eclipse.View
         {
             List<GameList> listOfPlatformGames = new List<GameList>();
 
+            // todo: playing around with including favorites at the top of each category
+            foreach (var favoriteGroup in FavoriteGameDictionary)
+            {
+                var orderedGames = favoriteGroup.Value.OrderByDescending(game => game.Game.CommunityOrLocalStarRating).ToList();
+                GameList gameList = new GameList(favoriteGroup.Key, orderedGames);
+                listOfPlatformGames.Add(gameList);
+            }
+
             List<IPlatform> platforms = new List<IPlatform>(PluginHelper.DataManager.GetAllPlatforms());
             var orderedPlatforms = platforms.OrderBy(f => f.ReleaseDate);
 
@@ -382,14 +394,15 @@ namespace Eclipse.View
 
                 listOfPlatformGames.Add(gameList);
             }
+
             GameListSets.Add(new GameListSet { GameLists = listOfPlatformGames, ListCategoryType = ListCategoryType.Platform });
         }
 
         private void GetGamesByYear()
         {
             List<GameList> listOfYearGames = new List<GameList>();
-            var gamesByYear = AllGames.GroupBy(game => game.ReleaseDate?.Year);
 
+            var gamesByYear = AllGames.GroupBy(game => game.ReleaseDate?.Year);
             foreach (var yearGameGroup in gamesByYear)
             {
                 string year = yearGameGroup.Key?.ToString();
@@ -407,6 +420,7 @@ namespace Eclipse.View
         private void GetGamesByDeveloper()
         {
             List<GameList> listOfDeveloperGames = new List<GameList>();
+
             foreach (var developerGroup in DeveloperGameDictionary)
             {
                 var orderedGames = developerGroup.Value.OrderBy(game => game.Game.SortTitleOrTitle).ToList();
@@ -428,10 +442,30 @@ namespace Eclipse.View
             GameListSets.Add(new GameListSet { GameLists = listOfPlayModeGames.OrderBy(list => list.ListDescription).ToList(), ListCategoryType = ListCategoryType.PlayMode });
         }
 
+        private void GetGamesByFavorite()
+        {
+            List<GameList> listOfFavoriteGames = new List<GameList>();
+            foreach(var favoriteGroup in FavoriteGameDictionary)
+            {
+                var orderedGames = favoriteGroup.Value.OrderBy(game => game.Game.SortTitleOrTitle).ToList();
+                GameList gameList = new GameList(favoriteGroup.Key, orderedGames);
+                listOfFavoriteGames.Add(gameList);
+            }
+            GameListSets.Add(new GameListSet { GameLists = listOfFavoriteGames.OrderBy(list => list.ListDescription).ToList(), ListCategoryType = ListCategoryType.Favorites });
+        }
+
         private void GetGamesByPlaylist()
         {
             IPlaylist[] allPlaylists = PluginHelper.DataManager.GetAllPlaylists();
             List<GameList> listOfPlayListGames = new List<GameList>();
+
+            // todo: playing around with including favorites at the playlist category
+            foreach (var favoriteGroup in FavoriteGameDictionary)
+            {
+                var orderedGames = favoriteGroup.Value.OrderByDescending(game => game.Game.CommunityOrLocalStarRating).ToList();
+                GameList gameList = new GameList(favoriteGroup.Key, orderedGames);
+                listOfPlayListGames.Add(gameList);
+            }
 
             foreach (IPlaylist playlist in allPlaylists)
             {
@@ -498,6 +532,7 @@ namespace Eclipse.View
             GameTitlePhrases = new ConcurrentDictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
             SeriesGameDictionary = new ConcurrentDictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
             PlayModeGameDictionary = new ConcurrentDictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
+            FavoriteGameDictionary = new ConcurrentDictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
             BezelDictionary = new Dictionary<Tuple<BezelType, BezelOrientation, string>, Uri>();
 
             // get all the games from the launchbox install
@@ -602,6 +637,11 @@ namespace Eclipse.View
 
                     GameMatch.AddGameToFrontImageDictionary(game);
 
+                    if(game.Favorite)
+                    {
+                        FavoriteGameDictionary.AddGame("Favorites", new GameMatch(game, TitleMatchType.None));
+                    }
+
                     // create a dictionary of play modes and game matches
                     foreach (string playMode in game.PlayModes)
                     {
@@ -678,6 +718,7 @@ namespace Eclipse.View
                 GetGamesByDeveloper();
                 GetGamesBySeries();
                 GetGamesByPlayMode();
+                GetGamesByFavorite();
                 GetGamesByPlaylist();
 
                 // flag initialization complete - display results
@@ -688,7 +729,7 @@ namespace Eclipse.View
                 ResetGameLists(ListCategoryType.Platform);
 
                 // start off with a random game
-                DoRandomGame();
+                DoRandomGame(GetRandomFavoriteIndex());
             }
             catch (Exception ex)
             {
@@ -1025,10 +1066,12 @@ namespace Eclipse.View
             if (IsInitializing)
                 return;
 
-            IsRecognizing = true;
+            // stop any video or animations
+            CallStopVideoAndAnimationsFunction();
 
-            // TODO: look into leaving the IsDisplayingResults true and overlaying the recognition on top with progress bar to indicate how long it's listening
-            // IsDisplayingResults = false;
+            // flag recognizing and disable error, settings (category) and rating game
+            IsRecognizing = true;
+            IsRatingGame = false;
             IsPickingCategory = false;
             IsDisplayingError = false;
 
@@ -1068,6 +1111,14 @@ namespace Eclipse.View
             if (FeatureChangeFunction != null)
             {
                 FeatureChangeFunction();
+            }
+        }
+
+        private void CallStopVideoAndAnimationsFunction()
+        {
+            if(StopVideoAndAnimationsFunction != null)
+            {
+                StopVideoAndAnimationsFunction();
             }
         }
 
@@ -1259,6 +1310,12 @@ namespace Eclipse.View
                     return;
                 }
 
+                // don't do anything when displaying more info
+                if(IsDisplayingMoreInfo)
+                {
+                    return;
+                }
+
                 if (IsDisplayingFeature)
                 {
                     // toggle the feature option
@@ -1324,6 +1381,12 @@ namespace Eclipse.View
                     return;
                 }
 
+                // don't do anything when displaying more info
+                if (IsDisplayingMoreInfo)
+                {
+                    return;
+                }
+
                 // toggle the feature option
                 if (IsDisplayingFeature)
                 {
@@ -1383,10 +1446,13 @@ namespace Eclipse.View
         }
 
         private static readonly Random random = new Random();
-        public void DoRandomGame()
+        public void DoRandomGame(int randomIndex = -1)
         {
             // get a game index from the current list set
-            int randomIndex = random.Next(0, CurrentGameListSet.TotalGameCount);
+            if (randomIndex == -1)
+            {
+                randomIndex = random.Next(0, CurrentGameListSet.TotalGameCount);
+            }
 
             // find the index of which list it's in 
             for (int listIndex = 0; listIndex < CurrentGameListSet.GameLists.Count; listIndex++)
@@ -1413,12 +1479,27 @@ namespace Eclipse.View
             IsDisplayingFeature = true;
         }
 
+        private int GetRandomFavoriteIndex()
+        {
+            var q = from list in CurrentGameListSet.GameLists
+                    where list.ListDescription.Equals("Favorites", StringComparison.InvariantCultureIgnoreCase)
+                    select list;
+
+            GameList favoritesList = q?.FirstOrDefault();
+            if(favoritesList != null)
+            {
+                return random.Next(0, favoritesList.MatchCount);
+            }
+            return (-1);
+        }
+
         private void PlayCurrentGame()
         {
             // start the current game
             IGame currentGame = CurrentGameList?.Game1?.Game;
             if (currentGame != null)
             {
+                CallStopVideoAndAnimationsFunction();
                 PluginHelper.BigBoxMainViewModel.PlayGame(currentGame, null, null, null);
             }
             return;
@@ -1530,14 +1611,9 @@ namespace Eclipse.View
                         break;
 
                     case GameDetailOption.Rating:
-                        if (!IsRatingGame)
-                        {
-                            IsRatingGame = true;
-                        }
-                        else
+                        if (IsRatingGame)
                         {
                             SaveRatingCurrentGame();
-                            IsRatingGame = false;
                         }
                         break;
 
