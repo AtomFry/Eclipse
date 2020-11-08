@@ -15,6 +15,7 @@ namespace Eclipse.Models
         public static Uri SettingsIconWhite { get; } = new Uri($"{Helpers.ResourceFolder}/SettingsIcon_White.png");
 
         public static Uri GameFrontDummy { get; } = new Uri($"{Helpers.ResourceFolder}/NES_BoxFront_Template.png");
+        public static Uri DefaultBackground { get; } = new Uri($"{Helpers.ResourceFolder}/DefaultBackground.jpg");
 
         public static Uri PlayButtonSelected { get; } = new Uri($"{Helpers.ResourceFolder}/PlayButton_Selected.png");
         public static Uri PlayButtonUnSelected { get; } = new Uri($"{Helpers.ResourceFolder}/PlayButton_Unselected.png");

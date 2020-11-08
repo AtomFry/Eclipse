@@ -73,6 +73,20 @@ namespace Eclipse.Models
             }
         }
 
+        private ListCategoryType listCategoryType;
+        public ListCategoryType ListCategoryType
+        {
+            get { return listCategoryType; }
+            set
+            {
+                if(listCategoryType != value)
+                {
+                    listCategoryType = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("ListCategoryType"));
+                }
+            }
+        }
+
         // to be used with selecting random games and reset the game cycle to the right spot
         public void SetGameIndex(int newIndex)
         {

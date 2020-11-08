@@ -32,8 +32,6 @@
         <myconverters:StringLengthToVisibilityConverter x:Key="StringLengthVisibilityConverter" Empty="Collapsed" NonEmpty="Visible"/>
         <myconverters:FloatToStringConverter x:Key="StarRatingToStarRatingOptionConverter" ZeroValue="Rate this game" NonZeroValue="Change rating"/>
         <myconverters:UserRatingToBrushConverter x:Key="UserRatingToBrush"/>
-
-
         <myconverters:GameDetailOptionToBrushConverter x:Key="GameDetailPlayGameColorConverter" GameDetailComparison="Play">
             <myconverters:GameDetailOptionToBrushConverter.MatchingValue>
                 <SolidColorBrush Color="Black"/>
@@ -42,7 +40,6 @@
                 <SolidColorBrush Color="WhiteSmoke"/>
             </myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
         </myconverters:GameDetailOptionToBrushConverter>
-
         <myconverters:GameDetailOptionToBrushConverter x:Key="GameDetailFavoriteColorConverter" GameDetailComparison="Favorite">
             <myconverters:GameDetailOptionToBrushConverter.MatchingValue>
                 <SolidColorBrush Color="Black"/>
@@ -51,7 +48,6 @@
                 <SolidColorBrush Color="WhiteSmoke"/>
             </myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
         </myconverters:GameDetailOptionToBrushConverter>
-
         <myconverters:GameDetailOptionToBrushConverter x:Key="GameDetailRatingColorConverter" GameDetailComparison="Rating">
             <myconverters:GameDetailOptionToBrushConverter.MatchingValue>
                 <SolidColorBrush Color="Black"/>
@@ -60,7 +56,6 @@
                 <SolidColorBrush Color="WhiteSmoke"/>
             </myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
         </myconverters:GameDetailOptionToBrushConverter>
-
         <myconverters:GameDetailOptionToBrushConverter x:Key="GameDetailMoreLikeThisColorConverter" GameDetailComparison="MoreLikeThis">
             <myconverters:GameDetailOptionToBrushConverter.MatchingValue>
                 <SolidColorBrush Color="Black"/>
@@ -69,7 +64,6 @@
                 <SolidColorBrush Color="WhiteSmoke"/>
             </myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
         </myconverters:GameDetailOptionToBrushConverter>
-
         <myconverters:GameDetailOptionToBrushConverter x:Key="GameDetailPlayGameBorderColorConverter" GameDetailComparison="Play">
             <myconverters:GameDetailOptionToBrushConverter.MatchingValue>
                 <SolidColorBrush Color="WhiteSmoke"/>
@@ -78,7 +72,6 @@
                 <SolidColorBrush Color="Transparent"/>
             </myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
         </myconverters:GameDetailOptionToBrushConverter>
-
         <myconverters:GameDetailOptionToBrushConverter x:Key="GameDetailFavoriteBorderColorConverter" GameDetailComparison="Favorite">
             <myconverters:GameDetailOptionToBrushConverter.MatchingValue>
                 <SolidColorBrush Color="WhiteSmoke"/>
@@ -87,7 +80,6 @@
                 <SolidColorBrush Color="Transparent"/>
             </myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
         </myconverters:GameDetailOptionToBrushConverter>
-
         <myconverters:GameDetailOptionToBrushConverter x:Key="GameDetailRatingBorderColorConverter" GameDetailComparison="Rating">
             <myconverters:GameDetailOptionToBrushConverter.MatchingValue>
                 <SolidColorBrush Color="WhiteSmoke"/>
@@ -96,7 +88,6 @@
                 <SolidColorBrush Color="Transparent"/>
             </myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
         </myconverters:GameDetailOptionToBrushConverter>
-
         <myconverters:GameDetailOptionToBrushConverter x:Key="GameDetailMoreLikeThisBorderColorConverter" GameDetailComparison="MoreLikeThis">
             <myconverters:GameDetailOptionToBrushConverter.MatchingValue>
                 <SolidColorBrush Color="WhiteSmoke"/>
@@ -105,7 +96,6 @@
                 <SolidColorBrush Color="Transparent"/>
             </myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
         </myconverters:GameDetailOptionToBrushConverter>
-
         <myconverters:GameDetailOptionToBrushConverter x:Key="GameDetailMoreLikeThisIconStrokeConverter" GameDetailComparison="MoreLikeThis">
             <myconverters:GameDetailOptionToBrushConverter.MatchingValue>
                 <SolidColorBrush Color="WhiteSmoke"/>
@@ -114,11 +104,11 @@
                 <SolidColorBrush Color="Black"/>
             </myconverters:GameDetailOptionToBrushConverter.UnmatchingValue>
         </myconverters:GameDetailOptionToBrushConverter>
-
         <myconverters:BooleanToPointCollectionConverter x:Key="FavoriteDetailIconConverter" 
                                                         False="20,0 30,0 30,20 50,20 50,30 30,30 30,50 20,50 20,30 0,30 0,20 20,20"
                                                         True="0,20 30,20 30,25 0,25"/>
-        
+        <myconverters:BackgroundImageOversizeConverter x:Key="OversizeImageConverter"/>
+
         <!-- 1-second image fade in - call when game changes -->
         <Storyboard x:Key="BackgroundImageFadeInSlow">
             <DoubleAnimation BeginTime="0:0:0" 
@@ -160,11 +150,12 @@
                          Minimum="0"
                          Maximum="{Binding TotalGameCount}"
                          Value="{Binding InitializationGameCount}"
-                         Foreground="Yellow"
-                         Background="Red"
+                         Foreground="WhiteSmoke"
+                         Background="DimGray"
                          Height="30"
                          HorizontalAlignment="Stretch"
                          VerticalAlignment="Stretch">
+                
             </ProgressBar>
             <TextBlock Name="TextBlock_Loading_Message"
                    Text="{Binding LoadingMessage}"
@@ -178,6 +169,55 @@
         </Grid>
         <!-- END LOADING -->
 
+        <!-- ATTRACT MODE -->
+        <Grid   Name="Grid_AttractMode"
+            VerticalAlignment="Stretch"
+            HorizontalAlignment="Stretch"
+            Panel.ZIndex="900"
+            Background="Black"
+            Width="{Binding ActualWidth, ElementName=MainWindowUserControl, Converter={StaticResource OversizeImageConverter}}"
+            Height="{Binding ActualHeight, ElementName=MainWindowUserControl, Converter={StaticResource OversizeImageConverter}}"
+            Visibility="{Binding IsDisplayingAttractMode, Converter={StaticResource BoolToVis}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>                
+            </Grid.RowDefinitions>
+
+            <Image Name="Image_AttractModeBackgroundImage"
+                   Grid.Row="0" Grid.RowSpan="10"
+                VerticalAlignment="Center"
+                Stretch="UniformToFill"
+                Panel.ZIndex="901"                   
+                Source="{Binding CurrentGameList.Game1.BackgroundImage}"
+                Width="{Binding ActualWidth, ElementName=MainWindowUserControl, Converter={StaticResource OversizeImageConverter}}"
+                RenderOptions.BitmapScalingMode="HighQuality" >
+                <Image.OpacityMask>
+                    <LinearGradientBrush StartPoint="0.5,1" EndPoint="0.5,0">
+                        <LinearGradientBrush.GradientStops>
+                            <GradientStop Offset="0" Color="Transparent"/>
+                            <GradientStop Offset="0.25" Color="Black"/>
+                        </LinearGradientBrush.GradientStops>
+                    </LinearGradientBrush>
+                </Image.OpacityMask>
+            </Image>
+            <Image Name="Image_AttractModeClearLogo" HorizontalAlignment="Left" VerticalAlignment="Stretch"
+                   Margin="75,0,0,0"
+                   Panel.ZIndex="902"
+                   Grid.Row="5" Grid.RowSpan="2"
+                   Source="{Binding CurrentGameList.Game1.ClearLogo}"
+                   Stretch="Uniform"
+                   RenderOptions.BitmapScalingMode="HighQuality">
+            </Image>
+        </Grid>
+        
         <!-- DISPLAY ERROR -->
         <Grid   Background="Transparent"
                 VerticalAlignment="Stretch"
@@ -462,11 +502,10 @@
                            VerticalAlignment="Center"/>
             </Grid>
 
-            <!-- Darken the background when displaying more info (helps with text visibility) -->
-            <!-- TODO: maybe keep this visible all the time but just use an opacity mask to make it only darken at the logo and game details? -->
-            <Rectangle Grid.Row="0" Grid.RowSpan="18" Grid.Column="0" Grid.ColumnSpan="32" Fill="Black" Opacity="0.5" 
+            <!-- Darken the background when displaying feature and more info (helps with text visibility) -->
+            <Rectangle Grid.Row="0" Grid.RowSpan="18" Grid.Column="0" Grid.ColumnSpan="32" Fill="Black" Opacity="0.1" 
                        Panel.ZIndex="499"
-                       Visibility="{Binding IsDisplayingMoreInfo, Converter={StaticResource BoolToVis}}">
+                       Visibility="{Binding IsDisplayingFeature, Converter={StaticResource BoolToVis}}">
             </Rectangle>
 
             <!-- Selected game logo and details -->
@@ -552,7 +591,7 @@
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
                                 Stretch="Uniform"/>
-
+                        
                         <Image Name="Image_PlatformLogo"
                                 Margin="10,0,0,0"                               
                                 Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
@@ -855,7 +894,6 @@
                                                     </MultiBinding>
                                                 </GradientStop.Color>
                                             </GradientStop>
-
                                             <GradientStop Offset="0.501">
                                                 <GradientStop.Color>
                                                     <MultiBinding Converter="{StaticResource UserRatingToBrush}">
@@ -865,7 +903,6 @@
                                                     </MultiBinding>
                                                 </GradientStop.Color>
                                             </GradientStop>
-
                                             <GradientStop Offset="1.0">
                                                 <GradientStop.Color>
                                                     <MultiBinding Converter="{StaticResource UserRatingToBrush}">

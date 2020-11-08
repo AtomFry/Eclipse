@@ -30,6 +30,9 @@ namespace Eclipse.View
         MainWindowViewModel mainWindowViewModel;
         private Timer backgroundImageChangeDelay;
         private Timer fadeOutForMovieDelay;
+        private Timer attractModeDelay;
+        private Timer attractModeImageFadeInDelay;
+        private Timer attractModeChangeDelay;
 
         private BitmapImage activeBackgroundImage;
         private BitmapImage activeClearLogo;
@@ -39,6 +42,7 @@ namespace Eclipse.View
         private BitmapImage activePlayModeImage;
         private BitmapImage activePlatformLogoImage;
         private BitmapImage activeGameBezelImage;
+        private BitmapImage activeAttractModeBackgroundImage;
 
         private Storyboard BackgroundImageFadeInSlowStoryBoard;
 
@@ -47,6 +51,8 @@ namespace Eclipse.View
         public MainWindowView()
         {
             InitializeComponent();
+
+            SetupStopVideoAndAnimationWorker();
 
             // create a timer to delay swapping background images
             backgroundImageChangeDelay = new Timer(1000);
@@ -57,6 +63,22 @@ namespace Eclipse.View
             fadeOutForMovieDelay = new Timer(2000);
             fadeOutForMovieDelay.Elapsed += FadeOutForMovieDelay_Elapsed;
             fadeOutForMovieDelay.AutoReset = false;
+
+            // create a timer to delay for attract mode (90 seconds)
+            attractModeDelay = new Timer(5 * 1000);
+            attractModeDelay.Elapsed += AttractModeDelay_Elapsed;
+            attractModeDelay.AutoReset = false;
+
+            // create a timer to delay before fading in an image (2 seconds?)
+            attractModeImageFadeInDelay = new Timer(4 * 1000);
+            attractModeImageFadeInDelay.Elapsed += AttractModeImageFadeInDelay_Elapsed;
+            attractModeImageFadeInDelay.AutoReset = false;
+
+            // create a timer to delay between switching games in attract mode (15 seconds)
+            attractModeChangeDelay = new Timer(15 * 1000);
+            attractModeChangeDelay.Elapsed += AttractModeChangeDelay_Elapsed;
+            attractModeChangeDelay.AutoReset = false;
+
 
             BackgroundImageFadeInSlowStoryBoard = FindResource("BackgroundImageFadeInSlow") as Storyboard;
 
@@ -77,6 +99,96 @@ namespace Eclipse.View
 
             // sets up the game lists and voice recognition
             mainWindowViewModel.InitializeData();
+        }
+
+        // when the AttractModeDelay elapses, start into attract mode 
+        private void AttractModeDelay_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                // reset the background image - it should already be faded out but make sure
+                Image_AttractModeBackgroundImage.Opacity = 0;
+                Image_AttractModeBackgroundImage.Source = null;
+                Image_AttractModeBackgroundImage.RenderTransform = null;
+
+                Image_AttractModeClearLogo.Opacity = 0;
+
+                // make the grid transparent so we can fade it in 
+                Grid_AttractMode.Opacity = 0;
+
+                // flag attract mode 
+                mainWindowViewModel.IsDisplayingAttractMode = true;
+
+                // fade the grid in if it isn't already
+                FadeFrameworkElementOpacity(Grid_AttractMode, 1, 1000);
+
+                // start timer to delay until the next image will fade in 
+                attractModeImageFadeInDelay.Start();
+            });
+        }
+
+        // after delay (about 1 second) - fade in the attract mode background image
+        private void AttractModeImageFadeInDelay_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                // reset the background image - it should already be faded out but make sure
+                Image_AttractModeBackgroundImage.Opacity = 0;
+                Image_AttractModeBackgroundImage.Source = null;
+                Image_AttractModeBackgroundImage.RenderTransform = null;
+
+                Image_AttractModeClearLogo.Opacity = 0;
+
+                // get the next image to use for a attract mode background
+                activeAttractModeBackgroundImage = mainWindowViewModel.GetNextAttractModeImage();
+
+                // assign the image and fade it in
+                if (activeAttractModeBackgroundImage != null)
+                {
+                    Image_AttractModeBackgroundImage.Source = activeAttractModeBackgroundImage;
+                    FadeFrameworkElementOpacity(Image_AttractModeBackgroundImage, 1, 3000);
+                    FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 1, 6000);
+                }
+
+                ShiftFrameworkElement(Image_AttractModeBackgroundImage, -100, 17 * 1000);
+
+                // start the delay between attract mode games 
+                attractModeChangeDelay.Start();
+            });
+        }
+
+        // when the AttractModeChangeDelay elapses, change games and continue attract mode
+        private void AttractModeChangeDelay_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                // fade out this image 
+                FadeFrameworkElementOpacity(Image_AttractModeBackgroundImage, 0, 3000);
+                FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 0, 500);
+
+                // start timder to dlay until the next image will fade in
+                attractModeImageFadeInDelay.Start();
+            });
+        }
+
+        private void DoAttractMode()
+        {
+
+            // animations
+            // todo: everything - fade to black approx 1/2 second
+            // todo: BG image - fade in approx 1/2 second
+            // todo: BG image - alternate shifting - left to right, then right to left 
+
+            // todo: BG image - fade to black approx after 15 seconds
+
+            // todo: place clear logo at the bottom 1/3
+            // todo: place genres (separated by grey circles) below clear logo?  
+            // todo: clear logo & genre - fade in clear logo and genres after 2 seconds?
+            // todo: clear logo & genre - fade out clear logo and genres after 8 seconds? 
+            // todo: stop everything on any button press 
+
+            // start change game timer
+            attractModeChangeDelay.Start();
         }
 
         public static LinearGradientBrush GetOpacityBrush()
@@ -254,6 +366,19 @@ namespace Eclipse.View
             }
         }
 
+        private void ShiftFrameworkElement(FrameworkElement element, double newValue, double durationInMilliseconds)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                TranslateTransform translateTransform = new TranslateTransform();
+                element.RenderTransform = translateTransform;
+
+                DoubleAnimation moveElement = new DoubleAnimation(0, newValue, TimeSpan.FromMilliseconds(durationInMilliseconds));
+
+                translateTransform.BeginAnimation(TranslateTransform.XProperty, moveElement);
+            });
+        }
+
         // todo: do this with a background worker and keep trying to stop for a few seconds?  maybe only in certain cases like launching into a game or escaping to settings menu
         private void StopEverything()
         {
@@ -261,6 +386,9 @@ namespace Eclipse.View
             PauseVideo(Video_SelectedGame);
 
             // stop timers
+            attractModeDelay.Stop();
+            attractModeImageFadeInDelay.Stop();
+            attractModeChangeDelay.Stop();
             fadeOutForMovieDelay.Stop();
             backgroundImageChangeDelay.Stop();
             BackgroundImageFadeInSlowStoryBoard.Stop();
@@ -330,9 +458,6 @@ namespace Eclipse.View
 
                         // start the timer - when it goes off, fade in the new background image
                         backgroundImageChangeDelay.Start();
-
-                        // TODO: testing with starting to play the video silently so it's loaded when it's really time
-                        PlayVideo(Video_SelectedGame, 0);
                     }
                 }
                 catch (Exception ex)
@@ -397,6 +522,10 @@ namespace Eclipse.View
                     {
                         fadeOutForMovieDelay.Start();
                     }
+                    else
+                    {
+                        attractModeDelay.Start();
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -439,6 +568,7 @@ namespace Eclipse.View
                     // fade in background image
                     FadeFrameworkElementOpacity(Image_Selected_Background_Black, 1, 500);
                     FadeFrameworkElementOpacity(Image_Displayed_BackgroundImage, 1, 500);
+                    attractModeDelay.Start();
                 });
             }
             catch(Exception ex)
@@ -452,30 +582,35 @@ namespace Eclipse.View
             // TODO: remove this?
         }
 
-        public void StopVideoAndAnimations()
+        BackgroundWorker stopVideoAndAnimationWorker;
+        private void SetupStopVideoAndAnimationWorker()
         {
-            BackgroundWorker worker = new BackgroundWorker();
-            worker.DoWork += StopVideoAndAnimationWorker;
-            worker.RunWorkerAsync();
+            stopVideoAndAnimationWorker = new BackgroundWorker();
+            stopVideoAndAnimationWorker.DoWork += StopVideoAndAnimationHandler;
         }
 
-        void StopVideoAndAnimationWorker(object sender, DoWorkEventArgs e)
+        public void StopVideoAndAnimations()
         {
-            // every half second for 3 seconds, try to stop everything
-            for(int i = 0; i < 6; i++)
+            stopVideoAndAnimationWorker.RunWorkerAsync();
+        }
+
+        void StopVideoAndAnimationHandler(object sender, DoWorkEventArgs e)
+        {
+            // every 10th of a second for 1 seconds, try to stop everything
+            for(int i = 0; i < 10; i++)
             {
                 Dispatcher.Invoke(() =>
                 {
                     try
                     {
                         StopEverything();
-                        System.Threading.Thread.Sleep(500);
                     }
                     catch (Exception ex)
                     {
                         Helpers.LogException(ex, "StopVideoAndAnimationWorker");
                     }
                 });
+                System.Threading.Thread.Sleep(100);
             }
         }
 

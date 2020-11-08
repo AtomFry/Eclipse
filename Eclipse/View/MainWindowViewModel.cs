@@ -14,6 +14,9 @@ using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Security.Cryptography;
+using System.Windows;
+using System.Windows.Media.Imaging;
+using System.Diagnostics.Eventing.Reader;
 
 namespace Eclipse.View
 {
@@ -32,17 +35,28 @@ namespace Eclipse.View
                 return;
             }
 
-            if (!dictionary.ContainsKey(key))
+            // fix this hacky shit - try adding the game 10 times - sometimes we get some strange collisions and it bombs
+            for (int i = 0; i < 10; i++)
             {
-                dictionary.TryAdd(key, new List<GameMatch>());
-            }
+                try
+                {
+                    if (!dictionary.ContainsKey(key))
+                    {
+                        dictionary.TryAdd(key, new List<GameMatch>());
+                    }
 
-            if (!dictionary[key].Contains(gameMatch))
-            {
-                dictionary[key].Add(gameMatch);
+                    if (!dictionary[key].Contains(gameMatch))
+                    {
+                        dictionary[key].Add(gameMatch);
+                    }
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Helpers.LogException(ex, $"Add game: {key} - {gameMatch.Game.Title}");
+                }
             }
         }
-
     }
 
     class MainWindowViewModel : INotifyPropertyChanged
@@ -140,6 +154,20 @@ namespace Eclipse.View
                 {
                     isDisplayingFeature = value;
                     PropertyChanged(this, new PropertyChangedEventArgs("IsDisplayingFeature"));
+                }
+            }
+        }
+
+        private bool isDisplayingAttractMode;
+        public bool IsDisplayingAttractMode
+        {
+            get { return isDisplayingAttractMode; }
+            set
+            {
+                if (isDisplayingAttractMode != value)
+                {
+                    isDisplayingAttractMode = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("IsDisplayingAttractMode"));
                 }
             }
         }
@@ -329,7 +357,7 @@ namespace Eclipse.View
             OptionList = new OptionList(listCategories);
         }
 
-        // todo: test falling back to platform bezels if game bezel is not there
+        // get platform bezels if game bezel is not there
         private void GetPlatformBezels()
         {
             // plaform bezel path
@@ -350,7 +378,7 @@ namespace Eclipse.View
             }
         }
 
-        // todo: test falling back to default bezels if game bezel and platform bezel is not there
+        // get default bezels if game bezel and platform bezel is not there
         private void GetDefaultBezels()
         {
             // default bezel path
@@ -372,11 +400,12 @@ namespace Eclipse.View
         {
             List<GameList> listOfPlatformGames = new List<GameList>();
 
-            // todo: playing around with including favorites at the top of each category
+            // including favorites at the top of the platform category
             foreach (var favoriteGroup in FavoriteGameDictionary)
             {
                 var orderedGames = favoriteGroup.Value.OrderByDescending(game => game.Game.CommunityOrLocalStarRating).ToList();
                 GameList gameList = new GameList(favoriteGroup.Key, orderedGames);
+                gameList.ListCategoryType = ListCategoryType.Favorites;
                 listOfPlatformGames.Add(gameList);
             }
 
@@ -391,6 +420,7 @@ namespace Eclipse.View
 
                 var orderedGames = platformGames.OrderBy(s => s.Game.SortTitleOrTitle);
                 GameList gameList = new GameList(platform.Name, new List<GameMatch>(orderedGames));
+                gameList.ListCategoryType = ListCategoryType.Platform;
 
                 listOfPlatformGames.Add(gameList);
             }
@@ -412,6 +442,7 @@ namespace Eclipse.View
 
                 var orderedGames = gameMatchQuery.OrderBy(game => game.Game.SortTitleOrTitle).ToList();
                 GameList gameList = new GameList(year, orderedGames);
+                gameList.ListCategoryType = ListCategoryType.ReleaseYear;
                 listOfYearGames.Add(gameList);
             }
             GameListSets.Add(new GameListSet { GameLists = listOfYearGames.OrderBy(list => list.ListDescription).ToList(), ListCategoryType = ListCategoryType.ReleaseYear });
@@ -425,6 +456,7 @@ namespace Eclipse.View
             {
                 var orderedGames = developerGroup.Value.OrderBy(game => game.Game.SortTitleOrTitle).ToList();
                 GameList gameList = new GameList(developerGroup.Key, orderedGames);
+                gameList.ListCategoryType = ListCategoryType.Developer;
                 listOfDeveloperGames.Add(gameList);
             }
             GameListSets.Add(new GameListSet { GameLists = listOfDeveloperGames.OrderBy(list => list.ListDescription).ToList(), ListCategoryType = ListCategoryType.Developer });
@@ -437,6 +469,7 @@ namespace Eclipse.View
             {
                 var orderedGames = playModeGroup.Value.OrderBy(game => game.Game.SortTitleOrTitle).ToList();
                 GameList gameList = new GameList(playModeGroup.Key, orderedGames);
+                gameList.ListCategoryType = ListCategoryType.PlayMode;
                 listOfPlayModeGames.Add(gameList);
             }
             GameListSets.Add(new GameListSet { GameLists = listOfPlayModeGames.OrderBy(list => list.ListDescription).ToList(), ListCategoryType = ListCategoryType.PlayMode });
@@ -449,6 +482,7 @@ namespace Eclipse.View
             {
                 var orderedGames = favoriteGroup.Value.OrderBy(game => game.Game.SortTitleOrTitle).ToList();
                 GameList gameList = new GameList(favoriteGroup.Key, orderedGames);
+                gameList.ListCategoryType = ListCategoryType.Favorites;
                 listOfFavoriteGames.Add(gameList);
             }
             GameListSets.Add(new GameListSet { GameLists = listOfFavoriteGames.OrderBy(list => list.ListDescription).ToList(), ListCategoryType = ListCategoryType.Favorites });
@@ -464,6 +498,7 @@ namespace Eclipse.View
             {
                 var orderedGames = favoriteGroup.Value.OrderByDescending(game => game.Game.CommunityOrLocalStarRating).ToList();
                 GameList gameList = new GameList(favoriteGroup.Key, orderedGames);
+                gameList.ListCategoryType = ListCategoryType.Favorites;
                 listOfPlayListGames.Add(gameList);
             }
 
@@ -476,6 +511,7 @@ namespace Eclipse.View
                     var query = from game in orderedPlatformGames select new GameMatch(game, TitleMatchType.None);
 
                     GameList gameList = new GameList(playlist.SortTitleOrTitle, query.ToList());
+                    gameList.ListCategoryType = ListCategoryType.Playlist;
                     listOfPlayListGames.Add(gameList);
                 }
             }
@@ -489,6 +525,7 @@ namespace Eclipse.View
             {
                 var orderedGames = publisherGroup.Value.OrderBy(game => game.Game.SortTitleOrTitle).ToList();
                 GameList gameList = new GameList(publisherGroup.Key, orderedGames);
+                gameList.ListCategoryType = ListCategoryType.Publisher;
                 listOfPublisherGames.Add(gameList);
             }
             GameListSets.Add(new GameListSet { GameLists = listOfPublisherGames.OrderBy(list => list.ListDescription).ToList(), ListCategoryType = ListCategoryType.Publisher });
@@ -501,6 +538,7 @@ namespace Eclipse.View
             {
                 var orderedGames = genreGroup.Value.OrderBy(game => game.Game.SortTitleOrTitle).ToList();
                 GameList gameList = new GameList(genreGroup.Key, orderedGames);
+                gameList.ListCategoryType = ListCategoryType.Genre;
                 listOfGenreGames.Add(gameList);
             }
             GameListSets.Add(new GameListSet { GameLists = listOfGenreGames.OrderBy(list => list.ListDescription).ToList(), ListCategoryType = ListCategoryType.Genre });
@@ -515,6 +553,7 @@ namespace Eclipse.View
                 {
                     var orderedGames = seriesGroup.Value.OrderBy(game => game.Game.SortTitleOrTitle).ToList();
                     GameList gameList = new GameList(seriesGroup.Key, orderedGames);
+                    gameList.ListCategoryType = ListCategoryType.Series;
                     listOfSeriesGames.Add(gameList);
                 }
             }
@@ -632,44 +671,44 @@ namespace Eclipse.View
 
                 Parallel.ForEach(AllGames, (game) =>
                 {
-                    // todo: now that we are parallel - we need to find a better way to report progress
                     InitializationGameCount += 1;
 
                     GameMatch.AddGameToFrontImageDictionary(game);
 
+                    GameMatch gameMatch = new GameMatch(game, TitleMatchType.None);
                     if(game.Favorite)
                     {
-                        FavoriteGameDictionary.AddGame("Favorites", new GameMatch(game, TitleMatchType.None));
+                        FavoriteGameDictionary.AddGame(ListCategoryType.Favorites.ToString(), gameMatch);
                     }
 
                     // create a dictionary of play modes and game matches
                     foreach (string playMode in game.PlayModes)
                     {
-                        PlayModeGameDictionary.AddGame(playMode, new GameMatch(game, TitleMatchType.None));
+                        PlayModeGameDictionary.AddGame(playMode, gameMatch);
                     }
 
                     // create a dictionary of Genres and game matches
                     foreach (string genre in game.Genres)
                     {
-                        GenreGameDictionary.AddGame(genre, new GameMatch(game, TitleMatchType.None));
+                        GenreGameDictionary.AddGame(genre, gameMatch);
                     }
 
                     // create a dictionary of publishers and game matches
                     foreach (string publisher in game.Publishers)
                     {
-                        PublisherGameDictionary.AddGame(publisher, new GameMatch(game, TitleMatchType.None));
+                        PublisherGameDictionary.AddGame(publisher, gameMatch);
                     }
 
                     // create a dictionary of developers and game matches
                     foreach (string developer in game.Developers)
                     {
-                        DeveloperGameDictionary.AddGame(developer, new GameMatch(game, TitleMatchType.None));
+                        DeveloperGameDictionary.AddGame(developer, gameMatch);
                     }
 
                     // create a dictionary of series and game matches
                     foreach (string series in game.SeriesValues)
                     {
-                        SeriesGameDictionary.AddGame(series, new GameMatch(game, TitleMatchType.None));
+                        SeriesGameDictionary.AddGame(series, gameMatch);
                     }
 
                     GameTitleGrammarBuilder gameTitleGrammarBuilder = new GameTitleGrammarBuilder(game);
@@ -1082,6 +1121,34 @@ namespace Eclipse.View
             Recognizer.RecognizeAsync(RecognizeMode.Single);
         }
 
+
+        public BitmapImage GetNextAttractModeImage()
+        {
+            int randomIndex = random.Next(0, CurrentGameListSet.TotalGameCount);
+
+            // find the index of which list it's in 
+            for (int listIndex = 0; listIndex < CurrentGameListSet.GameLists.Count; listIndex++)
+            {
+                GameList gameList = CurrentGameListSet.GameLists[listIndex];
+
+                if (gameList.ListSetStartIndex <= randomIndex && gameList.ListSetEndIndex >= randomIndex)
+                {
+                    // once found, cycle to that list
+                    listCycle.SetCurrentIndex(listIndex);
+
+                    // refresh the game lists so we can get a handle on the current list
+                    CurrentGameList = listCycle.GetItem(0);
+                    NextGameList = listCycle.GetItem(1);
+
+                    // setup the game list to the random game index 
+                    CurrentGameList.SetGameIndex(randomIndex - gameList.ListSetStartIndex);
+                    break;
+                }
+            }
+
+            return new BitmapImage(CurrentGameList.Game1.BackgroundImage);
+        }
+
         private void RefreshGameLists()
         {
             if (listCycle?.GenericList?.Count == 0)
@@ -1147,8 +1214,19 @@ namespace Eclipse.View
             try
             {
                 // stop displaying error
-                IsDisplayingError = false;
+                if (IsDisplayingError)
+                {
+                    IsDisplayingError = false;
+                    return;
+                }
 
+                // stop displaying attract mode 
+                if (IsDisplayingAttractMode)
+                {
+                    IsDisplayingAttractMode = false;
+                    CallGameChangeFunction();
+                    return;
+                }
 
                 if (IsPickingCategory)
                 {
@@ -1227,8 +1305,18 @@ namespace Eclipse.View
             try
             {
                 // stop displaying error
-                IsDisplayingError = false;
+                if (IsDisplayingError)
+                {
+                    IsDisplayingError = false;
+                    return;
+                }
 
+                if (IsDisplayingAttractMode)
+                {
+                    IsDisplayingAttractMode = false;
+                    CallGameChangeFunction();
+                    return;
+                }
 
                 if (isPickingCategory)
                 {
@@ -1286,6 +1374,13 @@ namespace Eclipse.View
         {
             try
             {
+                if (IsDisplayingAttractMode)
+                {
+                    IsDisplayingAttractMode = false;
+                    CallGameChangeFunction();
+                    return;
+                }
+
                 // stop displaying error
                 if (IsDisplayingError)
                 {
@@ -1366,6 +1461,14 @@ namespace Eclipse.View
                     return;
                 }
 
+                // stop displaying attract mode 
+                if (IsDisplayingAttractMode)
+                {
+                    IsDisplayingAttractMode = false;
+                    CallGameChangeFunction();
+                    return;
+                }
+                
                 // if picking category, going right closes category selection
                 if (IsPickingCategory)
                 {
@@ -1414,8 +1517,19 @@ namespace Eclipse.View
         public void DoPageUp()
         {
             // stop displaying error
-            IsDisplayingError = false;
+            if (IsDisplayingError)
+            {
+                IsDisplayingError = false;
+                return;
+            }
 
+            // stop displaying attract mode 
+            if (IsDisplayingAttractMode)
+            {
+                IsDisplayingAttractMode = false;
+                CallGameChangeFunction();
+                return;
+            }
 
             DoRandomGame();
         }
@@ -1423,7 +1537,19 @@ namespace Eclipse.View
         public void DoPageDown()
         {
             // stop displaying error
-            IsDisplayingError = false;
+            if (IsDisplayingError)
+            {
+                IsDisplayingError = false;
+                return;
+            }
+
+            // stop displaying attract mode 
+            if (IsDisplayingAttractMode)
+            {
+                IsDisplayingAttractMode = false;
+                CallGameChangeFunction();
+                return;
+            }
 
             DoRecognize();
         }
@@ -1511,7 +1637,36 @@ namespace Eclipse.View
             if(currentGame != null)
             {
                 currentGame.Favorite = !currentGame.Favorite;
+                
                 PluginHelper.DataManager.Save(false);
+
+
+                // todo: add/remove game from favorites list
+                /*
+                foreach (GameListSet gameListSet in GameListSets)
+                {
+                    var query = from gameList in gameListSet.GameLists where gameList.ListCategoryType == ListCategoryType.Favorites select gameList;
+                    foreach(GameList gameList in query)
+                    {
+                        List<GameMatch> favoritesList = gameList.MatchingGames;
+                        if(currentGame.Favorite)
+                        {
+                            favoritesList.Add(currentGame);
+                        }
+                        else
+                        {
+                            if (favoritesList.Contains(currentGame))
+                            {
+                                favoritesList.Remove(currentGame);
+                            }
+                        }
+
+                        gameList = new GameList(ListCategoryType.Favorites.ToString(), favoritesList);
+                        gameList.ListCategoryType = ListCategoryType.Favorites;
+
+                    }
+                }
+                */
             }
         }
 
@@ -1540,10 +1695,19 @@ namespace Eclipse.View
 
         public void DoEnter()
         {
+
             // stop displaying error
             if (IsDisplayingError)
             {
                 IsDisplayingError = false;
+                return;
+            }
+
+            // stop displaying attract mode 
+            if (IsDisplayingAttractMode)
+            {
+                IsDisplayingAttractMode = false;
+                CallGameChangeFunction();
                 return;
             }
 
@@ -1649,10 +1813,18 @@ namespace Eclipse.View
 
         public bool DoEscape()
         {
-            // stop displaying error if it was displaying
+            // stop displaying error
             if (IsDisplayingError)
             {
                 IsDisplayingError = false;
+                return true;
+            }
+
+            // stop displaying attract mode 
+            if (IsDisplayingAttractMode)
+            {
+                IsDisplayingAttractMode = false;
+                CallGameChangeFunction();
                 return true;
             }
 
