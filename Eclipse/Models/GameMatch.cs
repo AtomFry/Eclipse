@@ -15,10 +15,8 @@ namespace Eclipse.Models
 {
     public class GameMatch : INotifyPropertyChanged
     {
-        public event PropertyChangedEventHandler PropertyChanged = delegate { };
-
+        #region Static Members
         public static ConcurrentDictionary<string, Uri> GameFrontImages = new ConcurrentDictionary<string, Uri>();
-
 
         public static char[] InvalidFileNameChars = Path.GetInvalidFileNameChars();
 
@@ -38,331 +36,12 @@ namespace Eclipse.Models
                 }
                 return sb.ToString();
             }
-            return "";
+            return string.Empty;
         }
 
-
-        public IGame Game { get; set; }
-        
-        public TitleMatchType TitleMatchType { get; set; }
-
-        public string ConvertedTitle { get; set; }
-
-        private string titleToFileName;
-        public string TitleToFileName
+        public static Uri ResolveGameFrontImage(IGame Game)
         {
-            get
-            {
-                if(titleToFileName == null)
-                {
-                    titleToFileName = Game.Title;
-                    foreach(char invalidChar in InvalidFileNameChars)
-                    {
-                        titleToFileName = titleToFileName.Replace(invalidChar, '_');
-                    }
-                }
-                return titleToFileName;
-            }
-        }
-
-        private Uri frontImage;
-        public Uri FrontImage
-        {
-            get
-            {
-                return (frontImage);
-            }
-            set
-            {
-                if (frontImage != value)
-                {
-                    frontImage = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("FrontImage"));
-                }
-            }
-        }
-
-        private Uri clearLogo;
-        public Uri ClearLogo
-        {
-            get
-            {
-                if (clearLogo == null)
-                {
-                    string clearLogoPath = Game.ClearLogoImagePath;
-                    if (!string.IsNullOrWhiteSpace(clearLogoPath))
-                    {
-                        string customPath = clearLogoPath.Replace(Helpers.ApplicationPath, Helpers.MediaFolder);
-                        if (!string.IsNullOrWhiteSpace(customPath))
-                        {
-                            if (File.Exists(customPath))
-                            {
-                                clearLogo = new Uri(customPath);
-                            }
-                        }
-                    }
-                }
-                return (clearLogo);
-            }
-        }
-
-        // TODO: get rid of this and replace star rating images with XAML polygons? 
-        private Uri communityStarRatingImage;
-        public Uri CommunityStarRatingImage
-        {
-            get
-            {
-                if (communityStarRatingImage == null)
-                {
-                    string ratingFormatted = String.Format("{0:0.0}", Math.Round(Game.CommunityOrLocalStarRating, 1));
-                    string path = $"{Helpers.MediaFolder}\\StarRating\\{ratingFormatted}.png";
-                    communityStarRatingImage = new Uri(path);
-                }
-                return communityStarRatingImage;
-            }
-        }
-
-        // todo: get rid of this and replace play mode image with XAML polygons and text? might be tough to draw a controller as a polygon
-        private Uri playModeImage;
-        public Uri PlayModeImage
-        {
-            get
-            {
-                if (playModeImage == null)
-                {
-                    string path = $"{Helpers.MediaFolder}\\PlayMode\\{Game.PlayMode}.png";
-                    if (!File.Exists(path))
-                    {
-                        path = $"{Helpers.MediaFolder}\\PlayMode\\Fallback.png";
-                    }
-                    playModeImage = new Uri(path);
-                }
-                return playModeImage;
-            }
-        }
-
-        private Uri backgroundImage;
-        public Uri BackgroundImage
-        {
-            get
-            {
-                if (backgroundImage == null)
-                {
-                    string backgroundImagePath = Game.BackgroundImagePath ?? Game.ScreenshotImagePath;
-                    if (!string.IsNullOrWhiteSpace(backgroundImagePath))
-                    {
-                        backgroundImage = new Uri(backgroundImagePath);
-                    }
-                    else
-                    {
-                        string path = $"{Helpers.MediaFolder}\\PlatformDevice\\{Game.Platform}.png";
-                        if(File.Exists(path))
-                        {
-                            backgroundImage = new Uri(path);
-                        }
-                        else
-                        {
-                            backgroundImage = ResourceImages.DefaultBackground;
-                        }
-                    }
-                }
-                return backgroundImage;
-            }
-        }
-
-        private Uri platformClearLogoImage;
-        public Uri PlatformClearLogoImage
-        {
-            get
-            {
-                if (platformClearLogoImage == null)
-                {
-                    string platformClearLogoImagePath = Game.PlatformClearLogoImagePath;
-                    if (!string.IsNullOrWhiteSpace(platformClearLogoImagePath))
-                    {
-                        string customPath = platformClearLogoImagePath.Replace(Helpers.ApplicationPath, Helpers.MediaFolder);
-                        if (!string.IsNullOrWhiteSpace(customPath) && File.Exists(customPath))
-                        {
-                            platformClearLogoImage = new Uri(customPath);
-                        }
-                    }
-                }
-                return platformClearLogoImage;
-            }
-        }
-
-
-        private Uri gameBezelImage;
-        public Uri GameBezelImage
-        {
-            get
-            {
-                if (gameBezelImage == null)
-                {
-                    gameBezelImage = ResolveBezelPath();
-                }
-                return gameBezelImage;
-            }
-        }
-
-        private string videoPath;
-        public string VideoPath
-        {
-            get
-            {
-                if(videoPath == null)
-                {
-                    videoPath = Game.GetVideoPath();
-                }
-                return videoPath;
-            }
-        }
-
-
-        public bool Favorite
-        {
-            get { return Game.Favorite; }
-            set
-            {
-                if (Game.Favorite != value)
-                {
-                    Game.Favorite = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Favorite"));
-                }
-            }
-        }
-
-        public float UserRating
-        {
-            get { return Game.StarRatingFloat; }
-            set
-            {
-                if (Game.StarRatingFloat != value)
-                {
-                    Game.StarRatingFloat = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("UserRating"));
-                }
-            }
-        }
-
-        public string developer;
-        public string Developer
-        {
-            get
-            {
-                if(developer == null)
-                {
-                    developer = IEnumerableToCommaSeparatedString(Game.Developers);
-                }
-                return developer;
-            }
-        }
-
-
-        private string publisher;
-        public string Publisher
-        {
-            get
-            {
-                if(publisher == null)
-                {
-                    publisher = IEnumerableToCommaSeparatedString(Game.Publishers);
-                }
-                return publisher;
-            }
-        }
-
-        private string series;
-        public string Series
-        {
-            get
-            {
-                if(series == null)
-                {
-                    series = IEnumerableToCommaSeparatedString(Game.SeriesValues);
-                }
-                return series;
-            }
-        }
-
-
-        private string genre;
-        public string Genre
-        {
-            get
-            {
-                if (genre == null)
-                {
-                    genre = IEnumerableToCommaSeparatedString(Game.Genres);
-                }
-                return genre;
-            }
-        }
-
-        public int? matchPercentage;
-
-        private string matchDescription;
-        public string MatchDescription
-        {
-            get
-            {
-                // default to match percentage based on star rating - it should be overridden for voice searches
-                if (matchPercentage == null)
-                {
-                    // for non-voice match, match percentage = star rating (0-5) * 20
-                    matchPercentage = (int)(Game.CommunityOrLocalStarRating * 20);
-                }
-
-                if (matchDescription == null)
-                {
-                    matchDescription = $"{string.Format("{0:00}", matchPercentage)}% match";
-                }
-                return matchDescription;
-            }
-        }
-
-        private string releaseDate;
-        public string ReleaseDate
-        {
-            get
-            {
-                if (string.IsNullOrWhiteSpace(releaseDate))
-                {
-                    if (Game.ReleaseDate?.Year == null)
-                    {
-                        releaseDate = "    ";
-                    }
-                    releaseDate = Game.ReleaseDate?.Year.ToString();
-                }
-                return releaseDate;
-            }
-        }
-
-
-        public GameMatch(IGame game, TitleMatchType titleMatchType, string convertedTitle = "")
-        {
-            Game = game;
-            TitleMatchType = titleMatchType;
-            frontImage = ResourceImages.GameFrontDummy;
-            ConvertedTitle = convertedTitle;
-        }
-
-
-
-
-
-        public void SetupFrontImage()
-        {
-            Uri frontImage;
-            if (GameFrontImages.TryGetValue(Game.Id, out frontImage))
-            {
-                FrontImage = frontImage;
-            }
-        }
-
-        public static void AddGameToFrontImageDictionary(IGame game)
-        {
-            string frontImagePath = game?.FrontImagePath;
+            string frontImagePath = Game?.FrontImagePath;
             if (!string.IsNullOrWhiteSpace(frontImagePath))
             {
                 string customPath = frontImagePath.Replace(Helpers.ApplicationPath, Helpers.MediaFolder);
@@ -370,16 +49,27 @@ namespace Eclipse.Models
                 {
                     if (File.Exists(customPath))
                     {
-                        // concurrent dictionary version
-                        GameFrontImages.TryAdd(game.Id, new Uri(customPath));
+                        return new Uri(customPath);
                     }
                 }
             }
+            return null;
         }
 
+        public static string ResolveGameTitleFileName(IGame Game)
+        {
+            string gameTitleToFileName = Game.Title;
 
-
-
+            if (!string.IsNullOrWhiteSpace(gameTitleToFileName))
+            {
+                foreach (char invalidChar in InvalidFileNameChars)
+                {
+                    gameTitleToFileName = gameTitleToFileName.Replace(invalidChar, '_');
+                }
+                return gameTitleToFileName;
+            }
+            return string.Empty;
+        }
 
         // tries to find a bezel image in the following order
         // game specific bezel in the plugin media\images\{Platform}\Bezel\{CleanGameTitle}.png
@@ -392,7 +82,7 @@ namespace Eclipse.Models
         // fallback default bezel path
         // ..\LaunchBox\Plugins\Eclipse\Media\Images\Platforms\Default\Bezel\Horizontal.png
         // ..\LaunchBox\Plugins\Eclipse\Media\Images\Platforms\Default\Bezel\Vertical.png
-        private Uri ResolveBezelPath()
+        public static Uri ResolveBezelPath(IGame Game, string TitleToFileName)
         {
             try
             {
@@ -453,14 +143,258 @@ namespace Eclipse.Models
             return null;
         }
 
+        public static Uri ResolveClearLogoPath(IGame Game)
+        {
+            string clearLogoPath = Game.ClearLogoImagePath;
+            if (!string.IsNullOrWhiteSpace(clearLogoPath))
+            {
+                string customPath = clearLogoPath.Replace(Helpers.ApplicationPath, Helpers.MediaFolder);
+                if (!string.IsNullOrWhiteSpace(customPath))
+                {
+                    if (File.Exists(customPath))
+                    {
+                        return new Uri(customPath);
+                    }
+                }
+            }
+            return null;
+        }
 
+        public static Uri ResolveStarRatingPath(IGame Game)
+        {
+            string ratingFormatted = String.Format("{0:0.0}", Math.Round(Game.CommunityOrLocalStarRating, 1));
+            string path = $"{Helpers.MediaFolder}\\StarRating\\{ratingFormatted}.png";
+            if (File.Exists(path))
+            {
+                return new Uri(path);
+            }
+            return null;
+        }
 
+        public static Uri ResolvePlayModePath(IGame Game)
+        {
+            // resolve play mode path based on game's play mode 
+            string path = $"{Helpers.MediaFolder}\\PlayMode\\{Game.PlayMode}.png";
+            if (File.Exists(path))
+            {
+                return new Uri(path);
+            }
 
+            // resolve fallback path 
+            path = $"{Helpers.MediaFolder}\\PlayMode\\Fallback.png";
+            if (File.Exists(path))
+            {
+                return new Uri(path);
+            }
 
+            return null;
+        }
 
+        public static Uri ResolveBackgroundImagePath(IGame Game)
+        {
+            // get game's background image - either background or screenshot
+            string backgroundImagePath = Game.BackgroundImagePath ?? Game.ScreenshotImagePath;
+            if (!string.IsNullOrWhiteSpace(backgroundImagePath))
+            {
+                return new Uri(backgroundImagePath);
+            }
 
+            // fallback to platform device 
+            string path = $"{Helpers.MediaFolder}\\PlatformDevice\\{Game.Platform}.png";
+            if (File.Exists(path))
+            {
+                return new Uri(path);
+            }
 
+            // default resource provided for final fallback in case platform is not found
+            return ResourceImages.DefaultBackground;
+        }
 
+        public static Uri ResolvePlatformLogoPath(IGame Game)
+        {
+            string platformClearLogoImagePath = Game.PlatformClearLogoImagePath;
+            if (!string.IsNullOrWhiteSpace(platformClearLogoImagePath))
+            {
+                string customPath = platformClearLogoImagePath.Replace(Helpers.ApplicationPath, Helpers.MediaFolder);
+                if (!string.IsNullOrWhiteSpace(customPath) && File.Exists(customPath))
+                {
+                    return new Uri(customPath);
+                }
+            }
+            return null;
+        }
+
+        public static string ResolveVideoPath(IGame Game)
+        {
+            string videoPath = Game?.GetVideoPath();
+            if(!string.IsNullOrWhiteSpace(videoPath) && File.Exists(videoPath))
+            {
+                return videoPath;
+            }
+            return null;
+        }
+
+        public static string ResolveDeveloperString(IGame Game)
+        {
+            return IEnumerableToCommaSeparatedString(Game.Developers);
+        }
+
+        public static string ResolvePublisherString(IGame Game)
+        {
+            return IEnumerableToCommaSeparatedString(Game.Publishers);
+        }
+
+        public static string ResolveSeriesString(IGame Game)
+        {
+            return IEnumerableToCommaSeparatedString(Game.SeriesValues);
+        }
+
+        public static string ResolveGenreString(IGame Game)
+        {
+            return IEnumerableToCommaSeparatedString(Game.Genres);
+        }
+
+        public static string ResolveReleaseYear(IGame Game)
+        {
+            int? releaseYear = Game?.ReleaseDate?.Year;
+            if(releaseYear != null)
+            {
+                return releaseYear.ToString();
+            }
+            return "    ";
+        }
+
+        public static int ResolveDefaultMatchPercentage(IGame Game)
+        {
+            float? communityOrLocalStarRating = Game?.CommunityOrLocalStarRating;
+            if(communityOrLocalStarRating != null)
+            {
+                return (int)(communityOrLocalStarRating * 20);
+            }
+            return 0;
+        }
+        #endregion
+
+        #region Properties
+        public event PropertyChangedEventHandler PropertyChanged = delegate { };
+
+        public IGame Game { get; set; }
+        
+        public TitleMatchType TitleMatchType { get; set; }
+
+        public string ConvertedTitle { get; set; }
+
+        public Uri GameBezelImage { get; set; }
+        
+        public Uri FrontImage { get; }
+        public string TitleToFileName { get; }
+        public Uri ClearLogo { get; }
+        public Uri CommunityStarRatingImage { get; }
+        public Uri PlayModeImage { get; }
+        public Uri BackgroundImage { get; }
+        public Uri PlatformClearLogoImage { get; }
+        public string VideoPath { get; }
+
+        // expose IGame favorite setting so we can save it back to the file
+        public bool Favorite
+        {
+            get { return Game.Favorite; }
+            set
+            {
+                if (Game.Favorite != value)
+                {
+                    Game.Favorite = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("Favorite"));
+                }
+            }
+        }
+
+        // expose IGame user rating setting so we can save it back to the file
+        public float UserRating
+        {
+            get { return Game.StarRatingFloat; }
+            set
+            {
+                if (Game.StarRatingFloat != value)
+                {
+                    Game.StarRatingFloat = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("UserRating"));
+                }
+            }
+        }
+
+        public string Developer { get; }
+        public string Publisher { get; }
+        public string Series { get; }
+        public string Genre { get; }
+        public string ReleaseYear { get; }
+
+        // set the match percentage based on star rating unless voice match then use voice recognition details
+        public int MatchPercentage { get; set; }
+        public string MatchDescription { get; set; }
+
+        #endregion
+
+        public GameMatch(GameMatch otherGameMatch,
+                        TitleMatchType titleMatchType,
+                        string convertedTitle = "")
+        {
+            Game = otherGameMatch.Game;
+            TitleMatchType = titleMatchType;
+            ConvertedTitle = convertedTitle;
+
+            FrontImage = otherGameMatch.FrontImage;
+            GameBezelImage = otherGameMatch.GameBezelImage;
+            ClearLogo = otherGameMatch.ClearLogo;
+            CommunityStarRatingImage = otherGameMatch.CommunityStarRatingImage;
+            PlayModeImage = otherGameMatch.PlayModeImage;
+            BackgroundImage = otherGameMatch.BackgroundImage;
+            PlatformClearLogoImage = otherGameMatch.PlatformClearLogoImage;
+
+            TitleToFileName = otherGameMatch.TitleToFileName;
+            VideoPath = otherGameMatch.VideoPath;
+            Developer = otherGameMatch.Developer;
+            Publisher = otherGameMatch.Publisher;
+            Series = otherGameMatch.Series;
+            Genre = otherGameMatch.Genre;
+            ReleaseYear = otherGameMatch.ReleaseYear;
+
+            MatchPercentage = otherGameMatch.MatchPercentage;
+            MatchDescription = otherGameMatch.MatchDescription;
+        }
+
+        public GameMatch(IGame game,
+                        TitleMatchType titleMatchType,
+                        string convertedTitle = "")
+        {
+            Game = game;
+            TitleMatchType = titleMatchType;
+            ConvertedTitle = convertedTitle;
+
+            FrontImage = ResolveGameFrontImage(game);
+            TitleToFileName = ResolveGameTitleFileName(game);
+            GameBezelImage = ResolveBezelPath(game, TitleToFileName);
+            ClearLogo = ResolveClearLogoPath(game);
+            CommunityStarRatingImage = ResolveStarRatingPath(game);
+            PlayModeImage = ResolvePlayModePath(game);
+            BackgroundImage = ResolveBackgroundImagePath(game);
+            PlatformClearLogoImage = ResolvePlatformLogoPath(game);
+
+            VideoPath = ResolveVideoPath(game);
+            Developer = ResolveDeveloperString(game);
+            Publisher = ResolvePublisherString(game);
+            Series = ResolveSeriesString(game);
+            Genre = ResolveGenreString(game);
+            ReleaseYear = ResolveReleaseYear(game);
+
+            MatchPercentage = ResolveDefaultMatchPercentage(game);
+            SetMatchDescription();
+        }
+
+        private void SetMatchDescription()
+        {
+            MatchDescription = $"{string.Format("{0:00}", MatchPercentage)}% match";
+        }
 
         public void SetupVoiceMatchPercentage(float confidence, string phrase)
         {
@@ -487,7 +421,8 @@ namespace Eclipse.Models
 
             // subtracting 0.001 to make sure it's never 100% - probably impossible since the confidence is never 1 but just in case
             var matchTypePortion = confidence * ((int)TitleMatchType + bonusMatchTypePortion - 0.001);
-            matchPercentage = (int)(matchTypePortion);
+            MatchPercentage = (int)(matchTypePortion);
+            SetMatchDescription();
         }
 
         public override bool Equals(object obj)

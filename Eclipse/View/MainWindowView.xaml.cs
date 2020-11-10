@@ -88,9 +88,6 @@ namespace Eclipse.View
             // pass in the animation function that can be called whenever a game changes
             mainWindowViewModel.GameChangeFunction = DoAnimateGameChange;
 
-            // pass in the function that can be called whenever game front images need to be loaded
-            mainWindowViewModel.LoadImagesFunction = SetupGameImage;
-
             // pass in the function that can be called whenever the featured game function changes
             mainWindowViewModel.FeatureChangeFunction = ChangedFeatureSetting;
 
@@ -205,79 +202,6 @@ namespace Eclipse.View
         }
 
         public delegate void SetupGameImageDelegate();
-
-        public void SetupGameImage()
-        {
-            GameList gameListToProcess = null;
-
-            // keep looping until the view model has been initialize
-            if (mainWindowViewModel == null || mainWindowViewModel.IsInitializing) 
-            {
-                Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new SetupGameImageDelegate(this.SetupGameImage));
-                return;
-            }
-
-            // process current game list first 
-            if ((mainWindowViewModel.CurrentGameList != null) 
-                && (mainWindowViewModel.CurrentGameList.MoreImagesToLoad))
-            {
-                gameListToProcess = mainWindowViewModel.CurrentGameList;
-            }
-
-            // if current game list is done then process the next game list
-            if ((gameListToProcess == null)
-                && (mainWindowViewModel.NextGameList != null)
-                && (mainWindowViewModel.NextGameList.MoreImagesToLoad))
-            {
-                gameListToProcess = mainWindowViewModel.NextGameList;
-            }
-
-            // if current and next game list are processed then process any game list in the current/selected list set that has unprocessed images
-            if(gameListToProcess == null)
-            {
-                List<GameList> currentGameLists = mainWindowViewModel?.CurrentGameListSet?.GameLists;
-                if (currentGameLists != null)
-                {
-                    var query = from gameList in currentGameLists
-                                where gameList.MoreImagesToLoad
-                                select gameList;
-
-                    gameListToProcess = query?.FirstOrDefault();
-                }
-            }
-
-            // if all lists in the current list set are processed then look for any list with images to process
-            if (gameListToProcess == null)
-            {
-                List<GameListSet> allGameListSets = mainWindowViewModel?.GameListSets;
-                if(allGameListSets != null)
-                {
-                    foreach(GameListSet gameListSet in allGameListSets)
-                    {
-                        List<GameList> gameLists = gameListSet.GameLists;
-                        if(gameLists != null)
-                        {
-                            var query = from gameList in gameLists
-                                        where gameList.MoreImagesToLoad
-                                        select gameList;
-
-                            gameListToProcess = query?.FirstOrDefault();
-                            if (gameListToProcess != null)
-                            {
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if(gameListToProcess != null)
-            {
-                gameListToProcess.LoadNextGameImage();
-                Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new SetupGameImageDelegate(this.SetupGameImage));
-                return;
-            }
-        }
 
         public bool OnDown(bool held)
         {
@@ -432,7 +356,7 @@ namespace Eclipse.View
 
                         // get a handle on the active game's details
                         activeMatchPercentageText = mainWindowViewModel?.CurrentGameList?.Game1?.MatchDescription;
-                        activeReleaseYearText = mainWindowViewModel?.CurrentGameList?.Game1?.ReleaseDate;
+                        activeReleaseYearText = mainWindowViewModel?.CurrentGameList?.Game1?.ReleaseYear;
                         activeCommunityStarRatingImage = null;
                         activePlayModeImage = null;
                         activePlatformLogoImage = null;

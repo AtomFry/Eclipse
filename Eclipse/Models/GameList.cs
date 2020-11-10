@@ -196,7 +196,7 @@ namespace Eclipse.Models
                 if (MatchingGames == null)
                     return 0;
 
-                return MatchingGames.Max(game => game.matchPercentage);
+                return MatchingGames.Max(game => game.MatchPercentage);
             }
         }
 
@@ -208,7 +208,7 @@ namespace Eclipse.Models
                     return 0;
 
                 // get max title length for games having the maximum match percentage
-                return matchingGames.Where(game => game.matchPercentage == MaxMatchPercentage)
+                return matchingGames.Where(game => game.MatchPercentage == MaxMatchPercentage)
                                     .Max(game => game.Game.Title.Length);
             }
         }
@@ -438,23 +438,6 @@ namespace Eclipse.Models
                     PropertyChanged(this, new PropertyChangedEventArgs("Game12"));
                 }
             }
-        }
-
-        public bool MoreImagesToLoad { get; set; } = true;
-        public int CurrentGameImageIndex { get; set; } = 0;
-        public void LoadNextGameImage()
-        {
-            // if all game images are loaded then flag it as no more images to load
-            if (CurrentGameImageIndex >= MatchCount)
-            {
-                MoreImagesToLoad = false;
-                return;
-            }
-
-            // load the next image and increment the counter
-            GameMatch gameMatch = MatchingGames[CurrentGameImageIndex];
-            gameMatch.SetupFrontImage();
-            CurrentGameImageIndex += 1;
         }
    }
 }

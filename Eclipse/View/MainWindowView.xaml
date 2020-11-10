@@ -852,7 +852,7 @@
                                         VerticalAlignment="Center" HorizontalAlignment="Stretch" 
                                         Orientation="Horizontal"
                                         Margin="25,0,0,0">
-                                
+
                                 <TextBlock Name="TextBlock_DetailStarRatingButton"
                                        Text="Rating"
                                        Foreground="{Binding GameDetailOption, Converter={StaticResource GameDetailRatingColorConverter}}"           

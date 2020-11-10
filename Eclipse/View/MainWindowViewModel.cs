@@ -22,7 +22,7 @@ namespace Eclipse.View
 {
     public delegate void FeatureChangeFunction();
     public delegate void AnimateGameChangeFunction();
-    public delegate void LoadImagesFunction();
+    
     public delegate void IncrementLoadingProgressFunction();
     public delegate void StopVideoAndAnimations();
 
@@ -69,7 +69,10 @@ namespace Eclipse.View
         private SpeechRecognitionEngine Recognizer { get; set; }
 
 
+        private ConcurrentDictionary<string, List<GameMatch>> PlaylistGameDictionary;
         private ConcurrentDictionary<string, List<GameMatch>> GameTitlePhrases;
+        private ConcurrentDictionary<string, List<GameMatch>> ReleaseYearGameDictionary;
+        private ConcurrentDictionary<string, List<GameMatch>> PlatformGameDictionary;
         private ConcurrentDictionary<string, List<GameMatch>> GenreGameDictionary;
         private ConcurrentDictionary<string, List<GameMatch>> PublisherGameDictionary;
         private ConcurrentDictionary<string, List<GameMatch>> DeveloperGameDictionary;
@@ -85,7 +88,6 @@ namespace Eclipse.View
 
         public FeatureChangeFunction FeatureChangeFunction { get; set; }
         public AnimateGameChangeFunction GameChangeFunction { get; set; }
-        public LoadImagesFunction LoadImagesFunction { get; set; }
         public StopVideoAndAnimations StopVideoAndAnimationsFunction { get; set; }
 
         private GameDetailOption gameDetailOption;
@@ -409,22 +411,13 @@ namespace Eclipse.View
                 listOfPlatformGames.Add(gameList);
             }
 
-            List<IPlatform> platforms = new List<IPlatform>(PluginHelper.DataManager.GetAllPlatforms());
-            var orderedPlatforms = platforms.OrderBy(f => f.ReleaseDate);
-
-            foreach (var platform in orderedPlatforms)
+            foreach(var platformGroup in PlatformGameDictionary)
             {
-                var platformGames = from game in AllGames
-                                    where game.Platform.Equals(platform.Name)
-                                    select new GameMatch(game, TitleMatchType.None);
-
-                var orderedGames = platformGames.OrderBy(s => s.Game.SortTitleOrTitle);
-                GameList gameList = new GameList(platform.Name, new List<GameMatch>(orderedGames));
+                var orderedGames = platformGroup.Value.OrderBy(game => game.Game.SortTitleOrTitle).ToList();
+                GameList gameList = new GameList(platformGroup.Key, orderedGames);
                 gameList.ListCategoryType = ListCategoryType.Platform;
-
                 listOfPlatformGames.Add(gameList);
             }
-
             GameListSets.Add(new GameListSet { GameLists = listOfPlatformGames, ListCategoryType = ListCategoryType.Platform });
         }
 
@@ -432,16 +425,10 @@ namespace Eclipse.View
         {
             List<GameList> listOfYearGames = new List<GameList>();
 
-            var gamesByYear = AllGames.GroupBy(game => game.ReleaseDate?.Year);
-            foreach (var yearGameGroup in gamesByYear)
+            foreach(var releaseGroup in ReleaseYearGameDictionary)
             {
-                string year = yearGameGroup.Key?.ToString();
-
-                var gameMatchQuery = from game in yearGameGroup
-                                     select new GameMatch(game, TitleMatchType.None);
-
-                var orderedGames = gameMatchQuery.OrderBy(game => game.Game.SortTitleOrTitle).ToList();
-                GameList gameList = new GameList(year, orderedGames);
+                var orderedGames = releaseGroup.Value.OrderBy(game => game.Game.SortTitleOrTitle).ToList();
+                GameList gameList = new GameList(releaseGroup.Key, orderedGames);
                 gameList.ListCategoryType = ListCategoryType.ReleaseYear;
                 listOfYearGames.Add(gameList);
             }
@@ -488,8 +475,15 @@ namespace Eclipse.View
             GameListSets.Add(new GameListSet { GameLists = listOfFavoriteGames.OrderBy(list => list.ListDescription).ToList(), ListCategoryType = ListCategoryType.Favorites });
         }
 
+        class playlistgame
+        {
+            public IPlaylist playlist;
+            public string gameId;
+        }
+
         private void GetGamesByPlaylist()
         {
+            // todo: fix this one
             IPlaylist[] allPlaylists = PluginHelper.DataManager.GetAllPlaylists();
             List<GameList> listOfPlayListGames = new List<GameList>();
 
@@ -565,6 +559,9 @@ namespace Eclipse.View
             IsInitializing = true;
             FeatureOption = FeatureGameOption.PlayGame;
 
+            PlaylistGameDictionary = new ConcurrentDictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
+            ReleaseYearGameDictionary = new ConcurrentDictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
+            PlatformGameDictionary = new ConcurrentDictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
             DeveloperGameDictionary = new ConcurrentDictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
             PublisherGameDictionary = new ConcurrentDictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
             GenreGameDictionary = new ConcurrentDictionary<string, List<GameMatch>>(StringComparer.InvariantCultureIgnoreCase);
@@ -673,13 +670,18 @@ namespace Eclipse.View
                 {
                     InitializationGameCount += 1;
 
-                    GameMatch.AddGameToFrontImageDictionary(game);
-
                     GameMatch gameMatch = new GameMatch(game, TitleMatchType.None);
+
                     if(game.Favorite)
                     {
                         FavoriteGameDictionary.AddGame(ListCategoryType.Favorites.ToString(), gameMatch);
                     }
+
+                    // create a dictionary of platform game matches
+                    PlatformGameDictionary.AddGame(game.Platform, gameMatch);
+
+                    // create a dictionary of release year game matches
+                    ReleaseYearGameDictionary.AddGame(game.ReleaseDate?.Year.ToString() ?? string.Empty, gameMatch);
 
                     // create a dictionary of play modes and game matches
                     foreach (string playMode in game.PlayModes)
@@ -714,17 +716,17 @@ namespace Eclipse.View
                     GameTitleGrammarBuilder gameTitleGrammarBuilder = new GameTitleGrammarBuilder(game);
                     if (!string.IsNullOrWhiteSpace(gameTitleGrammarBuilder.Title))
                     {
-                        AddGameToVoiceDictionary(gameTitleGrammarBuilder.Title, new GameMatch(game, TitleMatchType.FullTitleMatch, gameTitleGrammarBuilder.Title));
+                        AddGameToVoiceDictionary(gameTitleGrammarBuilder.Title, new GameMatch(gameMatch, TitleMatchType.FullTitleMatch, gameTitleGrammarBuilder.Title));
                     }
 
                     if (!string.IsNullOrWhiteSpace(gameTitleGrammarBuilder.MainTitle))
                     {
-                        AddGameToVoiceDictionary(gameTitleGrammarBuilder.MainTitle, new GameMatch(game, TitleMatchType.MainTitleMatch, gameTitleGrammarBuilder.Title));
+                        AddGameToVoiceDictionary(gameTitleGrammarBuilder.Title, new GameMatch(gameMatch, TitleMatchType.MainTitleMatch, gameTitleGrammarBuilder.Title));
                     }
 
                     if (!string.IsNullOrWhiteSpace(gameTitleGrammarBuilder.Subtitle))
                     {
-                        AddGameToVoiceDictionary(gameTitleGrammarBuilder.Subtitle, new GameMatch(game, TitleMatchType.SubtitleMatch, gameTitleGrammarBuilder.Title));
+                        AddGameToVoiceDictionary(gameTitleGrammarBuilder.Title, new GameMatch(gameMatch, TitleMatchType.SubtitleMatch, gameTitleGrammarBuilder.Title));
                     }
 
                     for (int i = 0; i < gameTitleGrammarBuilder.TitleWords.Count; i++)
@@ -735,7 +737,7 @@ namespace Eclipse.View
                             sb.Append($"{gameTitleGrammarBuilder.TitleWords[j]} ");
                             if (!GameTitleGrammarBuilder.IsNoiseWord(sb.ToString().Trim()))
                             {
-                                AddGameToVoiceDictionary(sb.ToString().Trim(), new GameMatch(game, TitleMatchType.FullTitleContains, gameTitleGrammarBuilder.Title));
+                                AddGameToVoiceDictionary(gameTitleGrammarBuilder.Title, new GameMatch(gameMatch, TitleMatchType.FullTitleContains, gameTitleGrammarBuilder.Title));
                             }
                         }
                     }
@@ -876,7 +878,7 @@ namespace Eclipse.View
                             game.SetupVoiceMatchPercentage(gameList.Confidence, gameList.ListDescription);
                         }
 
-                        gameList.MatchingGames = matches.OrderByDescending(match => match.matchPercentage).ToList();
+                        gameList.MatchingGames = matches.OrderByDescending(match => match.MatchPercentage).ToList();
                         voiceRecognitionResults.Add(gameList);
                     }
                 }
@@ -1189,13 +1191,6 @@ namespace Eclipse.View
             }
         }
 
-        private void CallLoadImageFunction()
-        {
-            if (LoadImagesFunction != null)
-            {
-                LoadImagesFunction();
-            }
-        }
 
         private void CycleListBackward()
         {
@@ -1566,7 +1561,6 @@ namespace Eclipse.View
             {
                 listCycle = new ListCycle<GameList>(CurrentGameListSet.GameLists, 2);
                 RefreshGameLists();
-                CallLoadImageFunction();
                 CallGameChangeFunction();
             }
         }
