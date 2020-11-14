@@ -43,6 +43,7 @@ namespace Eclipse.View
         private BitmapImage activePlatformLogoImage;
         private BitmapImage activeGameBezelImage;
         private BitmapImage activeAttractModeBackgroundImage;
+        private BitmapImage activeAttractModeClearLogo;
 
         private Storyboard BackgroundImageFadeInSlowStoryBoard;
 
@@ -109,6 +110,7 @@ namespace Eclipse.View
                 Image_AttractModeBackgroundImage.RenderTransform = null;
 
                 Image_AttractModeClearLogo.Opacity = 0;
+                Image_AttractModeClearLogo.Source = null;
 
                 // make the grid transparent so we can fade it in 
                 Grid_AttractMode.Opacity = 0;
@@ -135,15 +137,24 @@ namespace Eclipse.View
                 Image_AttractModeBackgroundImage.RenderTransform = null;
 
                 Image_AttractModeClearLogo.Opacity = 0;
+                Image_AttractModeClearLogo.Source = null;
+
+                mainWindowViewModel.NextAttractModeGame();
 
                 // get the next image to use for a attract mode background
-                activeAttractModeBackgroundImage = mainWindowViewModel.GetNextAttractModeImage();
-
+                activeAttractModeBackgroundImage = new BitmapImage(mainWindowViewModel.CurrentGameList.Game1.BackgroundImage);
+                
                 // assign the image and fade it in
                 if (activeAttractModeBackgroundImage != null)
                 {
                     Image_AttractModeBackgroundImage.Source = activeAttractModeBackgroundImage;
                     FadeFrameworkElementOpacity(Image_AttractModeBackgroundImage, 1, 3000);
+                }
+
+                activeAttractModeClearLogo = new BitmapImage(mainWindowViewModel.CurrentGameList.Game1.ClearLogo);
+                if (activeAttractModeClearLogo != null)
+                {
+                    Image_AttractModeClearLogo.Source = activeAttractModeClearLogo;
                     FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 1, 6000);
                 }
 

@@ -286,14 +286,14 @@ namespace Eclipse.Models
 
         public Uri GameBezelImage { get; set; }
         
-        public Uri FrontImage { get; }
-        public string TitleToFileName { get; }
-        public Uri ClearLogo { get; }
-        public Uri CommunityStarRatingImage { get; }
-        public Uri PlayModeImage { get; }
-        public Uri BackgroundImage { get; }
-        public Uri PlatformClearLogoImage { get; }
-        public string VideoPath { get; }
+        public Uri FrontImage { get; set; }
+        public string TitleToFileName { get; set; }
+        public Uri ClearLogo { get; set; }
+        public Uri CommunityStarRatingImage { get; set; }
+        public Uri PlayModeImage { get; set; }
+        public Uri BackgroundImage { get; set; }
+        public Uri PlatformClearLogoImage { get; set; }
+        public string VideoPath { get; set; }
 
         // expose IGame favorite setting so we can save it back to the file
         public bool Favorite
@@ -323,53 +323,63 @@ namespace Eclipse.Models
             }
         }
 
-        public string Developer { get; }
-        public string Publisher { get; }
-        public string Series { get; }
-        public string Genre { get; }
-        public string ReleaseYear { get; }
+        public string Developer { get; set; }
+        public string Publisher { get; set; }
+        public string Series { get; set; }
+        public string Genre { get; set; }
+        public string ReleaseYear { get; set; }
 
         // set the match percentage based on star rating unless voice match then use voice recognition details
         public int MatchPercentage { get; set; }
         public string MatchDescription { get; set; }
 
+        public ListCategoryType CategoryType { get; set; }
+        public string CategoryValue { get; set; }
+
         #endregion
 
-        public GameMatch(GameMatch otherGameMatch,
-                        TitleMatchType titleMatchType,
-                        string convertedTitle = "")
+        public GameMatch()
         {
-            Game = otherGameMatch.Game;
-            TitleMatchType = titleMatchType;
-            ConvertedTitle = convertedTitle;
 
-            FrontImage = otherGameMatch.FrontImage;
-            GameBezelImage = otherGameMatch.GameBezelImage;
-            ClearLogo = otherGameMatch.ClearLogo;
-            CommunityStarRatingImage = otherGameMatch.CommunityStarRatingImage;
-            PlayModeImage = otherGameMatch.PlayModeImage;
-            BackgroundImage = otherGameMatch.BackgroundImage;
-            PlatformClearLogoImage = otherGameMatch.PlatformClearLogoImage;
-
-            TitleToFileName = otherGameMatch.TitleToFileName;
-            VideoPath = otherGameMatch.VideoPath;
-            Developer = otherGameMatch.Developer;
-            Publisher = otherGameMatch.Publisher;
-            Series = otherGameMatch.Series;
-            Genre = otherGameMatch.Genre;
-            ReleaseYear = otherGameMatch.ReleaseYear;
-
-            MatchPercentage = otherGameMatch.MatchPercentage;
-            MatchDescription = otherGameMatch.MatchDescription;
         }
 
-        public GameMatch(IGame game,
-                        TitleMatchType titleMatchType,
-                        string convertedTitle = "")
+        public static GameMatch CloneGameMatch(GameMatch otherGameMatch,
+                                        ListCategoryType categoryType,
+                                        string categoryValue,
+                                        TitleMatchType titleMatchType = TitleMatchType.None,
+                                        string convertedTitle = "")
+        {
+            GameMatch gameMatch = new GameMatch();
+            gameMatch.Game = otherGameMatch.Game;
+            gameMatch.TitleMatchType = titleMatchType;
+            gameMatch.CategoryType = categoryType;
+            gameMatch.CategoryValue = categoryValue;
+            gameMatch.ConvertedTitle = convertedTitle;
+
+            gameMatch.FrontImage = otherGameMatch.FrontImage;
+            gameMatch.GameBezelImage = otherGameMatch.GameBezelImage;
+            gameMatch.ClearLogo = otherGameMatch.ClearLogo;
+            gameMatch.CommunityStarRatingImage = otherGameMatch.CommunityStarRatingImage;
+            gameMatch.PlayModeImage = otherGameMatch.PlayModeImage;
+            gameMatch.BackgroundImage = otherGameMatch.BackgroundImage;
+            gameMatch.PlatformClearLogoImage = otherGameMatch.PlatformClearLogoImage;
+
+            gameMatch.TitleToFileName = otherGameMatch.TitleToFileName;
+            gameMatch.VideoPath = otherGameMatch.VideoPath;
+            gameMatch.Developer = otherGameMatch.Developer;
+            gameMatch.Publisher = otherGameMatch.Publisher;
+            gameMatch.Series = otherGameMatch.Series;
+            gameMatch.Genre = otherGameMatch.Genre;
+            gameMatch.ReleaseYear = otherGameMatch.ReleaseYear;
+
+            gameMatch.MatchPercentage = otherGameMatch.MatchPercentage;
+            gameMatch.MatchDescription = otherGameMatch.MatchDescription;
+            return (gameMatch);
+        }
+
+        public GameMatch(IGame game)
         {
             Game = game;
-            TitleMatchType = titleMatchType;
-            ConvertedTitle = convertedTitle;
 
             FrontImage = ResolveGameFrontImage(game);
             TitleToFileName = ResolveGameTitleFileName(game);

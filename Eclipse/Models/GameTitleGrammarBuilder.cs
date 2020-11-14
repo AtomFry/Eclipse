@@ -16,6 +16,11 @@ namespace Eclipse.Models
         public string Title { get; set; }
         public string MainTitle { get; set; }
         public string Subtitle { get; set; }
+
+        public string AlternateTitle { get; set; }
+        public string AlternateMainTitle { get; set; }
+        public string AlternateSubtitle { get; set; }
+
         public List<string> TitleWords { get; set; }
 
         public GameTitleGrammarBuilder(IGame _game)
@@ -23,6 +28,32 @@ namespace Eclipse.Models
             Game = _game;
             Title = Game.Title;
             TitleWords = new List<string>();
+
+            // todo: split on "/" for alternate title - add alternate title, alternate main title, alternate subtitle
+            int indexOfAlternateTitleSplit = Title.IndexOf("/");
+            if(indexOfAlternateTitleSplit >= 1)
+            {
+                AlternateTitle = Title.Substring(indexOfAlternateTitleSplit);
+                Title = Title.Substring(0, indexOfAlternateTitleSplit);
+                // todo: do all the things
+            }
+
+
+            // todo: Title - check for main title and subtitle - if indexOf(":") set MainTitle and Subtitle 
+            // todo: if maintitle and subtitle are not whitespace process them, otherwise process title 
+            // todo: remove unwanted characters: :, /, ", !, '
+
+            
+            // todo: AltTitle - check for main title and subtitle - if indexof : set AlternateMainTitle and AlternateSubtitle 
+            // todo: if AltMainTitle and AltSubtitle are not whitespace process them, otherwise process AltTitle 
+
+
+
+
+
+
+
+
 
             // find the index of the colon which indicates separation between title and subtitle
             int indexOfTitleSplit = Title.IndexOf(":");
@@ -43,6 +74,7 @@ namespace Eclipse.Models
                     // replace the roman numeral in the title
                     Title = Title.Replace(word, wordRomanNumeralReplaced);
                 }
+
                 // add the word to the title words
                 TitleWords.Add(wordRomanNumeralReplaced);
             }

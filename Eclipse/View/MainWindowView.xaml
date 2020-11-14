@@ -155,7 +155,6 @@
                          Height="30"
                          HorizontalAlignment="Stretch"
                          VerticalAlignment="Stretch">
-                
             </ProgressBar>
             <TextBlock Name="TextBlock_Loading_Message"
                    Text="{Binding LoadingMessage}"
@@ -195,8 +194,7 @@
                    Grid.Row="0" Grid.RowSpan="10"
                 VerticalAlignment="Center"
                 Stretch="UniformToFill"
-                Panel.ZIndex="901"                   
-                Source="{Binding CurrentGameList.Game1.BackgroundImage}"
+                Panel.ZIndex="901"
                 Width="{Binding ActualWidth, ElementName=MainWindowUserControl, Converter={StaticResource OversizeImageConverter}}"
                 RenderOptions.BitmapScalingMode="HighQuality" >
                 <Image.OpacityMask>
@@ -212,7 +210,6 @@
                    Margin="75,0,0,0"
                    Panel.ZIndex="902"
                    Grid.Row="5" Grid.RowSpan="2"
-                   Source="{Binding CurrentGameList.Game1.ClearLogo}"
                    Stretch="Uniform"
                    RenderOptions.BitmapScalingMode="HighQuality">
             </Image>

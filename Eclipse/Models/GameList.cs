@@ -54,6 +54,8 @@ namespace Eclipse.Models
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
         private ListCycle<GameMatch> gameCycle;
 
+        public bool IsFavorites { get; set; }
+
         private List<GameMatch> matchingGames;
         public List<GameMatch> MatchingGames
         {
@@ -106,10 +108,11 @@ namespace Eclipse.Models
         {
         }
 
-        public GameList(string _listDescription, List<GameMatch> _matchingGames)
+        public GameList(string _listDescription, List<GameMatch> _matchingGames, bool isFavorites = false)
         {
             ListDescription = _listDescription;
             MatchingGames = _matchingGames;
+            IsFavorites = isFavorites;
         }
 
         public void CycleForward()
