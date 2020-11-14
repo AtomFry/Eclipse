@@ -13,6 +13,12 @@ using Unbroken.LaunchBox.Plugins.Data;
 
 namespace Eclipse.Models
 {
+    public class PlaylistGame
+    {
+        public string GameId { get; set; }
+        public string Playlist { get; set; }
+    }
+
     public class GameMatch : INotifyPropertyChanged
     {
         #region Static Members

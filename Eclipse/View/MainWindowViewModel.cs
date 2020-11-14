@@ -397,15 +397,6 @@ namespace Eclipse.View
             IPlaylist[] allPlaylists = PluginHelper.DataManager.GetAllPlaylists();
             List<GameList> listOfPlayListGames = new List<GameList>();
 
-            // todo: playing around with including favorites at the playlist category
-            foreach (var favoriteGroup in FavoriteGameDictionary)
-            {
-                var orderedGames = favoriteGroup.Value.OrderByDescending(game => game.Game.CommunityOrLocalStarRating).ToList();
-                GameList gameList = new GameList(favoriteGroup.Key, orderedGames);
-                gameList.ListCategoryType = ListCategoryType.Favorites;
-                listOfPlayListGames.Add(gameList);
-            }
-
             foreach (IPlaylist playlist in allPlaylists)
             {
                 if (playlist.HasGames(false, false))
@@ -470,10 +461,32 @@ namespace Eclipse.View
             worker.RunWorkerAsync();
         }
 
+        private static List<PlaylistGame> GetPlaylistGames()
+        {
+            IPlaylist[] allPlaylists = PluginHelper.DataManager.GetAllPlaylists();
+            List<PlaylistGame> playlistGames = new List<PlaylistGame>();
+            foreach(IPlaylist playlist in allPlaylists)
+            {
+                if(playlist.HasGames(false, false))
+                {
+                    IGame[] games = playlist.GetAllGames(true);
+                    foreach(IGame game in games)
+                    {
+                        playlistGames.Add(new PlaylistGame() { GameId = game.Id, Playlist = playlist.SortTitleOrTitle });
+                    }
+                }
+            }
+
+            return playlistGames;
+        }
+
+
         void Initialization_LoadData(object sender, DoWorkEventArgs e)
         {
             try
             {
+                List<PlaylistGame> playlistGames = GetPlaylistGames();
+
                 // get platform bezels
                 GetPlatformBezels();
                 GetDefaultBezels();
@@ -573,6 +586,14 @@ namespace Eclipse.View
                         GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Series, series));
                     }
 
+                    // create a dictionary of playlist and game matches 
+                    var playlistGameQuery = from playlistGame in playlistGames where playlistGame.GameId == game.Id select playlistGame;
+                    foreach(PlaylistGame playlistGame in playlistGameQuery)
+                    {
+                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Playlist, playlistGame.Playlist));
+                    }
+
+                    // create voice recognition grammar library for the game
                     GameTitleGrammarBuilder gameTitleGrammarBuilder = new GameTitleGrammarBuilder(game);
                     if (!string.IsNullOrWhiteSpace(gameTitleGrammarBuilder.Title))
                     {
@@ -620,8 +641,9 @@ namespace Eclipse.View
                 GetGamesByListCategoryType(ListCategoryType.Developer);
                 GetGamesByListCategoryType(ListCategoryType.Series);
                 GetGamesByListCategoryType(ListCategoryType.PlayMode);
-                GetGamesByListCategoryType(ListCategoryType.Favorites);                
-                // GetGamesByPlaylist();
+                GetGamesByListCategoryType(ListCategoryType.Favorites);
+                GetGamesByListCategoryType(ListCategoryType.Playlist, true);
+
 
                 // flag initialization complete - display results
                 IsInitializing = false;
