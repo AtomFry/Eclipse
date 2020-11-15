@@ -33,6 +33,8 @@ namespace Eclipse.View
         private Timer attractModeDelay;
         private Timer attractModeImageFadeInDelay;
         private Timer attractModeChangeDelay;
+        private Timer attractModeLogoFadeInDelay;
+        private Timer attractModeLogoChangeDelay;
 
         private BitmapImage activeBackgroundImage;
         private BitmapImage activeClearLogo;
@@ -80,6 +82,15 @@ namespace Eclipse.View
             attractModeChangeDelay.Elapsed += AttractModeChangeDelay_Elapsed;
             attractModeChangeDelay.AutoReset = false;
 
+            // create a timer to delay before fading in the game logo in attract mode (4 seconds)
+            attractModeLogoFadeInDelay = new Timer(4 * 1000);
+            attractModeLogoFadeInDelay.Elapsed += AttractModeLogoFadeInDelay_Elapsed;
+            attractModeLogoFadeInDelay.AutoReset = false;
+
+            // create a timer to delay before fading out the game logo in attract mode (8 seconds)
+            attractModeLogoChangeDelay = new Timer(8 * 1000);
+            attractModeLogoChangeDelay.Elapsed += AttractModeLogoChangeDelay_Elapsed;
+            attractModeLogoChangeDelay.AutoReset = false;
 
             BackgroundImageFadeInSlowStoryBoard = FindResource("BackgroundImageFadeInSlow") as Storyboard;
 
@@ -153,14 +164,10 @@ namespace Eclipse.View
                     FadeFrameworkElementOpacity(Image_AttractModeBackgroundImage, 1, 3000);
                 }
 
-                // TODO: start 4-5 sec timer and then fade in clear logo
-                activeAttractModeClearLogo = new BitmapImage(mainWindowViewModel.CurrentGameList.Game1.ClearLogo);
-                if (activeAttractModeClearLogo != null)
-                {
-                    Image_AttractModeClearLogo.Source = activeAttractModeClearLogo;
-                    FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 1, 6000);
-                }
+                // start timer before we fade in the attract mode clear logo
+                attractModeLogoFadeInDelay.Start();
 
+                // start sliding the background image to the left 
                 ShiftFrameworkElement(Image_AttractModeBackgroundImage, -100, 17 * 1000);
 
                 // start the delay between attract mode games 
@@ -177,10 +184,36 @@ namespace Eclipse.View
                 FadeFrameworkElementOpacity(Image_AttractModeBackgroundImage, 0, 3000);
                 FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 0, 500);
 
-                // start timder to dlay until the next image will fade in
+                // start timer to delay until the next image will fade in
                 attractModeImageFadeInDelay.Start();
             });
         }
+
+        private void AttractModeLogoFadeInDelay_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                activeAttractModeClearLogo = new BitmapImage(mainWindowViewModel.CurrentGameList.Game1.ClearLogo);
+                if (activeAttractModeClearLogo != null)
+                {
+                    Image_AttractModeClearLogo.Source = activeAttractModeClearLogo;
+                    FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 1, 1000);
+
+                    // start a timer to delay until we are ready to fade the clear logo out 
+                    attractModeLogoChangeDelay.Start();
+                }
+            }); 
+        }
+
+
+        private void AttractModeLogoChangeDelay_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 0, 1000);
+            });
+        }
+
 
         private void DoAttractMode()
         {
@@ -327,6 +360,9 @@ namespace Eclipse.View
             attractModeDelay.Stop();
             attractModeImageFadeInDelay.Stop();
             attractModeChangeDelay.Stop();
+            attractModeLogoFadeInDelay.Stop();
+            attractModeLogoChangeDelay.Stop();
+
             fadeOutForMovieDelay.Stop();
             backgroundImageChangeDelay.Stop();
             BackgroundImageFadeInSlowStoryBoard.Stop();
