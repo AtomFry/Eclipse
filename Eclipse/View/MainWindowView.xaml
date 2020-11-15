@@ -187,11 +187,53 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>                
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
             <Image Name="Image_AttractModeBackgroundImage"
-                   Grid.Row="0" Grid.RowSpan="10"
+                   Grid.Row="0" Grid.RowSpan="18"
+                   Grid.Column="0" Grid.ColumnSpan="32"
                 VerticalAlignment="Center"
                 Stretch="UniformToFill"
                 Panel.ZIndex="901"
@@ -206,10 +248,20 @@
                     </LinearGradientBrush>
                 </Image.OpacityMask>
             </Image>
-            <Image Name="Image_AttractModeClearLogo" HorizontalAlignment="Left" VerticalAlignment="Stretch"
-                   Margin="75,0,0,0"
-                   Panel.ZIndex="902"
-                   Grid.Row="5" Grid.RowSpan="2"
+            
+            <!-- Darken the background when displaying feature and more info (helps with text visibility) -->
+            <Rectangle Grid.Row="0" Grid.RowSpan="18"
+                       Grid.Column="0" Grid.ColumnSpan="32"
+                       Fill="Black" Opacity="0.1" 
+                       Panel.ZIndex="902"
+                       Visibility="{Binding IsDisplayingFeature, Converter={StaticResource BoolToVis}}">
+            </Rectangle>
+
+
+            <Image Name="Image_AttractModeClearLogo" HorizontalAlignment="Center" VerticalAlignment="Stretch"
+                   Panel.ZIndex="903"
+                   Grid.Row="4" Grid.RowSpan="6"
+                   Grid.Column="1" Grid.ColumnSpan="10"
                    Stretch="Uniform"
                    RenderOptions.BitmapScalingMode="HighQuality">
             </Image>

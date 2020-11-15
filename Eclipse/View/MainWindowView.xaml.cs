@@ -1,4 +1,5 @@
 ﻿using Eclipse.Models;
+using Eclipse.Service;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -51,11 +52,14 @@ namespace Eclipse.View
 
         private LinearGradientBrush opacityBrush = GetOpacityBrush();
 
+        int monitorWidth;
         public MainWindowView()
         {
             InitializeComponent();
 
             SetupStopVideoAndAnimationWorker();
+            
+            monitorWidth = ImageScaler.GetMonitorWidth();
 
             // create a timer to delay swapping background images
             backgroundImageChangeDelay = new Timer(1000);
@@ -68,7 +72,7 @@ namespace Eclipse.View
             fadeOutForMovieDelay.AutoReset = false;
 
             // create a timer to delay for attract mode (90 seconds)
-            attractModeDelay = new Timer(5 * 1000);
+            attractModeDelay = new Timer(90 * 1000);
             attractModeDelay.Elapsed += AttractModeDelay_Elapsed;
             attractModeDelay.AutoReset = false;
 
@@ -82,13 +86,13 @@ namespace Eclipse.View
             attractModeChangeDelay.Elapsed += AttractModeChangeDelay_Elapsed;
             attractModeChangeDelay.AutoReset = false;
 
-            // create a timer to delay before fading in the game logo in attract mode (4 seconds)
+            // create a timer to delay before fading in the game logo in attract mode (3 seconds)
             attractModeLogoFadeInDelay = new Timer(4 * 1000);
             attractModeLogoFadeInDelay.Elapsed += AttractModeLogoFadeInDelay_Elapsed;
             attractModeLogoFadeInDelay.AutoReset = false;
 
-            // create a timer to delay before fading out the game logo in attract mode (8 seconds)
-            attractModeLogoChangeDelay = new Timer(8 * 1000);
+            // create a timer to delay before fading out the game logo in attract mode (9 seconds)
+            attractModeLogoChangeDelay = new Timer(9 * 1000);
             attractModeLogoChangeDelay.Elapsed += AttractModeLogoChangeDelay_Elapsed;
             attractModeLogoChangeDelay.AutoReset = false;
 
@@ -168,7 +172,7 @@ namespace Eclipse.View
                 attractModeLogoFadeInDelay.Start();
 
                 // start sliding the background image to the left 
-                ShiftFrameworkElement(Image_AttractModeBackgroundImage, -100, 17 * 1000);
+                ShiftFrameworkElement(Image_AttractModeBackgroundImage, monitorWidth - Image_AttractModeBackgroundImage.Width, 17 * 1000);
 
                 // start the delay between attract mode games 
                 attractModeChangeDelay.Start();
@@ -197,7 +201,7 @@ namespace Eclipse.View
                 if (activeAttractModeClearLogo != null)
                 {
                     Image_AttractModeClearLogo.Source = activeAttractModeClearLogo;
-                    FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 1, 1000);
+                    FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 1, 1500);
 
                     // start a timer to delay until we are ready to fade the clear logo out 
                     attractModeLogoChangeDelay.Start();
@@ -212,27 +216,6 @@ namespace Eclipse.View
             {
                 FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 0, 1000);
             });
-        }
-
-
-        private void DoAttractMode()
-        {
-
-            // animations
-            // todo: everything - fade to black approx 1/2 second
-            // todo: BG image - fade in approx 1/2 second
-            // todo: BG image - alternate shifting - left to right, then right to left 
-
-            // todo: BG image - fade to black approx after 15 seconds
-
-            // todo: place clear logo at the bottom 1/3
-            // todo: place genres (separated by grey circles) below clear logo?  
-            // todo: clear logo & genre - fade in clear logo and genres after 2 seconds?
-            // todo: clear logo & genre - fade out clear logo and genres after 8 seconds? 
-            // todo: stop everything on any button press 
-
-            // start change game timer
-            attractModeChangeDelay.Start();
         }
 
         public static LinearGradientBrush GetOpacityBrush()

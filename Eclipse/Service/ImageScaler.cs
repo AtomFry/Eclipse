@@ -254,7 +254,7 @@ namespace Eclipse.Service
         }
 
         // gets the index of the monitor from the big box settings file and returns it's height
-        // defaults to 1080 if anything goes wrong
+        // defaults to 1440 if anything goes wrong
         // this height is used for prescaling images to the right size
         public static int GetMonitorHeight()
         {
@@ -272,6 +272,24 @@ namespace Eclipse.Service
             }
 
             return monitorHeight;
+        }
+
+        public static int GetMonitorWidth()
+        {
+            int defaultWidth = 2560;
+            int monitorWidth;
+            try
+            {
+                monitorWidth = Screen.FromHandle(System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle).Bounds.Width;
+            }
+            catch (Exception ex)
+            {
+                Helpers.LogException(ex, "GetMonitorWidth");
+                Helpers.Log($"Monitor width not found - defaulting to {defaultWidth}");
+                monitorWidth = defaultWidth;
+            }
+
+            return monitorWidth;
         }
 
         public static string[] GetClearLogoFolders()

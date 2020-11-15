@@ -19,7 +19,7 @@ namespace Eclipse.Converters
                 originalWidth = (double)value;
             }
 
-            return originalWidth * 1.15;
+            return originalWidth * 1.1;
         }
 
         public virtual object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
