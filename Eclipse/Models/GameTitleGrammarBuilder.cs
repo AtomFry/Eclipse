@@ -13,58 +13,73 @@ namespace Eclipse.Models
         public static string[] SpaceSplitter = new string[1] { " " };
 
         public IGame Game { get; set; }
+
         public string Title { get; set; }
         public string MainTitle { get; set; }
         public string Subtitle { get; set; }
+        public List<string> TitleWords { get; set; }
 
         public string AlternateTitle { get; set; }
         public string AlternateMainTitle { get; set; }
         public string AlternateSubtitle { get; set; }
-
-        public List<string> TitleWords { get; set; }
+        public List<string> AlternateTitleWords { get; set; }
 
         public GameTitleGrammarBuilder(IGame _game)
         {
             Game = _game;
             Title = Game.Title;
             TitleWords = new List<string>();
+            AlternateTitleWords = new List<string>();
 
-            // todo: split on "/" for alternate title - add alternate title, alternate main title, alternate subtitle
+            // split on "/" for alternate title - add alternate title, alternate main title, alternate subtitle
             int indexOfAlternateTitleSplit = Title.IndexOf("/");
             if(indexOfAlternateTitleSplit >= 1)
             {
-                AlternateTitle = Title.Substring(indexOfAlternateTitleSplit);
-                Title = Title.Substring(0, indexOfAlternateTitleSplit);
-                // todo: do all the things
+                AlternateTitle = Title.Substring(indexOfAlternateTitleSplit+1).Trim();
+                Title = Title.Substring(0, indexOfAlternateTitleSplit).Trim();
+
             }
-
-
-            // todo: Title - check for main title and subtitle - if indexOf(":") set MainTitle and Subtitle 
-            // todo: if maintitle and subtitle are not whitespace process them, otherwise process title 
-            // todo: remove unwanted characters: :, /, ", !, '
-
-            
-            // todo: AltTitle - check for main title and subtitle - if indexof : set AlternateMainTitle and AlternateSubtitle 
-            // todo: if AltMainTitle and AltSubtitle are not whitespace process them, otherwise process AltTitle 
-
-
-
-
-
-
-
-
 
             // find the index of the colon which indicates separation between title and subtitle
             int indexOfTitleSplit = Title.IndexOf(":");
             if (indexOfTitleSplit >= 1)
             {
-                // get rid of the colon
-                Title = Title.Replace(':', ' ');
+                MainTitle = Title.Substring(0, indexOfTitleSplit).Trim();
+                Subtitle = Title.Substring(indexOfTitleSplit + 1).Trim();
+                ProcessTitle(MainTitle, TitleWords);
+                ProcessTitle(Subtitle, TitleWords);
+                Title = $"{MainTitle} {Subtitle}";
+            }
+            else
+            {
+                ProcessTitle(Title, TitleWords);
             }
 
+            if(!string.IsNullOrWhiteSpace(AlternateTitle))
+            {
+                indexOfTitleSplit = AlternateTitle.IndexOf(":");
+                if (indexOfTitleSplit >= 1)
+                {
+                    AlternateMainTitle = AlternateTitle.Substring(0, indexOfTitleSplit).Trim();
+                    AlternateSubtitle = AlternateTitle.Substring(indexOfTitleSplit + 1).Trim();
+                    ProcessTitle(AlternateMainTitle, AlternateTitleWords);
+                    ProcessTitle(AlternateSubtitle, AlternateTitleWords);
+                    AlternateTitle = $"{AlternateMainTitle} {AlternateSubtitle}";
+                }
+                else
+                {
+                    ProcessTitle(AlternateTitle, AlternateTitleWords);
+                }
+            }
+        }
+
+        public void ProcessTitle(string title, List<string> wordList)
+        {
+            // processing on title 
+            title = RemoveUnwantedCharacters(title);
+
             // split the title into individual words
-            string[] allTitleWords = Title.Split(SpaceSplitter, StringSplitOptions.RemoveEmptyEntries);
+            string[] allTitleWords = title.Split(SpaceSplitter, StringSplitOptions.RemoveEmptyEntries);
             foreach (string word in allTitleWords)
             {
                 // replace roman numerals 
@@ -72,23 +87,27 @@ namespace Eclipse.Models
                 if (!string.Equals(word, wordRomanNumeralReplaced, StringComparison.InvariantCultureIgnoreCase))
                 {
                     // replace the roman numeral in the title
-                    Title = Title.Replace(word, wordRomanNumeralReplaced);
+                    title = title.Replace(word, wordRomanNumeralReplaced);
                 }
 
                 // add the word to the title words
-                TitleWords.Add(wordRomanNumeralReplaced);
+                wordList.Add(wordRomanNumeralReplaced);
             }
+        }
 
-            // set the main title and subtitle if the title separator index exists
-            // intentionally starting with 2nd character because if the first character of a game title is : then wtf
-            if (indexOfTitleSplit >= 1)
+        public static string RemoveUnwantedCharacters(string originalString)
+        {
+            if(string.IsNullOrWhiteSpace(originalString))
             {
-                MainTitle = Title.Substring(0, indexOfTitleSplit).Trim();
-                Subtitle = Title.Substring(indexOfTitleSplit + 1).Trim();
+                return string.Empty;
             }
 
-            // when replacing the colon with a space, we may have introduced two spaces, this is a lame hack but it works
-            Title = Title.Replace("  ", " ");
+            originalString = originalString.Replace(":", string.Empty);
+            originalString = originalString.Replace("/", string.Empty);
+            originalString = originalString.Replace("\"", string.Empty);
+            originalString = originalString.Replace("!", string.Empty);
+
+            return originalString;
         }
 
         public static bool IsNoiseWord(string wLower)

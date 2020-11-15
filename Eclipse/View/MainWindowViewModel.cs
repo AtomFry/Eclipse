@@ -623,6 +623,34 @@ namespace Eclipse.View
                             }
                         }
                     }
+
+                    if (!string.IsNullOrWhiteSpace(gameTitleGrammarBuilder.AlternateTitle))
+                    {
+                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammarBuilder.AlternateTitle, TitleMatchType.FullTitleMatch, gameTitleGrammarBuilder.Title));
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(gameTitleGrammarBuilder.AlternateMainTitle))
+                    {
+                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammarBuilder.AlternateMainTitle, TitleMatchType.MainTitleMatch, gameTitleGrammarBuilder.Title));
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(gameTitleGrammarBuilder.AlternateSubtitle))
+                    {
+                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammarBuilder.AlternateSubtitle, TitleMatchType.SubtitleMatch, gameTitleGrammarBuilder.Title));
+                    }
+
+                    for (int i = 0; i < gameTitleGrammarBuilder.AlternateTitleWords.Count; i++)
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        for (int j = i; j < gameTitleGrammarBuilder.AlternateTitleWords.Count; j++)
+                        {
+                            sb.Append($"{gameTitleGrammarBuilder.AlternateTitleWords[j]} ");
+                            if (!GameTitleGrammarBuilder.IsNoiseWord(sb.ToString().Trim()))
+                            {
+                                GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, sb.ToString().Trim(), TitleMatchType.FullTitleContains, gameTitleGrammarBuilder.Title));
+                            }
+                        }
+                    }
                 });
 
 
