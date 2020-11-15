@@ -18,6 +18,7 @@ using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Diagnostics.Eventing.Reader;
 using System.Windows.Media.TextFormatting;
+using System.Security.RightsManagement;
 
 namespace Eclipse.View
 {
@@ -644,7 +645,6 @@ namespace Eclipse.View
                 GetGamesByListCategoryType(ListCategoryType.Favorites);
                 GetGamesByListCategoryType(ListCategoryType.Playlist, true);
 
-
                 // flag initialization complete - display results
                 IsInitializing = false;
                 IsDisplayingResults = true;
@@ -997,6 +997,11 @@ namespace Eclipse.View
             Recognizer.RecognizeAsync(RecognizeMode.Single);
         }
 
+        public int preAttractModeGameIndex { get; set; }
+        public void SetPreAttractModeGame()
+        {
+            preAttractModeGameIndex = currentGameList.ListSetStartIndex + currentGameList.CurrentGameIndex - 1;
+        }
 
         public void NextAttractModeGame()
         {
@@ -1091,7 +1096,7 @@ namespace Eclipse.View
                 if (IsDisplayingAttractMode)
                 {
                     IsDisplayingAttractMode = false;
-                    CallGameChangeFunction();
+                    DoRandomGame(preAttractModeGameIndex);
                     return;
                 }
 
@@ -1181,7 +1186,7 @@ namespace Eclipse.View
                 if (IsDisplayingAttractMode)
                 {
                     IsDisplayingAttractMode = false;
-                    CallGameChangeFunction();
+                    DoRandomGame(preAttractModeGameIndex);
                     return;
                 }
 
@@ -1244,7 +1249,7 @@ namespace Eclipse.View
                 if (IsDisplayingAttractMode)
                 {
                     IsDisplayingAttractMode = false;
-                    CallGameChangeFunction();
+                    DoRandomGame(preAttractModeGameIndex);
                     return;
                 }
 
@@ -1332,7 +1337,7 @@ namespace Eclipse.View
                 if (IsDisplayingAttractMode)
                 {
                     IsDisplayingAttractMode = false;
-                    CallGameChangeFunction();
+                    DoRandomGame(preAttractModeGameIndex);
                     return;
                 }
                 
@@ -1394,7 +1399,7 @@ namespace Eclipse.View
             if (IsDisplayingAttractMode)
             {
                 IsDisplayingAttractMode = false;
-                CallGameChangeFunction();
+                DoRandomGame(preAttractModeGameIndex);
                 return;
             }
 
@@ -1414,7 +1419,7 @@ namespace Eclipse.View
             if (IsDisplayingAttractMode)
             {
                 IsDisplayingAttractMode = false;
-                CallGameChangeFunction();
+                DoRandomGame(preAttractModeGameIndex);
                 return;
             }
 
@@ -1690,7 +1695,7 @@ namespace Eclipse.View
             if (IsDisplayingAttractMode)
             {
                 IsDisplayingAttractMode = false;
-                CallGameChangeFunction();
+                DoRandomGame(preAttractModeGameIndex);
                 return true;
             }
 

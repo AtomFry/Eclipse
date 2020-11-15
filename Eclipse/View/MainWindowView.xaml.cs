@@ -102,6 +102,8 @@ namespace Eclipse.View
         // when the AttractModeDelay elapses, start into attract mode 
         private void AttractModeDelay_Elapsed(object sender, ElapsedEventArgs e)
         {
+            mainWindowViewModel.SetPreAttractModeGame();
+
             Dispatcher.Invoke(() =>
             {
                 // reset the background image - it should already be faded out but make sure
@@ -151,6 +153,7 @@ namespace Eclipse.View
                     FadeFrameworkElementOpacity(Image_AttractModeBackgroundImage, 1, 3000);
                 }
 
+                // TODO: start 4-5 sec timer and then fade in clear logo
                 activeAttractModeClearLogo = new BitmapImage(mainWindowViewModel.CurrentGameList.Game1.ClearLogo);
                 if (activeAttractModeClearLogo != null)
                 {
