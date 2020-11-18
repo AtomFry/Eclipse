@@ -257,11 +257,10 @@
                        Visibility="{Binding IsDisplayingFeature, Converter={StaticResource BoolToVis}}">
             </Rectangle>
 
-
             <Image Name="Image_AttractModeClearLogo" HorizontalAlignment="Center" VerticalAlignment="Stretch"
                    Panel.ZIndex="903"
-                   Grid.Row="4" Grid.RowSpan="6"
-                   Grid.Column="1" Grid.ColumnSpan="10"
+                   Grid.Row="2" Grid.RowSpan="6"
+                   Grid.Column="1" Grid.ColumnSpan="12"
                    Stretch="Uniform"
                    RenderOptions.BitmapScalingMode="HighQuality">
             </Image>
