@@ -7,38 +7,19 @@ using Unbroken.LaunchBox.Plugins.Data;
 
 namespace Eclipse.Models
 {
-    // creates the components of the voice search grammar for each game
-    public class GameTitleGrammarBuilder
+    public class GameTitleGrammar
     {
-        public static string[] SpaceSplitter = new string[1] { " " };
-
-        public IGame Game { get; set; }
+        private static readonly string[] SpaceSplitter = new string[1] { " " };
 
         public string Title { get; set; }
         public string MainTitle { get; set; }
         public string Subtitle { get; set; }
         public List<string> TitleWords { get; set; }
 
-        public string AlternateTitle { get; set; }
-        public string AlternateMainTitle { get; set; }
-        public string AlternateSubtitle { get; set; }
-        public List<string> AlternateTitleWords { get; set; }
-
-        public GameTitleGrammarBuilder(IGame _game)
+        public GameTitleGrammar(string title)
         {
-            Game = _game;
-            Title = Game.Title;
+            Title = title;
             TitleWords = new List<string>();
-            AlternateTitleWords = new List<string>();
-
-            // split on "/" for alternate title - add alternate title, alternate main title, alternate subtitle
-            int indexOfAlternateTitleSplit = Title.IndexOf("/");
-            if(indexOfAlternateTitleSplit >= 1)
-            {
-                AlternateTitle = Title.Substring(indexOfAlternateTitleSplit+1).Trim();
-                Title = Title.Substring(0, indexOfAlternateTitleSplit).Trim();
-
-            }
 
             // find the index of the colon which indicates separation between title and subtitle
             int indexOfTitleSplit = Title.IndexOf(":");
@@ -53,23 +34,6 @@ namespace Eclipse.Models
             else
             {
                 ProcessTitle(Title, TitleWords);
-            }
-
-            if(!string.IsNullOrWhiteSpace(AlternateTitle))
-            {
-                indexOfTitleSplit = AlternateTitle.IndexOf(":");
-                if (indexOfTitleSplit >= 1)
-                {
-                    AlternateMainTitle = AlternateTitle.Substring(0, indexOfTitleSplit).Trim();
-                    AlternateSubtitle = AlternateTitle.Substring(indexOfTitleSplit + 1).Trim();
-                    ProcessTitle(AlternateMainTitle, AlternateTitleWords);
-                    ProcessTitle(AlternateSubtitle, AlternateTitleWords);
-                    AlternateTitle = $"{AlternateMainTitle} {AlternateSubtitle}";
-                }
-                else
-                {
-                    ProcessTitle(AlternateTitle, AlternateTitleWords);
-                }
             }
         }
 
@@ -97,38 +61,16 @@ namespace Eclipse.Models
 
         public static string RemoveUnwantedCharacters(string originalString)
         {
-            if(string.IsNullOrWhiteSpace(originalString))
+            if (string.IsNullOrWhiteSpace(originalString))
             {
                 return string.Empty;
             }
 
             originalString = originalString.Replace(":", string.Empty);
-            originalString = originalString.Replace("/", string.Empty);
             originalString = originalString.Replace("\"", string.Empty);
             originalString = originalString.Replace("!", string.Empty);
 
             return originalString;
-        }
-
-        public static bool IsNoiseWord(string wLower)
-        {
-            if (string.Equals(wLower, "the", StringComparison.InvariantCultureIgnoreCase) ||
-                string.Equals(wLower, "a", StringComparison.InvariantCultureIgnoreCase) ||
-                string.Equals(wLower, "of", StringComparison.InvariantCultureIgnoreCase) ||
-                string.Equals(wLower, "at", StringComparison.InvariantCultureIgnoreCase) ||
-                string.Equals(wLower, "as", StringComparison.InvariantCultureIgnoreCase) ||
-                string.Equals(wLower, "and", StringComparison.InvariantCultureIgnoreCase) ||
-                string.Equals(wLower, "to", StringComparison.InvariantCultureIgnoreCase) ||
-                string.Equals(wLower, "n'", StringComparison.InvariantCultureIgnoreCase) ||
-                string.Equals(wLower, "'n", StringComparison.InvariantCultureIgnoreCase) ||
-                string.Equals(wLower, "b", StringComparison.InvariantCultureIgnoreCase) ||
-                string.Equals(wLower, "in", StringComparison.InvariantCultureIgnoreCase) ||
-                string.Equals(wLower, "on", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return true;
-            }
-
-            return false;
         }
 
         public static string GetRomanNumeralReplacement(string str)
@@ -174,6 +116,44 @@ namespace Eclipse.Models
                     return "19";
                 default:
                     return str;
+            }
+        }
+
+        public static bool IsNoiseWord(string wLower)
+        {
+            if (string.Equals(wLower, "the", StringComparison.InvariantCultureIgnoreCase) ||
+                string.Equals(wLower, "a", StringComparison.InvariantCultureIgnoreCase) ||
+                string.Equals(wLower, "of", StringComparison.InvariantCultureIgnoreCase) ||
+                string.Equals(wLower, "at", StringComparison.InvariantCultureIgnoreCase) ||
+                string.Equals(wLower, "as", StringComparison.InvariantCultureIgnoreCase) ||
+                string.Equals(wLower, "and", StringComparison.InvariantCultureIgnoreCase) ||
+                string.Equals(wLower, "to", StringComparison.InvariantCultureIgnoreCase) ||
+                string.Equals(wLower, "n'", StringComparison.InvariantCultureIgnoreCase) ||
+                string.Equals(wLower, "'n", StringComparison.InvariantCultureIgnoreCase) ||
+                string.Equals(wLower, "b", StringComparison.InvariantCultureIgnoreCase) ||
+                string.Equals(wLower, "in", StringComparison.InvariantCultureIgnoreCase) ||
+                string.Equals(wLower, "on", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return true;
+            }
+            return false;
+        }
+    }
+
+    // creates the components of the voice search grammar for each game
+    public class GameTitleGrammarBuilder
+    {
+        private readonly string[] ForwardSlashSplitter = new string[1] { "/" };
+
+        public List<GameTitleGrammar> gameTitleGrammars { get; set; }
+
+        public GameTitleGrammarBuilder(IGame _game)
+        {
+            gameTitleGrammars = new List<GameTitleGrammar>();
+            string[] gameTitles = _game.Title.Split(ForwardSlashSplitter, StringSplitOptions.RemoveEmptyEntries);
+            foreach(string gameTitle in gameTitles)
+            {
+                gameTitleGrammars.Add(new GameTitleGrammar(gameTitle.Trim()));
             }
         }
     }

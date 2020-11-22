@@ -596,63 +596,37 @@ namespace Eclipse.View
 
                     // create voice recognition grammar library for the game
                     GameTitleGrammarBuilder gameTitleGrammarBuilder = new GameTitleGrammarBuilder(game);
-                    if (!string.IsNullOrWhiteSpace(gameTitleGrammarBuilder.Title))
+                    foreach(GameTitleGrammar gameTitleGrammar in gameTitleGrammarBuilder.gameTitleGrammars)
                     {
-                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammarBuilder.Title, TitleMatchType.FullTitleMatch, gameTitleGrammarBuilder.Title));
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(gameTitleGrammarBuilder.MainTitle))
-                    {
-                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammarBuilder.MainTitle, TitleMatchType.MainTitleMatch, gameTitleGrammarBuilder.Title));
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(gameTitleGrammarBuilder.Subtitle))
-                    {
-                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammarBuilder.Subtitle, TitleMatchType.SubtitleMatch, gameTitleGrammarBuilder.Title));
-                    }
-
-                    for (int i = 0; i < gameTitleGrammarBuilder.TitleWords.Count; i++)
-                    {
-                        StringBuilder sb = new StringBuilder();
-                        for (int j = i; j < gameTitleGrammarBuilder.TitleWords.Count; j++)
+                        if (!string.IsNullOrWhiteSpace(gameTitleGrammar.Title))
                         {
-                            sb.Append($"{gameTitleGrammarBuilder.TitleWords[j]} ");
-                            if (!GameTitleGrammarBuilder.IsNoiseWord(sb.ToString().Trim()))
-                            {
-                                GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, sb.ToString().Trim(), TitleMatchType.FullTitleContains, gameTitleGrammarBuilder.Title));
-                            }
+                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammar.Title, TitleMatchType.FullTitleMatch, gameTitleGrammar.Title));
                         }
-                    }
 
-                    if (!string.IsNullOrWhiteSpace(gameTitleGrammarBuilder.AlternateTitle))
-                    {
-                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammarBuilder.AlternateTitle, TitleMatchType.FullTitleMatch, gameTitleGrammarBuilder.Title));
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(gameTitleGrammarBuilder.AlternateMainTitle))
-                    {
-                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammarBuilder.AlternateMainTitle, TitleMatchType.MainTitleMatch, gameTitleGrammarBuilder.Title));
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(gameTitleGrammarBuilder.AlternateSubtitle))
-                    {
-                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammarBuilder.AlternateSubtitle, TitleMatchType.SubtitleMatch, gameTitleGrammarBuilder.Title));
-                    }
-
-                    for (int i = 0; i < gameTitleGrammarBuilder.AlternateTitleWords.Count; i++)
-                    {
-                        StringBuilder sb = new StringBuilder();
-                        for (int j = i; j < gameTitleGrammarBuilder.AlternateTitleWords.Count; j++)
+                        if (!string.IsNullOrWhiteSpace(gameTitleGrammar.MainTitle))
                         {
-                            sb.Append($"{gameTitleGrammarBuilder.AlternateTitleWords[j]} ");
-                            if (!GameTitleGrammarBuilder.IsNoiseWord(sb.ToString().Trim()))
+                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammar.MainTitle, TitleMatchType.MainTitleMatch, gameTitleGrammar.Title));
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(gameTitleGrammar.Subtitle))
+                        {
+                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammar.Subtitle, TitleMatchType.SubtitleMatch, gameTitleGrammar.Title));
+                        }
+
+                        for (int i = 0; i < gameTitleGrammar.TitleWords.Count; i++)
+                        {
+                            StringBuilder sb = new StringBuilder();
+                            for (int j = i; j < gameTitleGrammar.TitleWords.Count; j++)
                             {
-                                GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, sb.ToString().Trim(), TitleMatchType.FullTitleContains, gameTitleGrammarBuilder.Title));
+                                sb.Append($"{gameTitleGrammar.TitleWords[j]} ");
+                                if (!GameTitleGrammar.IsNoiseWord(sb.ToString().Trim()))
+                                {
+                                    GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, sb.ToString().Trim(), TitleMatchType.FullTitleContains, gameTitleGrammar.Title));
+                                }
                             }
                         }
                     }
                 });
-
 
                 // todo: fix create voice recognizer for 11.3 and later
                 CreateRecognizer();
@@ -732,7 +706,7 @@ namespace Eclipse.View
         void SpeechHypothesized(object sender, SpeechHypothesizedEventArgs e)
         {
             // ignore noise words 
-            if (!GameTitleGrammarBuilder.IsNoiseWord(e.Result.Text))
+            if (!GameTitleGrammar.IsNoiseWord(e.Result.Text))
             {
                 TempGameLists.Add(new GameList
                 {
@@ -980,8 +954,6 @@ namespace Eclipse.View
                         }
                     }
                 }
-
-
 
                 // remove any prior "more like this" set and then add these results in the more like this category
                 GameListSets.RemoveAll(set => set.ListCategoryType == ListCategoryType.MoreLikeThis);
