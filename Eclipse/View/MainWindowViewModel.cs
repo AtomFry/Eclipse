@@ -8,7 +8,6 @@ using Unbroken.LaunchBox.Plugins;
 using Unbroken.LaunchBox.Plugins.Data;
 using System.Data;
 using Eclipse.Models;
-using System.Speech.Recognition;
 using System.IO;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
@@ -34,8 +33,7 @@ namespace Eclipse.View
         private ListCycle<GameList> listCycle;
         public List<GameListSet> GameListSets { get; set; }
 
-        private List<GameList> TempGameLists { get; set; }
-        private SpeechRecognitionEngine Recognizer { get; set; }
+        public SpeechRecognizer SpeechRecognizer { get; set; }
 
         private ConcurrentBag<GameMatch> GameBag = new ConcurrentBag<GameMatch>();
 
@@ -389,33 +387,6 @@ namespace Eclipse.View
             });
         }
 
-
-        // todo: fix playlists 
-        /*
-        private void GetGamesByPlaylist()
-        {
-            
-            IPlaylist[] allPlaylists = PluginHelper.DataManager.GetAllPlaylists();
-            List<GameList> listOfPlayListGames = new List<GameList>();
-
-            foreach (IPlaylist playlist in allPlaylists)
-            {
-                if (playlist.HasGames(false, false))
-                {
-                    IGame[] playlistGames = playlist.GetAllGames(true);
-                    var orderedPlatformGames = playlistGames.OrderBy(game => game.SortTitleOrTitle);
-                    var query = from game in orderedPlatformGames select new GameMatch(game, TitleMatchType.None);
-
-                    GameList gameList = new GameList(playlist.SortTitleOrTitle, query.ToList());
-                    gameList.ListCategoryType = ListCategoryType.Playlist;
-                    listOfPlayListGames.Add(gameList);
-                }
-            }
-            GameListSets.Add(new GameListSet { GameLists = listOfPlayListGames, ListCategoryType = ListCategoryType.Playlist });
-        }
-        */
-
-
         public MainWindowViewModel()
         {
             IsInitializing = true;
@@ -667,33 +638,14 @@ namespace Eclipse.View
         {
             try
             {
+                // get the distinct set of phrases that can be used with voice recognition
                 List<string> titleElements = GameBag.Where(game => game.CategoryType == ListCategoryType.VoiceSearch)
                     .GroupBy(game => game.CategoryValue)
                     .Distinct()
                     .Select(gameMatch => gameMatch.Key)
                     .ToList();
 
-                // add the distinct phrases to the list of choices
-                Choices choices = new Choices();
-                choices.Add(titleElements.ToArray());
-
-                GrammarBuilder grammarBuilder = new GrammarBuilder();
-                grammarBuilder.Append(choices);
-
-                Grammar grammar = new Grammar(grammarBuilder)
-                {
-                    Name = "Game title elements"
-                };
-
-                // setup the recognizer
-                Recognizer = new SpeechRecognitionEngine();
-                Recognizer.InitialSilenceTimeout = TimeSpan.FromSeconds(5.0);
-                Recognizer.RecognizeCompleted += new EventHandler<RecognizeCompletedEventArgs>(RecognizeCompleted);
-                Recognizer.LoadGrammarAsync(grammar);
-                Recognizer.SpeechHypothesized += new EventHandler<SpeechHypothesizedEventArgs>(SpeechHypothesized);
-                Recognizer.SetInputToDefaultAudioDevice();
-                Recognizer.RecognizeAsyncCancel();
-
+                SpeechRecognizer = new SpeechRecognizer(titleElements, RecognizeCompleted);
             }
             catch (Exception ex)
             {
@@ -703,99 +655,8 @@ namespace Eclipse.View
             return (true);
         }
 
-        void SpeechHypothesized(object sender, SpeechHypothesizedEventArgs e)
-        {
-            // ignore noise words 
-            if (!GameTitleGrammar.IsNoiseWord(e.Result.Text))
-            {
-                TempGameLists.Add(new GameList
-                {
-                    ListDescription = e.Result.Text,
-                    Confidence = e.Result.Confidence
-                });
-            }
-        }
 
-        void RecognizeCompleted(object sender, RecognizeCompletedEventArgs e)
-        {
-            IsRecognizing = false;
-            List<GameList> voiceRecognitionResults = new List<GameList>();
 
-            if (e?.Error != null)
-            {
-                if (Recognizer != null)
-                {
-                    Recognizer.RecognizeAsyncCancel();
-                }
-
-                IsDisplayingError = true;
-                ErrorMessage = e.Error.Message;
-                return;
-            }
-
-            if (e?.InitialSilenceTimeout == true || e?.BabbleTimeout == true)
-            {
-                if (Recognizer != null)
-                {
-                    Recognizer.RecognizeAsyncCancel();
-                }
-
-                IsDisplayingError = true;
-                ErrorMessage = "Voice recognition could not hear anything, please try again";
-                return;
-            }
-
-            // speech hypothesized adds phrases that it heard to the TempGameLists collection
-            // for each phrase, get the set of matching games from the GameTitlePhrases dictionary
-            if (TempGameLists?.Count() > 0)
-            {
-                // in case the same phrase was recognized multiple times, group by phrase and keep only the max confidence
-                var distinctGameLists = TempGameLists
-                    .GroupBy(s => s.ListDescription)
-                    .Select(s => new GameList { ListDescription = s.Key, Confidence = s.Max(m => m.Confidence) }).ToList();
-
-                // loop through the gamelists (one list for each hypothesized phrase)
-                foreach (var gameList in distinctGameLists)
-                {
-                    // get the list of matching games for the phrase from the GameTitlePhrases dictionary 
-
-                    var query = from game in GameBag
-                                where game.CategoryType == ListCategoryType.VoiceSearch
-                                && game.CategoryValue == gameList.ListDescription
-                                group game by game into grouping
-                                select GameMatch.CloneGameMatch(grouping.Key, ListCategoryType.VoiceSearch, gameList.ListDescription, grouping.Max(g => g.TitleMatchType), grouping.Key.ConvertedTitle);
-
-                    if(query.Any())
-                    {
-                        List<GameMatch> matches = query.ToList();
-
-                        foreach (var game in matches)
-                        {
-                            game.SetupVoiceMatchPercentage(gameList.Confidence, gameList.ListDescription);
-                        }
-                        gameList.MatchingGames = matches.OrderByDescending(match => match.MatchPercentage).ToList();
-                        voiceRecognitionResults.Add(gameList);
-                    }
-                }
-            }
-
-            // remove any prior voice search set and then add these results in the voice search category
-            GameListSets.RemoveAll(set => set.ListCategoryType == ListCategoryType.VoiceSearch);
-            GameListSets.Add(new GameListSet
-            {
-                ListCategoryType = ListCategoryType.VoiceSearch,
-                GameLists = voiceRecognitionResults
-                                .OrderByDescending(list => list.MaxMatchPercentage)
-                                .ThenByDescending(list => list.MaxTitleLength)
-                                .ToList()
-            });
-
-            // display voice search results
-            ResetGameLists(ListCategoryType.VoiceSearch);
-            IsDisplayingResults = true;
-            IsDisplayingFeature = true;
-            CallGameChangeFunction();
-        }
 
         void DoMoreLikeCurrentGame()
         {
@@ -990,12 +851,71 @@ namespace Eclipse.View
             IsPickingCategory = false;
             IsDisplayingError = false;
 
-            // reset the results and the temporary results
-            TempGameLists = new List<GameList>();
-
-            // kick off voice recognition 
-            Recognizer.RecognizeAsync(RecognizeMode.Single);
+            SpeechRecognizer.DoSpeechRecognition();
         }
+
+        void RecognizeCompleted(SpeechRecognizerResult speechRecognizerResult)
+        {
+            IsRecognizing = false;
+            List<GameList> voiceRecognitionResults = new List<GameList>();
+
+            if(!string.IsNullOrWhiteSpace(speechRecognizerResult.ErrorMessage))
+            {
+                ErrorMessage = speechRecognizerResult.ErrorMessage;
+                return;
+            }
+
+            // speech hypothesized adds phrases that it heard to the TempGameLists collection
+            // for each phrase, get the set of matching games from the GameTitlePhrases dictionary
+            if (speechRecognizerResult?.RecognizedPhrases?.Count() > 0)
+            {
+                // in case the same phrase was recognized multiple times, group by phrase and keep only the max confidence
+                var distinctGameLists = speechRecognizerResult?.RecognizedPhrases
+                    .GroupBy(s => s.Phrase)
+                    .Select(s => new GameList { ListDescription = s.Key, Confidence = s.Max(m => m.Confidence) }).ToList();
+
+                // loop through the gamelists (one list for each hypothesized phrase)
+                foreach (var gameList in distinctGameLists)
+                {
+                    // get the list of matching games for the phrase from the GameTitlePhrases dictionary 
+                    var query = from game in GameBag
+                                where game.CategoryType == ListCategoryType.VoiceSearch
+                                && game.CategoryValue == gameList.ListDescription
+                                group game by game into grouping
+                                select GameMatch.CloneGameMatch(grouping.Key, ListCategoryType.VoiceSearch, gameList.ListDescription, grouping.Max(g => g.TitleMatchType), grouping.Key.ConvertedTitle);
+
+                    if (query.Any())
+                    {
+                        List<GameMatch> matches = query.ToList();
+
+                        foreach (var game in matches)
+                        {
+                            game.SetupVoiceMatchPercentage(gameList.Confidence, gameList.ListDescription);
+                        }
+                        gameList.MatchingGames = matches.OrderByDescending(match => match.MatchPercentage).ToList();
+                        voiceRecognitionResults.Add(gameList);
+                    }
+                }
+            }
+
+            // remove any prior voice search set and then add these results in the voice search category
+            GameListSets.RemoveAll(set => set.ListCategoryType == ListCategoryType.VoiceSearch);
+            GameListSets.Add(new GameListSet
+            {
+                ListCategoryType = ListCategoryType.VoiceSearch,
+                GameLists = voiceRecognitionResults
+                                .OrderByDescending(list => list.MaxMatchPercentage)
+                                .ThenByDescending(list => list.MaxTitleLength)
+                                .ToList()
+            });
+
+            // display voice search results
+            ResetGameLists(ListCategoryType.VoiceSearch);
+            IsDisplayingResults = true;
+            IsDisplayingFeature = true;
+            CallGameChangeFunction();
+        }
+
 
         public int preAttractModeGameIndex { get; set; }
         public void SetPreAttractModeGame()
