@@ -89,7 +89,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="Snippets\Snippets.snippet" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\VoiceRecognitionGif.gif" />

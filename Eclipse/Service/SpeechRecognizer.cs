@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+// todo: fix create voice recognizer for 11.3 and later
 using System.Speech.Recognition;
 using System.Text;
 using System.Threading.Tasks;

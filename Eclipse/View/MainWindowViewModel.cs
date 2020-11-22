@@ -599,7 +599,7 @@ namespace Eclipse.View
                     }
                 });
 
-                // todo: fix create voice recognizer for 11.3 and later
+                // create the voice recognition
                 CreateRecognizer();
 
                 // create the list of options
@@ -654,9 +654,6 @@ namespace Eclipse.View
 
             return (true);
         }
-
-
-
 
         void DoMoreLikeCurrentGame()
         {
@@ -912,7 +909,6 @@ namespace Eclipse.View
             // display voice search results
             ResetGameLists(ListCategoryType.VoiceSearch);
             IsDisplayingResults = true;
-            IsDisplayingFeature = true;
             CallGameChangeFunction();
         }
 
@@ -1393,7 +1389,6 @@ namespace Eclipse.View
 
             // call the game change function to refresh things
             CallGameChangeFunction();
-            IsDisplayingFeature = true;
         }
 
         private int GetRandomFavoriteIndex()
