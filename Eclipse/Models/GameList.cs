@@ -92,7 +92,7 @@ namespace Eclipse.Models
         // to be used with selecting random games and reset the game cycle to the right spot
         public void SetGameIndex(int newIndex)
         {
-            gameCycle.SetCurrentIndex(newIndex);
+            gameCycle.SetCurrentIndex(newIndex, true);
             RefreshGames();
         }
 

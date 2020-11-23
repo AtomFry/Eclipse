@@ -34,10 +34,18 @@ namespace Eclipse.Models
         }
 
 
-        public void SetCurrentIndex(int index)
+        public void SetCurrentIndex(int index, bool oneBased = false)
         {
-            indices[0] = index;
-            int lastIndex = index;
+            if(oneBased)
+            {
+                indices[0] = GetPreviousIndex(index);
+            }
+            else
+            {
+                indices[0] = index;
+            }
+
+            int lastIndex = indices[0];
             for(int i = 1; i < indices.Length; i++)
             {
                 indices[i] = GetNextIndex(lastIndex);
