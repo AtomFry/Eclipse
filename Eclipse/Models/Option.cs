@@ -21,7 +21,8 @@ namespace Eclipse.Models
         Developer,
         Publisher,
         MoreLikeThis,
-        Favorites
+        Favorites,
+        History
     }
 
     public class OptionList : INotifyPropertyChanged

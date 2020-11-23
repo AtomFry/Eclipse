@@ -353,7 +353,7 @@ namespace Eclipse.View
             if (File.Exists(defaultVerticalBezelPath)) BezelDictionary.Add(defaultVerticalBezelKey, new Uri(defaultVerticalBezelPath));
         }
 
-        private void GetGamesByListCategoryType(ListCategoryType listCategoryType, bool includeFavorites = false)
+        private void GetGamesByListCategoryType(ListCategoryType listCategoryType, bool includeFavorites = false, bool includeHistory = false)
         {
             List<GameList> listOfGameList = new List<GameList>();
 
@@ -375,6 +375,20 @@ namespace Eclipse.View
                 }
             }
 
+            if(includeHistory)
+            {
+                var historyGames = from gameMatch in GameBag
+                                   where gameMatch.CategoryType == ListCategoryType.History
+                                   && gameMatch.Game.LastPlayedDate != null
+                                   group gameMatch by gameMatch.CategoryValue into historyGroup
+                                   select historyGroup;
+
+                foreach(var historyGroup in historyGames)
+                {
+                    listOfGameList.Add(new GameList(historyGroup.Key, historyGroup.OrderByDescending(game => game.Game.LastPlayedDate).ToList(), false, true));
+                }
+            }
+
             var gameQuery = from gameMatch in GameBag
                             where gameMatch.CategoryType == listCategoryType
                             group gameMatch by gameMatch.CategoryValue into gameGroup
@@ -387,7 +401,9 @@ namespace Eclipse.View
 
             GameListSets.Add(new GameListSet
             {
-                GameLists = listOfGameList.OrderByDescending(list=>list.IsFavorites).ThenBy(list => list.ListDescription).ToList(),
+                GameLists = listOfGameList.OrderByDescending(list=>list.IsFavorites)
+                                            .ThenByDescending(list=>list.IsHistory)
+                                            .ThenBy(list => list.ListDescription).ToList(),
                 ListCategoryType = listCategoryType
             });
         }
@@ -528,6 +544,11 @@ namespace Eclipse.View
                         GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Favorites, ListCategoryType.Favorites.ToString()));
                     }
 
+                    if(game.LastPlayedDate != null)
+                    {
+                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.History, ListCategoryType.History.ToString()));
+                    }
+
                     // create a dictionary of platform game matches
                     GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Platform, game.Platform));
 
@@ -635,15 +656,14 @@ namespace Eclipse.View
 
         private void CreateGameLists()
         {
-            GetGamesByListCategoryType(ListCategoryType.Platform, true);
+            GetGamesByListCategoryType(ListCategoryType.Platform, true, true);
             GetGamesByListCategoryType(ListCategoryType.ReleaseYear);
             GetGamesByListCategoryType(ListCategoryType.Genre);
             GetGamesByListCategoryType(ListCategoryType.Publisher);
             GetGamesByListCategoryType(ListCategoryType.Developer);
             GetGamesByListCategoryType(ListCategoryType.Series);
             GetGamesByListCategoryType(ListCategoryType.PlayMode);
-            GetGamesByListCategoryType(ListCategoryType.Favorites);
-            GetGamesByListCategoryType(ListCategoryType.Playlist, true);
+            GetGamesByListCategoryType(ListCategoryType.Playlist, true, true);
         }
 
         private bool CreateRecognizer()
@@ -1416,13 +1436,37 @@ namespace Eclipse.View
             return (-1);
         }
 
+        // start the current game
         private void PlayCurrentGame()
         {
-            // start the current game
+            // get a handle on the current game 
             IGame currentGame = CurrentGameList?.Game1?.Game;
             if (currentGame != null)
             {
+                // check if the game is in the history list already
+                var historyQuery = GameBag.Where(g => g.Game.Id == currentGame.Id && g.CategoryType == ListCategoryType.History);
+                if (!historyQuery.Any())
+                {
+                    // if not - add it to the history list
+                    GameBag.Add(GameMatch.CloneGameMatch(CurrentGameList?.Game1, ListCategoryType.History, ListCategoryType.History.ToString()));
+                }
+                else
+                {
+                    // if it is - update the last played time to now
+                    foreach(var game in historyQuery)
+                    {
+                        game.Game.LastPlayedDate = DateTime.Now;
+                    }
+                }
+
+                // reset the lists so the updated history reflects - first save the current game details then reload the lists 
+                saveStateForGameListChange();
+                resetListsAfterChange();
+
+                // stop everything in the UI
                 CallStopVideoAndAnimationsFunction();
+
+                // launch the game 
                 PluginHelper.BigBoxMainViewModel.PlayGame(currentGame, null, null, null);
             }
             return;
@@ -1447,8 +1491,10 @@ namespace Eclipse.View
                     gameMatch.Favorite = currentGame.Favorite;
                 }
 
+                gameMatchQuery = GameBag.Where(g => g.Favorite && g.Game.Id == currentGame.Game.Id && g.CategoryType == ListCategoryType.Favorites);
+
                 // add to the game bag in the favorites category 
-                if (currentGame.Favorite)
+                if (currentGame.Favorite && !gameMatchQuery.Any())
                 {
                     GameBag.Add(GameMatch.CloneGameMatch(currentGame, ListCategoryType.Favorites, ListCategoryType.Favorites.ToString()));
                 }
@@ -1473,8 +1519,8 @@ namespace Eclipse.View
         private int preChangeGameListStartIndex;
         private int preChangeGameIndex;
 
-        // when game lists are changing (adding/removing favorites, adding/removing from history)
-        // save current list set, list, game id, game index so we can reload lists and find our way back to where we were later
+        // call this when lists are about to change to save which list set, list, and game we were on so we can find our way back after rebuilding lists
+        // this is needed when game lists are going to change (i.e. adding/removing favorites, adding/removing from history)
         private void saveStateForGameListChange()
         {
             // flag the favorites list has changed 
@@ -1500,20 +1546,8 @@ namespace Eclipse.View
             preChangeGameIndex = currentGameList.CurrentGameIndex;
         }
 
-        // TODO: find our place - cache all this stuff in local variables and do it when returning to main view from more info view 
-        /*
-         * 1st - go to the preChangeListSet 
-         * 2nd - go to the preChangeList (type and description)
-         * 3rd - see if the game is there - it won't be if we are in favorites and a game was unfavorited
-         * 4th - try to find the game in another list in the same set (i.e. in platform/genre/developer/etc...)
-         * 5th - If we still don't find it
-         *  If we were in favorites - find another favorite
-         *  If there are no other favorites (i.e. this was the last favorite that just got unfavorited) - pick a random game
-         *  - If we were in favorites and a game was unfavorited then we won't find it there and we should move to another game in favorites - preferrably at the same index?
-         *      - If the game that was unfavorited is the last game in the favorites list then that index would put us into another list so then go back one? 
-         *      - If there are no more favorites games (unfavorited the only game in favorites) then (a) try to find the game in another list and if not (b) random game
-            - Otherwise if the game is in whatever list we are in, then go to that game in that list
-         */
+        // call this when lists have changed (i.e. game added/removed from favorites history list)
+        // will try to find the game in the same list - if it can't (i.e. in favorites and game removed from favorites) then jumps to the next game
         private void resetListsAfterChange()
         {
             // clear the game list changed flag 
@@ -1525,21 +1559,20 @@ namespace Eclipse.View
             // reset to the list set that we were on 
             ResetGameLists(preChangeListSetCategoryType);
 
-            // jump back to the game - if we removed a favorite - should move to the next game
-            var query = from list in currentGameListSet.GameLists
-                        where list.ListCategoryType == preChangeListCategoryType
-                        && list.ListDescription == preChangeListDescription
-                        select list;
+            // find the list that we were previously in 
+            var priorListQuery = from list in currentGameListSet.GameLists
+                                 where list.ListCategoryType == preChangeListCategoryType && list.ListDescription == preChangeListDescription
+                                 select list;
 
-            var gameList = query?.FirstOrDefault();
+            var gameList = priorListQuery?.FirstOrDefault();
             if(gameList != null)
             {
-                // list is still there, try to find the game 
-                var query2 = from match in gameList.MatchingGames
-                             where match.Game.Id == preChangeGameId
-                             select match;
+                // try to find the game in the list
+                var gameMatchQuery = from match in gameList.MatchingGames
+                                     where match.Game.Id == preChangeGameId
+                                     select match;
 
-                var gameMatch = query2?.FirstOrDefault();
+                var gameMatch = gameMatchQuery?.FirstOrDefault();
                 if(gameMatch != null)
                 {
                     // the game is in the list 
@@ -1552,21 +1585,21 @@ namespace Eclipse.View
                     }
                 }
 
-                // next game in the list 
+                // the game was not in the list so try the next game in the list 
                 if(gameList?.MatchingGames?.Count() > preChangeGameIndex)
                 {
                     DoRandomGame(gameList.ListSetStartIndex + preChangeGameIndex);
                     return;
                 }
 
-                // prev game in the list 
+                // there was no next game so try a previous game in the list 
                 if(gameList?.MatchingGames?.Count() > preChangeGameIndex - 1)
                 {
                     DoRandomGame(gameList.ListSetStartIndex + preChangeGameIndex - 1);
                     return;
                 }
 
-                // first game in the list 
+                // there was no next or previous, try just the first game in the list 
                 if (gameList?.MatchingGames?.Count() > 0)
                 {
                     DoRandomGame(gameList.ListSetStartIndex);
@@ -1575,7 +1608,7 @@ namespace Eclipse.View
             }
             else
             {
-                // any random game
+                // the list was not there so pick any random game
                 DoRandomGame();
                 return;
             }
@@ -1607,7 +1640,6 @@ namespace Eclipse.View
 
         public void DoEnter()
         {
-
             // stop displaying error
             if (IsDisplayingError)
             {

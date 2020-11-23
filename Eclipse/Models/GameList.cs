@@ -55,7 +55,7 @@ namespace Eclipse.Models
         private ListCycle<GameMatch> gameCycle;
 
         public bool IsFavorites { get; set; }
-
+        public bool IsHistory { get; set; }
         private List<GameMatch> matchingGames;
         public List<GameMatch> MatchingGames
         {
@@ -108,11 +108,12 @@ namespace Eclipse.Models
         {
         }
 
-        public GameList(string _listDescription, List<GameMatch> _matchingGames, bool isFavorites = false)
+        public GameList(string _listDescription, List<GameMatch> _matchingGames, bool isFavorites = false, bool isHistory = false)
         {
             ListDescription = _listDescription;
             MatchingGames = _matchingGames;
             IsFavorites = isFavorites;
+            IsHistory = isHistory;
         }
 
         public void CycleForward()
