@@ -1254,7 +1254,7 @@
                   Grid.ColumnSpan="{Binding IsDisplayingFeature, Converter={StaticResource FeatureToColumnSpanConverter}}"
                   Panel.ZIndex="100">
                 <MediaElement Name="Video_SelectedGame"
-                          Source="{Binding CurrentGameList.Game1.VideoPath}"
+                          Source="{Binding CurrentGameList.Game1.GameFiles.VideoPath}"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Stretch="Uniform"
                           LoadedBehavior="Manual"
                           Panel.ZIndex="110"
@@ -1350,7 +1350,7 @@
                         VerticalAlignment="Stretch">
                         <Border BorderThickness="2" BorderBrush="AntiqueWhite">
                             <Image Name="Image_Game1"
-                               Source="{Binding CurrentGameList.Game1.FrontImage}"
+                               Source="{Binding CurrentGameList.Game1.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
@@ -1358,77 +1358,77 @@
                                Stretch="Uniform"/>
                         </Border>
 
-                        <Image Source="{Binding CurrentGameList.Game2.FrontImage}"
+                        <Image Source="{Binding CurrentGameList.Game2.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding CurrentGameList.Game3.FrontImage}"
+                        <Image Source="{Binding CurrentGameList.Game3.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding CurrentGameList.Game4.FrontImage}"
+                        <Image Source="{Binding CurrentGameList.Game4.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding CurrentGameList.Game5.FrontImage}"
+                        <Image Source="{Binding CurrentGameList.Game5.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding CurrentGameList.Game6.FrontImage}"
+                        <Image Source="{Binding CurrentGameList.Game6.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding CurrentGameList.Game7.FrontImage}"
+                        <Image Source="{Binding CurrentGameList.Game7.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding CurrentGameList.Game8.FrontImage}"
+                        <Image Source="{Binding CurrentGameList.Game8.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding CurrentGameList.Game9.FrontImage}"
+                        <Image Source="{Binding CurrentGameList.Game9.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding CurrentGameList.Game10.FrontImage}"
+                        <Image Source="{Binding CurrentGameList.Game10.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding CurrentGameList.Game11.FrontImage}"
+                        <Image Source="{Binding CurrentGameList.Game11.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding CurrentGameList.Game12.FrontImage}"
+                        <Image Source="{Binding CurrentGameList.Game12.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
@@ -1459,7 +1459,7 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch">
                         <Image Name="Image_PreviousGame"
-                       Source="{Binding CurrentGameList.Game0.FrontImage}"
+                       Source="{Binding CurrentGameList.Game0.GameFiles.FrontImage}"
                        HorizontalAlignment="Left" 
                        VerticalAlignment="Stretch"
                        RenderOptions.BitmapScalingMode="HighQuality" 
@@ -1512,84 +1512,84 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch">
                         <Image Name="Image_NextListGame1"
-                            Source="{Binding NextGameList.Game1.FrontImage}"
+                            Source="{Binding NextGameList.Game1.GameFiles.FrontImage}"
                             HorizontalAlignment="Center" 
                             VerticalAlignment="Stretch"
                             RenderOptions.BitmapScalingMode="HighQuality" 
                             Margin="2,2,2,2"
                             Stretch="Uniform"/>
 
-                        <Image Source="{Binding NextGameList.Game2.FrontImage}"
+                        <Image Source="{Binding NextGameList.Game2.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding NextGameList.Game3.FrontImage}"
+                        <Image Source="{Binding NextGameList.Game3.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding NextGameList.Game4.FrontImage}"
+                        <Image Source="{Binding NextGameList.Game4.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding NextGameList.Game5.FrontImage}"
+                        <Image Source="{Binding NextGameList.Game5.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding NextGameList.Game6.FrontImage}"
+                        <Image Source="{Binding NextGameList.Game6.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding NextGameList.Game7.FrontImage}"
+                        <Image Source="{Binding NextGameList.Game7.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding NextGameList.Game8.FrontImage}"
+                        <Image Source="{Binding NextGameList.Game8.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding NextGameList.Game9.FrontImage}"
+                        <Image Source="{Binding NextGameList.Game9.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding NextGameList.Game10.FrontImage}"
+                        <Image Source="{Binding NextGameList.Game10.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding NextGameList.Game11.FrontImage}"
+                        <Image Source="{Binding NextGameList.Game11.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding NextGameList.Game12.FrontImage}"
+                        <Image Source="{Binding NextGameList.Game12.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
@@ -1621,7 +1621,7 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch">
                         <Image Name="Image_NextListPreviousGame"
-                       Source="{Binding NextGameList.Game0.FrontImage}"
+                       Source="{Binding NextGameList.Game0.GameFiles.FrontImage}"
                        HorizontalAlignment="Left" 
                        VerticalAlignment="Stretch"
                        RenderOptions.BitmapScalingMode="HighQuality" 

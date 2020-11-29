@@ -18,9 +18,12 @@ using System.Windows.Media.Imaging;
 using System.Diagnostics.Eventing.Reader;
 using System.Windows.Media.TextFormatting;
 using System.Security.RightsManagement;
+using System.Windows.Threading;
 
 namespace Eclipse.View
 {
+    public delegate void SetupGameImageDelegate();
+
     public delegate void FeatureChangeFunction();
     public delegate void AnimateGameChangeFunction();
     
@@ -36,6 +39,7 @@ namespace Eclipse.View
         public SpeechRecognizer SpeechRecognizer { get; set; }
 
         private ConcurrentBag<GameMatch> GameBag = new ConcurrentBag<GameMatch>();
+        private ConcurrentBag<GameFiles> GameFilesBag = new ConcurrentBag<GameFiles>();
 
         // store platform bezels and default bezels in dictionary for easy lookup
         // this is probably terrible design but the problem is I won't know the video orientation in the GameMatch, I get that once the MediaElement is loaded over in the view
@@ -43,6 +47,7 @@ namespace Eclipse.View
         // Key: <BezelType, BezelOrientation, Platform> 
         private Dictionary<Tuple<BezelType, BezelOrientation, string>, Uri> BezelDictionary;
 
+        public SetupGameImageDelegate SetupGameImageFunction { get; set; }
         public FeatureChangeFunction FeatureChangeFunction { get; set; }
         public AnimateGameChangeFunction GameChangeFunction { get; set; }
         public StopVideoAndAnimations StopVideoAndAnimationsFunction { get; set; }
@@ -488,10 +493,19 @@ namespace Eclipse.View
                 // get the total count of games for the progress bar
                 TotalGameCount = AllGames?.Count ?? 0;
 
-                // prescale box front images - doing this here so it's easier to update the progress bar
+                var preloadGamesQuery = from g in AllGames
+                                        where g.LastPlayedDate != null
+                                        || g.Favorite == true
+                                        select g;
 
+                if(preloadGamesQuery != null)
+                {
+                    TotalGameCount += preloadGamesQuery.Count();
+                }
+
+                // prescale box front images - doing this here so it's easier to update the progress bar
                 // get list of image files in launchbox folders that are missing from the plug-in folders
-                List<FileInfo> gameFrontFilesToProcess = ImageScaler.GetMissingGameFrontImageFiles();
+                List <FileInfo> gameFrontFilesToProcess = ImageScaler.GetMissingGameFrontImageFiles();
                 List<FileInfo> platformLogosToProcess = ImageScaler.GetMissingPlatformClearLogoFiles();
                 List<FileInfo> gameClearLogosToProcess = ImageScaler.GetMissingGameClearLogoFiles();
 
@@ -537,7 +551,11 @@ namespace Eclipse.View
                 {
                     InitializationGameCount += 1;
 
-                    GameMatch gameMatch = new GameMatch(game);
+
+                    GameFiles gameFiles = new GameFiles(game);
+                    GameFilesBag.Add(gameFiles);
+
+                    GameMatch gameMatch = new GameMatch(game, gameFiles);
 
                     if (game.Favorite)
                     {
@@ -626,6 +644,9 @@ namespace Eclipse.View
                     }
                 });
 
+                // load images for favorites and history and then fire off async loading for the rest of them
+                LoadFavoritesAndHistoryImages();
+
                 // create the voice recognition
                 CreateRecognizer();
 
@@ -637,6 +658,9 @@ namespace Eclipse.View
 
                 // populate the lists 
                 CreateGameLists();
+
+                // start loading images
+                CallSetupGameImageFunction();
 
                 // flag initialization complete - display results
                 IsInitializing = false;
@@ -652,6 +676,78 @@ namespace Eclipse.View
             {
                 Helpers.LogException(ex, "Initializion_loadData");
             }
+        }
+
+        public GameFiles GetNextGameToLoad()
+        {
+            GameFiles gameFiles = null;
+
+            if (CurrentGameList?.MatchingGames != null)
+            {
+                var currentListQuery =
+                    from g in CurrentGameList.MatchingGames
+                    where g.GameFiles.IsSetup == false
+                    select g;
+
+                gameFiles = currentListQuery?.FirstOrDefault()?.GameFiles;
+                if (gameFiles != null)
+                {
+                    return (gameFiles);
+                }
+            }
+
+            if (NextGameList?.MatchingGames != null)
+            {
+                var nextListQuery =
+                    from g in NextGameList.MatchingGames
+                    where g.GameFiles.IsSetup == false
+                    select g;
+                gameFiles = nextListQuery?.FirstOrDefault()?.GameFiles;
+                if (gameFiles != null)
+                {
+                    return (gameFiles);
+                }
+            }
+
+            if (GameFilesBag != null)
+            {
+                var anyGameQuery =
+                    from g in GameFilesBag
+                    where g.IsSetup == false
+                    select g;
+                gameFiles = anyGameQuery?.FirstOrDefault();
+                if (gameFiles != null)
+                {
+                    return (gameFiles);
+                }
+            }
+
+            return null;
+        }
+
+
+        private void LoadFavoritesAndHistoryImages()
+        {
+            // todo: incorporate into progress bar? 
+            var query = from gameFiles in GameFilesBag
+                        where gameFiles.Game.Favorite == true
+                        && gameFiles.IsSetup == false
+                        select gameFiles;
+            Parallel.ForEach(query, (gameFiles) =>
+            {
+                InitializationGameCount += 1;
+                gameFiles.SetupFiles();
+            });
+
+            query = from gameFiles in GameFilesBag
+                        where gameFiles.Game.LastPlayedDate != null
+                        && gameFiles.IsSetup == false
+                        select gameFiles;
+            Parallel.ForEach(query, (gameFiles) =>
+            {
+                InitializationGameCount += 1;
+                gameFiles.SetupFiles();
+            });
         }
 
         private void CreateGameLists()
@@ -997,6 +1093,14 @@ namespace Eclipse.View
             if (GameChangeFunction != null)
             {
                 GameChangeFunction();
+            }
+        }
+
+        private void CallSetupGameImageFunction()
+        {
+            if(SetupGameImageFunction != null)
+            {
+                SetupGameImageFunction();
             }
         }
 

@@ -101,6 +101,8 @@ namespace Eclipse.View
             // get handle on the view model 
             mainWindowViewModel = DataContext as MainWindowViewModel;
 
+            mainWindowViewModel.SetupGameImageFunction = LoadImagesBackground;
+
             // pass in the animation function that can be called whenever a game changes
             mainWindowViewModel.GameChangeFunction = DoAnimateGameChange;
 
@@ -112,6 +114,19 @@ namespace Eclipse.View
 
             // sets up the game lists and voice recognition
             mainWindowViewModel.InitializeData();
+        }
+
+        public delegate void SetupGameImageDelegate();
+
+        private void LoadImagesBackground()
+        {
+            GameFiles gameFiles = mainWindowViewModel.GetNextGameToLoad();
+
+            if(gameFiles != null)
+            {
+                gameFiles.SetupFiles();
+                Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new SetupGameImageDelegate(this.LoadImagesBackground));
+            }
         }
 
         // when the AttractModeDelay elapses, start into attract mode 
@@ -159,7 +174,7 @@ namespace Eclipse.View
                 mainWindowViewModel.NextAttractModeGame();
 
                 // get the next image to use for a attract mode background
-                activeAttractModeBackgroundImage = new BitmapImage(mainWindowViewModel.CurrentGameList.Game1.BackgroundImage);
+                activeAttractModeBackgroundImage = new BitmapImage(mainWindowViewModel.CurrentGameList.Game1.GameFiles.BackgroundImage);
                 
                 // assign the image and fade it in
                 if (activeAttractModeBackgroundImage != null)
@@ -197,7 +212,7 @@ namespace Eclipse.View
         {
             Dispatcher.Invoke(() =>
             {
-                activeAttractModeClearLogo = new BitmapImage(mainWindowViewModel.CurrentGameList.Game1.ClearLogo);
+                activeAttractModeClearLogo = new BitmapImage(mainWindowViewModel.CurrentGameList.Game1.GameFiles.ClearLogo);
                 if (activeAttractModeClearLogo != null)
                 {
                     Image_AttractModeClearLogo.Source = activeAttractModeClearLogo;
@@ -230,8 +245,6 @@ namespace Eclipse.View
             brush.Freeze();
             return brush;
         }
-
-        public delegate void SetupGameImageDelegate();
 
         public bool OnDown(bool held)
         {
@@ -373,7 +386,7 @@ namespace Eclipse.View
 
                         // get a handle on the active game's background image
                         activeBackgroundImage = null;
-                        Uri uri = mainWindowViewModel?.CurrentGameList?.Game1?.BackgroundImage;
+                        Uri uri = mainWindowViewModel?.CurrentGameList?.Game1?.GameFiles?.BackgroundImage;
                         if (uri != null)
                         {
                             activeBackgroundImage = new BitmapImage(uri);
@@ -381,7 +394,7 @@ namespace Eclipse.View
 
                         // get a handle on the active game's logo image 
                         activeClearLogo = null;
-                        Uri clearLogoUri = mainWindowViewModel?.CurrentGameList?.Game1?.ClearLogo;
+                        Uri clearLogoUri = mainWindowViewModel?.CurrentGameList?.Game1?.GameFiles?.ClearLogo;
                         if(clearLogoUri != null)
                         {
                             activeClearLogo = new BitmapImage(clearLogoUri);
@@ -395,19 +408,19 @@ namespace Eclipse.View
                         activePlatformLogoImage = null;
                         activeGameBezelImage = null;
 
-                        Uri communityStarRatingUri = mainWindowViewModel?.CurrentGameList?.Game1?.CommunityStarRatingImage;
+                        Uri communityStarRatingUri = mainWindowViewModel?.CurrentGameList?.Game1?.GameFiles?.CommunityStarRatingImage;
                         if(communityStarRatingUri != null)
                         {
                             activeCommunityStarRatingImage = new BitmapImage(communityStarRatingUri);
                         }
 
-                        Uri playModeUri = mainWindowViewModel?.CurrentGameList?.Game1?.PlayModeImage;
+                        Uri playModeUri = mainWindowViewModel?.CurrentGameList?.Game1?.GameFiles?.PlayModeImage;
                         if(playModeUri != null)
                         {
                             activePlayModeImage = new BitmapImage(playModeUri);
                         }
 
-                        Uri platformLogoUri = mainWindowViewModel?.CurrentGameList?.Game1.PlatformClearLogoImage;
+                        Uri platformLogoUri = mainWindowViewModel?.CurrentGameList?.Game1?.GameFiles?.PlatformClearLogoImage;
                         if(platformLogoUri != null)
                         {
                             activePlatformLogoImage = new BitmapImage(platformLogoUri);
@@ -574,7 +587,7 @@ namespace Eclipse.View
         // setup fallback bezels once the media opens so we can identify whether we need the horizontal or veritical bezel
         private void Video_SelectedGame_MediaOpened(object sender, RoutedEventArgs e)
         {
-            Uri gameBezelUri = mainWindowViewModel?.CurrentGameList?.Game1?.GameBezelImage;
+            Uri gameBezelUri = mainWindowViewModel?.CurrentGameList?.Game1?.GameFiles?.GameBezelImage;
             if (gameBezelUri == null)
             {
                 // fall back to platform or default bezel if no game bezel, based on height/width of game video if(width >= height) use horizontal, else use vertical
