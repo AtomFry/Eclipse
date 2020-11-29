@@ -443,26 +443,5 @@ namespace Eclipse.Models
                 }
             }
         }
-
-        public bool MoreImagesToLoad { get; set; } = true;
-        public int CurrentGameImageIndex { get; set; } = 0;
-        public void LoadNextGameImage()
-        {
-            // if all game images are loaded then flag it as no more images to load
-            if (CurrentGameImageIndex >= MatchCount)
-            {
-                MoreImagesToLoad = false;
-                return;
-            }
-
-            // load the next image and increment the counter
-            GameMatch gameMatch = MatchingGames[CurrentGameImageIndex];
-            CurrentGameImageIndex += 1;
-
-            if (!gameMatch.GameFiles.IsSetup)
-            {
-                gameMatch.GameFiles.SetupFiles();
-            }
-        }
     }
 }

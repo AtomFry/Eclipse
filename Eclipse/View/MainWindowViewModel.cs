@@ -541,7 +541,6 @@ namespace Eclipse.View
                 {
                     InitializationGameCount += 1;
 
-
                     GameFiles gameFiles = new GameFiles(game);
                     if(game.Favorite || game.LastPlayedDate != null)
                     {
@@ -670,6 +669,8 @@ namespace Eclipse.View
             }
         }
 
+        // get a game whose images are not yet loaded 
+        // 
         public GameFiles GetNextGameToLoad()
         {
             GameFiles gameFiles = null;

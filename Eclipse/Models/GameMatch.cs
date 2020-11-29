@@ -174,16 +174,19 @@ namespace Eclipse.Models
 
         public void SetupFiles()
         {
-            IsSetup = true;
-            FrontImage = ResolveGameFrontImage(game);
-            ClearLogo = ResolveClearLogoPath(game);
-            CommunityStarRatingImage = ResolveStarRatingPath(game);
-            PlayModeImage = ResolvePlayModePath(game);
-            BackgroundImage = ResolveBackgroundImagePath(game);
-            PlatformClearLogoImage = ResolvePlatformLogoPath(game);
-            VideoPath = ResolveVideoPath(game);
-            TitleToFileName = ResolveGameTitleFileName(game);
-            GameBezelImage = ResolveBezelPath(game, TitleToFileName);
+            if (IsSetup == false)
+            {
+                IsSetup = true;
+                FrontImage = ResolveGameFrontImage(game);
+                ClearLogo = ResolveClearLogoPath(game);
+                CommunityStarRatingImage = ResolveStarRatingPath(game);
+                PlayModeImage = ResolvePlayModePath(game);
+                BackgroundImage = ResolveBackgroundImagePath(game);
+                PlatformClearLogoImage = ResolvePlatformLogoPath(game);
+                VideoPath = ResolveVideoPath(game);
+                TitleToFileName = ResolveGameTitleFileName(game);
+                GameBezelImage = ResolveBezelPath(game, TitleToFileName);
+            }
         }
 
         public static char[] InvalidFileNameChars = Path.GetInvalidFileNameChars();
