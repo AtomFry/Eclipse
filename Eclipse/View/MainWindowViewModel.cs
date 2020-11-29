@@ -493,16 +493,6 @@ namespace Eclipse.View
                 // get the total count of games for the progress bar
                 TotalGameCount = AllGames?.Count ?? 0;
 
-                var preloadGamesQuery = from g in AllGames
-                                        where g.LastPlayedDate != null
-                                        || g.Favorite == true
-                                        select g;
-
-                if(preloadGamesQuery != null)
-                {
-                    TotalGameCount += preloadGamesQuery.Count();
-                }
-
                 // prescale box front images - doing this here so it's easier to update the progress bar
                 // get list of image files in launchbox folders that are missing from the plug-in folders
                 List <FileInfo> gameFrontFilesToProcess = ImageScaler.GetMissingGameFrontImageFiles();
@@ -553,6 +543,11 @@ namespace Eclipse.View
 
 
                     GameFiles gameFiles = new GameFiles(game);
+                    if(game.Favorite || game.LastPlayedDate != null)
+                    {
+                        gameFiles.SetupFiles();
+                    }
+
                     GameFilesBag.Add(gameFiles);
 
                     GameMatch gameMatch = new GameMatch(game, gameFiles);
@@ -644,9 +639,6 @@ namespace Eclipse.View
                     }
                 });
 
-                // load images for favorites and history and then fire off async loading for the rest of them
-                LoadFavoritesAndHistoryImages();
-
                 // create the voice recognition
                 CreateRecognizer();
 
@@ -723,31 +715,6 @@ namespace Eclipse.View
             }
 
             return null;
-        }
-
-
-        private void LoadFavoritesAndHistoryImages()
-        {
-            // todo: incorporate into progress bar? 
-            var query = from gameFiles in GameFilesBag
-                        where gameFiles.Game.Favorite == true
-                        && gameFiles.IsSetup == false
-                        select gameFiles;
-            Parallel.ForEach(query, (gameFiles) =>
-            {
-                InitializationGameCount += 1;
-                gameFiles.SetupFiles();
-            });
-
-            query = from gameFiles in GameFilesBag
-                        where gameFiles.Game.LastPlayedDate != null
-                        && gameFiles.IsSetup == false
-                        select gameFiles;
-            Parallel.ForEach(query, (gameFiles) =>
-            {
-                InitializationGameCount += 1;
-                gameFiles.SetupFiles();
-            });
         }
 
         private void CreateGameLists()
