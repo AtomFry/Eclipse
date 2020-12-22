@@ -22,8 +22,6 @@ using System.Windows.Threading;
 
 namespace Eclipse.View
 {
-    public delegate void SetupGameImageDelegate();
-
     public delegate void FeatureChangeFunction();
     public delegate void AnimateGameChangeFunction();
     
@@ -47,7 +45,6 @@ namespace Eclipse.View
         // Key: <BezelType, BezelOrientation, Platform> 
         private Dictionary<Tuple<BezelType, BezelOrientation, string>, Uri> BezelDictionary;
 
-        public SetupGameImageDelegate SetupGameImageFunction { get; set; }
         public FeatureChangeFunction FeatureChangeFunction { get; set; }
         public AnimateGameChangeFunction GameChangeFunction { get; set; }
         public StopVideoAndAnimations StopVideoAndAnimationsFunction { get; set; }
@@ -312,12 +309,12 @@ namespace Eclipse.View
             listCategories.Add(new Option<ListCategoryType> { Name = "Genre", EnumOption = ListCategoryType.Genre, SortOrder = 2, ShortDescription = "Genre", LongDescription = "Genre" });
             listCategories.Add(new Option<ListCategoryType> { Name = "Series", EnumOption = ListCategoryType.Series, SortOrder = 3, ShortDescription = "Series", LongDescription = "Series" });
             listCategories.Add(new Option<ListCategoryType> { Name = "Playlist", EnumOption = ListCategoryType.Playlist, SortOrder = 4, ShortDescription = "Playlist", LongDescription = "Playlist" });
-            listCategories.Add(new Option<ListCategoryType> { Name = "Voice search", EnumOption = ListCategoryType.VoiceSearch, SortOrder = 5, ShortDescription = "Voice", LongDescription = "Voice search" });
-            listCategories.Add(new Option<ListCategoryType> { Name = "Play mode", EnumOption = ListCategoryType.PlayMode, SortOrder = 6, ShortDescription = "Mode", LongDescription = "Play mode" });
-            listCategories.Add(new Option<ListCategoryType> { Name = "Developer", EnumOption = ListCategoryType.Developer, SortOrder = 7, ShortDescription = "Dev", LongDescription = "Developer" });
-            listCategories.Add(new Option<ListCategoryType> { Name = "Publisher", EnumOption = ListCategoryType.Publisher, SortOrder = 8, ShortDescription = "Pub", LongDescription = "Publisher" });
-            listCategories.Add(new Option<ListCategoryType> { Name = "Year", EnumOption = ListCategoryType.ReleaseYear, SortOrder = 9, ShortDescription = "Year", LongDescription = "Release year" });
-            listCategories.Add(new Option<ListCategoryType> { Name = "Random", EnumOption = ListCategoryType.RandomGame, SortOrder = 10, ShortDescription = "Random", LongDescription = "Random game" });
+            listCategories.Add(new Option<ListCategoryType> { Name = "Play mode", EnumOption = ListCategoryType.PlayMode, SortOrder = 5, ShortDescription = "Mode", LongDescription = "Play mode" });
+            listCategories.Add(new Option<ListCategoryType> { Name = "Developer", EnumOption = ListCategoryType.Developer, SortOrder = 6, ShortDescription = "Dev", LongDescription = "Developer" });
+            listCategories.Add(new Option<ListCategoryType> { Name = "Publisher", EnumOption = ListCategoryType.Publisher, SortOrder = 7, ShortDescription = "Pub", LongDescription = "Publisher" });
+            listCategories.Add(new Option<ListCategoryType> { Name = "Year", EnumOption = ListCategoryType.ReleaseYear, SortOrder = 8, ShortDescription = "Year", LongDescription = "Release year" });
+            listCategories.Add(new Option<ListCategoryType> { Name = "Random", EnumOption = ListCategoryType.RandomGame, SortOrder = 9, ShortDescription = "Random", LongDescription = "Random game" });
+            listCategories.Add(new Option<ListCategoryType> { Name = "Voice search", EnumOption = ListCategoryType.VoiceSearch, SortOrder = 10, ShortDescription = "Voice", LongDescription = "Voice search" });
             OptionList = new OptionList(listCategories);
         }
 
@@ -542,11 +539,7 @@ namespace Eclipse.View
                     InitializationGameCount += 1;
 
                     GameFiles gameFiles = new GameFiles(game);
-                    if(game.Favorite || game.LastPlayedDate != null)
-                    {
-                        gameFiles.SetupFiles();
-                    }
-
+                    gameFiles.SetupFiles();
                     GameFilesBag.Add(gameFiles);
 
                     GameMatch gameMatch = new GameMatch(game, gameFiles);
@@ -650,9 +643,6 @@ namespace Eclipse.View
                 // populate the lists 
                 CreateGameLists();
 
-                // start loading images
-                CallSetupGameImageFunction();
-
                 // flag initialization complete - display results
                 IsInitializing = false;
                 IsDisplayingResults = true;
@@ -669,8 +659,82 @@ namespace Eclipse.View
             }
         }
 
+        public GameFiles GetNextGameFileCurrentList()
+        {
+            if(CurrentGameList?.MatchingGames == null)
+            {
+                return null;
+            }
+
+            for(int i = CurrentGameList.CurrentGameIndex; i < CurrentGameList.MatchingGames.Count; i++)
+            {
+                GameMatch match = CurrentGameList.MatchingGames[i];
+                if(match?.GameFiles != null && !match.GameFiles.IsSetup)
+                {
+                    return (match.GameFiles);
+                }
+            }
+
+            for(int i = 0; i < CurrentGameList.CurrentGameIndex; i++)
+            {
+                GameMatch match = CurrentGameList.MatchingGames[i];
+                if (match?.GameFiles != null && !match.GameFiles.IsSetup)
+                {
+                    return (match.GameFiles);
+                }
+            }
+
+            return null;
+        }
+
+        public GameFiles GetNextGameFileNextList()
+        {
+            if (NextGameList?.MatchingGames == null)
+            {
+                return null;
+            }
+
+            for (int i = NextGameList.CurrentGameIndex; i < NextGameList.MatchingGames.Count; i++)
+            {
+                GameMatch match = NextGameList.MatchingGames[i];
+                if (match?.GameFiles != null && !match.GameFiles.IsSetup)
+                {
+                    return (match.GameFiles);
+                }
+            }
+
+            for (int i = 0; i < NextGameList.CurrentGameIndex; i++)
+            {
+                GameMatch match = NextGameList.MatchingGames[i];
+                if (match?.GameFiles != null && !match.GameFiles.IsSetup)
+                {
+                    return (match.GameFiles);
+                }
+            }
+
+            return null;
+        }
+
+        public GameFiles GetNextGameFileAnyGame()
+        {
+            GameFiles gameFiles = null;
+            if (GameFilesBag != null)
+            {
+                var anyGameQuery =
+                    from g in GameFilesBag
+                    where g.IsSetup == false
+                    select g;
+                gameFiles = anyGameQuery?.FirstOrDefault();
+                if (gameFiles != null)
+                {
+                    return (gameFiles);
+                }
+            }
+
+            return null;
+        }
+
         // get a game whose images are not yet loaded 
-        // 
         public GameFiles GetNextGameToLoad()
         {
             GameFiles gameFiles = null;
@@ -680,6 +744,7 @@ namespace Eclipse.View
                 var currentListQuery =
                     from g in CurrentGameList.MatchingGames
                     where g.GameFiles.IsSetup == false
+                    && CurrentGameList.MatchingGames.IndexOf(g) >= CurrentGameList.CurrentGameIndex
                     select g;
 
                 gameFiles = currentListQuery?.FirstOrDefault()?.GameFiles;
@@ -694,6 +759,7 @@ namespace Eclipse.View
                 var nextListQuery =
                     from g in NextGameList.MatchingGames
                     where g.GameFiles.IsSetup == false
+                    && NextGameList.MatchingGames.IndexOf(g) >= NextGameList.CurrentGameIndex
                     select g;
                 gameFiles = nextListQuery?.FirstOrDefault()?.GameFiles;
                 if (gameFiles != null)
@@ -1061,14 +1127,6 @@ namespace Eclipse.View
             if (GameChangeFunction != null)
             {
                 GameChangeFunction();
-            }
-        }
-
-        private void CallSetupGameImageFunction()
-        {
-            if(SetupGameImageFunction != null)
-            {
-                SetupGameImageFunction();
             }
         }
 

@@ -101,8 +101,6 @@ namespace Eclipse.View
             // get handle on the view model 
             mainWindowViewModel = DataContext as MainWindowViewModel;
 
-            mainWindowViewModel.SetupGameImageFunction = LoadImagesBackground;
-
             // pass in the animation function that can be called whenever a game changes
             mainWindowViewModel.GameChangeFunction = DoAnimateGameChange;
 
@@ -114,19 +112,6 @@ namespace Eclipse.View
 
             // sets up the game lists and voice recognition
             mainWindowViewModel.InitializeData();
-        }
-
-        public delegate void SetupGameImageDelegate();
-
-        private void LoadImagesBackground()
-        {
-            GameFiles gameFiles = mainWindowViewModel.GetNextGameToLoad();
-
-            if(gameFiles != null)
-            {
-                gameFiles.SetupFiles();
-                Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new SetupGameImageDelegate(this.LoadImagesBackground));
-            }
         }
 
         // when the AttractModeDelay elapses, start into attract mode 

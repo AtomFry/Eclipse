@@ -120,11 +120,13 @@
     </UserControl.Resources>
 
     <Canvas Background="Black" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+            IsHitTestVisible="False"
             Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
             Height="{Binding ActualHeight, ElementName=MainWindowUserControl}">
 
         <!-- LOADING -->
         <Grid   Background="Transparent"
+                IsHitTestVisible="False"
                 VerticalAlignment="Stretch"
                 HorizontalAlignment="Stretch"
                 Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
@@ -138,6 +140,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <TextBlock Text="LOADING"
+                       IsHitTestVisible="False"
                    Grid.Row="1"
                    Foreground="GhostWhite"
                    FontFamily="Impact Condensed"
@@ -146,6 +149,7 @@
                    VerticalAlignment="Bottom"
                    TextAlignment="Center"/>
             <ProgressBar Name="ProgressBar_Loading"
+                         IsHitTestVisible="False"
                          Grid.Row="2"
                          Minimum="0"
                          Maximum="{Binding TotalGameCount}"
@@ -157,6 +161,7 @@
                          VerticalAlignment="Stretch">
             </ProgressBar>
             <TextBlock Name="TextBlock_Loading_Message"
+                       IsHitTestVisible="False"
                    Text="{Binding LoadingMessage}"
                    Grid.Row="3"
                    Foreground="DarkSlateGray"
@@ -170,6 +175,7 @@
 
         <!-- ATTRACT MODE -->
         <Grid   Name="Grid_AttractMode"
+                IsHitTestVisible="False"
             VerticalAlignment="Stretch"
             HorizontalAlignment="Stretch"
             Panel.ZIndex="900"
@@ -232,6 +238,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Image Name="Image_AttractModeBackgroundImage"
+                   IsHitTestVisible="False"
                    Grid.Row="0" Grid.RowSpan="18"
                    Grid.Column="0" Grid.ColumnSpan="32"
                 VerticalAlignment="Center"
@@ -252,12 +259,14 @@
             <!-- Darken the background when displaying feature and more info (helps with text visibility) -->
             <Rectangle Grid.Row="0" Grid.RowSpan="18"
                        Grid.Column="0" Grid.ColumnSpan="32"
+                       IsHitTestVisible="False"
                        Fill="Black" Opacity="0.1" 
                        Panel.ZIndex="902"
                        Visibility="{Binding IsDisplayingFeature, Converter={StaticResource BoolToVis}}">
             </Rectangle>
 
             <Image Name="Image_AttractModeClearLogo" HorizontalAlignment="Center" VerticalAlignment="Stretch"
+                   IsHitTestVisible="False"
                    Panel.ZIndex="903"
                    Grid.Row="2" Grid.RowSpan="6"
                    Grid.Column="1" Grid.ColumnSpan="12"
@@ -268,6 +277,7 @@
         
         <!-- DISPLAY ERROR -->
         <Grid   Background="Transparent"
+                IsHitTestVisible="False"
                 VerticalAlignment="Stretch"
                 HorizontalAlignment="Stretch"
                 Panel.ZIndex="1000"
@@ -284,6 +294,7 @@
 
             <Rectangle  Grid.Row="2"
                         Grid.RowSpan="1"
+                        IsHitTestVisible="False"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"        
                         Fill="Black">
@@ -300,6 +311,7 @@
             </Rectangle>            
             
             <TextBlock Text="{Binding ErrorMessage}"
+                       IsHitTestVisible="False"
                     Grid.Row="2"
                     Grid.RowSpan="1"                       
                    Foreground="GhostWhite"
@@ -314,6 +326,7 @@
 
         <!-- DISPLAYING RESULTS -->
         <Grid   Background="Transparent"
+                IsHitTestVisible="False"
                 VerticalAlignment="Stretch"
                 HorizontalAlignment="Stretch"
                 Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
@@ -378,6 +391,7 @@
 
             <!-- Options Icon -->
             <StackPanel Name="StackPanel_OptionsIcon"
+                        IsHitTestVisible="False"
                         Grid.Row="10" Grid.RowSpan="1" 
                         Grid.Column="0" Grid.ColumnSpan="1"
                         Orientation="Vertical"
@@ -387,6 +401,7 @@
                         Opacity="{Binding CurrentGameList.Game0, Converter={StaticResource SettingsOpacityConverter}}"
                         Panel.ZIndex="800">
                 <Image Name="Image_SettingsIcon" 
+                       IsHitTestVisible="False"
                        Source="{Binding SettingsIconWhite}"
                        HorizontalAlignment="Stretch" 
                        VerticalAlignment="Stretch"
@@ -398,8 +413,9 @@
 
             <!-- Picking Category -->
             <Grid Name="Grid_PickingOptions"
+                  IsHitTestVisible="False"
                   Grid.Row="0" Grid.RowSpan="18"
-                  Grid.Column="0" Grid.ColumnSpan="8"
+                  Grid.Column="0" Grid.ColumnSpan="32"
                   Panel.ZIndex="900"
                   Visibility="{Binding IsPickingCategory, Converter={StaticResource BoolToVis}}">
                 <Grid.RowDefinitions>
@@ -417,30 +433,66 @@
                     <RowDefinition Height="2*"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="9*"/>
+                    <ColumnDefinition Width="6.64*"/>
+                    <ColumnDefinition Width="1.37*"/>
+                    <ColumnDefinition Width="3.91*"/>
+                    <ColumnDefinition Width="27.34*"/>
+                    <ColumnDefinition Width="60.75*"/>
                 </Grid.ColumnDefinitions>
+
+                <!-- Backdrop for options - black rectangle that fades to transparent -->
                 <Rectangle Name="Rectangle_PickingOptionsBackground"
+                           IsHitTestVisible="False"
                            Grid.Row="0" Grid.RowSpan="12"
-                           Grid.Column="0" Grid.ColumnSpan="3"
+                           Grid.Column="0" Grid.ColumnSpan="5"
                            HorizontalAlignment="Stretch"
                            VerticalAlignment="Stretch"
+                           Stretch="Fill"
+                           RenderOptions.BitmapScalingMode="HighQuality"
                            Fill="Black">
                     <Rectangle.OpacityMask>
                         <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
                             <LinearGradientBrush.GradientStops>
                                 <GradientStop Offset="0" Color="Black"/>
-                                <GradientStop Offset="0.75" Color="Black"/>
+                                <GradientStop Offset="0.2" Color="Black"/>
                                 <GradientStop Offset="1" Color="Transparent"/>
                             </LinearGradientBrush.GradientStops>
                         </LinearGradientBrush>
                     </Rectangle.OpacityMask>
                 </Rectangle>
+
+                <!-- Home Icon - Temporarily using for platform  --> 
+                <Polygon   Points="1,13 1,30 11,30 11,21 19,21 19,30 29,30 29,13 15,1"
+                           IsHitTestVisible="False"
+                           Fill="Transparent"
+                           Stroke="GhostWhite"
+                           StrokeThickness="2"
+                           Stretch="Uniform"
+                           RenderOptions.BitmapScalingMode="HighQuality"
+                           Grid.Row="5"
+                           Grid.Column="1" Grid.ColumnSpan="1"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Center"/>
+
+                <!-- Platform Icon?   - Temporarily using for platform  -->
+                <!-- Data="M 0,10 5,14 10,10 10,8 5,12 0,8 0,6 5,10 10,6 10,4 5,8 0,4 5,0 10,4" -->
+                <Path      Data="M 0,50 25,75 50,50 25,25 0,50 0,75 25,100 50,75 50,50 25,75 25,100" 
+                           IsHitTestVisible="False"
+                           Fill="Transparent"
+                           Stroke="GhostWhite"
+                           StrokeThickness="2"
+                           Stretch="Uniform"
+                           RenderOptions.BitmapScalingMode="HighQuality"
+                           Grid.Row="4"
+                           Grid.Column="1" Grid.ColumnSpan="1"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Center"/>
+
                 <TextBlock Text="Options"
+                           IsHitTestVisible="False"
                            Grid.Row="0"
-                           Grid.Column="1"
-                           Grid.ColumnSpan="2"
+                           Grid.Column="3"
+                           Grid.ColumnSpan="1"
                            FontFamily="Calibri" 
                            FontWeight="ExtraBold"
                            FontSize="60" 
@@ -449,101 +501,111 @@
                            HorizontalAlignment="Left"
                            VerticalAlignment="Center"/>
                 <TextBlock Text="{Binding OptionList.Option6.LongDescription}"
+                           IsHitTestVisible="False"
                            Grid.Row="1"
-                           Grid.Column="1" Grid.ColumnSpan="2"
+                           Grid.Column="3" Grid.ColumnSpan="1"
                             FontFamily="Calibri" 
                             FontWeight="Light"
-                            FontSize="22" 
+                            FontSize="26" 
                             Foreground="DimGray"
                             TextAlignment="Left"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"/>
                 <TextBlock Text="{Binding OptionList.Option7.LongDescription}"
+                           IsHitTestVisible="False"
                            Grid.Row="2"
-                           Grid.Column="1" Grid.ColumnSpan="2"
+                           Grid.Column="3" Grid.ColumnSpan="1"
                            FontFamily="Calibri" 
                            FontWeight="Light"
-                           FontSize="22" 
+                           FontSize="26" 
                            Foreground="DimGray"
                            TextAlignment="Left"
                            HorizontalAlignment="Left"
                            VerticalAlignment="Center"/>
                 <TextBlock Text="{Binding OptionList.Option8.LongDescription}"
+                           IsHitTestVisible="False"
                            Grid.Row="3"
-                           Grid.Column="1" Grid.ColumnSpan="2"
+                           Grid.Column="3" Grid.ColumnSpan="1"
                            FontFamily="Calibri" 
                            FontWeight="Light"
-                           FontSize="22" 
+                           FontSize="26" 
                            Foreground="DimGray"
                            TextAlignment="Left"
                            HorizontalAlignment="Left"
                            VerticalAlignment="Center"/>
                 <TextBlock Text="{Binding OptionList.Option9.LongDescription}"
+                           IsHitTestVisible="False"
                            Grid.Row="4"
-                           Grid.Column="1" Grid.ColumnSpan="2"
+                           Grid.Column="3" Grid.ColumnSpan="1"
                            FontFamily="Calibri" 
                            FontWeight="Light"
-                           FontSize="22" 
+                           FontSize="26" 
                            Foreground="DimGray"
                            TextAlignment="Left"
                            HorizontalAlignment="Left"
                            VerticalAlignment="Center"/>
                 <TextBlock Text="{Binding OptionList.Option0.LongDescription}"
+                           IsHitTestVisible="False"
                            Grid.Row="5"
-                           Grid.Column="1" Grid.ColumnSpan="2"
+                           Grid.Column="3" Grid.ColumnSpan="1"
                            FontFamily="Calibri" 
                            FontWeight="UltraBlack"
-                           FontSize="40" 
+                           FontSize="26" 
                            Foreground="GhostWhite"
                            TextAlignment="Left"
                            HorizontalAlignment="Left"
                            VerticalAlignment="Center"/>
                 <TextBlock Text="{Binding OptionList.Option1.LongDescription}"
-                           Grid.Row="6"
-                           Grid.Column="1" Grid.ColumnSpan="2"
+                           IsHitTestVisible="False"
+                           Grid.Row="6" 
+                           Grid.Column="3" Grid.ColumnSpan="1"
                            FontFamily="Calibri" 
                            FontWeight="Light"
-                           FontSize="22" 
+                           FontSize="26" 
                            Foreground="DimGray"
                            TextAlignment="Left"
                            HorizontalAlignment="Left"
                            VerticalAlignment="Center"/>
                 <TextBlock Text="{Binding OptionList.Option2.LongDescription}"
+                           IsHitTestVisible="False"
                            Grid.Row="7"
-                           Grid.Column="1" Grid.ColumnSpan="2"
+                           Grid.Column="3" Grid.ColumnSpan="1"
                            FontFamily="Calibri" 
                            FontWeight="Light"
-                           FontSize="22" 
+                           FontSize="26" 
                            Foreground="DimGray"
                            TextAlignment="Left"
                            HorizontalAlignment="Left"
                            VerticalAlignment="Center"/>
                 <TextBlock Text="{Binding OptionList.Option3.LongDescription}"
+                           IsHitTestVisible="False"
                            Grid.Row="8"
-                           Grid.Column="1" Grid.ColumnSpan="2"
+                           Grid.Column="3" Grid.ColumnSpan="1"
                            FontFamily="Calibri" 
                            FontWeight="Light"
-                           FontSize="22" 
+                           FontSize="26" 
                            Foreground="DimGray"
                            TextAlignment="Left"
                            HorizontalAlignment="Left"
                            VerticalAlignment="Center"/>
                 <TextBlock Text="{Binding OptionList.Option4.LongDescription}"
+                           IsHitTestVisible="False"
                            Grid.Row="9"
-                           Grid.Column="1" Grid.ColumnSpan="2"
+                           Grid.Column="3" Grid.ColumnSpan="1"
                            FontFamily="Calibri" 
                            FontWeight="Light"
-                           FontSize="22" 
+                           FontSize="26" 
                            Foreground="DimGray"
                            TextAlignment="Left"
                            HorizontalAlignment="Left"
                            VerticalAlignment="Center"/>
                 <TextBlock Text="{Binding OptionList.Option5.LongDescription}"
+                           IsHitTestVisible="False"
                            Grid.Row="10"
-                           Grid.Column="1" Grid.ColumnSpan="2"
+                           Grid.Column="3" Grid.ColumnSpan="1"
                            FontFamily="Calibri" 
                            FontWeight="Light"
-                           FontSize="22" 
+                           FontSize="26" 
                            Foreground="DimGray"
                            TextAlignment="Left"
                            HorizontalAlignment="Left"
@@ -553,11 +615,13 @@
             <!-- Darken the background when displaying feature and more info (helps with text visibility) -->
             <Rectangle Grid.Row="0" Grid.RowSpan="18" Grid.Column="0" Grid.ColumnSpan="32" Fill="Black" Opacity="0.1" 
                        Panel.ZIndex="499"
+                       IsHitTestVisible="False"
                        Visibility="{Binding IsDisplayingFeature, Converter={StaticResource BoolToVis}}">
             </Rectangle>
 
             <!-- Selected game logo and details -->
             <Grid Name="Grid_Selected_Game_Heading"
+                  IsHitTestVisible="False"
                   Grid.Row="1" Grid.RowSpan="16"
                   Grid.Column="1" Grid.ColumnSpan="15"
                   Panel.ZIndex="500"
@@ -588,20 +652,23 @@
                 <!-- Displaying the game clear logo for the selected game -->
                 <Image Name="Image_Displayed_GameClearLogo"
                         Grid.Row="0"
+                       IsHitTestVisible="False"
                         Panel.ZIndex="510"
                         HorizontalAlignment="Left" 
                         VerticalAlignment="Bottom"
                         RenderOptions.BitmapScalingMode="HighQuality" 
                         Stretch="Uniform"/>
 
-                <Grid Name="Grid_SelectedGameDetails" Grid.Row="1">
+                <Grid Name="Grid_SelectedGameDetails" Grid.Row="1" IsHitTestVisible="False">
                     <!-- Selected game details-->
                     <StackPanel Name="StackPanel_SelectedGameDetails"
+                                IsHitTestVisible="False"
                             Orientation="Horizontal"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch">
 
                         <TextBlock Name="TextBlock_MatchPercentage"
+                                   IsHitTestVisible="False"
                             FontFamily="Arial" 
                             FontWeight="Bold"
                             FontSize="22" 
@@ -613,6 +680,7 @@
                             VerticalAlignment="Center"/>
 
                         <TextBlock Name="TextBlock_ReleaseYear"
+                                   IsHitTestVisible="False"
                                    Margin="10,0,0,0"
                                     FontFamily="Arial" 
                                     FontWeight="Bold"
@@ -625,6 +693,7 @@
                                     VerticalAlignment="Center"/>
 
                         <Image Name="Image_CommunityStarRating"
+                               IsHitTestVisible="False"
                                Margin="10,0,0,0" 
                                 RenderOptions.BitmapScalingMode="HighQuality" 
                                 Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
@@ -632,7 +701,8 @@
                                 VerticalAlignment="Center"
                                 Stretch="Uniform"/>
 
-                        <Image  Name="Image_Playmode"                                
+                        <Image  Name="Image_Playmode"  
+                                IsHitTestVisible="False"
                                 Margin="10,0,0,0" 
                                 Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
                                 RenderOptions.BitmapScalingMode="HighQuality" 
@@ -641,6 +711,7 @@
                                 Stretch="Uniform"/>
                         
                         <Image Name="Image_PlatformLogo"
+                               IsHitTestVisible="False"
                                 Margin="10,0,0,0"                               
                                 Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
                                 HorizontalAlignment="Center" 
@@ -651,15 +722,18 @@
                 </Grid>
 
                 <Grid Grid.Row="2" Grid.RowSpan="1"
+                      IsHitTestVisible="False"
                       Visibility="{Binding IsDisplayingFeature, Converter={StaticResource BoolToVis}}"
                       Width="{Binding ActualWidth, ElementName=StackPanel_SelectedGameDetails}"
                       HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <StackPanel x:Name="StackPanel_FeatureButtons" 
+                                IsHitTestVisible="False"
                                 Visibility="{Binding IsDisplayingMoreInfo, Converter={StaticResource InvertBooleanToVisibilityConverter}}"
                                 Orientation="Horizontal"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Stretch">
                         <Image  Name="Image_PlayButton" 
+                                IsHitTestVisible="False"
                                 RenderOptions.BitmapScalingMode="HighQuality" 
                                 Height="{Binding ActualHeight, ElementName=Grid_SelectedGameDetails}"
                                 HorizontalAlignment="Center"
@@ -668,7 +742,8 @@
                                 Margin="5,5,5,5"
                                 Opacity="{Binding FeatureOption, Converter={StaticResource PlayGameOpacityConverter}}"
                             Source="{Binding PlayButtonImage}"/>
-                        <Image Name="Image_MoreInfoButton" 
+                        <Image Name="Image_MoreInfoButton"
+                               IsHitTestVisible="False"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Height="{Binding ActualHeight, ElementName=Grid_SelectedGameDetails}"
                                HorizontalAlignment="Center"
@@ -682,53 +757,67 @@
 
                 <Grid Grid.Row="2"
                       Grid.RowSpan="1"
+                      IsHitTestVisible="False"
                       Visibility="{Binding IsDisplayingMoreInfo, Converter={StaticResource BoolToVis}}"
                       Width="{Binding ActualWidth, ElementName=StackPanel_SelectedGameDetails}"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch">
                     <StackPanel Orientation="Vertical"
+                                IsHitTestVisible="False"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Stretch">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                    IsHitTestVisible="False"
                                     Visibility="{Binding CurrentGameList.Game1.Genre, Converter={StaticResource StringLengthVisibilityConverter}}">
-                            <TextBlock Text="Genres:"                                   
+                            <TextBlock Text="Genres:"       
+                                       IsHitTestVisible="False"
                                        Foreground="DarkGray" TextWrapping="Wrap" TextTrimming="None" 
                                        VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" 
                                        FontFamily="Arial" FontSize="20"/>
                             <TextBlock Text="{Binding CurrentGameList.Game1.Genre}"
+                                       IsHitTestVisible="False"
                                    Foreground="WhiteSmoke" TextWrapping="Wrap" TextTrimming="None" 
                                    Margin="10,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" 
                                    FontFamily="Arial" FontSize="20"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                    IsHitTestVisible="False"
                                     Visibility="{Binding CurrentGameList.Game1.Series, Converter={StaticResource StringLengthVisibilityConverter}}">
-                            <TextBlock Text="Series:"                                   
+                            <TextBlock Text="Series:"       
+                                       IsHitTestVisible="False"
                                        Foreground="DarkGray" TextWrapping="Wrap" TextTrimming="None" 
                                        VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" 
                                        FontFamily="Arial" FontSize="20"/>
                             <TextBlock Text="{Binding CurrentGameList.Game1.Series}"
+                                       IsHitTestVisible="False"
                                    Foreground="WhiteSmoke" TextWrapping="Wrap" TextTrimming="None" 
                                    Margin="10,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" 
                                    FontFamily="Arial" FontSize="20"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                    IsHitTestVisible="False"
                                     Visibility="{Binding CurrentGameList.Game1.Developer, Converter={StaticResource StringLengthVisibilityConverter}}">
-                            <TextBlock Text="Developer:"                                   
+                            <TextBlock Text="Developer:"    
+                                       IsHitTestVisible="False"
                                        Foreground="DarkGray" TextWrapping="Wrap" TextTrimming="None" 
                                        VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" 
                                        FontFamily="Arial" FontSize="20"/>
                             <TextBlock Text="{Binding CurrentGameList.Game1.Developer}"
+                                       IsHitTestVisible="False"
                                    Foreground="WhiteSmoke" TextWrapping="Wrap" TextTrimming="None" 
                                    Margin="10,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" 
                                    FontFamily="Arial" FontSize="20"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                    IsHitTestVisible="False"
                                     Visibility="{Binding CurrentGameList.Game1.Publisher, Converter={StaticResource StringLengthVisibilityConverter}}">
-                            <TextBlock Text="Publisher:"                                   
+                            <TextBlock Text="Publisher:"    
+                                       IsHitTestVisible="False"
                                        Foreground="DarkGray" TextWrapping="Wrap" TextTrimming="None" 
                                        VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" 
                                        FontFamily="Arial" FontSize="20"/>
                             <TextBlock Text="{Binding CurrentGameList.Game1.Publisher}"
+                                       IsHitTestVisible="False"
                                    Foreground="WhiteSmoke" TextWrapping="Wrap" TextTrimming="None" 
                                    Margin="10,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" 
                                    FontFamily="Arial" FontSize="20"/>
@@ -739,6 +828,7 @@
                 <!-- Game Details - Play Button --> 
                 <Grid Grid.Row="3"
                       Grid.RowSpan="1"
+                      IsHitTestVisible="False"
                       Visibility="{Binding IsDisplayingMoreInfo, Converter={StaticResource BoolToVis}}"
                       Width="{Binding ActualWidth, ElementName=StackPanel_SelectedGameDetails}"
                       HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
@@ -753,21 +843,24 @@
                         <ColumnDefinition Width="3*"/>
                     </Grid.ColumnDefinitions>
                     <Border Background="{Binding GameDetailOption, Converter={StaticResource GameDetailPlayGameBorderColorConverter}}"
+                            IsHitTestVisible="False"
                             CornerRadius="8,8,8,8"
                             Grid.Row="0" Grid.RowSpan="3"
                             Grid.Column="0" Grid.ColumnSpan="1"
                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="15,0,0,0">
+                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="15,0,0,0" IsHitTestVisible="False">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="16*"/>
                             </Grid.ColumnDefinitions>
                             <Polygon Points="10,10 10,70 70,40" 
+                                     IsHitTestVisible="False"
                                      Fill="{Binding GameDetailOption, Converter={StaticResource GameDetailPlayGameColorConverter}}"
                                      Grid.Column="0" Grid.ColumnSpan="1"
                                      HorizontalAlignment="Stretch" VerticalAlignment="Center" Stretch="Uniform"
                                      RenderOptions.BitmapScalingMode="HighQuality"/>
                             <TextBlock Name="TextBlock_DetailPlayButton"
+                                       IsHitTestVisible="False"
                                        Text="Play"
                                        Foreground="{Binding GameDetailOption, Converter={StaticResource GameDetailPlayGameColorConverter}}"
                                        Grid.Column="1" Grid.ColumnSpan="1"
@@ -779,6 +872,7 @@
 
                 <!-- Game Details - Favorite/Unfavorite -->
                 <Grid Grid.Row="4" Grid.RowSpan="1"
+                      IsHitTestVisible="False"
                       Visibility="{Binding IsDisplayingMoreInfo, Converter={StaticResource BoolToVis}}"
                       Width="{Binding ActualWidth, ElementName=StackPanel_SelectedGameDetails}"
                       HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
@@ -794,10 +888,11 @@
                     </Grid.ColumnDefinitions>
                     <Border Background="{Binding GameDetailOption, Converter={StaticResource GameDetailFavoriteBorderColorConverter}}"
                             CornerRadius="8,8,8,8"
+                            IsHitTestVisible="False"
                             Grid.Row="0" Grid.RowSpan="3"
                             Grid.Column="0" Grid.ColumnSpan="1"
                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="15,0,0,0">
+                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="15,0,0,0" IsHitTestVisible="False">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="16*"/>
@@ -805,9 +900,11 @@
                             <Polygon Points="{Binding CurrentGameList.Game1.Favorite, Converter={StaticResource FavoriteDetailIconConverter}}" 
                                      Fill="{Binding GameDetailOption, Converter={StaticResource GameDetailFavoriteColorConverter}}"
                                      Grid.Column="0" Grid.ColumnSpan="1"
+                                     IsHitTestVisible="False"
                                      HorizontalAlignment="Stretch" VerticalAlignment="Center" Stretch="Uniform"
                                      RenderOptions.BitmapScalingMode="HighQuality"/>
                             <TextBlock Name="TextBlock_DetailFavoriteButton"
+                                       IsHitTestVisible="False"
                                        Text="{Binding CurrentGameList.Game1.Favorite, Converter={StaticResource FavoriteToFavoriteOptionConverter}}"
                                        Foreground="{Binding GameDetailOption, Converter={StaticResource GameDetailFavoriteColorConverter}}"
                                        Grid.Column="1" Grid.ColumnSpan="1"
@@ -820,6 +917,7 @@
                 <!-- Game Details - More Like This -->
                 <Grid Grid.Row="5"
                       Grid.RowSpan="1"
+                      IsHitTestVisible="False"
                       Visibility="{Binding IsDisplayingMoreInfo, Converter={StaticResource BoolToVis}}"
                       Width="{Binding ActualWidth, ElementName=StackPanel_SelectedGameDetails}"
                       HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
@@ -835,10 +933,11 @@
                     </Grid.ColumnDefinitions>
                     <Border Background="{Binding GameDetailOption, Converter={StaticResource GameDetailMoreLikeThisBorderColorConverter}}"
                             CornerRadius="8,8,8,8"
+                            IsHitTestVisible="False"
                             Grid.Row="0" Grid.RowSpan="3"
                             Grid.Column="0" Grid.ColumnSpan="1"
                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="15,0,0,0">
+                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="15,0,0,0" IsHitTestVisible="False">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="16*"/>
@@ -848,6 +947,7 @@
                                              60,20 60,40 40,40 40,20
                                              60,20 60,60 40,60 40,40 60,40 60,60
                                              20,60 20,40 40,40 40,60 20,60 20,20"                                         
+                                     IsHitTestVisible="False"
                                      Stroke="{Binding GameDetailOption, Converter={StaticResource GameDetailMoreLikeThisIconStrokeConverter}}"
                                      StrokeThickness="2"
                                      Fill="{Binding GameDetailOption, Converter={StaticResource GameDetailMoreLikeThisColorConverter}}"
@@ -857,6 +957,7 @@
                                      RenderOptions.BitmapScalingMode="HighQuality"/>
                             <TextBlock  Name="TextBlock_DetailMoreLikeThisButton"
                                         Text="More like this"
+                                        IsHitTestVisible="False"
                                         Foreground="{Binding GameDetailOption, Converter={StaticResource GameDetailMoreLikeThisColorConverter}}"
                                         Grid.Column="1" Grid.ColumnSpan="1"
                                         Margin="25,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Stretch" TextAlignment="Left" 
@@ -867,6 +968,7 @@
 
                 <!-- Game Details - Add/Update rating -->
                 <Grid Grid.Row="6" Grid.RowSpan="1"
+                      IsHitTestVisible="False"
                       Visibility="{Binding IsDisplayingMoreInfo, Converter={StaticResource BoolToVis}}"
                       Width="{Binding ActualWidth, ElementName=StackPanel_SelectedGameDetails}"
                       HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,0,0,0">
@@ -881,15 +983,17 @@
                     </Grid.ColumnDefinitions>
                     <Border Background="{Binding GameDetailOption, Converter={StaticResource GameDetailRatingBorderColorConverter}}"
                             CornerRadius="8,8,8,8"
+                            IsHitTestVisible="False"
                             Grid.Row="0" Grid.RowSpan="3"
                             Grid.Column="0" Grid.ColumnSpan="1"
                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="15,0,0,0">
+                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Center" IsHitTestVisible="False" Margin="15,0,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="16*"/>
                             </Grid.ColumnDefinitions>
                             <Polygon Name="Polygon_Star_Icon"
+                                     IsHitTestVisible="False"
                                      Points="80,0 105,50 160,55 120,90 130,145 80,120 30,145 40,90 0,55 55,50"                                         
                                      Fill="{Binding GameDetailOption, Converter={StaticResource GameDetailRatingColorConverter}}"
                                      Grid.Column="0" Grid.ColumnSpan="1"
@@ -897,12 +1001,13 @@
                                      RenderOptions.BitmapScalingMode="HighQuality"/>
                             <StackPanel Height="{Binding ActualHeight, ElementName=TextBlock_DetailStarRatingButton}"
                                         Grid.Column="1" Grid.ColumnSpan="1"
+                                        IsHitTestVisible="False"
                                         VerticalAlignment="Center" HorizontalAlignment="Stretch" 
                                         Orientation="Horizontal"
                                         Margin="25,0,0,0">
 
                                 <TextBlock Name="TextBlock_DetailStarRatingButton"
-                                       Text="Rating"
+                                       Text="Rating" IsHitTestVisible="False"
                                        Foreground="{Binding GameDetailOption, Converter={StaticResource GameDetailRatingColorConverter}}"           
                                        Margin="0,0,25,0"
                                        VerticalAlignment="Center" HorizontalAlignment="Stretch" TextAlignment="Left" 
@@ -910,6 +1015,7 @@
 
                                 <Polygon Points="80,0 105,50 160,55 120,90 130,145 80,120 30,145 40,90 0,55 55,50"
                                          Visibility="{Binding IsRatingGame, Converter={StaticResource BoolToVis}}"
+                                         IsHitTestVisible="False"
                                          StrokeThickness="1" Stroke="Black" 
                                          HorizontalAlignment="Stretch" VerticalAlignment="Center" Stretch="Uniform"
                                          RenderOptions.BitmapScalingMode="HighQuality">
@@ -964,7 +1070,8 @@
                                     </Polygon.Fill>
                                 </Polygon>
                                 <Polygon Points="80,0 105,50 160,55 120,90 130,145 80,120 30,145 40,90 0,55 55,50"                                         
-                                         StrokeThickness="1" Stroke="Black"                                         
+                                         StrokeThickness="1" Stroke="Black"
+                                         IsHitTestVisible="False"
                                          Visibility="{Binding IsRatingGame, Converter={StaticResource BoolToVis}}"                                         
                                          HorizontalAlignment="Stretch" VerticalAlignment="Center" Stretch="Uniform"
                                          RenderOptions.BitmapScalingMode="HighQuality">
@@ -1019,7 +1126,8 @@
                                     </Polygon.Fill>
                                 </Polygon>
                                 <Polygon Points="80,0 105,50 160,55 120,90 130,145 80,120 30,145 40,90 0,55 55,50"                                         
-                                         StrokeThickness="1" Stroke="Black"                                         
+                                         StrokeThickness="1" Stroke="Black"
+                                         IsHitTestVisible="False"
                                          Visibility="{Binding IsRatingGame, Converter={StaticResource BoolToVis}}"                                         
                                          HorizontalAlignment="Stretch" VerticalAlignment="Center" Stretch="Uniform"
                                          RenderOptions.BitmapScalingMode="HighQuality">
@@ -1075,6 +1183,7 @@
                                 </Polygon>
                                 <Polygon Points="80,0 105,50 160,55 120,90 130,145 80,120 30,145 40,90 0,55 55,50"                                         
                                          StrokeThickness="1" Stroke="Black"
+                                         IsHitTestVisible="False"
                                          Visibility="{Binding IsRatingGame, Converter={StaticResource BoolToVis}}"                                         
                                          HorizontalAlignment="Stretch" VerticalAlignment="Center" Stretch="Uniform"
                                          RenderOptions.BitmapScalingMode="HighQuality">
@@ -1130,6 +1239,7 @@
                                 </Polygon>
                                 <Polygon Points="80,0 105,50 160,55 120,90 130,145 80,120 30,145 40,90 0,55 55,50"                                         
                                          StrokeThickness="1" Stroke="Black"                                     
+                                         IsHitTestVisible="False"
                                          Visibility="{Binding IsRatingGame, Converter={StaticResource BoolToVis}}"                                         
                                          HorizontalAlignment="Stretch" VerticalAlignment="Center" Stretch="Uniform"
                                          RenderOptions.BitmapScalingMode="HighQuality">
@@ -1191,6 +1301,7 @@
 
             <!-- Selected game background image -->
             <Grid Name="Grid_Selected_Game_Background"
+                  IsHitTestVisible="False"
                   Grid.Row="0" 
                   Grid.RowSpan="{Binding IsDisplayingFeature, Converter={StaticResource FeatureToRowSpanConverter}}" 
                   Grid.Column="{Binding IsDisplayingFeature, Converter={StaticResource FeatureToColumnStartConverter}}"
@@ -1199,6 +1310,7 @@
 
                 <!-- Black background behind selected game background image to make gradient opacity mask work -->
                 <Rectangle Name="Image_Selected_Background_Black"
+                           IsHitTestVisible="False"
                            HorizontalAlignment="Stretch" 
                            VerticalAlignment="Stretch"
                            Panel.ZIndex="210">
@@ -1211,6 +1323,7 @@
                 <Image Name="Image_Displayed_BackgroundImage"
                        HorizontalAlignment="Center" 
                        VerticalAlignment="Center" 
+                       IsHitTestVisible="False"
                        Stretch="UniformToFill"
                        Panel.ZIndex="220"
                        RenderOptions.BitmapScalingMode="HighQuality" >
@@ -1230,6 +1343,7 @@
                        HorizontalAlignment="Center" 
                        VerticalAlignment="Center" 
                        Stretch="UniformToFill"
+                       IsHitTestVisible="False"
                        Panel.ZIndex="230"
                        Opacity="0"
                        RenderOptions.BitmapScalingMode="HighQuality" >
@@ -1248,12 +1362,14 @@
 
             <!-- Selected game video -->
             <Grid Name="Grid_Selected_Game_Video"
+                  IsHitTestVisible="False"
                   Grid.Row="0" 
                   Grid.RowSpan="{Binding IsDisplayingFeature, Converter={StaticResource FeatureToRowSpanConverter}}" 
                   Grid.Column="{Binding IsDisplayingFeature, Converter={StaticResource FeatureToColumnStartConverter}}"
                   Grid.ColumnSpan="{Binding IsDisplayingFeature, Converter={StaticResource FeatureToColumnSpanConverter}}"
                   Panel.ZIndex="100">
                 <MediaElement Name="Video_SelectedGame"
+                              IsHitTestVisible="False"
                           Source="{Binding CurrentGameList.Game1.GameFiles.VideoPath}"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Stretch="Uniform"
                           LoadedBehavior="Manual"
@@ -1262,6 +1378,7 @@
                           MediaEnded="Video_SelectedGame_MediaEnded">
                 </MediaElement>
                 <Image  Name="Image_Bezel"
+                        IsHitTestVisible="False"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         Panel.ZIndex="120"
@@ -1281,6 +1398,7 @@
             </Grid>
 
             <Grid Name="GameListGrid"
+                  IsHitTestVisible="False"
                   Grid.Row="8"
                   Grid.RowSpan="10"
                   Grid.Column="0"
@@ -1312,6 +1430,7 @@
 
                 <!-- Current List Games -->
                 <Grid Name="CurrentListGrid"
+                      IsHitTestVisible="False"
                   Grid.Row="0"
                   Grid.RowSpan="1"
                   Grid.Column="1"
@@ -1322,8 +1441,8 @@
                         <RowDefinition Height="1*"/>
                         <RowDefinition Height="5*"/>
                     </Grid.RowDefinitions>
-                    <TextBlock  
-                        Name="TextBlock_CurrentGameListDescription"
+                    <TextBlock  Name="TextBlock_CurrentGameListDescription"
+                                IsHitTestVisible="False"
                         Grid.Row="0"
                         Grid.RowSpan="1"
                         FontFamily="Calibri" 
@@ -1343,13 +1462,15 @@
                         </TextBlock.Text>
                     </TextBlock>
                     <StackPanel Name="GameImages" 
+                                IsHitTestVisible="False"
                         Grid.Row="1"
                         Grid.RowSpan="1"
                         Orientation="Horizontal"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch">
-                        <Border BorderThickness="2" BorderBrush="AntiqueWhite">
+                        <Border BorderThickness="2" BorderBrush="AntiqueWhite" IsHitTestVisible="False">
                             <Image Name="Image_Game1"
+                                   IsHitTestVisible="False"
                                Source="{Binding CurrentGameList.Game1.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
@@ -1358,77 +1479,89 @@
                                Stretch="Uniform"/>
                         </Border>
 
-                        <Image Source="{Binding CurrentGameList.Game2.GameFiles.FrontImage}"
+                        <Image Name="Image_Game2"
+                               IsHitTestVisible="False"
+                            Source="{Binding CurrentGameList.Game2.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding CurrentGameList.Game3.GameFiles.FrontImage}"
+                        <Image Name="Image_Game3" Source="{Binding CurrentGameList.Game3.GameFiles.FrontImage}"
+                               IsHitTestVisible="False"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding CurrentGameList.Game4.GameFiles.FrontImage}"
+                        <Image Name="Image_Game4" Source="{Binding CurrentGameList.Game4.GameFiles.FrontImage}"
+                               IsHitTestVisible="False"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding CurrentGameList.Game5.GameFiles.FrontImage}"
+                        <Image Name="Image_Game5" Source="{Binding CurrentGameList.Game5.GameFiles.FrontImage}"
+                               IsHitTestVisible="False"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding CurrentGameList.Game6.GameFiles.FrontImage}"
+                        <Image Name="Image_Game6" Source="{Binding CurrentGameList.Game6.GameFiles.FrontImage}"
+                               IsHitTestVisible="False"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding CurrentGameList.Game7.GameFiles.FrontImage}"
+                        <Image Name="Image_Game7" Source="{Binding CurrentGameList.Game7.GameFiles.FrontImage}"
+                               IsHitTestVisible="False"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding CurrentGameList.Game8.GameFiles.FrontImage}"
+                        <Image Name="Image_Game8" Source="{Binding CurrentGameList.Game8.GameFiles.FrontImage}"
+                               IsHitTestVisible="False"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding CurrentGameList.Game9.GameFiles.FrontImage}"
+                        <Image Name="Image_Game9" Source="{Binding CurrentGameList.Game9.GameFiles.FrontImage}"
+                               IsHitTestVisible="False"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding CurrentGameList.Game10.GameFiles.FrontImage}"
+                        <Image Name="Image_Game10" Source="{Binding CurrentGameList.Game10.GameFiles.FrontImage}"
+                               IsHitTestVisible="False"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding CurrentGameList.Game11.GameFiles.FrontImage}"
+                        <Image Name="Image_Game11" Source="{Binding CurrentGameList.Game11.GameFiles.FrontImage}"
+                               IsHitTestVisible="False"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Source="{Binding CurrentGameList.Game12.GameFiles.FrontImage}"
+                        <Image Name="Image_Game12" Source="{Binding CurrentGameList.Game12.GameFiles.FrontImage}"
+                               IsHitTestVisible="False"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
@@ -1439,6 +1572,7 @@
 
                 <!-- Previous game in current list -->
                 <Grid Name="CurrentListPrev1GameGrid"
+                      IsHitTestVisible="False"
                   Grid.Row="0"
                   Grid.RowSpan="1"
                   Grid.Column="1"
@@ -1453,25 +1587,28 @@
                         <TranslateTransform X="{Binding ActualWidth, ElementName=Image_PreviousGame, Converter={StaticResource DivideByNegative1}}"/>
                     </Grid.RenderTransform>
                     <StackPanel Name="CurrentListPrev1GameImage" 
-                        Grid.Row="1"
-                        Grid.RowSpan="1"
-                        Orientation="Horizontal"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch">
+                                IsHitTestVisible="False"
+                                Grid.Row="1"
+                                Grid.RowSpan="1"
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch">
                         <Image Name="Image_PreviousGame"
-                       Source="{Binding CurrentGameList.Game0.GameFiles.FrontImage}"
-                       HorizontalAlignment="Left" 
-                       VerticalAlignment="Stretch"
-                       RenderOptions.BitmapScalingMode="HighQuality" 
-                       Opacity="0.25"
-                       Margin="2,2,2,2"
-                       Stretch="Uniform">
+                               IsHitTestVisible="False"
+                           Source="{Binding CurrentGameList.Game0.GameFiles.FrontImage}"
+                           HorizontalAlignment="Left" 
+                           VerticalAlignment="Stretch"
+                           RenderOptions.BitmapScalingMode="HighQuality" 
+                           Opacity="0.25"
+                           Margin="2,2,2,2"
+                           Stretch="Uniform">
                         </Image>
                     </StackPanel>
                 </Grid>
 
                 <!-- Next list game images -->
                 <Grid Name="NextListGrid"
+                      IsHitTestVisible="False"
                   Grid.Row="0"
                   Grid.RowSpan="1"
                   Grid.Column="1"
@@ -1487,6 +1624,7 @@
                     </Grid.RenderTransform>
                     <TextBlock  
                         Name="TextBlock_NextGameListDescription"
+                        IsHitTestVisible="False"
                         Grid.Row="0"
                         Grid.RowSpan="1"
                         FontFamily="Calibri" 
@@ -1506,12 +1644,14 @@
                         </TextBlock.Text>
                     </TextBlock>
                     <StackPanel Name="NextListGameImages" 
+                                IsHitTestVisible="False"
                         Grid.Row="1"
                         Grid.RowSpan="1"
                         Orientation="Horizontal"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch">
                         <Image Name="Image_NextListGame1"
+                               IsHitTestVisible="False"
                             Source="{Binding NextGameList.Game1.GameFiles.FrontImage}"
                             HorizontalAlignment="Center" 
                             VerticalAlignment="Stretch"
@@ -1520,6 +1660,7 @@
                             Stretch="Uniform"/>
 
                         <Image Source="{Binding NextGameList.Game2.GameFiles.FrontImage}"
+                               IsHitTestVisible="False"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
@@ -1527,6 +1668,7 @@
                                Stretch="Uniform"/>
 
                         <Image Source="{Binding NextGameList.Game3.GameFiles.FrontImage}"
+                               IsHitTestVisible="False"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
@@ -1534,6 +1676,7 @@
                                Stretch="Uniform"/>
 
                         <Image Source="{Binding NextGameList.Game4.GameFiles.FrontImage}"
+                               IsHitTestVisible="False"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
@@ -1541,6 +1684,7 @@
                                Stretch="Uniform"/>
 
                         <Image Source="{Binding NextGameList.Game5.GameFiles.FrontImage}"
+                               IsHitTestVisible="False"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
@@ -1548,6 +1692,7 @@
                                Stretch="Uniform"/>
 
                         <Image Source="{Binding NextGameList.Game6.GameFiles.FrontImage}"
+                               IsHitTestVisible="False"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
@@ -1555,6 +1700,7 @@
                                Stretch="Uniform"/>
 
                         <Image Source="{Binding NextGameList.Game7.GameFiles.FrontImage}"
+                               IsHitTestVisible="False"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
@@ -1562,6 +1708,7 @@
                                Stretch="Uniform"/>
 
                         <Image Source="{Binding NextGameList.Game8.GameFiles.FrontImage}"
+                               IsHitTestVisible="False"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
@@ -1569,6 +1716,7 @@
                                Stretch="Uniform"/>
 
                         <Image Source="{Binding NextGameList.Game9.GameFiles.FrontImage}"
+                               IsHitTestVisible="False"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
@@ -1576,6 +1724,7 @@
                                Stretch="Uniform"/>
 
                         <Image Source="{Binding NextGameList.Game10.GameFiles.FrontImage}"
+                               IsHitTestVisible="False"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
@@ -1583,6 +1732,7 @@
                                Stretch="Uniform"/>
 
                         <Image Source="{Binding NextGameList.Game11.GameFiles.FrontImage}"
+                               IsHitTestVisible="False"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
@@ -1590,6 +1740,7 @@
                                Stretch="Uniform"/>
 
                         <Image Source="{Binding NextGameList.Game12.GameFiles.FrontImage}"
+                               IsHitTestVisible="False"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
@@ -1600,12 +1751,13 @@
 
                 <!-- Previous game in current list -->
                 <Grid Name="NextListPrev1GameGrid"
-                  Grid.Row="0"
-                  Grid.RowSpan="1"
-                  Grid.Column="1"
-                  Grid.ColumnSpan="1"
-                  HorizontalAlignment="Stretch"
-                  VerticalAlignment="Stretch">
+                      IsHitTestVisible="False"
+                      Grid.Row="0"
+                      Grid.RowSpan="1"
+                      Grid.Column="1"
+                      Grid.ColumnSpan="1"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="1*"/>
                         <RowDefinition Height="5*"/>
@@ -1615,19 +1767,21 @@
                                             Y="{Binding ActualHeight,ElementName=NextListPrev1GameGrid}"/>
                     </Grid.RenderTransform>
                     <StackPanel Name="NextListPrev1GameImage" 
-                        Grid.Row="1"
-                        Grid.RowSpan="1"
-                        Orientation="Horizontal"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch">
+                                IsHitTestVisible="False"
+                                Grid.Row="1"
+                                Grid.RowSpan="1"
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch">
                         <Image Name="Image_NextListPreviousGame"
-                       Source="{Binding NextGameList.Game0.GameFiles.FrontImage}"
-                       HorizontalAlignment="Left" 
-                       VerticalAlignment="Stretch"
-                       RenderOptions.BitmapScalingMode="HighQuality" 
-                       Opacity="0.25"
-                       Margin="2,2,2,2"
-                       Stretch="Uniform">
+                               IsHitTestVisible="False"
+                               Source="{Binding NextGameList.Game0.GameFiles.FrontImage}"
+                               HorizontalAlignment="Left" 
+                               VerticalAlignment="Stretch"
+                               RenderOptions.BitmapScalingMode="HighQuality" 
+                               Opacity="0.25"
+                               Margin="2,2,2,2"
+                               Stretch="Uniform">
                         </Image>
                     </StackPanel>
                 </Grid>
@@ -1637,6 +1791,7 @@
 
         <!-- RECOGNIZING -->
         <Grid   Background="Transparent"
+                IsHitTestVisible="False"
                 VerticalAlignment="Stretch"
                 HorizontalAlignment="Stretch"
                 Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
@@ -1651,6 +1806,7 @@
             </Grid.RowDefinitions>
 
             <Image Name="Image_Listening"
+                   IsHitTestVisible="False"
                 Grid.Row="2"
                 Grid.RowSpan="1"
                 HorizontalAlignment="Stretch"
