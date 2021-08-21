@@ -995,9 +995,15 @@ namespace Eclipse.View
 
         public void DoRecognize()
         {
+            // bail out if the recognizer didn't get setup properly
+            if (SpeechRecognizer == null)
+                return;
+
+            // bail out if already recognizing speech
             if (IsRecognizing)
                 return;
 
+            // bail out if still initializing
             if (IsInitializing)
                 return;
 
@@ -1341,7 +1347,7 @@ namespace Eclipse.View
                 // if picking category and going left then close the category and keep going left
                 if (IsPickingCategory)
                 {
-                    // todo: play with not letting go left from the settings/category selection
+                    // todo: playing with not letting go left from the settings/category selection
                     //IsPickingCategory = false;
                     //CurrentGameList.CycleBackward();
                     //CallGameChangeFunction();
@@ -1577,6 +1583,13 @@ namespace Eclipse.View
                 var historyQuery = GameBag.Where(g => g.Game.Id == currentGame.Id && g.CategoryType == ListCategoryType.History);
                 if (!historyQuery.Any())
                 {
+                    // setting the last played date will make it show up in the history after launching a game
+                    var game = CurrentGameList?.Game1?.Game;
+                    if (game != null)
+                    {
+                        game.LastPlayedDate = DateTime.Now;
+                    }
+
                     // if not - add it to the history list
                     GameBag.Add(GameMatch.CloneGameMatch(CurrentGameList?.Game1, ListCategoryType.History, ListCategoryType.History.ToString()));
                 }
