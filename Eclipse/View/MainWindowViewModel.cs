@@ -19,6 +19,7 @@ using System.Diagnostics.Eventing.Reader;
 using System.Windows.Media.TextFormatting;
 using System.Security.RightsManagement;
 using System.Windows.Threading;
+using Eclipse.Helpers;
 
 namespace Eclipse.View
 {
@@ -331,8 +332,8 @@ namespace Eclipse.View
                 Tuple<BezelType, BezelOrientation, string> platformHorizontalBezelKey = new Tuple<BezelType, BezelOrientation, string>(BezelType.PlatformDefault, BezelOrientation.Horizontal, platform.Name);
                 Tuple<BezelType, BezelOrientation, string> platformVerticalBezelKey = new Tuple<BezelType, BezelOrientation, string>(BezelType.PlatformDefault, BezelOrientation.Vertical, platform.Name);
 
-                string platformHorizontalBezelPath = Path.Combine(Helpers.PluginImagesPath, "Platforms", platform.Name, "Bezel", "Horizontal.png");
-                string platformVerticalBezelPath = Path.Combine(Helpers.PluginImagesPath, "Platforms", platform.Name, "Bezel", "Vertical.png");
+                string platformHorizontalBezelPath = Path.Combine(DirectoryInfoHelper.PluginImagesPath, "Platforms", platform.Name, "Bezel", "Horizontal.png");
+                string platformVerticalBezelPath = Path.Combine(DirectoryInfoHelper.PluginImagesPath, "Platforms", platform.Name, "Bezel", "Vertical.png");
 
                 if (File.Exists(platformHorizontalBezelPath)) BezelDictionary.Add(platformHorizontalBezelKey, new Uri(platformHorizontalBezelPath));
                 if (File.Exists(platformVerticalBezelPath)) BezelDictionary.Add(platformVerticalBezelKey, new Uri(platformVerticalBezelPath));
@@ -348,8 +349,8 @@ namespace Eclipse.View
             Tuple<BezelType, BezelOrientation, string> defaultHorizontalBezelKey = new Tuple<BezelType, BezelOrientation, string>(BezelType.Default, BezelOrientation.Horizontal, string.Empty);
             Tuple<BezelType, BezelOrientation, string> defaultVerticalBezelKey = new Tuple<BezelType, BezelOrientation, string>(BezelType.Default, BezelOrientation.Vertical, string.Empty);
 
-            string defaultHorizontalBezelPath = Path.Combine(Helpers.PluginImagesPath, "Platforms", "Default", "Bezel", "Horizontal.png");
-            string defaultVerticalBezelPath = Path.Combine(Helpers.PluginImagesPath, "Platforms", "Default", "Bezel", "Vertical.png");
+            string defaultHorizontalBezelPath = Path.Combine(DirectoryInfoHelper.PluginImagesPath, "Platforms", "Default", "Bezel", "Horizontal.png");
+            string defaultVerticalBezelPath = Path.Combine(DirectoryInfoHelper.PluginImagesPath, "Platforms", "Default", "Bezel", "Vertical.png");
 
             if (File.Exists(defaultHorizontalBezelPath)) BezelDictionary.Add(defaultHorizontalBezelKey, new Uri(defaultHorizontalBezelPath));
             if (File.Exists(defaultVerticalBezelPath)) BezelDictionary.Add(defaultVerticalBezelKey, new Uri(defaultVerticalBezelPath));
@@ -361,7 +362,6 @@ namespace Eclipse.View
 
             // remove any prior set of this type and then add these results to the set list category
             GameListSets.RemoveAll(set => set.ListCategoryType == listCategoryType);
-
 
             if (includeFavorites)
             {
@@ -480,6 +480,9 @@ namespace Eclipse.View
         {
             try
             {
+                // create folders that are required by the plugin
+                DirectoryInfoHelper.CreateFolders();
+
                 // gets games by playlist so they can be used while processing games below 
                 List<PlaylistGame> playlistGames = GetPlaylistGames();
 
@@ -492,14 +495,15 @@ namespace Eclipse.View
 
                 // prescale box front images - doing this here so it's easier to update the progress bar
                 // get list of image files in launchbox folders that are missing from the plug-in folders
-                List <FileInfo> gameFrontFilesToProcess = ImageScaler.GetMissingGameFrontImageFiles();
+                List<FileInfo> gameFrontFilesToProcess = ImageScaler.GetMissingGameFrontImageFiles();
                 List<FileInfo> platformLogosToProcess = ImageScaler.GetMissingPlatformClearLogoFiles();
                 List<FileInfo> gameClearLogosToProcess = ImageScaler.GetMissingGameClearLogoFiles();
+                bool scaleDefaultBoxFrontImage = !ImageScaler.DefaultBoxFrontExists();
 
                 // get the desired height of pre-scaled box images based on the monitor's resolution
                 // only need this if we have anything to process
                 int desiredHeight = 0;
-                if ((gameFrontFilesToProcess.Count > 0) || (platformLogosToProcess.Count > 0) || (gameClearLogosToProcess.Count > 0))
+                if ((gameFrontFilesToProcess.Count > 0) || (platformLogosToProcess.Count > 0) || (gameClearLogosToProcess.Count > 0) || scaleDefaultBoxFrontImage)
                 {
                     LoadingMessage = $"PRESCALING IMAGES";
                     desiredHeight = ImageScaler.GetDesiredHeight();
@@ -511,11 +515,17 @@ namespace Eclipse.View
                 TotalGameCount += (gameClearLogosToProcess?.Count ?? 0);
                 InitializationGameCount = 0;
 
-                // process the folders 
+                // scale the game front images
                 foreach (FileInfo fileInfo in gameFrontFilesToProcess)
                 {
                     InitializationGameCount += 1;
                     ImageScaler.ScaleImage(fileInfo, desiredHeight);
+                }
+
+                // scale the default box front image
+                if (scaleDefaultBoxFrontImage)
+                {
+                    ImageScaler.ScaleDefaultBoxFront(desiredHeight);
                 }
 
                 // crop platform clear logos 
@@ -655,7 +665,7 @@ namespace Eclipse.View
             }
             catch (Exception ex)
             {
-                Helpers.LogException(ex, "Initializion_loadData");
+                LogHelper.LogException(ex, "Initializion_loadData");
             }
         }
 
@@ -811,7 +821,7 @@ namespace Eclipse.View
             }
             catch (Exception ex)
             {
-                Helpers.LogException(ex, "CreateRecognizer");
+                LogHelper.LogException(ex, "CreateRecognizer");
             }
 
             return (true);
@@ -1252,7 +1262,7 @@ namespace Eclipse.View
             }
             catch (Exception ex)
             {
-                Helpers.LogException(ex, "DoUp");
+                LogHelper.LogException(ex, "DoUp");
             }
         }
 
@@ -1322,7 +1332,7 @@ namespace Eclipse.View
             }
             catch (Exception ex)
             {
-                Helpers.LogException(ex, "DoDown");
+                LogHelper.LogException(ex, "DoDown");
             }
         }
 
@@ -1402,7 +1412,7 @@ namespace Eclipse.View
             }
             catch (Exception ex)
             {
-                Helpers.LogException(ex, "DoLeft");
+                LogHelper.LogException(ex, "DoLeft");
             }
         }
 
@@ -1466,7 +1476,7 @@ namespace Eclipse.View
             }
             catch (Exception ex)
             {
-                Helpers.LogException(ex, "DoRight");
+                LogHelper.LogException(ex, "DoRight");
             }
         }
 

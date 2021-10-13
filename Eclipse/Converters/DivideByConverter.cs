@@ -1,4 +1,5 @@
-﻿using Eclipse.Models;
+﻿using Eclipse.Helpers;
+using Eclipse.Models;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -362,8 +363,8 @@ namespace Eclipse.Converters
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             bool isFeature = (bool)value;
-            if (isFeature) return Helpers.BackgroundRowSpanFeature;
-            else return Helpers.BackgroundRowSpanNormal;
+            if (isFeature) return EclipseConstants.BackgroundRowSpanFeature;
+            else return EclipseConstants.BackgroundRowSpanNormal;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -378,8 +379,8 @@ namespace Eclipse.Converters
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             bool isFeature = (bool)value;
-            if (isFeature) return Helpers.BackgroundColumnSpanFeature;
-            else return Helpers.BackgroundColumnSpanNormal;
+            if (isFeature) return EclipseConstants.BackgroundColumnSpanFeature;
+            else return EclipseConstants.BackgroundColumnSpanNormal;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -394,8 +395,8 @@ namespace Eclipse.Converters
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             bool isFeature = (bool)value;
-            if (isFeature) return Helpers.BackgroundColumnStartFeature;
-            else return Helpers.BackgroundColumnStartNormal;
+            if (isFeature) return EclipseConstants.BackgroundColumnStartFeature;
+            else return EclipseConstants.BackgroundColumnStartNormal;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

@@ -60,7 +60,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Converters\DivideByConverter.cs" />
-    <Compile Include="Helpers.cs" />
+    <Compile Include="Helpers\EclipseConstants.cs" />
+    <Compile Include="Helpers\DirectoryInfoHelper.cs" />
+    <Compile Include="Helpers\DisplayInfoHelper.cs" />
+    <Compile Include="Helpers\LogHelper.cs" />
+    <Compile Include="Helpers\RetroarchHelper.cs" />
     <Compile Include="Models\GameMatch.cs" />
     <Compile Include="Models\GameTitleGrammarBuilder.cs" />
     <Compile Include="Models\GameDetailOptionList.cs" />
@@ -869,6 +873,9 @@
     <Content Include="Media\StarRating\5.0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Resources\DefaultBezelHorizontal.png" />
+    <Resource Include="Resources\DefaultBezelVertical.png" />
+    <Content Include="Unbroken.LaunchBox.Plugins.dll" />
     <Resource Include="Resources\DefaultBackground.jpg" />
     <Resource Include="Resources\MoreInfo_Selected.png" />
     <Resource Include="Resources\MoreInfo_Unselected.png" />
