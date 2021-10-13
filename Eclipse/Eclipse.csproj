@@ -881,8 +881,11 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "C:\Users\Adam\source\repos\Eclipse\Eclipse\bin\Release\Eclipse.dll" "C:\Users\Adam\Documents\LaunchBox\Plugins\" /K /D /H /Y
-xcopy "C:\Users\Adam\source\repos\Eclipse\Eclipse\bin\Release\WpfAnimatedGif.dll" "C:\Users\Adam\Documents\LaunchBox\Plugins\" /K /D /H /Y
-xcopy "C:\Users\Adam\source\repos\Eclipse\Eclipse\bin\Release\Media" "C:\Users\Adam\Documents\LaunchBox\Plugins\Eclipse\Media" /K /D /H /Y /E</PostBuildEvent>
+    <PostBuildEvent>xcopy "C:\Users\Adam\source\repos\Eclipse\Eclipse\bin\Debug\Eclipse.dll" "C:\Users\Adam\Documents\LaunchBox\Plugins\" /K /D /H /Y
+xcopy "C:\Users\Adam\source\repos\Eclipse\Eclipse\bin\Debug\WpfAnimatedGif.dll" "C:\Users\Adam\Documents\LaunchBox\Plugins\" /K /D /H /Y
+xcopy "C:\Users\Adam\source\repos\Eclipse\Eclipse\bin\Debug\Media" "C:\Users\Adam\Documents\LaunchBox\Plugins\Eclipse\Media" /K /D /H /Y /E
+xcopy "C:\Users\Adam\source\repos\Eclipse\Eclipse\bin\Debug\Eclipse.dll" "D:\LaunchBox LATEST\Plugins\" /K /D /H /Y
+xcopy "C:\Users\Adam\source\repos\Eclipse\Eclipse\bin\Debug\WpfAnimatedGif.dll" "D:\LaunchBox LATEST\Plugins\" /K /D /H /Y
+xcopy "C:\Users\Adam\source\repos\Eclipse\Eclipse\bin\Debug\Media" "D:\LaunchBox LATEST\Plugins\Eclipse\Media" /K /D /H /Y /E</PostBuildEvent>
   </PropertyGroup>
 </Project>
