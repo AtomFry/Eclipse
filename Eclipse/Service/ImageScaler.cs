@@ -39,7 +39,7 @@ namespace Eclipse.Service
 
         public static List<FileInfo> GetMissingPlatformClearLogoFiles()
         {
-            IEnumerable<string> platformImageDirectories = Directory.EnumerateDirectories(DirectoryInfoHelper.LaunchboxImagesPlatformsPath);
+            IEnumerable<string> platformImageDirectories = Directory.EnumerateDirectories(DirectoryInfoHelper.Instance.LaunchboxImagesPlatformsPath);
             string[] imageFolders = GetClearLogoFolders();
             List<string> foldersToProcess = new List<string>();
             List<FileInfo> filesToProcess = new List<FileInfo>();
@@ -67,7 +67,7 @@ namespace Eclipse.Service
         public static List<FileInfo> GetMissingGameFrontImageFiles()
         {
             // enumerate platform directories 
-            IEnumerable<string> platformImageDirectories = Directory.EnumerateDirectories(DirectoryInfoHelper.LaunchboxImagesPath);
+            IEnumerable<string> platformImageDirectories = Directory.EnumerateDirectories(DirectoryInfoHelper.Instance.LaunchboxImagesPath);
             List<string> foldersToProcess = new List<string>();
             List<FileInfo> filesToProcess = new List<FileInfo>();
             string[] imageFolders = GetFrontImageFolders();
@@ -103,7 +103,7 @@ namespace Eclipse.Service
         public static List<FileInfo> GetMissingGameClearLogoFiles()
         {
             // enumerate platform directories 
-            IEnumerable<string> platformImageDirectories = Directory.EnumerateDirectories(DirectoryInfoHelper.LaunchboxImagesPath);
+            IEnumerable<string> platformImageDirectories = Directory.EnumerateDirectories(DirectoryInfoHelper.Instance.LaunchboxImagesPath);
             List<string> foldersToProcess = new List<string>();
             List<FileInfo> filesToProcess = new List<FileInfo>();
             string[] imageFolders = GetClearLogoFolders();
@@ -165,7 +165,7 @@ namespace Eclipse.Service
         public static IEnumerable<FileInfo> GetMissingFilesInFolder(string directory)
         {
             string pathA = directory;
-            string pathB = directory.Replace(DirectoryInfoHelper.ApplicationPath, DirectoryInfoHelper.MediaResolutionSpecificFolder);
+            string pathB = directory.Replace(DirectoryInfoHelper.Instance.ApplicationPath, DirectoryInfoHelper.Instance.MediaResolutionSpecificFolder);
 
             if(!Directory.Exists(pathB))
             {
@@ -199,7 +199,7 @@ namespace Eclipse.Service
 
                     using (Bitmap newBitmap = ResizeImage(originalImage, originalWidth, originalHeight))
                     {
-                        string newFileName = file.Replace(DirectoryInfoHelper.ApplicationPath, DirectoryInfoHelper.MediaResolutionSpecificFolder);
+                        string newFileName = file.Replace(DirectoryInfoHelper.Instance.ApplicationPath, DirectoryInfoHelper.Instance.MediaResolutionSpecificFolder);
                         string newFolder = Path.GetDirectoryName(newFileName);
 
                         if (!Directory.Exists(newFolder))
@@ -222,7 +222,7 @@ namespace Eclipse.Service
         {
             bool ret = false;
 
-            if (File.Exists(DirectoryInfoHelper.DefaultBoxFrontImageFullPath))
+            if (File.Exists(DirectoryInfoHelper.Instance.DefaultBoxFrontImageFullPath))
             {
                 ret = true;
             }            
@@ -255,15 +255,15 @@ namespace Eclipse.Service
 
                     using (Bitmap newBitmap = ResizeImage(originalImage, desiredWidth, desiredHeight))
                     {
-                        string newFileName = DirectoryInfoHelper.DefaultBoxFrontImageFileName;
-                        string newFolder = DirectoryInfoHelper.DefaultBoxFrontImageFilePath;
+                        string newFileName = DirectoryInfoHelper.Instance.DefaultBoxFrontImageFileName;
+                        string newFolder = DirectoryInfoHelper.Instance.DefaultBoxFrontImageFilePath;
 
                         if (!Directory.Exists(newFolder))
                         {
                             Directory.CreateDirectory(newFolder);
                         }
 
-                        newBitmap.Save(DirectoryInfoHelper.DefaultBoxFrontImageFullPath);
+                        newBitmap.Save(DirectoryInfoHelper.Instance.DefaultBoxFrontImageFullPath);
                     }
                 }
             }
@@ -291,7 +291,7 @@ namespace Eclipse.Service
 
                     using (Bitmap newBitmap = ResizeImage(originalImage, desiredWidth, desiredHeight))
                     {
-                        string newFileName = file.Replace(DirectoryInfoHelper.ApplicationPath, DirectoryInfoHelper.MediaResolutionSpecificFolder);
+                        string newFileName = file.Replace(DirectoryInfoHelper.Instance.ApplicationPath, DirectoryInfoHelper.Instance.MediaResolutionSpecificFolder);
                         string newFolder = Path.GetDirectoryName(newFileName);
 
                         if (!Directory.Exists(newFolder))
@@ -349,7 +349,7 @@ namespace Eclipse.Service
 
         public static string[] GetClearLogoFolders()
         {
-            return new string[] { DirectoryInfoHelper.ClearLogoFolder };
+            return new string[] { DirectoryInfoHelper.Instance.ClearLogoFolder };
         }
 
         public static string[] GetFrontImageFolders()
@@ -358,7 +358,7 @@ namespace Eclipse.Service
             try
             {
                 // get the index from the big box xml file
-                var launchBoxSettingsDocument = XDocument.Load(DirectoryInfoHelper.LaunchBoxSettingsFile);
+                var launchBoxSettingsDocument = XDocument.Load(DirectoryInfoHelper.Instance.LaunchBoxSettingsFile);
                 var setting = from xmlElement in launchBoxSettingsDocument.Root.Descendants("Settings")
                               select xmlElement.Element("FrontImageTypePriorities").Value;
                 string value = setting.FirstOrDefault();

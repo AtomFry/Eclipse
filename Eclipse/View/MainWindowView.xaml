@@ -30,6 +30,7 @@
         <myconverters:FeatureOptionToDoubleConverter x:Key="PlayGameOpacityConverter" PlayGameValue="1.0" MoreInfoValue="0.5"/>
         <myconverters:FeatureOptionToDoubleConverter x:Key="MoreInfoOpacityConverter" PlayGameValue="0.5" MoreInfoValue="1.0"/>
         <myconverters:StringLengthToVisibilityConverter x:Key="StringLengthVisibilityConverter" Empty="Collapsed" NonEmpty="Visible"/>
+        <myconverters:StringLengthToVisibilityConverter x:Key="InvertStringLengthVisibilityConverter" Empty="Visible" NonEmpty="Collapsed"/>
         <myconverters:FloatToStringConverter x:Key="StarRatingToStarRatingOptionConverter" ZeroValue="Rate this game" NonZeroValue="Change rating"/>
         <myconverters:UserRatingToBrushConverter x:Key="UserRatingToBrush"/>
         <myconverters:GameDetailOptionToBrushConverter x:Key="GameDetailPlayGameColorConverter" GameDetailComparison="Play">
@@ -625,12 +626,30 @@
                 <!-- Displaying the game clear logo for the selected game -->
                 <Image Name="Image_Displayed_GameClearLogo"
                         Grid.Row="0"
-                       IsHitTestVisible="False"
+                        IsHitTestVisible="False"
                         Panel.ZIndex="510"
                         HorizontalAlignment="Left" 
                         VerticalAlignment="Bottom"
                         RenderOptions.BitmapScalingMode="HighQuality" 
+                        Visibility="{Binding CurrentGameList.Game1.GameFiles.ClearLogo.AbsoluteUri, Converter={StaticResource StringLengthVisibilityConverter}}"
                         Stretch="Uniform"/>
+
+                <!-- Game title to be displayed if clear logo is missing -->
+                <TextBlock Name="TextBlock_Displayed_GameTitle"
+                           Grid.Row="0"
+                           IsHitTestVisible="False"
+                           Panel.ZIndex="509"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Bottom"
+                            FontFamily="Arial" 
+                            FontWeight="Bold"
+                            FontSize="36" 
+                            Foreground="WhiteSmoke"
+                            TextTrimming="None"
+                            TextWrapping="Wrap"                           
+                            Visibility="{Binding CurrentGameList.Game1.GameFiles.ClearLogo.AbsoluteUri, Converter={StaticResource InvertStringLengthVisibilityConverter}}"
+                            RenderOptions.BitmapScalingMode="HighQuality">
+                </TextBlock>
 
                 <Grid Name="Grid_SelectedGameDetails" Grid.Row="1" IsHitTestVisible="False">
                     <!-- Selected game details-->

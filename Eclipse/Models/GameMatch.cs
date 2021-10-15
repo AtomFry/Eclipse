@@ -1,4 +1,5 @@
-﻿using Eclipse.View;
+﻿using Eclipse.Helpers;
+using Eclipse.View;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -189,6 +190,11 @@ namespace Eclipse.Models
             }
         }
 
+        public void ResetStarRatingImage()
+        {
+            CommunityStarRatingImage = ResolveStarRatingPath(game);
+        }
+
         public static char[] InvalidFileNameChars = Path.GetInvalidFileNameChars();
 
         public static Uri ResolveGameFrontImage(IGame Game)
@@ -196,7 +202,7 @@ namespace Eclipse.Models
             string frontImagePath = Game?.FrontImagePath;
             if (!string.IsNullOrWhiteSpace(frontImagePath))
             {
-                string customPath = frontImagePath.Replace(Helpers.ApplicationPath, Helpers.MediaFolder);
+                string customPath = frontImagePath.Replace(DirectoryInfoHelper.Instance.ApplicationPath, DirectoryInfoHelper.Instance.MediaResolutionSpecificFolder);
                 if (!string.IsNullOrWhiteSpace(customPath))
                 {
                     if (File.Exists(customPath))
@@ -205,14 +211,15 @@ namespace Eclipse.Models
                     }
                 }
             }
-            return null;
+
+            return ResourceImages.DefaultFrontImage;
         }
         public static Uri ResolveClearLogoPath(IGame Game)
         {
             string clearLogoPath = Game.ClearLogoImagePath;
             if (!string.IsNullOrWhiteSpace(clearLogoPath))
             {
-                string customPath = clearLogoPath.Replace(Helpers.ApplicationPath, Helpers.MediaFolder);
+                string customPath = clearLogoPath.Replace(DirectoryInfoHelper.Instance.ApplicationPath, DirectoryInfoHelper.Instance.MediaResolutionSpecificFolder);
                 if (!string.IsNullOrWhiteSpace(customPath))
                 {
                     if (File.Exists(customPath))
@@ -227,7 +234,7 @@ namespace Eclipse.Models
         public static Uri ResolveStarRatingPath(IGame Game)
         {
             string ratingFormatted = String.Format("{0:0.0}", Math.Round(Game.CommunityOrLocalStarRating, 1));
-            string path = $"{Helpers.MediaFolder}\\StarRating\\{ratingFormatted}.png";
+            string path = $"{DirectoryInfoHelper.Instance.MediaFolder}\\StarRating\\{ratingFormatted}.png";
             if (File.Exists(path))
             {
                 return new Uri(path);
@@ -238,14 +245,14 @@ namespace Eclipse.Models
         public static Uri ResolvePlayModePath(IGame Game)
         {
             // resolve play mode path based on game's play mode 
-            string path = $"{Helpers.MediaFolder}\\PlayMode\\{Game.PlayMode}.png";
+            string path = $"{DirectoryInfoHelper.Instance.MediaFolder}\\PlayMode\\{Game.PlayMode}.png";
             if (File.Exists(path))
             {
                 return new Uri(path);
             }
 
             // resolve fallback path 
-            path = $"{Helpers.MediaFolder}\\PlayMode\\Fallback.png";
+            path = $"{DirectoryInfoHelper.Instance.MediaFolder}\\PlayMode\\Fallback.png";
             if (File.Exists(path))
             {
                 return new Uri(path);
@@ -264,7 +271,7 @@ namespace Eclipse.Models
             }
 
             // fallback to platform device 
-            string path = $"{Helpers.MediaFolder}\\PlatformDevice\\{Game.Platform}.png";
+            string path = $"{DirectoryInfoHelper.Instance.MediaFolder}\\PlatformDevice\\{Game.Platform}.png";
             if (File.Exists(path))
             {
                 return new Uri(path);
@@ -279,7 +286,7 @@ namespace Eclipse.Models
             string platformClearLogoImagePath = Game.PlatformClearLogoImagePath;
             if (!string.IsNullOrWhiteSpace(platformClearLogoImagePath))
             {
-                string customPath = platformClearLogoImagePath.Replace(Helpers.ApplicationPath, Helpers.MediaFolder);
+                string customPath = platformClearLogoImagePath.Replace(DirectoryInfoHelper.Instance.ApplicationPath, DirectoryInfoHelper.Instance.MediaResolutionSpecificFolder);
                 if (!string.IsNullOrWhiteSpace(customPath) && File.Exists(customPath))
                 {
                     return new Uri(customPath);
@@ -330,7 +337,7 @@ namespace Eclipse.Models
             {
                 // find game specific bezel
                 // Game Specific: ..\LaunchBox\Plugins\Eclipse\Media\Images\{PLATFORM}\Bezel\{TitleToFileName}.png
-                string gameBezelPath = Path.Combine(Helpers.PluginImagesPath, Game.Platform, "Bezel");
+                string gameBezelPath = Path.Combine(DirectoryInfoHelper.Instance.PluginImagesPath, Game.Platform, "Bezel");
                 if (Directory.Exists(gameBezelPath))
                 {
                     string[] gameBezelFiles = Directory.GetFiles(gameBezelPath, $"{TitleToFileName}.*", SearchOption.AllDirectories);
@@ -355,7 +362,7 @@ namespace Eclipse.Models
                     // hardcoded strings are lame here but I'm too lazy to fix this
                     if (emulator.ApplicationPath.ToLower().Contains("mame"))
                     {
-                        gameBezelPath = Path.Combine(Helpers.ApplicationPath, emulatorFolder, "artwork", Path.GetFileNameWithoutExtension(Game.ApplicationPath), "Bezel.png");
+                        gameBezelPath = Path.Combine(DirectoryInfoHelper.Instance.ApplicationPath, emulatorFolder, "artwork", Path.GetFileNameWithoutExtension(Game.ApplicationPath), "Bezel.png");
 
                         if (!string.IsNullOrWhiteSpace(gameBezelPath) && File.Exists(gameBezelPath))
                         {
@@ -366,9 +373,9 @@ namespace Eclipse.Models
                     if (emulator.ApplicationPath.ToLower().Contains("retroarch"))
                     {
                         string retroarchPlatformFolder = "";
-                        if (Helpers.RetroarchPlatformLookup.TryGetValue(Game.Platform, out retroarchPlatformFolder))
+                        if (RetroarchHelper.RetroarchPlatformLookup.TryGetValue(Game.Platform, out retroarchPlatformFolder))
                         {
-                            gameBezelPath = Path.Combine(Helpers.ApplicationPath, emulatorFolder, @"overlays\GameBezels", retroarchPlatformFolder, $"{Path.GetFileNameWithoutExtension(Game.ApplicationPath)}.png");
+                            gameBezelPath = Path.Combine(DirectoryInfoHelper.Instance.ApplicationPath, emulatorFolder, @"overlays\GameBezels", retroarchPlatformFolder, $"{Path.GetFileNameWithoutExtension(Game.ApplicationPath)}.png");
 
                             if (!string.IsNullOrWhiteSpace(gameBezelPath) && File.Exists(gameBezelPath))
                             {
@@ -380,7 +387,7 @@ namespace Eclipse.Models
             }
             catch (Exception ex)
             {
-                Helpers.LogException(ex, $"setting up bezel for {Game.Title}");
+                LogHelper.LogException(ex, $"setting up bezel for {Game.Title}");
             }
             return null;
         }
@@ -391,8 +398,6 @@ namespace Eclipse.Models
     public class GameMatch : INotifyPropertyChanged
     {
         #region Static Members
-        public static ConcurrentDictionary<string, Uri> GameFrontImages = new ConcurrentDictionary<string, Uri>();
-
 
         public static string IEnumerableToCommaSeparatedString(IEnumerable<string> list)
         {

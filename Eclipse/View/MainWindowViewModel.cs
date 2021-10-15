@@ -28,6 +28,7 @@ namespace Eclipse.View
     
     public delegate void IncrementLoadingProgressFunction();
     public delegate void StopVideoAndAnimations();
+    public delegate void UpdateRatingImage();
 
     class MainWindowViewModel : INotifyPropertyChanged
     {
@@ -49,6 +50,7 @@ namespace Eclipse.View
         public FeatureChangeFunction FeatureChangeFunction { get; set; }
         public AnimateGameChangeFunction GameChangeFunction { get; set; }
         public StopVideoAndAnimations StopVideoAndAnimationsFunction { get; set; }
+        public UpdateRatingImage UpdateRatingImageFunction { get; set; }
 
         private GameDetailOption gameDetailOption;
         public GameDetailOption GameDetailOption
@@ -332,8 +334,8 @@ namespace Eclipse.View
                 Tuple<BezelType, BezelOrientation, string> platformHorizontalBezelKey = new Tuple<BezelType, BezelOrientation, string>(BezelType.PlatformDefault, BezelOrientation.Horizontal, platform.Name);
                 Tuple<BezelType, BezelOrientation, string> platformVerticalBezelKey = new Tuple<BezelType, BezelOrientation, string>(BezelType.PlatformDefault, BezelOrientation.Vertical, platform.Name);
 
-                string platformHorizontalBezelPath = Path.Combine(DirectoryInfoHelper.PluginImagesPath, "Platforms", platform.Name, "Bezel", "Horizontal.png");
-                string platformVerticalBezelPath = Path.Combine(DirectoryInfoHelper.PluginImagesPath, "Platforms", platform.Name, "Bezel", "Vertical.png");
+                string platformHorizontalBezelPath = Path.Combine(DirectoryInfoHelper.Instance.PluginImagesPath, "Platforms", platform.Name, "Bezel", "Horizontal.png");
+                string platformVerticalBezelPath = Path.Combine(DirectoryInfoHelper.Instance.PluginImagesPath, "Platforms", platform.Name, "Bezel", "Vertical.png");
 
                 if (File.Exists(platformHorizontalBezelPath)) BezelDictionary.Add(platformHorizontalBezelKey, new Uri(platformHorizontalBezelPath));
                 if (File.Exists(platformVerticalBezelPath)) BezelDictionary.Add(platformVerticalBezelKey, new Uri(platformVerticalBezelPath));
@@ -349,8 +351,8 @@ namespace Eclipse.View
             Tuple<BezelType, BezelOrientation, string> defaultHorizontalBezelKey = new Tuple<BezelType, BezelOrientation, string>(BezelType.Default, BezelOrientation.Horizontal, string.Empty);
             Tuple<BezelType, BezelOrientation, string> defaultVerticalBezelKey = new Tuple<BezelType, BezelOrientation, string>(BezelType.Default, BezelOrientation.Vertical, string.Empty);
 
-            string defaultHorizontalBezelPath = Path.Combine(DirectoryInfoHelper.PluginImagesPath, "Platforms", "Default", "Bezel", "Horizontal.png");
-            string defaultVerticalBezelPath = Path.Combine(DirectoryInfoHelper.PluginImagesPath, "Platforms", "Default", "Bezel", "Vertical.png");
+            string defaultHorizontalBezelPath = Path.Combine(DirectoryInfoHelper.Instance.PluginImagesPath, "Platforms", "Default", "Bezel", "Horizontal.png");
+            string defaultVerticalBezelPath = Path.Combine(DirectoryInfoHelper.Instance.PluginImagesPath, "Platforms", "Default", "Bezel", "Vertical.png");
 
             if (File.Exists(defaultHorizontalBezelPath)) BezelDictionary.Add(defaultHorizontalBezelKey, new Uri(defaultHorizontalBezelPath));
             if (File.Exists(defaultVerticalBezelPath)) BezelDictionary.Add(defaultVerticalBezelKey, new Uri(defaultVerticalBezelPath));
@@ -1162,6 +1164,13 @@ namespace Eclipse.View
             }
         }
 
+        private void CallUpdateRatingImageFunction()
+        {
+            if(UpdateRatingImageFunction != null)
+            {
+                UpdateRatingImageFunction();
+            }
+        }
 
         private void CycleListBackward()
         {
@@ -1786,7 +1795,14 @@ namespace Eclipse.View
             GameMatch currentGame = CurrentGameList?.Game1;
             if (currentGame != null)
             {
+                // save the rating change to the launchbox data 
                 PluginHelper.DataManager.Save(false);
+
+                // reload the game's start rating image
+                currentGame.GameFiles.ResetStarRatingImage();
+
+                // trigger the view to update the image
+                CallUpdateRatingImageFunction();
             }
         }
 

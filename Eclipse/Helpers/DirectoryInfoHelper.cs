@@ -16,130 +16,198 @@ namespace Eclipse.Helpers
         private static readonly DisplayInfoHelper displayInfoHelper = DisplayInfoHelper.Instance;
 
         // path to the big box application directory
-        public static string ApplicationPath
+        private string applicationPath;
+        public string ApplicationPath
         {
             get 
             {
-                // todo: determine how to identify if this is 11.3? and later where the switch to .net core then the folder is one level deeper
-                // new version 
-                return Directory.GetParent(Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName)).FullName;
+                if(string.IsNullOrWhiteSpace(applicationPath))
+                {
+                    // original application root folder
+                    applicationPath = Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
 
-                // old version
-                // return Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
+                    string folder = new DirectoryInfo(applicationPath).Name;
+
+                    if(folder.Equals("core", StringComparison.InvariantCultureIgnoreCase))
+                    {
+
+                        applicationPath = Directory.GetParent(applicationPath).FullName;
+                    }
+                }
+
+                return applicationPath;
             }
         }
 
         // path to launchbox images folder 
-        public static string LaunchboxImagesPath
+        private string launchboxImagesPath;
+        public string LaunchboxImagesPath
         {
             get
             {
-                return $"{ApplicationPath}\\Images";
+                if (string.IsNullOrWhiteSpace(launchboxImagesPath))
+                {
+                    launchboxImagesPath = $"{ApplicationPath}\\Images";
+                }
+
+                return launchboxImagesPath;
             }
         }
 
-        public static string LaunchboxImagesPlatformsPath
+        private string launchboxImagesPlatformsPath;
+        public string LaunchboxImagesPlatformsPath
         {
             get
             {
-                return $"{LaunchboxImagesPath}\\Platforms";
+                if(string.IsNullOrWhiteSpace(launchboxImagesPlatformsPath))
+                {
+                    launchboxImagesPlatformsPath = $"{LaunchboxImagesPath}\\Platforms";
+                }
+                return launchboxImagesPlatformsPath;
             }
         }
 
-        public static string EclipseFolder
+        private string eclipseFolder;
+        public string EclipseFolder
         {
             get
             {
-                return $"{ApplicationPath}\\Plugins\\Eclipse";
+                if(string.IsNullOrWhiteSpace(eclipseFolder))
+                {
+                    eclipseFolder = $"{ApplicationPath}\\Plugins\\Eclipse";
+                }
+                return eclipseFolder;
             }
         }
 
-        public static string MediaFolder
+        private string mediaFolder;
+        public string MediaFolder
         {
             get
             {
-                return $"{EclipseFolder}\\Media";
+                if(string.IsNullOrWhiteSpace(mediaFolder))
+                {
+                    mediaFolder = $"{EclipseFolder}\\Media";
+                }
+                return mediaFolder; 
             }
         }
 
-        public static string MediaResolutionSpecificFolder
+        private string mediaResolutionSpecificFolder;
+        public string MediaResolutionSpecificFolder
         {
             get
             {
-                return $"{MediaFolder}\\{displayInfoHelper.displayWidth}x{displayInfoHelper.displayHeight}";
+                if(string.IsNullOrWhiteSpace(mediaResolutionSpecificFolder))
+                {
+                    mediaResolutionSpecificFolder = $"{MediaFolder}\\{displayInfoHelper.displayWidth}x{displayInfoHelper.displayHeight}";
+                }
+                return mediaResolutionSpecificFolder;             
             }
         }
 
-
-        public static string PluginImagesPath
+        private string pluginImagesPath;
+        public string PluginImagesPath
         {
             get
             {
-                return $"{MediaResolutionSpecificFolder}\\Images";
+                if(string.IsNullOrWhiteSpace(pluginImagesPath))
+                {
+                    pluginImagesPath = $"{MediaResolutionSpecificFolder}\\Images";
+                }
+                return pluginImagesPath;
             }
         }
 
-        public static string DefaultBoxFrontImageFilePath
+        private string defaultBoxFrontImageFilePath;
+        public string DefaultBoxFrontImageFilePath
         {
             get
             {
-                return $"{MediaResolutionSpecificFolder}\\DefaultFrontImage";
+                if(string.IsNullOrWhiteSpace(defaultBoxFrontImageFilePath))
+                {
+                    defaultBoxFrontImageFilePath = $"{MediaResolutionSpecificFolder}\\DefaultFrontImage";
+                }
+                return defaultBoxFrontImageFilePath; 
             }
         }
 
-        public static string DefaultBoxFrontImageFileName
+        private string defaultBoxFrontImageFileName;
+        public string DefaultBoxFrontImageFileName
         {
             get
             {
-                return "DefaultFrontImage.png";
+                if(string.IsNullOrWhiteSpace(defaultBoxFrontImageFileName))
+                {
+                    defaultBoxFrontImageFileName = "DefaultFrontImage.png";
+                }
+                return defaultBoxFrontImageFileName; 
             }
         }
 
-        public static string DefaultBoxFrontImageFullPath
+        public string defaultBoxFrontImageFullPath;
+        public string DefaultBoxFrontImageFullPath
         {
             get
             {
-                return Path.Combine(DefaultBoxFrontImageFilePath, DefaultBoxFrontImageFileName);
+                if(string.IsNullOrWhiteSpace(defaultBoxFrontImageFullPath))
+                {
+                    defaultBoxFrontImageFullPath = Path.Combine(DefaultBoxFrontImageFilePath, DefaultBoxFrontImageFileName);
+                }
+                return defaultBoxFrontImageFullPath; 
             }
         }
 
-        public static string ClearLogoFolder
+        private string clearLogoFolder;
+        public string ClearLogoFolder
         {
-            get { return "Clear logo"; }
-        }
-
-
-        public static string BigBoxSettingsFile
-        {
-            get
+            get 
             {
-                return $"{DirectoryInfoHelper.ApplicationPath}\\Data\\BigBoxSettings.xml";
+                if(string.IsNullOrWhiteSpace(clearLogoFolder))
+                {
+                    clearLogoFolder = "Clear logo";
+                }
+                return clearLogoFolder; 
             }
         }
 
-        public static string LaunchBoxSettingsFile
+        private string bigBoxSettingsFile;
+        public string BigBoxSettingsFile
         {
             get
             {
-                return $"{DirectoryInfoHelper.ApplicationPath}\\Data\\Settings.xml";
+                if(string.IsNullOrWhiteSpace(BigBoxSettingsFile))
+                {
+                    bigBoxSettingsFile = $"{ApplicationPath}\\Data\\BigBoxSettings.xml";
+                }
+                return bigBoxSettingsFile;
+            }
+        }
+
+        private string launchBoxSettingsFile;
+        public string LaunchBoxSettingsFile
+        {
+            get
+            {
+                if(string.IsNullOrWhiteSpace(launchBoxSettingsFile))
+                {
+                    launchBoxSettingsFile = $"{ApplicationPath}\\Data\\Settings.xml";
+                }
+                return launchBoxSettingsFile; 
             }
         }
 
 
         public static void CreateFolders()
         {
-            LogHelper.Log("CreateFolders");
-
-            CreateFolder(EclipseFolder);
-            CreateFolder(MediaFolder);
-            CreateFolder(MediaResolutionSpecificFolder);
-            CreateFolder(PluginImagesPath);
+            CreateFolder(DirectoryInfoHelper.Instance.EclipseFolder);
+            CreateFolder(DirectoryInfoHelper.Instance.MediaFolder);
+            CreateFolder(DirectoryInfoHelper.Instance.MediaResolutionSpecificFolder);
+            CreateFolder(DirectoryInfoHelper.Instance.PluginImagesPath);
         }
 
         public static void CreateFolder(string path)
         {
-            LogHelper.Log($"CreateFolder: {path}");
-
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);

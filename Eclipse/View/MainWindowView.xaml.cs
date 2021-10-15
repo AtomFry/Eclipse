@@ -1,4 +1,5 @@
-﻿using Eclipse.Models;
+﻿using Eclipse.Helpers;
+using Eclipse.Models;
 using Eclipse.Service;
 using System;
 using System.Collections.Generic;
@@ -41,6 +42,7 @@ namespace Eclipse.View
         private BitmapImage activeClearLogo;
         private string activeMatchPercentageText;
         private string activeReleaseYearText;
+        private string activeGameTitleText;
         private BitmapImage activeCommunityStarRatingImage;
         private BitmapImage activePlayModeImage;
         private BitmapImage activePlatformLogoImage;
@@ -110,6 +112,9 @@ namespace Eclipse.View
             // pass in a function that will stop animations and videos when games are started or voice recognition is happening
             mainWindowViewModel.StopVideoAndAnimationsFunction = StopVideoAndAnimations;
 
+            // pass in a function that will update the rating image 
+            mainWindowViewModel.UpdateRatingImageFunction = UpdateRatingImage;
+
             // sets up the game lists and voice recognition
             mainWindowViewModel.InitializeData();
         }
@@ -160,7 +165,7 @@ namespace Eclipse.View
 
                 // get the next image to use for a attract mode background
                 activeAttractModeBackgroundImage = new BitmapImage(mainWindowViewModel.CurrentGameList.Game1.GameFiles.BackgroundImage);
-                
+
                 // assign the image and fade it in
                 if (activeAttractModeBackgroundImage != null)
                 {
@@ -366,6 +371,10 @@ namespace Eclipse.View
                         // dim logo image
                         FadeFrameworkElementOpacity(Image_Displayed_GameClearLogo, 0.15, 25);
 
+                        // dim game title text all the way to 0 
+                        // this is a backup for missing logo image
+                        FadeFrameworkElementOpacity(TextBlock_Displayed_GameTitle, 0.00, 25);
+
                         // dim game details
                         FadeFrameworkElementOpacity(Grid_SelectedGameDetails, 0.15, 25);
 
@@ -386,6 +395,7 @@ namespace Eclipse.View
                         }
 
                         // get a handle on the active game's details
+                        activeGameTitleText = mainWindowViewModel?.CurrentGameList?.Game1?.Game?.Title;
                         activeMatchPercentageText = mainWindowViewModel?.CurrentGameList?.Game1?.MatchDescription;
                         activeReleaseYearText = mainWindowViewModel?.CurrentGameList?.Game1?.ReleaseYear;
                         activeCommunityStarRatingImage = null;
@@ -411,13 +421,19 @@ namespace Eclipse.View
                             activePlatformLogoImage = new BitmapImage(platformLogoUri);
                         }
 
+                        Uri bezelUri = mainWindowViewModel?.CurrentGameList?.Game1?.GameFiles.GameBezelImage;
+                        if (bezelUri != null)
+                        {
+                            activeGameBezelImage = new BitmapImage(bezelUri);
+                        }
+
                         // start the timer - when it goes off, fade in the new background image
                         backgroundImageChangeDelay.Start();
                     }
                 }
                 catch (Exception ex)
                 {
-                    Helpers.LogException(ex, "MainWindowView.xaml.cs.DoAnimateGameChange");
+                    LogHelper.LogException(ex, "MainWindowView.xaml.cs.DoAnimateGameChange");
                 }
             });
         }
@@ -444,6 +460,10 @@ namespace Eclipse.View
                     Image_Displayed_GameClearLogo.Source = activeClearLogo;
                     FadeFrameworkElementOpacity(Image_Displayed_GameClearLogo, 1, 500);
 
+                    // fade in the game title 
+                    TextBlock_Displayed_GameTitle.Text = activeGameTitleText;
+                    FadeFrameworkElementOpacity(TextBlock_Displayed_GameTitle, 1, 500);
+
                     // fade in the active game details 
                     Image_CommunityStarRating.Source = activeCommunityStarRatingImage;
                     Image_Playmode.Source = activePlayModeImage;
@@ -455,7 +475,7 @@ namespace Eclipse.View
                 }
                 catch (Exception ex)
                 {
-                    Helpers.LogException(ex, "BackgroundImageChangeDelay_Elapsed");
+                    LogHelper.LogException(ex, "BackgroundImageChangeDelay_Elapsed");
                 }
             });
         }
@@ -484,7 +504,7 @@ namespace Eclipse.View
                 }
                 catch (Exception ex)
                 {
-                    Helpers.LogException(ex, "BackgroundImageFadeInSlow_Completed");
+                    LogHelper.LogException(ex, "BackgroundImageFadeInSlow_Completed");
                 }
             });
         }
@@ -508,7 +528,7 @@ namespace Eclipse.View
             }
             catch(Exception ex)
             {
-                Helpers.LogException(ex, "FadeOutForMovieDelay_Elapsed");
+                LogHelper.LogException(ex, "FadeOutForMovieDelay_Elapsed");
             }
         }
 
@@ -528,7 +548,7 @@ namespace Eclipse.View
             }
             catch(Exception ex)
             {
-                Helpers.LogException(ex, "Video_SelectedGame_MediaEnded");
+                LogHelper.LogException(ex, "Video_SelectedGame_MediaEnded");
             }
         }
 
@@ -549,6 +569,24 @@ namespace Eclipse.View
             stopVideoAndAnimationWorker.RunWorkerAsync();
         }
 
+        // delegate called by view model when the rating changes to refresh the rating image
+        public void UpdateRatingImage()
+        {
+            activeCommunityStarRatingImage = null;
+
+            Uri communityStarRatingUri = mainWindowViewModel?.CurrentGameList?.Game1?.GameFiles?.CommunityStarRatingImage;
+            if (communityStarRatingUri != null)
+            {
+                activeCommunityStarRatingImage = new BitmapImage(communityStarRatingUri);
+            }
+
+            // fade in the active game details 
+            Image_CommunityStarRating.Source = activeCommunityStarRatingImage;
+
+            // fade in the rating image
+            FadeFrameworkElementOpacity(Image_CommunityStarRating, 1, 300);
+        }
+
         void StopVideoAndAnimationHandler(object sender, DoWorkEventArgs e)
         {
             // every 10th of a second for 1 seconds, try to stop everything
@@ -562,7 +600,7 @@ namespace Eclipse.View
                     }
                     catch (Exception ex)
                     {
-                        Helpers.LogException(ex, "StopVideoAndAnimationWorker");
+                        LogHelper.LogException(ex, "StopVideoAndAnimationWorker");
                     }
                 });
                 System.Threading.Thread.Sleep(100);
