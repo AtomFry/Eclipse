@@ -696,7 +696,13 @@
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"/>
 
-                        <Image Name="Image_CommunityStarRating"
+                        <!-- grid for star rating so we can overlay the user's rating on top of the community rating - for this to work the images need to be the same size and user rating needs to be colored differently -->
+                        <Grid IsHitTestVisible="False"
+                              Margin="15,0,0,0" 
+                                Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center">
+                            <Image Name="Image_CommunityStarRating"
                                IsHitTestVisible="False"
                                Margin="15,0,0,0" 
                                 RenderOptions.BitmapScalingMode="HighQuality" 
@@ -704,6 +710,15 @@
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
                                 Stretch="Uniform"/>
+                            <Image Name="Image_UserStarRating"
+                               IsHitTestVisible="False"
+                               Margin="15,0,0,0" 
+                                RenderOptions.BitmapScalingMode="HighQuality" 
+                                Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Stretch="Uniform"/>
+                        </Grid>
 
                         <Image  Name="Image_Playmode"  
                                 IsHitTestVisible="False"
@@ -1447,17 +1462,17 @@
                     </Grid.RowDefinitions>
                     <TextBlock  Name="TextBlock_CurrentGameListDescription"
                                 IsHitTestVisible="False"
-                        Grid.Row="0"
-                        Grid.RowSpan="1"
-                        FontFamily="Calibri" 
-                        FontWeight="ExtraBold"
-                        FontSize="28" 
-                        Foreground="GhostWhite"
-                        TextTrimming="CharacterEllipsis"
-                        TextWrapping="Wrap"
-                        TextAlignment="Left"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Bottom">
+                                Grid.Row="0"
+                                Grid.RowSpan="1"
+                                FontFamily="Calibri" 
+                                FontWeight="ExtraBold"
+                                FontSize="28" 
+                                Foreground="GhostWhite"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="Wrap"
+                                TextAlignment="Left"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Bottom">
                         <TextBlock.Text>
                             <MultiBinding StringFormat=" {0} ({1})">
                                 <Binding Path="CurrentGameList.ListDescription"/>

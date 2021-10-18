@@ -44,6 +44,7 @@ namespace Eclipse.View
         private string activeReleaseYearText;
         private string activeGameTitleText;
         private BitmapImage activeCommunityStarRatingImage;
+        private BitmapImage activeUserStarRatingImage;
         private BitmapImage activePlayModeImage;
         private BitmapImage activePlatformLogoImage;
         private BitmapImage activeGameBezelImage;
@@ -427,6 +428,7 @@ namespace Eclipse.View
                         activeMatchPercentageText = mainWindowViewModel?.CurrentGameList?.Game1?.MatchDescription;
                         activeReleaseYearText = mainWindowViewModel?.CurrentGameList?.Game1?.ReleaseYear;
                         activeCommunityStarRatingImage = null;
+                        activeUserStarRatingImage = null;
                         activePlayModeImage = null;
                         activePlatformLogoImage = null;
                         activeGameBezelImage = null;
@@ -435,6 +437,12 @@ namespace Eclipse.View
                         if(communityStarRatingUri != null)
                         {
                             activeCommunityStarRatingImage = new BitmapImage(communityStarRatingUri);
+                        }
+
+                        Uri userStarRatingUri = mainWindowViewModel?.CurrentGameList?.Game1?.GameFiles?.UserStarRatingImage;
+                        if(userStarRatingUri != null)
+                        {
+                            activeUserStarRatingImage = new BitmapImage(userStarRatingUri);
                         }
 
                         Uri playModeUri = mainWindowViewModel?.CurrentGameList?.Game1?.GameFiles?.PlayModeImage;
@@ -494,6 +502,7 @@ namespace Eclipse.View
 
                     // fade in the active game details 
                     Image_CommunityStarRating.Source = activeCommunityStarRatingImage;
+                    Image_UserStarRating.Source = activeUserStarRatingImage;
                     Image_Playmode.Source = activePlayModeImage;
                     TextBlock_MatchPercentage.Text = activeMatchPercentageText;
                     TextBlock_ReleaseYear.Text = activeReleaseYearText;
@@ -601,6 +610,7 @@ namespace Eclipse.View
         public void UpdateRatingImage()
         {
             activeCommunityStarRatingImage = null;
+            activeUserStarRatingImage = null;
 
             Uri communityStarRatingUri = mainWindowViewModel?.CurrentGameList?.Game1?.GameFiles?.CommunityStarRatingImage;
             if (communityStarRatingUri != null)
@@ -608,11 +618,20 @@ namespace Eclipse.View
                 activeCommunityStarRatingImage = new BitmapImage(communityStarRatingUri);
             }
 
+            Uri userStarRatingUri = mainWindowViewModel?.CurrentGameList?.Game1?.GameFiles?.UserStarRatingImage;
+            if(userStarRatingUri != null)
+            {
+                activeUserStarRatingImage = new BitmapImage(userStarRatingUri);
+            }
+
             // fade in the active game details 
             Image_CommunityStarRating.Source = activeCommunityStarRatingImage;
+            Image_UserStarRating.Source = activeUserStarRatingImage;
 
             // fade in the rating image
             FadeFrameworkElementOpacity(Image_CommunityStarRating, 1, 300);
+            FadeFrameworkElementOpacity(Image_UserStarRating, 1, 300);
+
         }
 
         void StopVideoAndAnimationHandler(object sender, DoWorkEventArgs e)
