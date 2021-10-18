@@ -207,16 +207,16 @@ namespace Eclipse.View
         }
 
 
-        private int totalGameCount;
-        public int TotalGameCount
+        private int totalProgressStepsCount;
+        public int TotalProgressStepsCount
         {
-            get { return totalGameCount; }
+            get { return totalProgressStepsCount; }
             set
             {
-                if (totalGameCount != value)
+                if (totalProgressStepsCount != value)
                 {
-                    totalGameCount = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("TotalGameCount"));
+                    totalProgressStepsCount = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("TotalProgressStepsCount"));
                 }
             }
         }
@@ -234,16 +234,16 @@ namespace Eclipse.View
                 }
             }
         }
-        private int initializationGameCount;
-        public int InitializationGameCount
+        private int completedProgressStepsCount;
+        public int CompletedProgressStepsCount
         {
-            get { return initializationGameCount; }
+            get { return completedProgressStepsCount; }
             set
             {
-                if (initializationGameCount != value)
+                if (completedProgressStepsCount != value)
                 {
-                    initializationGameCount = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("InitializationGameCount"));
+                    completedProgressStepsCount = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("CompletedProgressStepsCount"));
                 }
             }
         }
@@ -476,6 +476,52 @@ namespace Eclipse.View
             return playlistGames;
         }
 
+        private int GamesToProcessCount = 0;
+        private int GamesProcessedCount = 0;
+        private int ImagesToScaleCount = 0;
+        private int ImagesScaledCount = 0;
+
+        private DateTime ImageScalingStartTime;
+        private void updateLoadingScaledImagesMessage()
+        {
+            if (ImagesScaledCount % 10 != 0) return;
+
+            TimeSpan elapsedTime = DateTime.Now - ImageScalingStartTime;
+            double elapsedSeconds = elapsedTime.TotalSeconds;
+
+            if (elapsedSeconds == 0) elapsedSeconds = 1;
+
+            double scaleRate = ImagesScaledCount / elapsedSeconds;
+
+            if (scaleRate == 0) scaleRate = 1;
+
+            double remainingSeconds = (ImagesToScaleCount - ImagesScaledCount) / scaleRate;
+
+            TimeSpan remainingTimeSpan = TimeSpan.FromSeconds(remainingSeconds);
+
+            LoadingMessage = string.Format("Updating image cache ({3}/{4}) {0:D2}:{1:D2}:{2:D2}", remainingTimeSpan.Hours, remainingTimeSpan.Minutes, remainingTimeSpan.Seconds, ImagesScaledCount, ImagesToScaleCount);
+        }
+
+        private DateTime ListCreationStartTime;
+        private void updateRemainingLoadingMessage()
+        {
+            if (GamesProcessedCount % 10 != 0) return;
+
+            TimeSpan elapsedTime = DateTime.Now - ListCreationStartTime;
+            double elapsedSeconds = elapsedTime.TotalSeconds;
+
+            if (elapsedSeconds == 0) elapsedSeconds = 1;
+
+            double gameProcessRate = GamesProcessedCount / elapsedSeconds;
+
+            if (gameProcessRate == 0) gameProcessRate = 1;
+
+            double remainingSeconds = (GamesToProcessCount - GamesProcessedCount) / gameProcessRate;
+
+            TimeSpan remainingTimeSpan = TimeSpan.FromSeconds(remainingSeconds);
+
+            LoadingMessage = string.Format("Creating game lists ({3}/{4}) {0:D2}:{1:D2}:{2:D2}", remainingTimeSpan.Hours, remainingTimeSpan.Minutes, remainingTimeSpan.Seconds, GamesProcessedCount, GamesToProcessCount);
+        }
 
         void Initialization_LoadData(object sender, DoWorkEventArgs e)
         {
@@ -492,7 +538,8 @@ namespace Eclipse.View
                 GetDefaultBezels();
 
                 // get the total count of games for the progress bar
-                TotalGameCount = AllGames?.Count ?? 0;
+                TotalProgressStepsCount = AllGames?.Count ?? 0;
+                GamesToProcessCount = AllGames?.Count ?? 0;
 
                 // prescale box front images - doing this here so it's easier to update the progress bar
                 // get list of image files in launchbox folders that are missing from the plug-in folders
@@ -510,44 +557,64 @@ namespace Eclipse.View
                     desiredHeight = ImageScaler.GetDesiredHeight();
                 }
 
+                ImageScalingStartTime = DateTime.Now;
+
+
                 // add the count of missing files for the loading progress bar
-                TotalGameCount += (gameFrontFilesToProcess?.Count ?? 0);
-                TotalGameCount += (platformLogosToProcess?.Count ?? 0);
-                TotalGameCount += (gameClearLogosToProcess?.Count ?? 0);
-                InitializationGameCount = 0;
+                TotalProgressStepsCount += (gameFrontFilesToProcess?.Count ?? 0);
+                TotalProgressStepsCount += (platformLogosToProcess?.Count ?? 0);
+                TotalProgressStepsCount += (gameClearLogosToProcess?.Count ?? 0);
+
+                ImagesToScaleCount += (gameFrontFilesToProcess?.Count ?? 0);
+                ImagesToScaleCount += (platformLogosToProcess?.Count ?? 0);
+                ImagesToScaleCount += (gameClearLogosToProcess?.Count ?? 0);
+
+
+                CompletedProgressStepsCount = 0;
 
                 // scale the game front images
                 foreach (FileInfo fileInfo in gameFrontFilesToProcess)
                 {
-                    InitializationGameCount += 1;
+                    ImagesScaledCount += 1;
+                    CompletedProgressStepsCount += 1;
                     ImageScaler.ScaleImage(fileInfo, desiredHeight);
+                    updateLoadingScaledImagesMessage();
                 }
 
                 // scale the default box front image
                 if (scaleDefaultBoxFrontImage)
                 {
+                    ImagesScaledCount += 1;
+                    CompletedProgressStepsCount += 1;
                     ImageScaler.ScaleDefaultBoxFront(desiredHeight);
+                    updateLoadingScaledImagesMessage();
                 }
 
                 // crop platform clear logos 
                 foreach (FileInfo fileInfo in platformLogosToProcess)
                 {
-                    InitializationGameCount += 1;
+                    ImagesScaledCount += 1;
+                    CompletedProgressStepsCount += 1;
                     ImageScaler.CropImage(fileInfo);
+                    updateLoadingScaledImagesMessage();
                 }
 
                 // crop game clear logos 
                 foreach (FileInfo fileInfo in gameClearLogosToProcess)
                 {
-                    InitializationGameCount += 1;
+                    ImagesScaledCount += 1;
+                    CompletedProgressStepsCount += 1;
                     ImageScaler.CropImage(fileInfo);
+                    updateLoadingScaledImagesMessage();
                 }
 
-                LoadingMessage = null;
+                ListCreationStartTime = DateTime.Now;
 
                 Parallel.ForEach(AllGames, (game) =>
                 {
-                    InitializationGameCount += 1;
+                    GamesProcessedCount += 1;
+                    CompletedProgressStepsCount += 1;
+                    updateRemainingLoadingMessage();
 
                     GameFiles gameFiles = new GameFiles(game);
                     gameFiles.SetupFiles();
