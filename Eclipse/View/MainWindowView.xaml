@@ -251,7 +251,7 @@
                         Width="{Binding ActualWidth, ElementName=Canvas_AttractModeCanvas}"
                         Height="{Binding ActualHeight, ElementName=Canvas_AttractModeCanvas}"
                         IsHitTestVisible="False">
-                
+
                     <Image Name="Image_AttractModeBackgroundImage"
                        VerticalAlignment="Center"
                        Stretch="UniformToFill"
@@ -266,11 +266,8 @@
                             </LinearGradientBrush>
                         </Image.OpacityMask>
                     </Image>
-
                 </Canvas>
-
             </Canvas>
-
 
             <!-- Darken the background when displaying feature and more info (helps with text visibility) -->
             <Rectangle Grid.Row="0" Grid.RowSpan="18"
@@ -678,7 +675,7 @@
                                    IsHitTestVisible="False"
                             FontFamily="Arial" 
                             FontWeight="Bold"
-                            FontSize="22" 
+                            FontSize="20" 
                             Foreground="MediumSpringGreen"
                             TextTrimming="None"
                             TextWrapping="NoWrap"
@@ -688,10 +685,10 @@
 
                         <TextBlock Name="TextBlock_ReleaseYear"
                                    IsHitTestVisible="False"
-                                   Margin="10,0,0,0"
+                                   Margin="15,0,0,0"
                                     FontFamily="Arial" 
                                     FontWeight="Bold"
-                                    FontSize="24" 
+                                    FontSize="20" 
                                     Foreground="WhiteSmoke"
                                     TextTrimming="None"
                                     TextWrapping="NoWrap"
@@ -701,7 +698,7 @@
 
                         <Image Name="Image_CommunityStarRating"
                                IsHitTestVisible="False"
-                               Margin="10,0,0,0" 
+                               Margin="15,0,0,0" 
                                 RenderOptions.BitmapScalingMode="HighQuality" 
                                 Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
                                 HorizontalAlignment="Center"
@@ -710,7 +707,7 @@
 
                         <Image  Name="Image_Playmode"  
                                 IsHitTestVisible="False"
-                                Margin="10,0,0,0" 
+                                Margin="15,0,0,0" 
                                 Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
                                 RenderOptions.BitmapScalingMode="HighQuality" 
                                 HorizontalAlignment="Center"
@@ -719,7 +716,7 @@
                         
                         <Image Name="Image_PlatformLogo"
                                IsHitTestVisible="False"
-                                Margin="10,0,0,0"                               
+                                Margin="15,0,0,0"                               
                                 Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
                                 HorizontalAlignment="Center" 
                                 VerticalAlignment="Center"

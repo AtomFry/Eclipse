@@ -1633,6 +1633,7 @@ namespace Eclipse.View
             return;
         }
 
+        // mark current game as a favorite
         private void FavoriteCurrentGame()
         {
             GameMatch currentGame = CurrentGameList?.Game1;

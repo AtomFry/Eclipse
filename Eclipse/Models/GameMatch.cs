@@ -573,7 +573,7 @@ namespace Eclipse.Models
 
         private void SetMatchDescription()
         {
-            MatchDescription = $"{string.Format("{0:00}", MatchPercentage)}% match";
+            MatchDescription = $"{string.Format("{0:00}", MatchPercentage)}% Match";
         }
 
         public void SetupVoiceMatchPercentage(float confidence, string phrase)
