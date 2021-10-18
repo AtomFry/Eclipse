@@ -148,6 +148,9 @@ namespace Eclipse.View
             });
         }
 
+        // indicates whether to slide attract mode image left or right 
+        private bool attractModeSlideLeft = true;
+
         // after delay (about 1 second) - fade in the attract mode background image
         private void AttractModeImageFadeInDelay_Elapsed(object sender, ElapsedEventArgs e)
         {
@@ -176,8 +179,33 @@ namespace Eclipse.View
                 // start timer before we fade in the attract mode clear logo
                 attractModeLogoFadeInDelay.Start();
 
-                // start sliding the background image to the left 
-                ShiftFrameworkElement(Image_AttractModeBackgroundImage, monitorWidth - Image_AttractModeBackgroundImage.Width, 17 * 1000);
+                /*
+                 * To slide left - set canvas left edge to 0 and shift image from 0 to (monitorWidth - ImageWidth) (i.e. from 0 to -25)
+                 * To slide right - set canvas left edge to (monitorWidth - imageWidth) and shift image from 0 to imageWidth - monitorWidth (i.e. from 0 to 25)
+                 */
+                double attractCanvasLeftCoordinate, // where to start the canvas  
+                        shiftCanvasFrom,            // where to shift from
+                        shiftCanvasTo;              // where to shift to
+
+                if(attractModeSlideLeft)
+                {
+                    attractCanvasLeftCoordinate = 0;
+                    shiftCanvasFrom = 0;
+                    shiftCanvasTo = monitorWidth - Image_AttractModeBackgroundImage.Width;
+                }
+                else
+                {
+                    attractCanvasLeftCoordinate = monitorWidth - Image_AttractModeBackgroundImage.Width;
+                    shiftCanvasFrom = 0;
+                    shiftCanvasTo = Image_AttractModeBackgroundImage.Width - monitorWidth;
+                }
+
+                // shift the canvas
+                Canvas.SetLeft(Canvas_AttractModeInnerCanvas, attractCanvasLeftCoordinate);
+                ShiftFrameworkElement(Canvas_AttractModeInnerCanvas, shiftCanvasFrom, shiftCanvasTo, 17 * 1000);
+
+                // flip the variable to slide the other way next time
+                attractModeSlideLeft = !attractModeSlideLeft;
 
                 // start the delay between attract mode games 
                 attractModeChangeDelay.Start();
@@ -323,14 +351,14 @@ namespace Eclipse.View
             }
         }
 
-        private void ShiftFrameworkElement(FrameworkElement element, double newValue, double durationInMilliseconds)
+        private void ShiftFrameworkElement(FrameworkElement element, double fromValue, double toValue, double durationInMilliseconds)
         {
             Dispatcher.Invoke(() =>
             {
                 TranslateTransform translateTransform = new TranslateTransform();
                 element.RenderTransform = translateTransform;
 
-                DoubleAnimation moveElement = new DoubleAnimation(0, newValue, TimeSpan.FromMilliseconds(durationInMilliseconds));
+                DoubleAnimation moveElement = new DoubleAnimation(fromValue, toValue, TimeSpan.FromMilliseconds(durationInMilliseconds));
 
                 translateTransform.BeginAnimation(TranslateTransform.XProperty, moveElement);
             });

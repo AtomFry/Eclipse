@@ -93,6 +93,19 @@ namespace Eclipse.Helpers
             }
         }
 
+        private string bezelFolder;
+        public string BezelFolder
+        {
+            get
+            {
+                if(string.IsNullOrWhiteSpace(bezelFolder))
+                {
+                    bezelFolder = $"{MediaFolder}\\Bezels";
+                }
+                return bezelFolder;
+            }
+        }
+
         private string mediaResolutionSpecificFolder;
         public string MediaResolutionSpecificFolder
         {

@@ -324,18 +324,17 @@ namespace Eclipse.View
         // get platform bezels if game bezel is not there
         private void GetPlatformBezels()
         {
-            // plaform bezel path
-            // ..\LaunchBox\Plugins\Eclipse\Media\Images\Platforms\{PLATFORM}\Bezel\Horizontal.png
-            // ..\LaunchBox\Plugins\Eclipse\Media\Images\Platforms\{PLATFORM}\Bezel\Vertical.png
-
+            // platform bezel path 
+            // ..\LaunchBox\Plugins\Eclipse\Media\Bezels\{PLATFORM}\Horizontal.png
+            // ..\LaunchBox\Plugins\Eclipse\Media\Bezels\{PLATFORM}\Vertical.png
             List<IPlatform> platforms = new List<IPlatform>(PluginHelper.DataManager.GetAllPlatforms());
             foreach (var platform in platforms)
             {
                 Tuple<BezelType, BezelOrientation, string> platformHorizontalBezelKey = new Tuple<BezelType, BezelOrientation, string>(BezelType.PlatformDefault, BezelOrientation.Horizontal, platform.Name);
                 Tuple<BezelType, BezelOrientation, string> platformVerticalBezelKey = new Tuple<BezelType, BezelOrientation, string>(BezelType.PlatformDefault, BezelOrientation.Vertical, platform.Name);
 
-                string platformHorizontalBezelPath = Path.Combine(DirectoryInfoHelper.Instance.PluginImagesPath, "Platforms", platform.Name, "Bezel", "Horizontal.png");
-                string platformVerticalBezelPath = Path.Combine(DirectoryInfoHelper.Instance.PluginImagesPath, "Platforms", platform.Name, "Bezel", "Vertical.png");
+                string platformHorizontalBezelPath = Path.Combine(DirectoryInfoHelper.Instance.BezelFolder, platform.Name, "Horizontal.png");
+                string platformVerticalBezelPath = Path.Combine(DirectoryInfoHelper.Instance.BezelFolder, platform.Name, "Vertical.png");
 
                 if (File.Exists(platformHorizontalBezelPath)) BezelDictionary.Add(platformHorizontalBezelKey, new Uri(platformHorizontalBezelPath));
                 if (File.Exists(platformVerticalBezelPath)) BezelDictionary.Add(platformVerticalBezelKey, new Uri(platformVerticalBezelPath));
@@ -345,14 +344,14 @@ namespace Eclipse.View
         // get default bezels if game bezel and platform bezel is not there
         private void GetDefaultBezels()
         {
-            // default bezel path
-            // ..\LaunchBox\Plugins\Eclipse\Media\Images\Platforms\Default\Bezel\Horizontal.png
-            // ..\LaunchBox\Plugins\Eclipse\Media\Images\Platforms\Default\Bezel\Vertical.png
+            // default bezel path 
+            // ..\LaunchBox\Plugins\Eclipse\Media\Bezels\DEFAULT\Horizontal.png
+            // ..\LaunchBox\Plugins\Eclipse\Media\Bezels\DEFAULT\Vertical.png
             Tuple<BezelType, BezelOrientation, string> defaultHorizontalBezelKey = new Tuple<BezelType, BezelOrientation, string>(BezelType.Default, BezelOrientation.Horizontal, string.Empty);
             Tuple<BezelType, BezelOrientation, string> defaultVerticalBezelKey = new Tuple<BezelType, BezelOrientation, string>(BezelType.Default, BezelOrientation.Vertical, string.Empty);
 
-            string defaultHorizontalBezelPath = Path.Combine(DirectoryInfoHelper.Instance.PluginImagesPath, "Platforms", "Default", "Bezel", "Horizontal.png");
-            string defaultVerticalBezelPath = Path.Combine(DirectoryInfoHelper.Instance.PluginImagesPath, "Platforms", "Default", "Bezel", "Vertical.png");
+            string defaultHorizontalBezelPath = Path.Combine(DirectoryInfoHelper.Instance.BezelFolder, "Default", "Horizontal.png");
+            string defaultVerticalBezelPath = Path.Combine(DirectoryInfoHelper.Instance.BezelFolder, "Default", "Vertical.png");
 
             if (File.Exists(defaultHorizontalBezelPath)) BezelDictionary.Add(defaultHorizontalBezelKey, new Uri(defaultHorizontalBezelPath));
             if (File.Exists(defaultVerticalBezelPath)) BezelDictionary.Add(defaultVerticalBezelKey, new Uri(defaultVerticalBezelPath));

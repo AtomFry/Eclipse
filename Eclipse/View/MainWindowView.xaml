@@ -177,13 +177,13 @@
         <!-- ATTRACT MODE -->
         <Grid   Name="Grid_AttractMode"
                 IsHitTestVisible="False"
-            VerticalAlignment="Stretch"
-            HorizontalAlignment="Stretch"
-            Panel.ZIndex="900"
-            Background="Black"
-            Width="{Binding ActualWidth, ElementName=MainWindowUserControl, Converter={StaticResource OversizeImageConverter}}"
-            Height="{Binding ActualHeight, ElementName=MainWindowUserControl, Converter={StaticResource OversizeImageConverter}}"
-            Visibility="{Binding IsDisplayingAttractMode, Converter={StaticResource BoolToVis}}">
+                VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch"
+                Panel.ZIndex="900"
+                Background="Black"
+                Width="{Binding ActualWidth, ElementName=MainWindowUserControl, Converter={StaticResource OversizeImageConverter}}"
+                Height="{Binding ActualHeight, ElementName=MainWindowUserControl, Converter={StaticResource OversizeImageConverter}}"
+                Visibility="{Binding IsDisplayingAttractMode, Converter={StaticResource BoolToVis}}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
@@ -238,25 +238,40 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Image Name="Image_AttractModeBackgroundImage"
-                   IsHitTestVisible="False"
-                   Grid.Row="0" Grid.RowSpan="18"
-                   Grid.Column="0" Grid.ColumnSpan="32"
-                VerticalAlignment="Center"
-                Stretch="UniformToFill"
-                Panel.ZIndex="901"
-                Width="{Binding ActualWidth, ElementName=MainWindowUserControl, Converter={StaticResource OversizeImageConverter}}"
-                RenderOptions.BitmapScalingMode="HighQuality" >
-                <Image.OpacityMask>
-                    <LinearGradientBrush StartPoint="0.5,1" EndPoint="0.5,0">
-                        <LinearGradientBrush.GradientStops>
-                            <GradientStop Offset="0" Color="Transparent"/>
-                            <GradientStop Offset="0.25" Color="Black"/>
-                        </LinearGradientBrush.GradientStops>
-                    </LinearGradientBrush>
-                </Image.OpacityMask>
-            </Image>
-            
+
+            <Canvas Name="Canvas_AttractModeCanvas"
+                    Grid.Row="0" 
+                    Grid.RowSpan="18" 
+                    Grid.Column="0" 
+                    Grid.ColumnSpan="32"
+                    IsHitTestVisible="False"
+                    Panel.ZIndex="901">
+
+                <Canvas Name="Canvas_AttractModeInnerCanvas"
+                        Width="{Binding ActualWidth, ElementName=Canvas_AttractModeCanvas}"
+                        Height="{Binding ActualHeight, ElementName=Canvas_AttractModeCanvas}"
+                        IsHitTestVisible="False">
+                
+                    <Image Name="Image_AttractModeBackgroundImage"
+                       VerticalAlignment="Center"
+                       Stretch="UniformToFill"
+                       Width="{Binding ActualWidth, ElementName=MainWindowUserControl, Converter={StaticResource OversizeImageConverter}}"
+                       RenderOptions.BitmapScalingMode="HighQuality" >
+                        <Image.OpacityMask>
+                            <LinearGradientBrush StartPoint="0.5,1" EndPoint="0.5,0">
+                                <LinearGradientBrush.GradientStops>
+                                    <GradientStop Offset="0" Color="Transparent"/>
+                                    <GradientStop Offset="0.25" Color="Black"/>
+                                </LinearGradientBrush.GradientStops>
+                            </LinearGradientBrush>
+                        </Image.OpacityMask>
+                    </Image>
+
+                </Canvas>
+
+            </Canvas>
+
+
             <!-- Darken the background when displaying feature and more info (helps with text visibility) -->
             <Rectangle Grid.Row="0" Grid.RowSpan="18"
                        Grid.Column="0" Grid.ColumnSpan="32"

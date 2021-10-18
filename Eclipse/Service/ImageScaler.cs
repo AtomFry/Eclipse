@@ -111,7 +111,7 @@ namespace Eclipse.Service
             // loop through platform folders
             foreach (string platformImageDirectory in platformImageDirectories)
             {
-                // loop through box front image folders 
+                // loop through clear logo image folders 
                 foreach (string imageFolder in imageFolders)
                 {
                     string path = Path.Combine(platformImageDirectory, imageFolder);

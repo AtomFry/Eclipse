@@ -321,23 +321,23 @@ namespace Eclipse.Models
         }
 
         // tries to find a bezel image in the following order
-        // game specific bezel in the plugin media\images\{Platform}\Bezel\{CleanGameTitle}.png
+        // Game Specific: ..\LaunchBox\Plugins\Eclipse\Media\Bezels\{PLATFORM}\{TitleToFileName}.png
         // MAME bezels ..\LaunchBox\Emulators\MAME\artwork\{game.ApplicationFilePath}\"Bezel.png"
         // Retroarch bezels ..\LaunchBox\Emulators\Retroarch\overlays\GameBezels\{RetroarchPlatform}\{game.ApplicationFilePath}.png
-        // fallback bezels are setup in the view because they are dependent on the video size so we set them when the video is loaded and the video size is known
+        // fallback bezels are setup in the view because they are dependent on the video aspect ratio so we set them when the video is loaded and the video size is known
         // fallback default plaform bezel path
-        // ..\LaunchBox\Plugins\Eclipse\Media\Images\Platforms\{PLATFORM}\Bezel\Horizontal.png
-        // ..\LaunchBox\Plugins\Eclipse\Media\Images\Platforms\{PLATFORM}\Bezel\Vertical.png
+        // ..\LaunchBox\Plugins\Eclipse\Media\Bezels\{PLATFORM}\Horizontal.png
+        // ..\LaunchBox\Plugins\Eclipse\Media\Bezels\{PLATFORM}\Vertical.png
         // fallback default bezel path
-        // ..\LaunchBox\Plugins\Eclipse\Media\Images\Platforms\Default\Bezel\Horizontal.png
-        // ..\LaunchBox\Plugins\Eclipse\Media\Images\Platforms\Default\Bezel\Vertical.png
+        // ..\LaunchBox\Plugins\Eclipse\Media\Bezels\default\Horizontal.png
+        // ..\LaunchBox\Plugins\Eclipse\Media\Bezels\default\Vertical.png
         public static Uri ResolveBezelPath(IGame Game, string TitleToFileName)
         {
             try
             {
                 // find game specific bezel
-                // Game Specific: ..\LaunchBox\Plugins\Eclipse\Media\Images\{PLATFORM}\Bezel\{TitleToFileName}.png
-                string gameBezelPath = Path.Combine(DirectoryInfoHelper.Instance.PluginImagesPath, Game.Platform, "Bezel");
+                // Game Specific: ..\LaunchBox\Plugins\Eclipse\Media\Bezels\{PLATFORM}\{TitleToFileName}.png
+                string gameBezelPath = Path.Combine(DirectoryInfoHelper.Instance.BezelFolder, Game.Platform);
                 if (Directory.Exists(gameBezelPath))
                 {
                     string[] gameBezelFiles = Directory.GetFiles(gameBezelPath, $"{TitleToFileName}.*", SearchOption.AllDirectories);
