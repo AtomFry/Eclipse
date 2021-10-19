@@ -642,7 +642,7 @@
             <Grid Name="Grid_Selected_Game_Heading"
                   IsHitTestVisible="False"
                   Grid.Row="1" Grid.RowSpan="16"
-                  Grid.Column="1" Grid.ColumnSpan="15"
+                  Grid.Column="1" Grid.ColumnSpan="16"
                   Panel.ZIndex="500"
                   Background="Transparent">
                 <Grid.RowDefinitions>
@@ -700,56 +700,54 @@
                     <!-- Selected game details-->
                     <StackPanel Name="StackPanel_SelectedGameDetails"
                                 IsHitTestVisible="False"
-                            Orientation="Horizontal"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Stretch">
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch">
 
                         <TextBlock Name="TextBlock_MatchPercentage"
                                    IsHitTestVisible="False"
-                            FontFamily="Arial" 
-                            FontWeight="Bold"
-                            FontSize="20" 
-                            Foreground="MediumSpringGreen"
-                            TextTrimming="None"
-                            TextWrapping="NoWrap"
-                            TextAlignment="Center"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"/>
+                                    FontFamily="Arial" 
+                                    FontWeight="Bold"
+                                    FontSize="25" 
+                                    Foreground="MediumSpringGreen"
+                                    TextTrimming="None"
+                                    TextWrapping="NoWrap"
+                                    TextAlignment="Center"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Bottom"/>
 
                         <TextBlock Name="TextBlock_ReleaseYear"
                                    IsHitTestVisible="False"
                                    Margin="15,0,0,0"
                                     FontFamily="Arial" 
                                     FontWeight="Bold"
-                                    FontSize="20" 
+                                    FontSize="25" 
                                     Foreground="WhiteSmoke"
                                     TextTrimming="None"
                                     TextWrapping="NoWrap"
                                     TextAlignment="Center"
                                     HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"/>
+                                    VerticalAlignment="Bottom"/>
 
                         <!-- grid for star rating so we can overlay the user's rating on top of the community rating - for this to work the images need to be the same size and user rating needs to be colored differently -->
                         <Grid IsHitTestVisible="False"
                               Margin="15,0,0,0" 
                                 Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
                                 HorizontalAlignment="Center"
-                                VerticalAlignment="Center">
+                                VerticalAlignment="Bottom">
                             <Image Name="Image_CommunityStarRating"
                                IsHitTestVisible="False"
-                               Margin="15,0,0,0" 
                                 RenderOptions.BitmapScalingMode="HighQuality" 
                                 Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
                                 HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
+                                VerticalAlignment="Bottom"
                                 Stretch="Uniform"/>
                             <Image Name="Image_UserStarRating"
                                IsHitTestVisible="False"
-                               Margin="15,0,0,0" 
                                 RenderOptions.BitmapScalingMode="HighQuality" 
                                 Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
                                 HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
+                                VerticalAlignment="Bottom"
                                 Stretch="Uniform"/>
                         </Grid>
 
@@ -759,7 +757,7 @@
                                 Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
                                 RenderOptions.BitmapScalingMode="HighQuality" 
                                 HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
+                                VerticalAlignment="Bottom"
                                 Stretch="Uniform"/>
                         
                         <Image Name="Image_PlatformLogo"
@@ -767,7 +765,7 @@
                                 Margin="15,0,0,0"                               
                                 Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
                                 HorizontalAlignment="Center" 
-                                VerticalAlignment="Center"
+                                VerticalAlignment="Bottom"
                                 RenderOptions.BitmapScalingMode="HighQuality" 
                                 Stretch="Uniform"/>
                     </StackPanel>
