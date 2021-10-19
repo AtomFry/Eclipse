@@ -484,6 +484,8 @@ namespace Eclipse.View
         private DateTime ImageScalingStartTime;
         private void updateLoadingScaledImagesMessage()
         {
+            updateLoadingOpacity();
+
             if (ImagesScaledCount % 10 != 0) return;
 
             TimeSpan elapsedTime = DateTime.Now - ImageScalingStartTime;
@@ -505,6 +507,8 @@ namespace Eclipse.View
         private DateTime ListCreationStartTime;
         private void updateRemainingLoadingMessage()
         {
+            updateLoadingOpacity();
+
             if (GamesProcessedCount % 10 != 0) return;
 
             TimeSpan elapsedTime = DateTime.Now - ListCreationStartTime;
@@ -521,6 +525,40 @@ namespace Eclipse.View
             TimeSpan remainingTimeSpan = TimeSpan.FromSeconds(remainingSeconds);
 
             LoadingMessage = string.Format("Creating game lists ({3}/{4}) {0:D2}:{1:D2}:{2:D2}", remainingTimeSpan.Hours, remainingTimeSpan.Minutes, remainingTimeSpan.Seconds, GamesProcessedCount, GamesToProcessCount);
+        }
+
+        private double loadingOpacity;
+        public double LoadingOpacity
+        {
+            get
+            {
+                return loadingOpacity;
+            }
+
+            private set
+            {
+                if(loadingOpacity != value)
+                {
+                    loadingOpacity = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("LoadingOpacity"));
+                }
+            }
+        }
+
+        private void updateLoadingOpacity()
+        {
+            if (totalProgressStepsCount == 0)
+            {
+                LoadingOpacity = 0;
+            }
+            else
+            {
+                double calculatedOpacity = 0.2 + (double)completedProgressStepsCount / (double)totalProgressStepsCount;
+
+                if (calculatedOpacity > 1) calculatedOpacity = 1;
+
+                LoadingOpacity = calculatedOpacity;
+            }
         }
 
         void Initialization_LoadData(object sender, DoWorkEventArgs e)
@@ -2071,6 +2109,9 @@ namespace Eclipse.View
 
         public Uri SettingsIconWhite { get; } = ResourceImages.SettingsIconWhite;
 
+        public Uri LaunchBoxLogo { get; } = ResourceImages.LaunchBoxLogo;
+        public Uri Moon { get; } = ResourceImages.Moon;
+
         private FeatureGameOption featureOption;
         public FeatureGameOption FeatureOption
         {
@@ -2098,7 +2139,6 @@ namespace Eclipse.View
                 PlayButtonImage = ResourceImages.PlayButtonUnSelected;
                 MoreInfoImage = ResourceImages.MoreInfoSelected;
             }
-
         }
 
         private Uri playButtonImage;

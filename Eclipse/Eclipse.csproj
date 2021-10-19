@@ -875,6 +875,8 @@
     </Content>
     <Resource Include="Resources\DefaultBezelHorizontal.png" />
     <Resource Include="Resources\DefaultBezelVertical.png" />
+    <Resource Include="Resources\LaunchBoxLogo.png" />
+    <Resource Include="Resources\Moon.png" />
     <Content Include="Unbroken.LaunchBox.Plugins.dll" />
     <Resource Include="Resources\DefaultBackground.jpg" />
     <Resource Include="Resources\MoreInfo_Selected.png" />

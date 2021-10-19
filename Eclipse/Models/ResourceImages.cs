@@ -21,5 +21,7 @@ namespace Eclipse.Models
         public static Uri PlayButtonUnSelected { get; } = new Uri($"{DirectoryInfoHelper.ResourceFolder}/PlayButton_Unselected.png");
         public static Uri MoreInfoSelected { get; } = new Uri($"{DirectoryInfoHelper.ResourceFolder}/MoreInfo_Selected.png");
         public static Uri MoreInfoUnSelected { get; } = new Uri($"{DirectoryInfoHelper.ResourceFolder}/MoreInfo_Unselected.png");
+        public static Uri LaunchBoxLogo { get; } = new Uri($"{DirectoryInfoHelper.ResourceFolder}/LaunchBoxLogo.png");
+        public static Uri Moon { get; } = new Uri($"{DirectoryInfoHelper.ResourceFolder}/Moon.png");
     }
 }

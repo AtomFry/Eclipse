@@ -118,7 +118,28 @@
                              Duration="0:0:0.5"
                              Completed="BackgroundImageFadeInSlow_Completed"/>
         </Storyboard>
+
+        <!-- Pulse -->
+        <Storyboard x:Key="Pulse" RepeatBehavior="Forever">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)" 
+                                           Storyboard.TargetName="Image_LaunchBoxLogo">
+                <EasingDoubleKeyFrame KeyTime="0:0:1" Value="0.9"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:2" Value="1"/>
+            </DoubleAnimationUsingKeyFrames>
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)" 
+                                           Storyboard.TargetName="Image_LaunchBoxLogo">
+                <EasingDoubleKeyFrame KeyTime="0:0:1" Value="0.9"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:2" Value="1"/>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+        
     </UserControl.Resources>
+
+    <UserControl.Triggers>
+        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+            <BeginStoryboard Storyboard="{StaticResource Pulse}"/>
+        </EventTrigger>
+    </UserControl.Triggers>
 
     <Canvas Background="Black" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
             IsHitTestVisible="False"
@@ -140,6 +161,27 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
+
+            <Image Name="Image_LaunchBoxLogo"
+                        IsHitTestVisible="False"
+                        RenderOptions.BitmapScalingMode="HighQuality" 
+                        Grid.Row="1" Grid.RowSpan="3"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Stretch"
+                        Stretch="Uniform"
+                        Margin="5,5,5,5"
+                        Source="{Binding LaunchBoxLogo}"
+                        RenderTransformOrigin="0.5,0.5">
+                <Image.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Image.RenderTransform>
+            </Image>
+
             <ProgressBar Name="ProgressBar_Loading"
                          IsHitTestVisible="False"
                          Grid.Row="5"
