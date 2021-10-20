@@ -83,6 +83,210 @@
     <Compile Include="View\MainWindowViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
+    <AdditionalFiles Include="LaunchBox\StartupThemes\Eclipse\Default Shutdown.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\StartupThemes\Eclipse\Default.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\AchievementView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\BackgroundView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\BoxesGamesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\BoxGameView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\BoxListView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\CoverFlowGamesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\CoverFlowWithDetailsGamesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\ErrorPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\FilterDetailsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\FilterView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\GameDetailsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\GameMarqueeView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\HorizontalMenuItemView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\HorizontalWheel1GamesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\HorizontalWheel2GamesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\HorizontalWheel3GamesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\ImagesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\ImageView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\KeyboardView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\MenuItemView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\MusicNotificationView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\OptionsButtonMenuItemView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\OptionsCheckBoxMenuItemView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\OptionsControllerButtonMenuItemView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\OptionsKeyboardMappingMenuItemView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\OptionsListMenuItemView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\OptionsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\OptionsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\PlatformMarqueeView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\PlatformWheel1FiltersView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\PlatformWheel2FiltersView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\PlatformWheel3FiltersView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\PlatformWheel4FiltersView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\SystemView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\TextFiltersView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\TextGamesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\TextGameView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\TextListView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\ThumbnailGameView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\ThumbnailListView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\TwoColumnGameDetailsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\Wall2GamesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\Wall3GamesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\Wall4GamesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\WallGamesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\Wheel2GamesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\Wheel3GamesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\Wheel4GamesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\WheelGamesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </AdditionalFiles>
     <Page Include="View\MainWindowView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -92,6 +296,7 @@
     <Resource Include="Resources\ProgressBarImageBrush.png" />
   </ItemGroup>
   <ItemGroup>
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\BigBoxTheme.csproj" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -105,778 +310,291 @@
     <Resource Include="Resources\NES_BoxFront_Template.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Media\PlatformDevice\3DO Interactive Multiplayer.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Aamber Pegasus.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Acorn Archimedes.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Acorn Atom.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Acorn Electron.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Amiga CD32.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Amstrad CPC.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Amstrad GX4000.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Android.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\APF Imagination Machine.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\APF-MP1000.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Apogee BK-01.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Apple Bandai Pippin.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Apple II.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Apple IIGS.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Apple iOS.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Apple Mac OS.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Arcade.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Atari 2600.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Atari 5200.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Atari 7800.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Atari 800.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Atari Jaguar CD.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Atari Jaguar.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Atari Lynx.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Atari Pong.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Atari ST.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Atari XEGS.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Bally Astrocade.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Bandai Playdia.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\BBC Microcomputer System.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Bit Corporation Gamate.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Camputers Lynx.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Capcom Power System Changer.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Casio Loopy.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Casio PV-1000.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Coleco ADAM.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Colecovision.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Commodore 128.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Commodore 64.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Commodore Amiga CD32.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Commodore Amiga.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Commodore CDTV.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Commodore MAX Machine.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Commodore PET.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Commodore Plus 4.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Commodore VIC-20.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Dragon 32 and 64.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\EACA EG2000 Colour Genie.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Elektronika BK.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Emerson Arcadia 2001.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Enterprise.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Entex Adventure Vision.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Epoch Cassette Vision.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Epoch Game Pocket Computer.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Epoch Super Cassette Vision.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Exidy Sorcerer.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Fairchild Channel F.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Fujitsu FM Towns Marty.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Fujitsu FM-7.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Funtech Super Acan.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Game Wave Family Entertainment System.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Gamepark GP32.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\GCE Vectrex.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Hartung Game Master.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Intellivision.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Interton VC 4000.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Jupiter Ace.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Linux.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Lviv PC-01.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Magnavox Odyssey 2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Magnavox Odyssey.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Matra and Hachette Alice.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Mattel Aquarius.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Mattel HyperScan.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Mattel Intellivision.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Mega Duck.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Memotech MTX512.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Microsoft MSX.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Microsoft Xbox 360.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Microsoft Xbox One.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Microsoft Xbox Series X.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Microsoft Xbox.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Milton Bradley MicroVision.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Missing Systems.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\MS-DOS.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\MUGEN.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Nec PC Engine.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\NEC PC-8801.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\NEC PC-9801.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\NEC PC-FX.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\NEC Turbo Duo.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\NEC TurboGrafx-16.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\NEC TurboGrafx-CD.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Neo Geo Pocket Color.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Neo Geo Pocket.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Nintendo 3DS.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Nintendo 64.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Nintendo 64DD.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Nintendo Color TV Game.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Nintendo DS.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Nintendo Entertainment System.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Nintendo Famicom Disk System.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Nintendo Famicom.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Nintendo Game &amp; Watch.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Nintendo Game Boy Advance.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Nintendo Game Boy Color.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Nintendo Game Boy.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Nintendo GameCube.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Nintendo Pokemon Mini.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Nintendo Pokémon Mini.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Nintendo Satellaview.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Nintendo Super Gameboy.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Nintendo Switch.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Nintendo Virtual Boy.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Nintendo Wii U.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Nintendo Wii.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Nintendo Wiiware.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Nokia N-Gage.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Nuon.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\OpenBOR.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Othello Multivision.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Ouya.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\PC Engine SuperGrafx.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Philips CD-i.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Philips VG 5000.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Philips Videopac+.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Pinball.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Pioneer LaserActive.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\RCA Studio II.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\SAM Coupé.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sammy Atomiswave.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\ScummVM.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sega 32X.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sega CD 32X.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sega CD.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sega Dreamcast VMU.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sega Dreamcast.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sega Game Gear.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sega Genesis.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sega Master System.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sega Mega Drive.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sega Model 1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sega Model 2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sega Model 3.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sega Naomi 2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sega Naomi.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sega Nomad.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sega Pico.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sega Saturn.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sega SC-3000.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sega SG-1000.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sega Triforce.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sharp Twin Famicom.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sharp X1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sharp X68000.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sharp ZX-81.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sinclair ZX Spectrum.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\SNK Neo Geo AES.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\SNK Neo Geo CD.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\SNK Neo Geo MVS.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\SNK Neo Geo Pocket Color.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\SNK Neo Geo Pocket.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\SNK NeoGeo CD.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sony Playstation 2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sony Playstation 3.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sony Playstation 4.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sony Playstation Vita.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sony Playstation.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sony PocketStation.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sony PSP.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Sord M5.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Spectravideo.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Super Nintendo Entertainment System.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Taito Type X.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Tandy TRS-80.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Tapwave Zodiac.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Texas Instruments TI-99 and 4A.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Tiger Game.com.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Tiger R-Zone.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Tiger Telematics Gizmondo.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\TimeTop GameKing.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Tomy Tutor.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\TRS-80 Color Computer.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\VTech CreatiVision.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\VTech Socrates.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\VTech V.Smile.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Watara Supervision.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\Windows.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\WonderSwan Color.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\WonderSwan.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\WoW Action Max.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlatformDevice\XaviXPORT.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlayMode\2-Player Alternating.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlayMode\2-Player Simultaneous.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlayMode\3-Player Simultaneous.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlayMode\4-Player Alternating.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlayMode\4-Player Simultaneous.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlayMode\8-Player Alternating.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlayMode\8-Player Simultaneous.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlayMode\Cooperative.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlayMode\Fallback.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlayMode\Multiplayer.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\PlayMode\Single Player.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\0.0.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\0.1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\0.2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\0.3.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\0.4.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\0.5.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\0.6.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\0.7.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\0.8.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\0.9.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\0.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\1.0.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\1.1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\1.2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\1.3.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\1.4.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\1.5.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\1.6.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\1.7.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\1.8.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\1.9.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\2.0.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\2.1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\2.2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\2.3.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\2.4.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\2.5.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\2.6.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\2.7.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\2.8.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\2.9.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\3.0.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\3.1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\3.2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\3.3.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\3.4.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\3.5.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\3.6.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\3.7.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\3.8.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\3.9.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\4.0.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\4.1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\4.2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\4.3.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\4.4.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\4.5.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\4.6.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\4.7.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\4.8.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\4.9.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\StarRating\5.0.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Resource Include="Resources\DefaultBezelHorizontal.png" />
     <Resource Include="Resources\DefaultBezelVertical.png" />
     <Resource Include="Resources\LaunchBoxLogo.png" />
     <Resource Include="Resources\Moon.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Atari Jaguar\Horizontal.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Default\Horizontal.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Default\Vertical.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Nintendo Entertainment System\Horizontal.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Nintendo Game Boy Advance\Horizontal.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Nintendo Game Boy Color\Horizontal.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Nintendo GameCube\Horizontal.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Sega CD\Horizontal.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Sega Genesis\Horizontal.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Sony Playstation\Horizontal.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Super Nintendo Entertainment System\Horizontal.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\3DO Interactive Multiplayer.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Aamber Pegasus.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Acorn Archimedes.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Acorn Atom.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Acorn Electron.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Amiga CD32.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Amstrad CPC.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Amstrad GX4000.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Android.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\APF Imagination Machine.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\APF-MP1000.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Apogee BK-01.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Apple Bandai Pippin.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Apple II.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Apple IIGS.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Apple iOS.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Apple Mac OS.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Arcade.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Atari 2600.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Atari 5200.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Atari 7800.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Atari 800.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Atari Jaguar CD.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Atari Jaguar.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Atari Lynx.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Atari Pong.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Atari ST.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Atari XEGS.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Bally Astrocade.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Bandai Playdia.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\BBC Microcomputer System.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Bit Corporation Gamate.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Camputers Lynx.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Capcom Power System Changer.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Casio Loopy.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Casio PV-1000.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Coleco ADAM.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Colecovision.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Commodore 128.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Commodore 64.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Commodore Amiga CD32.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Commodore Amiga.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Commodore CDTV.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Commodore MAX Machine.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Commodore PET.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Commodore Plus 4.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Commodore VIC-20.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Dragon 32 and 64.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\EACA EG2000 Colour Genie.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Elektronika BK.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Emerson Arcadia 2001.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Enterprise.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Entex Adventure Vision.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Epoch Cassette Vision.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Epoch Game Pocket Computer.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Epoch Super Cassette Vision.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Exidy Sorcerer.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Fairchild Channel F.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Fujitsu FM Towns Marty.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Fujitsu FM-7.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Funtech Super Acan.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Game Wave Family Entertainment System.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Gamepark GP32.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\GCE Vectrex.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Hartung Game Master.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Intellivision.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Interton VC 4000.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Jupiter Ace.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Linux.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Lviv PC-01.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Magnavox Odyssey 2.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Magnavox Odyssey.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Matra and Hachette Alice.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Mattel Aquarius.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Mattel HyperScan.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Mattel Intellivision.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Mega Duck.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Memotech MTX512.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Microsoft MSX.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Microsoft Xbox 360.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Microsoft Xbox One.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Microsoft Xbox Series X.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Microsoft Xbox.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Milton Bradley MicroVision.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Missing Systems.txt" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\MS-DOS.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\MUGEN.jpg" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Nec PC Engine.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\NEC PC-8801.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\NEC PC-9801.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\NEC PC-FX.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\NEC Turbo Duo.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\NEC TurboGrafx-16.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\NEC TurboGrafx-CD.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Neo Geo Pocket Color.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Neo Geo Pocket.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Nintendo 3DS.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Nintendo 64.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Nintendo 64DD.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Nintendo Color TV Game.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Nintendo DS.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Nintendo Entertainment System.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Nintendo Famicom Disk System.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Nintendo Famicom.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Nintendo Game &amp; Watch.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Nintendo Game Boy Advance.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Nintendo Game Boy Color.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Nintendo Game Boy.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Nintendo GameCube.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Nintendo Pokemon Mini.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Nintendo Pokémon Mini.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Nintendo Satellaview.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Nintendo Super Gameboy.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Nintendo Switch.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Nintendo Virtual Boy.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Nintendo Wii U.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Nintendo Wii.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Nintendo Wiiware.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Nokia N-Gage.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Nuon.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\OpenBOR.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Othello Multivision.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Ouya.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\PC Engine SuperGrafx.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Philips CD-i.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Philips VG 5000.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Philips Videopac+.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Pinball.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Pioneer LaserActive.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\RCA Studio II.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\SAM Coupé.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sammy Atomiswave.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\ScummVM.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sega 32X.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sega CD 32X.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sega CD.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sega Dreamcast VMU.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sega Dreamcast.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sega Game Gear.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sega Genesis.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sega Master System.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sega Mega Drive.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sega Model 1.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sega Model 2.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sega Model 3.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sega Naomi 2.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sega Naomi.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sega Nomad.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sega Pico.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sega Saturn.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sega SC-3000.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sega SG-1000.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sega Triforce.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sharp Twin Famicom.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sharp X1.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sharp X68000.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sharp ZX-81.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sinclair ZX Spectrum.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\SNK Neo Geo AES.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\SNK Neo Geo CD.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\SNK Neo Geo MVS.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\SNK Neo Geo Pocket Color.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\SNK Neo Geo Pocket.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\SNK NeoGeo CD.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sony Playstation 2.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sony Playstation 3.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sony Playstation 4.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sony Playstation Vita.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sony Playstation.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sony PocketStation.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sony PSP.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Sord M5.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Spectravideo.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Super Nintendo Entertainment System.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Taito Type X.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Tandy TRS-80.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Tapwave Zodiac.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Texas Instruments TI-99 and 4A.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Tiger Game.com.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Tiger R-Zone.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Tiger Telematics Gizmondo.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\TimeTop GameKing.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Tomy Tutor.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\TRS-80 Color Computer.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\VTech CreatiVision.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\VTech Socrates.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\VTech V.Smile.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Watara Supervision.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\Windows.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\WonderSwan Color.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\WonderSwan.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\WoW Action Max.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlatformDevice\XaviXPORT.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlayMode\2-Player Alternating.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlayMode\2-Player Simultaneous.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlayMode\3-Player Simultaneous.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlayMode\4-Player Alternating.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlayMode\4-Player Simultaneous.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlayMode\8-Player Alternating.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlayMode\8-Player Simultaneous.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlayMode\Cooperative.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlayMode\Fallback.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlayMode\Multiplayer.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlayMode\Single Player.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\0.0.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\0.1.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\0.2.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\0.3.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\0.4.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\0.5.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\0.6.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\0.7.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\0.8.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\0.9.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\0.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\1.0.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\1.1.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\1.2.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\1.3.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\1.4.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\1.5.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\1.6.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\1.7.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\1.8.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\1.9.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\2.0.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\2.1.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\2.2.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\2.3.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\2.4.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\2.5.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\2.6.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\2.7.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\2.8.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\2.9.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\3.0.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\3.1.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\3.2.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\3.3.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\3.4.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\3.5.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\3.6.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\3.7.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\3.8.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\3.9.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\4.0.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\4.1.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\4.2.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\4.3.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\4.4.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\4.5.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\4.6.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\4.7.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\4.8.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\4.9.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\5.0.png" />
+    <AdditionalFiles Include="LaunchBox\Plugins\System.Speech.dll" />
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\10.0.txt" />
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\9.4.5.txt" />
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\BigBoxTheme.sln" />
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Images\Platforms\Banner\ReadMe.txt" />
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Images\Platforms\Clear Logo\ReadMe.txt" />
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Images\Platforms\Device\ReadMe.txt" />
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Images\Platforms\Fanart\ReadMe.txt" />
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\References\Caliburn.Micro.dll" />
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\References\Caliburn.Micro.Platform.Core.dll" />
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\References\Caliburn.Micro.Platform.dll" />
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\References\System.Windows.Interactivity.dll" />
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\ThemeSettings.xml" />
+    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Videos\Platforms\ReadMe.txt" />
     <Content Include="Unbroken.LaunchBox.Plugins.dll" />
     <Resource Include="Resources\DefaultBackground.jpg" />
     <Resource Include="Resources\MoreInfo_Selected.png" />
@@ -885,13 +603,24 @@
     <Resource Include="Resources\PlayButton_Unselected.png" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Media\Images\" />
-    <Folder Include="Media\Logs\" />
+    <Folder Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Arcade\" />
+    <Folder Include="LaunchBox\Plugins\Eclipse\Media\Bezels\NEC TurboGrafx-16\" />
+    <Folder Include="LaunchBox\Plugins\Eclipse\Media\Bezels\NEC TurboGrafx-CD\" />
+    <Folder Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Nintendo 64\" />
+    <Folder Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Nintendo Wii\" />
+    <Folder Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Sega Saturn\" />
+    <Folder Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Sony Playstation 3\" />
+    <Folder Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Sony PSP\" />
+    <Folder Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Windows\" />
+    <Folder Include="LaunchBox\StartupThemes\Eclipse\Images\" />
+    <Folder Include="LaunchBox\StartupThemes\Eclipse\Media\" />
+    <Folder Include="LaunchBox\Themes\Eclipse\Plugins\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "C:\Users\Adam\source\repos\Eclipse\Eclipse\bin\Debug\Eclipse.dll" "C:\Users\Adam\Documents\LaunchBox\Plugins\" /K /D /H /Y
-xcopy "C:\Users\Adam\source\repos\Eclipse\Eclipse\bin\Debug\WpfAnimatedGif.dll" "C:\Users\Adam\Documents\LaunchBox\Plugins\" /K /D /H /Y
-xcopy "C:\Users\Adam\source\repos\Eclipse\Eclipse\bin\Debug\Media" "C:\Users\Adam\Documents\LaunchBox\Plugins\Eclipse\Media" /K /D /H /Y /E</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(SolutionDir)Eclipse\LaunchBox\" "$(TargetDir)LaunchBox\"  /K /D /H /Y /E
+xcopy "$(TargetDir)Eclipse.dll" "$(TargetDir)LaunchBox\Plugins" /K /D /H /Y
+xcopy "$(TargetDir)WpfAnimatedGif.dll" "$(TargetDir)LaunchBox\Plugins" /K /D /H /Y
+xcopy "$(TargetDir)LaunchBox\" "C:\Users\Adam\Documents\LaunchBox\" /K /D /H /Y /E</PostBuildEvent>
   </PropertyGroup>
 </Project>

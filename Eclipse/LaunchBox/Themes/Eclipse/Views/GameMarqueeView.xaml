@@ -1,0 +1,18 @@
+﻿<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="562"
+             d:DesignWidth="1000"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch"
+             FocusVisualStyle="{x:Null}"
+             BorderThickness="0"
+             Margin="0"
+             Padding="0"
+             Background="#000">
+	<Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Image Source="{Binding Path=SelectedGame.MarqueeImagePath}" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" />
+    </Grid>
+</UserControl>

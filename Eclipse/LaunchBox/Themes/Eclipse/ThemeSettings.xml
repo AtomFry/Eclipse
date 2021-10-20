@@ -1,0 +1,32 @@
+<?xml version="1.0" standalone="yes"?>
+<LaunchBox>
+  <ThemeSettings>
+    <ForceGamesDisableBackgroundVideos>false</ForceGamesDisableBackgroundVideos>
+    <ForceGamesEnableBackgroundVideos>false</ForceGamesEnableBackgroundVideos>
+    <ForcePlatformsDisableBackgroundVideos>false</ForcePlatformsDisableBackgroundVideos>
+    <ForcePlatformsEnableBackgroundVideos>false</ForcePlatformsEnableBackgroundVideos>
+    <DisablePlatformWheel1FiltersView>false</DisablePlatformWheel1FiltersView>
+    <DisablePlatformWheel2FiltersView>false</DisablePlatformWheel2FiltersView>
+    <DisablePlatformWheel3FiltersView>false</DisablePlatformWheel3FiltersView>
+    <DisablePlatformWheel4FiltersView>false</DisablePlatformWheel4FiltersView>
+    <DisableBoxesGamesView>false</DisableBoxesGamesView>
+    <DisableCoverFlowGamesView>false</DisableCoverFlowGamesView>
+    <DisableCoverFlowWithDetailsGamesView>false</DisableCoverFlowWithDetailsGamesView>
+    <DisableWheelGamesView>false</DisableWheelGamesView>
+    <DisableWheel2GamesView>true</DisableWheel2GamesView>
+    <DisableWheel3GamesView>true</DisableWheel3GamesView>
+    <DisableWheel4GamesView>true</DisableWheel4GamesView>
+    <DisableHorizontalWheel1GamesView>true</DisableHorizontalWheel1GamesView>
+    <DisableHorizontalWheel2GamesView>true</DisableHorizontalWheel2GamesView>
+    <DisableHorizontalWheel3GamesView>true</DisableHorizontalWheel3GamesView>
+    <DisableWallGamesView>false</DisableWallGamesView>
+    <DisableWall2GamesView>false</DisableWall2GamesView>
+    <DisableWall3GamesView>false</DisableWall3GamesView>
+    <DisableWall4GamesView>false</DisableWall4GamesView>
+    <ForceDisablePlatformNotes>false</ForceDisablePlatformNotes>
+    <ForceOverrideBackgroundFade>false</ForceOverrideBackgroundFade>
+    <BackgroundFadeValue>0</BackgroundFadeValue>
+    <Force16X9AspectRatio>false</Force16X9AspectRatio>
+    <Force4X3AspectRatio>false</Force4X3AspectRatio>
+  </ThemeSettings>
+</LaunchBox>

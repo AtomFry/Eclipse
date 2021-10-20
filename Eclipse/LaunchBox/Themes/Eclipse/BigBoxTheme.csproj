@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="BigBox">
+      <HintPath>..\..\Core\BigBox.dll</HintPath>
+    </Reference>
+    <Reference Include="Caliburn.Micro">
+      <HintPath>..\..\Core\Caliburn.Micro.dll</HintPath>
+    </Reference>
+    <Reference Include="Caliburn.Micro.Platform">
+      <HintPath>..\..\Core\Caliburn.Micro.Platform.dll</HintPath>
+    </Reference>
+    <Reference Include="LaunchBox">
+      <HintPath>..\..\Core\LaunchBox.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows.Interactivity">
+      <HintPath>..\..\Core\System.Windows.Interactivity.dll</HintPath>
+    </Reference>
+    <Reference Include="Unbroken">
+      <HintPath>..\..\Core\Unbroken.dll</HintPath>
+    </Reference>
+    <Reference Include="Unbroken.LaunchBox">
+      <HintPath>..\..\Core\Unbroken.LaunchBox.dll</HintPath>
+    </Reference>
+    <Reference Include="Unbroken.LaunchBox.Plugins">
+      <HintPath>..\..\Core\Unbroken.LaunchBox.Plugins.dll</HintPath>
+    </Reference>
+    <Reference Include="Unbroken.LaunchBox.Windows">
+      <HintPath>..\..\Core\Unbroken.LaunchBox.Windows.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

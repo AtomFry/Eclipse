@@ -1,0 +1,55 @@
+﻿<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:transitions="clr-namespace:Unbroken.LaunchBox.Windows.Transitions;assembly=Unbroken.LaunchBox.Windows"
+             xmlns:coverFlow="clr-namespace:Unbroken.LaunchBox.Windows.Controls.CoverFlow;assembly=Unbroken.LaunchBox.Windows"
+             mc:Ignorable="d"
+             d:DesignHeight="562"
+             d:DesignWidth="1000"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch"
+             FocusVisualStyle="{x:Null}"
+             BorderThickness="0"
+             Margin="0"
+             Padding="0"
+             Background="#000">
+	<Canvas Name="Canvas">
+        <transitions:TransitionPresenter TransitionSelector="{Binding BackgroundTransitionSelector}" Content="{Binding BackgroundView}" Height="{Binding ElementName=Canvas, Path=ActualHeight}" Width="{Binding ElementName=Canvas, Path=ActualWidth}" IsContentVideo="true" />
+        <Grid Height="{Binding ElementName=Canvas, Path=ActualHeight}" Width="{Binding ElementName=Canvas, Path=ActualWidth}">
+			<Grid.Background>
+				<SolidColorBrush Color="Black" Opacity="{Binding BackgroundFade}" />
+			</Grid.Background>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="42*" />
+                <ColumnDefinition Width="4*" />
+                <ColumnDefinition Width="92*" />
+            </Grid.ColumnDefinitions>
+            <coverFlow:FlowControl x:Name="FlowControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" CoverFactory="{Binding CoverFactory}" ImageType="Clear Logo"
+                CurveAmount="4.5" CameraZPosition="3.0" VisibleCount="14" PageSize="6" Spacing="1.0" ItemZPosition="1.0" SelectedItemZPosition="2.0" />
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="5*" />
+                    <RowDefinition Height="50*" />
+                    <RowDefinition Height="2*" />
+                    <RowDefinition Height="25*" />
+                    <RowDefinition Height="2*" />
+                    <RowDefinition Height="25*" />
+                    <RowDefinition Height="5*" />
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="44*" />
+                        <ColumnDefinition Width="4*" />
+                        <ColumnDefinition Width="57*" />
+                        <ColumnDefinition Width="4*" />
+                    </Grid.ColumnDefinitions>
+                    <transitions:TransitionPresenter Grid.Column="0" TransitionSelector="{Binding ImageVideoTransitionSelector}" Content="{Binding ImageVideoView}" IsContentVideo="true" />
+                    <transitions:TransitionPresenter Grid.Column="2" TransitionSelector="{Binding DetailsTransitionSelector}" Content="{Binding DetailsView}" />
+                </Grid>
+                <transitions:TransitionPresenter Grid.Row="3" TransitionSelector="{Binding TopBoxesTransitionSelector}" Content="{Binding TopBoxesView}" />
+                <transitions:TransitionPresenter Grid.Row="5" TransitionSelector="{Binding BottomBoxesTransitionSelector}" Content="{Binding BottomBoxesView}" />
+            </Grid>
+        </Grid>
+    </Canvas>
+</UserControl>

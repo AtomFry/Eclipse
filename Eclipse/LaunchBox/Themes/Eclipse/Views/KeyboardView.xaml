@@ -1,0 +1,94 @@
+﻿<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="200"
+             d:DesignWidth="400"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch"
+             BorderThickness="3"
+             BorderBrush="White"
+             FocusVisualStyle="{x:Null}">
+    <UserControl.Background>
+        <SolidColorBrush Color="Black" Opacity="0.85" />
+    </UserControl.Background>
+    <Grid Margin="3,3,3,3">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20*" />
+            <RowDefinition Height="20*" />
+            <RowDefinition Height="20*" />
+            <RowDefinition Height="20*" />
+            <RowDefinition Height="20*" />
+            <RowDefinition Height="20*" />
+            <RowDefinition Height="20*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="20*" />
+            <ColumnDefinition Width="20*" />
+            <ColumnDefinition Width="20*" />
+            <ColumnDefinition Width="20*" />
+            <ColumnDefinition Width="20*" />
+            <ColumnDefinition Width="20*" />
+            <ColumnDefinition Width="20*" />
+            <ColumnDefinition Width="20*" />
+            <ColumnDefinition Width="20*" />
+            <ColumnDefinition Width="20*" />
+        </Grid.ColumnDefinitions>
+        <TextBox Name="TextBox" Text="{Binding Text}" Grid.Row="0" Grid.ColumnSpan="10" FontWeight="Bold" />
+        <TextBlock Tag="1"  Text="{Binding Key1Text}" Background="{Binding Key1Background}" Grid.Row="1" Grid.Column="0" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="2" Text="{Binding Key2Text}" Background="{Binding Key2Background}" Grid.Row="1" Grid.Column="1" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="3" Text="{Binding Key3Text}" Background="{Binding Key3Background}" Grid.Row="1" Grid.Column="2" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="4" Text="{Binding Key4Text}" Background="{Binding Key4Background}" Grid.Row="1" Grid.Column="3" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="5" Text="{Binding Key5Text}" Background="{Binding Key5Background}" Grid.Row="1" Grid.Column="4" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="6" Text="{Binding Key6Text}" Background="{Binding Key6Background}" Grid.Row="1" Grid.Column="5" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="7" Text="{Binding Key7Text}" Background="{Binding Key7Background}" Grid.Row="1" Grid.Column="6" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="8" Text="{Binding Key8Text}" Background="{Binding Key8Background}" Grid.Row="1" Grid.Column="7" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="9" Text="{Binding Key9Text}" Background="{Binding Key9Background}" Grid.Row="1" Grid.Column="8" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="0" Text="{Binding Key0Text}" Background="{Binding Key0Background}" Grid.Row="1" Grid.Column="9" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="q" Text="{Binding KeyQText}" Background="{Binding KeyQBackground}" Grid.Row="2" Grid.Column="0" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="w" Text="{Binding KeyWText}" Background="{Binding KeyWBackground}" Grid.Row="2" Grid.Column="1" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="e" Text="{Binding KeyEText}" Background="{Binding KeyEBackground}" Grid.Row="2" Grid.Column="2" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="r" Text="{Binding KeyRText}" Background="{Binding KeyRBackground}" Grid.Row="2" Grid.Column="3" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="t" Text="{Binding KeyTText}" Background="{Binding KeyTBackground}" Grid.Row="2" Grid.Column="4" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="y" Text="{Binding KeyYText}" Background="{Binding KeyYBackground}" Grid.Row="2" Grid.Column="5" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="u" Text="{Binding KeyUText}" Background="{Binding KeyUBackground}" Grid.Row="2" Grid.Column="6" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="i" Text="{Binding KeyIText}" Background="{Binding KeyIBackground}" Grid.Row="2" Grid.Column="7" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="o" Text="{Binding KeyOText}" Background="{Binding KeyOBackground}" Grid.Row="2" Grid.Column="8" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="p" Text="{Binding KeyPText}" Background="{Binding KeyPBackground}" Grid.Row="2" Grid.Column="9" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="a" Text="{Binding KeyAText}" Background="{Binding KeyABackground}" Grid.Row="3" Grid.Column="0" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="s" Text="{Binding KeySText}" Background="{Binding KeySBackground}" Grid.Row="3" Grid.Column="1" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="d" Text="{Binding KeyDText}" Background="{Binding KeyDBackground}" Grid.Row="3" Grid.Column="2" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="f" Text="{Binding KeyFText}" Background="{Binding KeyFBackground}" Grid.Row="3" Grid.Column="3" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="g" Text="{Binding KeyGText}" Background="{Binding KeyGBackground}" Grid.Row="3" Grid.Column="4" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="h" Text="{Binding KeyHText}" Background="{Binding KeyHBackground}" Grid.Row="3" Grid.Column="5" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="j" Text="{Binding KeyJText}" Background="{Binding KeyJBackground}" Grid.Row="3" Grid.Column="6" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="k" Text="{Binding KeyKText}" Background="{Binding KeyKBackground}" Grid.Row="3" Grid.Column="7" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="l" Text="{Binding KeyLText}" Background="{Binding KeyLBackground}" Grid.Row="3" Grid.Column="8" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="-" Text="{Binding KeyDashText}" Background="{Binding KeyDashBackground}" Grid.Row="3" Grid.Column="9" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="z" Text="{Binding KeyZText}" Background="{Binding KeyZBackground}" Grid.Row="4" Grid.Column="0" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="x" Text="{Binding KeyXText}" Background="{Binding KeyXBackground}" Grid.Row="4" Grid.Column="1" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="c" Text="{Binding KeyCText}" Background="{Binding KeyCBackground}" Grid.Row="4" Grid.Column="2" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="v" Text="{Binding KeyVText}" Background="{Binding KeyVBackground}" Grid.Row="4" Grid.Column="3" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="b" Text="{Binding KeyBText}" Background="{Binding KeyBBackground}" Grid.Row="4" Grid.Column="4" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="n" Text="{Binding KeyNText}" Background="{Binding KeyNBackground}" Grid.Row="4" Grid.Column="5" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="m" Text="{Binding KeyMText}" Background="{Binding KeyMBackground}" Grid.Row="4" Grid.Column="6" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="," Text="{Binding KeyCommaText}" Background="{Binding KeyCommaBackground}" Grid.Row="4" Grid.Column="7" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="." Text="{Binding KeyPeriodText}" Background="{Binding KeyPeriodBackground}" Grid.Row="4" Grid.Column="8" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="/" Text="{Binding KeySlashText}" Background="{Binding KeySlashBackground}" Grid.Row="4" Grid.Column="9" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="Shift" Text="{Binding KeyShiftText}" Background="{Binding KeyShiftBackground}" Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="=" Text="{Binding KeyEqualsText}" Background="{Binding KeyEqualsBackground}" Grid.Row="5" Grid.Column="2" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag=" " Text="{Binding KeySpaceText}" Background="{Binding KeySpaceBackground}" Grid.Row="5" Grid.Column="3" Grid.ColumnSpan="4" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="Delete" Text="{Binding KeyDeleteText}" Background="{Binding KeyDeleteBackground}" Grid.Row="5" Grid.Column="7" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="Backspace" Text="{Binding KeyBackspaceText}" Background="{Binding KeyBackspaceBackground}" Grid.Row="5" Grid.Column="8" Grid.ColumnSpan="2" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="Left" Text="{Binding KeyLeftText}" Background="{Binding KeyLeftBackground}" Grid.Row="6" Grid.Column="0" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="Right" Text="{Binding KeyRightText}" Background="{Binding KeyRightBackground}" Grid.Row="6" Grid.Column="1" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="`" Text="{Binding KeyBacktickText}" Background="{Binding KeyBacktickBackground}" Grid.Row="6" Grid.Column="2" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="\" Text="{Binding KeyBackslashText}" Background="{Binding KeyBackslashBackground}" Grid.Row="6" Grid.Column="3" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag=";" Text="{Binding KeyColonText}" Background="{Binding KeyColonBackground}" Grid.Row="6" Grid.Column="4" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="'" Text="{Binding KeyQuotesText}" Background="{Binding KeyQuotesBackground}" Grid.Row="6" Grid.Column="5" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="[" Text="{Binding KeyLeftBraceText}" Background="{Binding KeyLeftBraceBackground}" Grid.Row="6" Grid.Column="6" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="]" Text="{Binding KeyRightBraceText}" Background="{Binding KeyRightBraceBackground}" Grid.Row="6" Grid.Column="7" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+        <TextBlock Tag="Done" Text="{Binding KeyDoneText}" Background="{Binding KeyDoneBackground}" Grid.Row="6" Grid.Column="8" Grid.ColumnSpan="2" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3,3,3,3" TextAlignment="Center" Padding="0,5,0,0" />
+    </Grid>
+</UserControl>
