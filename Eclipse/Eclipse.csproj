@@ -425,7 +425,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(SolutionDir)Eclipse\LaunchBox\" "$(TargetDir)LaunchBox\"  /K /D /H /Y /E
+    <PostBuildEvent>RMDIR "$(TargetDir)LaunchBox\" /Q /S
+xcopy "$(SolutionDir)Eclipse\LaunchBox\" "$(TargetDir)LaunchBox\"  /K /D /H /Y /E
 xcopy "$(TargetDir)Eclipse.dll" "$(TargetDir)LaunchBox\Plugins" /K /D /H /Y
 xcopy "$(TargetDir)WpfAnimatedGif.dll" "$(TargetDir)LaunchBox\Plugins" /K /D /H /Y
 xcopy "$(TargetDir)LaunchBox\" "C:\Users\Adam\Documents\LaunchBox\" /K /D /H /Y /E</PostBuildEvent>
