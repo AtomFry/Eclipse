@@ -298,13 +298,6 @@ namespace Eclipse.Models
                 return new Uri(backgroundImagePath);
             }
 
-            // fallback to platform device 
-            string path = $"{DirectoryInfoHelper.Instance.MediaFolder}\\PlatformDevice\\{Game.Platform}.png";
-            if (File.Exists(path))
-            {
-                return new Uri(path);
-            }
-
             // default resource provided for final fallback in case platform is not found
             return ResourceImages.DefaultBackground;
         }
