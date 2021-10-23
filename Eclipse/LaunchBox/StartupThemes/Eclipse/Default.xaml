@@ -69,6 +69,21 @@
         <ColumnDefinition Width="*" />
         <ColumnDefinition Width="*" />                  
       </Grid.ColumnDefinitions>
+      
+      <!-- Game Screenshot Image -->
+      <Image 
+        Grid.Row="0" Grid.RowSpan="18"
+        Grid.Column="0" Grid.ColumnSpan="32"
+        Source="{Binding SelectedGame.ScreenshotImagePath}" 
+        Stretch="UniformToFill" 
+        VerticalAlignment="Center" 
+        HorizontalAlignment="Center" 
+        RenderOptions.BitmapScalingMode="HighQuality">
+        <Image.Effect>
+          <BlurEffect Radius="5" />
+        </Image.Effect>
+      </Image>
+
       <!-- Game Background Image -->
       <Image 
         Grid.Row="0" Grid.RowSpan="18"
