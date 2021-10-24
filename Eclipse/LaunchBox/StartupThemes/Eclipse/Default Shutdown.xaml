@@ -69,7 +69,22 @@
         <ColumnDefinition Width="*" />
         <ColumnDefinition Width="*" />                  
       </Grid.ColumnDefinitions>
-      <!-- Game Screenshot Image -->
+
+      <!-- Fallback to default background image if game screenshot doesn't exist -->
+      <Image 
+        Grid.Row="0" Grid.RowSpan="18"
+        Grid.Column="0" Grid.ColumnSpan="32"
+        Source="pack://siteoforigin:,,,/Plugins/Eclipse/Media/DefaultBackground/DefaultBackground.jpg" 
+        Stretch="UniformToFill" 
+        VerticalAlignment="Center" 
+        HorizontalAlignment="Center" 
+        RenderOptions.BitmapScalingMode="HighQuality">
+        <Image.Effect>
+          <BlurEffect Radius="5" />
+        </Image.Effect>
+      </Image>
+      
+      <!-- Fallback to game screenshot image if background image path doesn't exist -->
       <Image 
         Grid.Row="0" Grid.RowSpan="18"
         Grid.Column="0" Grid.ColumnSpan="32"
@@ -95,7 +110,7 @@
         <Image.Effect>
           <BlurEffect Radius="5" />
         </Image.Effect>
-      </Image>
+      </Image>      
       
       <!-- Selected game logo and details -->
       <Grid Name="Grid_Selected_Game_Heading"

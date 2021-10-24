@@ -2110,7 +2110,6 @@ namespace Eclipse.View
         public Uri SettingsIconWhite { get; } = ResourceImages.SettingsIconWhite;
 
         public Uri LaunchBoxLogo { get; } = ResourceImages.LaunchBoxLogo;
-        public Uri Moon { get; } = ResourceImages.Moon;
 
         private FeatureGameOption featureOption;
         public FeatureGameOption FeatureOption

@@ -106,6 +106,19 @@ namespace Eclipse.Helpers
             }
         }
 
+        private string defaultBackgroundImagePath;
+        public string DefaultBackgroundImagePath
+        {
+            get
+            {
+                if(string.IsNullOrWhiteSpace(defaultBackgroundImagePath))
+                {
+                    defaultBackgroundImagePath = $"{MediaFolder}\\DefaultBackground\\DefaultBackground.jpg";
+                }
+                return defaultBackgroundImagePath;
+            }
+        }
+
         private string mediaResolutionSpecificFolder;
         public string MediaResolutionSpecificFolder
         {

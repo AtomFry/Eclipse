@@ -313,7 +313,6 @@
     <Resource Include="Resources\DefaultBezelHorizontal.png" />
     <Resource Include="Resources\DefaultBezelVertical.png" />
     <Resource Include="Resources\LaunchBoxLogo.png" />
-    <Resource Include="Resources\Moon.png" />
     <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Atari Jaguar\Horizontal.png" />
     <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Default\Horizontal.png" />
     <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Default\Vertical.png" />
@@ -403,7 +402,6 @@
     <AdditionalFiles Include="LaunchBox\Themes\Eclipse\ThemeSettings.xml" />
     <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Videos\Platforms\ReadMe.txt" />
     <Content Include="Unbroken.LaunchBox.Plugins.dll" />
-    <Resource Include="Resources\DefaultBackground.jpg" />
     <Resource Include="Resources\MoreInfo_Selected.png" />
     <Resource Include="Resources\MoreInfo_Unselected.png" />
     <Resource Include="Resources\PlayButton_Selected.png" />
