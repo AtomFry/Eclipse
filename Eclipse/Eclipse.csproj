@@ -83,207 +83,207 @@
     <Compile Include="View\MainWindowViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
-    <AdditionalFiles Include="LaunchBox\StartupThemes\Eclipse\Default Shutdown.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\StartupThemes\Eclipse\Default Shutdown.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\StartupThemes\Eclipse\Default.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\StartupThemes\Eclipse\Default.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\AchievementView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\AchievementView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\BackgroundView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\BackgroundView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\BoxesGamesView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\BoxesGamesView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\BoxGameView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\BoxGameView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\BoxListView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\BoxListView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\CoverFlowGamesView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\CoverFlowGamesView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\CoverFlowWithDetailsGamesView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\CoverFlowWithDetailsGamesView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\ErrorPopupView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\ErrorPopupView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\FilterDetailsView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\FilterDetailsView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\FilterView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\FilterView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\GameDetailsView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\GameDetailsView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\GameMarqueeView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\GameMarqueeView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\HorizontalMenuItemView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\HorizontalMenuItemView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\HorizontalWheel1GamesView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\HorizontalWheel1GamesView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\HorizontalWheel2GamesView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\HorizontalWheel2GamesView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\HorizontalWheel3GamesView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\HorizontalWheel3GamesView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\ImagesView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\ImagesView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\ImageView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\ImageView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\KeyboardView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\KeyboardView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\MenuItemView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\MenuItemView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\MusicNotificationView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\MusicNotificationView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\OptionsButtonMenuItemView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\OptionsButtonMenuItemView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\OptionsCheckBoxMenuItemView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\OptionsCheckBoxMenuItemView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\OptionsControllerButtonMenuItemView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\OptionsControllerButtonMenuItemView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\OptionsKeyboardMappingMenuItemView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\OptionsKeyboardMappingMenuItemView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\OptionsListMenuItemView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\OptionsListMenuItemView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\OptionsPage.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\OptionsPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\OptionsView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\OptionsView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\PlatformMarqueeView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\PlatformMarqueeView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\PlatformWheel1FiltersView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\PlatformWheel1FiltersView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\PlatformWheel2FiltersView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\PlatformWheel2FiltersView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\PlatformWheel3FiltersView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\PlatformWheel3FiltersView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\PlatformWheel4FiltersView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\PlatformWheel4FiltersView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\SystemView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\SystemView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\TextFiltersView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\TextFiltersView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\TextGamesView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\TextGamesView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\TextGameView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\TextGameView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\TextListView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\TextListView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\ThumbnailGameView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\ThumbnailGameView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\ThumbnailListView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\ThumbnailListView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\TwoColumnGameDetailsView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\TwoColumnGameDetailsView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\Wall2GamesView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\Wall2GamesView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\Wall3GamesView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\Wall3GamesView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\Wall4GamesView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\Wall4GamesView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\WallGamesView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\WallGamesView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\Wheel2GamesView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\Wheel2GamesView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\Wheel3GamesView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\Wheel3GamesView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\Wheel4GamesView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\Wheel4GamesView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Views\WheelGamesView.xaml">
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\WheelGamesView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
@@ -296,7 +296,7 @@
     <Resource Include="Resources\ProgressBarImageBrush.png" />
   </ItemGroup>
   <ItemGroup>
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\BigBoxTheme.csproj" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\BigBoxTheme.csproj" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -313,94 +313,97 @@
     <Resource Include="Resources\DefaultBezelHorizontal.png" />
     <Resource Include="Resources\DefaultBezelVertical.png" />
     <Resource Include="Resources\LaunchBoxLogo.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Atari Jaguar\Horizontal.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Default\Horizontal.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Default\Vertical.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Nintendo Entertainment System\Horizontal.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Nintendo Game Boy Advance\Horizontal.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Nintendo Game Boy Color\Horizontal.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Nintendo GameCube\Horizontal.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Sega CD\Horizontal.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Sega Genesis\Horizontal.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Sony Playstation\Horizontal.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Super Nintendo Entertainment System\Horizontal.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlayMode\2-Player Alternating.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlayMode\2-Player Simultaneous.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlayMode\3-Player Simultaneous.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlayMode\4-Player Alternating.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlayMode\4-Player Simultaneous.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlayMode\8-Player Alternating.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlayMode\8-Player Simultaneous.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlayMode\Cooperative.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlayMode\Fallback.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlayMode\Multiplayer.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\PlayMode\Single Player.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\0.0.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\0.1.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\0.2.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\0.3.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\0.4.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\0.5.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\0.6.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\0.7.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\0.8.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\0.9.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\0.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\1.0.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\1.1.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\1.2.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\1.3.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\1.4.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\1.5.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\1.6.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\1.7.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\1.8.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\1.9.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\2.0.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\2.1.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\2.2.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\2.3.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\2.4.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\2.5.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\2.6.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\2.7.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\2.8.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\2.9.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\3.0.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\3.1.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\3.2.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\3.3.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\3.4.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\3.5.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\3.6.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\3.7.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\3.8.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\3.9.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\4.0.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\4.1.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\4.2.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\4.3.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\4.4.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\4.5.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\4.6.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\4.7.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\4.8.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\4.9.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\Eclipse\Media\StarRating\5.0.png" />
-    <AdditionalFiles Include="LaunchBox\Plugins\System.Speech.dll" />
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\10.0.txt" />
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\9.4.5.txt" />
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\BigBoxTheme.sln" />
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Images\Platforms\Banner\ReadMe.txt" />
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Images\Platforms\Clear Logo\ReadMe.txt" />
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Images\Platforms\Device\ReadMe.txt" />
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Images\Platforms\Fanart\ReadMe.txt" />
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\References\Caliburn.Micro.dll" />
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\References\Caliburn.Micro.Platform.Core.dll" />
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\References\Caliburn.Micro.Platform.dll" />
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\References\System.Windows.Interactivity.dll" />
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\ThemeSettings.xml" />
-    <AdditionalFiles Include="LaunchBox\Themes\Eclipse\Videos\Platforms\ReadMe.txt" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Atari Jaguar\Horizontal.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Default\Horizontal.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Default\Vertical.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Nintendo Entertainment System\Horizontal.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Nintendo Game Boy Advance\Horizontal.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Nintendo Game Boy Color\Horizontal.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Nintendo GameCube\Horizontal.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Sega CD\Horizontal.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Sega Genesis\Horizontal.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Sony Playstation\Horizontal.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Super Nintendo Entertainment System\Horizontal.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\PlayMode\2-Player Alternating.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\PlayMode\2-Player Simultaneous.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\PlayMode\3-Player Simultaneous.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\PlayMode\4-Player Alternating.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\PlayMode\4-Player Simultaneous.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\PlayMode\8-Player Alternating.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\PlayMode\8-Player Simultaneous.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\PlayMode\Cooperative.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\PlayMode\Fallback.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\PlayMode\Multiplayer.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\PlayMode\Single Player.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\0.0.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\0.1.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\0.2.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\0.3.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\0.4.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\0.5.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\0.6.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\0.7.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\0.8.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\0.9.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\0.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\1.0.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\1.1.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\1.2.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\1.3.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\1.4.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\1.5.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\1.6.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\1.7.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\1.8.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\1.9.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\2.0.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\2.1.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\2.2.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\2.3.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\2.4.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\2.5.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\2.6.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\2.7.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\2.8.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\2.9.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\3.0.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\3.1.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\3.2.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\3.3.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\3.4.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\3.5.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\3.6.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\3.7.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\3.8.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\3.9.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\4.0.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\4.1.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\4.2.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\4.3.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\4.4.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\4.5.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\4.6.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\4.7.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\4.8.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\4.9.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\5.0.png" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\System.Speech.dll" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\10.0.txt" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\9.4.5.txt" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\BigBoxTheme.sln" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Images\Platforms\Banner\ReadMe.txt" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Images\Platforms\Clear Logo\ReadMe.txt" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Images\Platforms\Device\ReadMe.txt" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Images\Platforms\Fanart\ReadMe.txt" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\References\Caliburn.Micro.dll" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\References\Caliburn.Micro.Platform.Core.dll" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\References\Caliburn.Micro.Platform.dll" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\References\System.Windows.Interactivity.dll" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\ThemeSettings.xml" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Videos\Platforms\ReadMe.txt" />
+    <Content Include="Eclipse\README.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Unbroken.LaunchBox.Plugins.dll" />
     <Resource Include="Resources\MoreInfo_Selected.png" />
     <Resource Include="Resources\MoreInfo_Unselected.png" />
@@ -408,25 +411,25 @@
     <Resource Include="Resources\PlayButton_Unselected.png" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Arcade\" />
-    <Folder Include="LaunchBox\Plugins\Eclipse\Media\Bezels\NEC TurboGrafx-16\" />
-    <Folder Include="LaunchBox\Plugins\Eclipse\Media\Bezels\NEC TurboGrafx-CD\" />
-    <Folder Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Nintendo 64\" />
-    <Folder Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Nintendo Wii\" />
-    <Folder Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Sega Saturn\" />
-    <Folder Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Sony Playstation 3\" />
-    <Folder Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Sony PSP\" />
-    <Folder Include="LaunchBox\Plugins\Eclipse\Media\Bezels\Windows\" />
-    <Folder Include="LaunchBox\StartupThemes\Eclipse\Images\" />
-    <Folder Include="LaunchBox\StartupThemes\Eclipse\Media\" />
-    <Folder Include="LaunchBox\Themes\Eclipse\Plugins\" />
+    <Folder Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Arcade\" />
+    <Folder Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\NEC TurboGrafx-16\" />
+    <Folder Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\NEC TurboGrafx-CD\" />
+    <Folder Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Nintendo 64\" />
+    <Folder Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Nintendo Wii\" />
+    <Folder Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Sega Saturn\" />
+    <Folder Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Sony Playstation 3\" />
+    <Folder Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Sony PSP\" />
+    <Folder Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Windows\" />
+    <Folder Include="Eclipse\LaunchBox\StartupThemes\Eclipse\Images\" />
+    <Folder Include="Eclipse\LaunchBox\StartupThemes\Eclipse\Media\" />
+    <Folder Include="Eclipse\LaunchBox\Themes\Eclipse\Plugins\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>RMDIR "$(TargetDir)LaunchBox\" /Q /S
-xcopy "$(SolutionDir)Eclipse\LaunchBox\" "$(TargetDir)LaunchBox\"  /K /D /H /Y /E
-xcopy "$(TargetDir)Eclipse.dll" "$(TargetDir)LaunchBox\Plugins" /K /D /H /Y
-xcopy "$(TargetDir)WpfAnimatedGif.dll" "$(TargetDir)LaunchBox\Plugins" /K /D /H /Y
-xcopy "$(TargetDir)LaunchBox\" "C:\Users\Adam\Documents\LaunchBox\" /K /D /H /Y /E</PostBuildEvent>
+    <PostBuildEvent>RMDIR "$(TargetDir)Eclipse\" /Q /S
+xcopy "$(SolutionDir)Eclipse\Eclipse\" "$(TargetDir)Eclipse\"  /K /D /H /Y /E
+xcopy "$(TargetDir)Eclipse.dll" "$(TargetDir)Eclipse\LaunchBox\Plugins" /K /D /H /Y
+xcopy "$(TargetDir)WpfAnimatedGif.dll" "$(TargetDir)Eclipse\LaunchBox\Plugins" /K /D /H /Y
+xcopy "$(TargetDir)Eclipse\LaunchBox\" "C:\Users\Adam\Documents\LaunchBox\" /K /D /H /Y /E</PostBuildEvent>
   </PropertyGroup>
 </Project>
