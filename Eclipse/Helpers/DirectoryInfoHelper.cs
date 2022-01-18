@@ -30,7 +30,6 @@ namespace Eclipse.Helpers
 
                     if(folder.Equals("core", StringComparison.InvariantCultureIgnoreCase))
                     {
-
                         applicationPath = Directory.GetParent(applicationPath).FullName;
                     }
                 }
