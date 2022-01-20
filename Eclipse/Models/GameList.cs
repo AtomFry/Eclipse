@@ -12,8 +12,8 @@ namespace Eclipse.Models
     public class GameListSet
     {
         private List<GameList> gameLists;
-        public List<GameList> GameLists 
-        { 
+        public List<GameList> GameLists
+        {
             get
             {
                 return gameLists;
@@ -24,7 +24,7 @@ namespace Eclipse.Models
 
                 // when the collection of lists are set, setup their start/end index - used for random searches
                 int nextStart = 0;
-                foreach(GameList gameList in gameLists)
+                foreach (GameList gameList in gameLists)
                 {
                     gameList.ListSetStartIndex = nextStart;
                     nextStart = gameList.ListSetEndIndex + 1;
@@ -39,7 +39,7 @@ namespace Eclipse.Models
         {
             get
             {
-                if(totalGameCount == null)
+                if (totalGameCount == null)
                 {
                     totalGameCount = gameLists.Sum(gameList => gameList.MatchCount);
                 }
@@ -81,7 +81,7 @@ namespace Eclipse.Models
             get { return listCategoryType; }
             set
             {
-                if(listCategoryType != value)
+                if (listCategoryType != value)
                 {
                     listCategoryType = value;
                     PropertyChanged(this, new PropertyChangedEventArgs("ListCategoryType"));
@@ -254,12 +254,12 @@ namespace Eclipse.Models
         }
 
         public int ListSetStartIndex { get; set; }
-        public int ListSetEndIndex 
+        public int ListSetEndIndex
         {
             get
             {
                 return ListSetStartIndex + MatchCount - 1;
-            } 
+            }
         }
 
         private GameMatch game0;

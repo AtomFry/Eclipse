@@ -1511,7 +1511,10 @@ namespace Eclipse.View
                 // if current game is the first game then going left displays the category options
                 if (IsDisplayingResults && CurrentGameList.CurrentGameIndex == 0)
                 {
-                    IsPickingCategory = true;
+                    if (!held)
+                    {
+                        IsPickingCategory = true;
+                    }
                     return;
                 }
 
