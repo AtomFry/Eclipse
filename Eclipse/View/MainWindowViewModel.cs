@@ -11,14 +11,6 @@ using Eclipse.Models;
 using System.IO;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
-using System.Threading;
-using System.Security.Cryptography;
-using System.Windows;
-using System.Windows.Media.Imaging;
-using System.Diagnostics.Eventing.Reader;
-using System.Windows.Media.TextFormatting;
-using System.Security.RightsManagement;
-using System.Windows.Threading;
 using Eclipse.Helpers;
 
 namespace Eclipse.View
@@ -32,20 +24,23 @@ namespace Eclipse.View
 
     class MainWindowViewModel : INotifyPropertyChanged
     {
+        private static List<PlaylistGame> playlistGames;
+        private static bool loadedOnce = false;
         private List<Option<ListCategoryType>> listCategories;
         private ListCycle<GameList> listCycle;
         public List<GameListSet> GameListSets { get; set; }
 
         public SpeechRecognizer SpeechRecognizer { get; set; }
 
-        private ConcurrentBag<GameMatch> GameBag = new ConcurrentBag<GameMatch>();
-        private ConcurrentBag<GameFiles> GameFilesBag = new ConcurrentBag<GameFiles>();
+        private static ConcurrentBag<GameMatch> GameBag = new ConcurrentBag<GameMatch>();
+        private static ConcurrentBag<GameFiles> GameFilesBag = new ConcurrentBag<GameFiles>();
 
         // store platform bezels and default bezels in dictionary for easy lookup
         // this is probably terrible design but the problem is I won't know the video orientation in the GameMatch, I get that once the MediaElement is loaded over in the view
         // TODO: add game title (or id) here to take care of all game bezels too - currently game specific bezels are loaded up in the GameMatch
         // Key: <BezelType, BezelOrientation, Platform> 
-        private Dictionary<Tuple<BezelType, BezelOrientation, string>, Uri> BezelDictionary;
+        private static Dictionary<Tuple<BezelType, BezelOrientation, string>, Uri> BezelDictionary = new Dictionary<Tuple<BezelType, BezelOrientation, string>, Uri>();
+
 
         public FeatureChangeFunction FeatureChangeFunction { get; set; }
         public AnimateGameChangeFunction GameChangeFunction { get; set; }
@@ -416,8 +411,6 @@ namespace Eclipse.View
             IsInitializing = true;
             FeatureOption = FeatureGameOption.PlayGame;
 
-            BezelDictionary = new Dictionary<Tuple<BezelType, BezelOrientation, string>, Uri>();
-
             // get all the games from the launchbox install
             AllGames = DataService.GetGames();
         }
@@ -565,187 +558,190 @@ namespace Eclipse.View
         {
             try
             {
-                // create folders that are required by the plugin
-                DirectoryInfoHelper.CreateFolders();
-
-                // gets games by playlist so they can be used while processing games below 
-                List<PlaylistGame> playlistGames = GetPlaylistGames();
-
-                // get platform bezels
-                GetPlatformBezels();
-                GetDefaultBezels();
-
-                // get the total count of games for the progress bar
-                TotalProgressStepsCount = AllGames?.Count ?? 0;
-                GamesToProcessCount = AllGames?.Count ?? 0;
-
-                // prescale box front images - doing this here so it's easier to update the progress bar
-                // get list of image files in launchbox folders that are missing from the plug-in folders
-                List<FileInfo> gameFrontFilesToProcess = ImageScaler.GetMissingGameFrontImageFiles();
-                List<FileInfo> platformLogosToProcess = ImageScaler.GetMissingPlatformClearLogoFiles();
-                List<FileInfo> gameClearLogosToProcess = ImageScaler.GetMissingGameClearLogoFiles();
-                bool scaleDefaultBoxFrontImage = !ImageScaler.DefaultBoxFrontExists();
-
-                // get the desired height of pre-scaled box images based on the monitor's resolution
-                // only need this if we have anything to process
-                int desiredHeight = 0;
-                if ((gameFrontFilesToProcess.Count > 0) || (platformLogosToProcess.Count > 0) || (gameClearLogosToProcess.Count > 0) || scaleDefaultBoxFrontImage)
+                if(!loadedOnce)
                 {
-                    LoadingMessage = $"PRESCALING IMAGES";
-                    desiredHeight = ImageScaler.GetDesiredHeight();
-                }
+                    loadedOnce = true;
 
-                ImageScalingStartTime = DateTime.Now;
+                    // create folders that are required by the plugin
+                    DirectoryInfoHelper.CreateFolders();
 
+                    // gets games by playlist so they can be used while processing games below 
+                    playlistGames = GetPlaylistGames();
 
-                // add the count of missing files for the loading progress bar
-                TotalProgressStepsCount += (gameFrontFilesToProcess?.Count ?? 0);
-                TotalProgressStepsCount += (platformLogosToProcess?.Count ?? 0);
-                TotalProgressStepsCount += (gameClearLogosToProcess?.Count ?? 0);
+                    // get platform bezels
+                    GetPlatformBezels();
+                    GetDefaultBezels();
 
-                ImagesToScaleCount += (gameFrontFilesToProcess?.Count ?? 0);
-                ImagesToScaleCount += (platformLogosToProcess?.Count ?? 0);
-                ImagesToScaleCount += (gameClearLogosToProcess?.Count ?? 0);
+                    // get the total count of games for the progress bar
+                    TotalProgressStepsCount = AllGames?.Count ?? 0;
+                    GamesToProcessCount = AllGames?.Count ?? 0;
 
+                    // prescale box front images - doing this here so it's easier to update the progress bar
+                    // get list of image files in launchbox folders that are missing from the plug-in folders
+                    List<FileInfo> gameFrontFilesToProcess = ImageScaler.GetMissingGameFrontImageFiles();
+                    List<FileInfo> platformLogosToProcess = ImageScaler.GetMissingPlatformClearLogoFiles();
+                    List<FileInfo> gameClearLogosToProcess = ImageScaler.GetMissingGameClearLogoFiles();
+                    bool scaleDefaultBoxFrontImage = !ImageScaler.DefaultBoxFrontExists();
 
-                CompletedProgressStepsCount = 0;
-
-                // scale the game front images
-                foreach (FileInfo fileInfo in gameFrontFilesToProcess)
-                {
-                    ImagesScaledCount += 1;
-                    CompletedProgressStepsCount += 1;
-                    ImageScaler.ScaleImage(fileInfo, desiredHeight);
-                    updateLoadingScaledImagesMessage();
-                }
-
-                // scale the default box front image
-                if (scaleDefaultBoxFrontImage)
-                {
-                    ImagesScaledCount += 1;
-                    CompletedProgressStepsCount += 1;
-                    ImageScaler.ScaleDefaultBoxFront(desiredHeight);
-                    updateLoadingScaledImagesMessage();
-                }
-
-                // crop platform clear logos 
-                foreach (FileInfo fileInfo in platformLogosToProcess)
-                {
-                    ImagesScaledCount += 1;
-                    CompletedProgressStepsCount += 1;
-                    ImageScaler.CropImage(fileInfo);
-                    updateLoadingScaledImagesMessage();
-                }
-
-                // crop game clear logos 
-                foreach (FileInfo fileInfo in gameClearLogosToProcess)
-                {
-                    ImagesScaledCount += 1;
-                    CompletedProgressStepsCount += 1;
-                    ImageScaler.CropImage(fileInfo);
-                    updateLoadingScaledImagesMessage();
-                }
-
-                ListCreationStartTime = DateTime.Now;
-
-                Parallel.ForEach(AllGames, (game) =>
-                {
-                    GamesProcessedCount += 1;
-                    CompletedProgressStepsCount += 1;
-                    updateRemainingLoadingMessage();
-
-                    GameFiles gameFiles = new GameFiles(game);
-                    gameFiles.SetupFiles();
-                    GameFilesBag.Add(gameFiles);
-
-                    GameMatch gameMatch = new GameMatch(game, gameFiles);
-
-                    if (game.Favorite)
+                    // get the desired height of pre-scaled box images based on the monitor's resolution
+                    // only need this if we have anything to process
+                    int desiredHeight = 0;
+                    if ((gameFrontFilesToProcess.Count > 0) || (platformLogosToProcess.Count > 0) || (gameClearLogosToProcess.Count > 0) || scaleDefaultBoxFrontImage)
                     {
-                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Favorites, ListCategoryType.Favorites.ToString()));
+                        LoadingMessage = $"PRESCALING IMAGES";
+                        desiredHeight = ImageScaler.GetDesiredHeight();
                     }
 
-                    if(game.LastPlayedDate != null)
+                    ImageScalingStartTime = DateTime.Now;
+
+                    // add the count of missing files for the loading progress bar
+                    TotalProgressStepsCount += gameFrontFilesToProcess?.Count ?? 0;
+                    TotalProgressStepsCount += platformLogosToProcess?.Count ?? 0;
+                    TotalProgressStepsCount += gameClearLogosToProcess?.Count ?? 0;
+
+                    ImagesToScaleCount += gameFrontFilesToProcess?.Count ?? 0;
+                    ImagesToScaleCount += platformLogosToProcess?.Count ?? 0;
+                    ImagesToScaleCount += gameClearLogosToProcess?.Count ?? 0;
+
+                    CompletedProgressStepsCount = 0;
+
+                    // scale the game front images
+                    foreach (FileInfo fileInfo in gameFrontFilesToProcess)
                     {
-                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.History, ListCategoryType.History.ToString()));
+                        ImagesScaledCount += 1;
+                        CompletedProgressStepsCount += 1;
+                        ImageScaler.ScaleImage(fileInfo, desiredHeight);
+                        updateLoadingScaledImagesMessage();
                     }
 
-                    // create a dictionary of platform game matches
-                    GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Platform, game.Platform));
-
-                    // create a dictionary of release year game matches
-                    GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.ReleaseYear, gameMatch.ReleaseYear));
-
-                    // create a dictionary of play modes and game matches
-                    foreach (string playMode in game.PlayModes)
+                    // scale the default box front image
+                    if (scaleDefaultBoxFrontImage)
                     {
-                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.PlayMode, playMode));
+                        ImagesScaledCount += 1;
+                        CompletedProgressStepsCount += 1;
+                        ImageScaler.ScaleDefaultBoxFront(desiredHeight);
+                        updateLoadingScaledImagesMessage();
                     }
 
-                    // create a dictionary of Genres and game matches
-                    foreach (string genre in game.Genres)
+                    // crop platform clear logos 
+                    foreach (FileInfo fileInfo in platformLogosToProcess)
                     {
-                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Genre, genre));
+                        ImagesScaledCount += 1;
+                        CompletedProgressStepsCount += 1;
+                        ImageScaler.CropImage(fileInfo);
+                        updateLoadingScaledImagesMessage();
                     }
 
-                    // create a dictionary of publishers and game matches
-                    foreach (string publisher in game.Publishers)
+                    // crop game clear logos 
+                    foreach (FileInfo fileInfo in gameClearLogosToProcess)
                     {
-                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Publisher, publisher));
+                        ImagesScaledCount += 1;
+                        CompletedProgressStepsCount += 1;
+                        ImageScaler.CropImage(fileInfo);
+                        updateLoadingScaledImagesMessage();
                     }
 
-                    // create a dictionary of developers and game matches
-                    foreach (string developer in game.Developers)
-                    {
-                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Developer, developer));
-                    }
+                    ListCreationStartTime = DateTime.Now;
 
-                    // create a dictionary of series and game matches
-                    foreach (string series in game.SeriesValues)
+                    Parallel.ForEach(AllGames, (game) =>
                     {
-                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Series, series));
-                    }
+                        GamesProcessedCount += 1;
+                        CompletedProgressStepsCount += 1;
+                        updateRemainingLoadingMessage();
 
-                    // create a dictionary of playlist and game matches 
-                    var playlistGameQuery = from playlistGame in playlistGames where playlistGame.GameId == game.Id select playlistGame;
-                    foreach(PlaylistGame playlistGame in playlistGameQuery)
-                    {
-                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Playlist, playlistGame.Playlist));
-                    }
+                        GameFiles gameFiles = new GameFiles(game);
+                        gameFiles.SetupFiles();
+                        GameFilesBag.Add(gameFiles);
 
-                    // create voice recognition grammar library for the game
-                    GameTitleGrammarBuilder gameTitleGrammarBuilder = new GameTitleGrammarBuilder(game);
-                    foreach(GameTitleGrammar gameTitleGrammar in gameTitleGrammarBuilder.gameTitleGrammars)
-                    {
-                        if (!string.IsNullOrWhiteSpace(gameTitleGrammar.Title))
+                        GameMatch gameMatch = new GameMatch(game, gameFiles);
+
+                        if (game.Favorite)
                         {
-                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammar.Title, TitleMatchType.FullTitleMatch, gameTitleGrammar.Title));
+                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Favorites, ListCategoryType.Favorites.ToString()));
                         }
 
-                        if (!string.IsNullOrWhiteSpace(gameTitleGrammar.MainTitle))
+                        if (game.LastPlayedDate != null)
                         {
-                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammar.MainTitle, TitleMatchType.MainTitleMatch, gameTitleGrammar.Title));
+                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.History, ListCategoryType.History.ToString()));
                         }
 
-                        if (!string.IsNullOrWhiteSpace(gameTitleGrammar.Subtitle))
+                        // create a dictionary of platform game matches
+                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Platform, game.Platform));
+
+                        // create a dictionary of release year game matches
+                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.ReleaseYear, gameMatch.ReleaseYear));
+
+                        // create a dictionary of play modes and game matches
+                        foreach (string playMode in game.PlayModes)
                         {
-                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammar.Subtitle, TitleMatchType.SubtitleMatch, gameTitleGrammar.Title));
+                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.PlayMode, playMode));
                         }
 
-                        for (int i = 0; i < gameTitleGrammar.TitleWords.Count; i++)
+                        // create a dictionary of Genres and game matches
+                        foreach (string genre in game.Genres)
                         {
-                            StringBuilder sb = new StringBuilder();
-                            for (int j = i; j < gameTitleGrammar.TitleWords.Count; j++)
+                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Genre, genre));
+                        }
+
+                        // create a dictionary of publishers and game matches
+                        foreach (string publisher in game.Publishers)
+                        {
+                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Publisher, publisher));
+                        }
+
+                        // create a dictionary of developers and game matches
+                        foreach (string developer in game.Developers)
+                        {
+                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Developer, developer));
+                        }
+
+                        // create a dictionary of series and game matches
+                        foreach (string series in game.SeriesValues)
+                        {
+                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Series, series));
+                        }
+
+                        // create a dictionary of playlist and game matches 
+                        var playlistGameQuery = from playlistGame in playlistGames where playlistGame.GameId == game.Id select playlistGame;
+                        foreach (PlaylistGame playlistGame in playlistGameQuery)
+                        {
+                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Playlist, playlistGame.Playlist));
+                        }
+
+                        // create voice recognition grammar library for the game
+                        GameTitleGrammarBuilder gameTitleGrammarBuilder = new GameTitleGrammarBuilder(game);
+                        foreach (GameTitleGrammar gameTitleGrammar in gameTitleGrammarBuilder.gameTitleGrammars)
+                        {
+                            if (!string.IsNullOrWhiteSpace(gameTitleGrammar.Title))
                             {
-                                sb.Append($"{gameTitleGrammar.TitleWords[j]} ");
-                                if (!GameTitleGrammar.IsNoiseWord(sb.ToString().Trim()))
+                                GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammar.Title, TitleMatchType.FullTitleMatch, gameTitleGrammar.Title));
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(gameTitleGrammar.MainTitle))
+                            {
+                                GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammar.MainTitle, TitleMatchType.MainTitleMatch, gameTitleGrammar.Title));
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(gameTitleGrammar.Subtitle))
+                            {
+                                GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammar.Subtitle, TitleMatchType.SubtitleMatch, gameTitleGrammar.Title));
+                            }
+
+                            for (int i = 0; i < gameTitleGrammar.TitleWords.Count; i++)
+                            {
+                                StringBuilder sb = new StringBuilder();
+                                for (int j = i; j < gameTitleGrammar.TitleWords.Count; j++)
                                 {
-                                    GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, sb.ToString().Trim(), TitleMatchType.FullTitleContains, gameTitleGrammar.Title));
+                                    sb.Append($"{gameTitleGrammar.TitleWords[j]} ");
+                                    if (!GameTitleGrammar.IsNoiseWord(sb.ToString().Trim()))
+                                    {
+                                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, sb.ToString().Trim(), TitleMatchType.FullTitleContains, gameTitleGrammar.Title));
+                                    }
                                 }
                             }
                         }
-                    }
-                });
+                    });
+                }
 
                 // create the voice recognition
                 CreateRecognizer();
