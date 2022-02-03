@@ -34,7 +34,11 @@ namespace Eclipse.Service
             // then set the desired size of box images to 5/18 -4 of that size
             // front end UI has 18 rows.  The boxes scale to fit 5 rows and have a 2 pixel border on all sides 
             // so the scaled image height should be = (monitor height * 5/18) - 4
-            return (int)(GetMonitorHeight() * 5 / 18) - 4;
+
+            // not sure at what point I changed the xaml layout but 5/18 - 4 is not correct (if it ever was)
+            // the scaling should be (10/18) * (2/3) * (5/6) = 100 / 324
+            // the -4 is for the 2 pixel margin
+            return (int)(GetMonitorHeight() * 100 / 324) - 4;
         }
 
         public static List<FileInfo> GetMissingPlatformClearLogoFiles()

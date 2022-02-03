@@ -2041,6 +2041,14 @@ namespace Eclipse.View
                 return true;
             }
 
+            // stop speech recognition 
+            if (IsRecognizing)
+            {
+                IsRecognizing = false;
+                SpeechRecognizer?.TryCancelRecognition();
+                return true;
+            }
+
             // stop displaying attract mode 
             if (IsDisplayingAttractMode)
             {

@@ -2,23 +2,13 @@
 using Eclipse.Models;
 using Eclipse.Service;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Security.RightsManagement;
-using System.Text;
-using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Unbroken.LaunchBox.Plugins;
 using Unbroken.LaunchBox.Plugins.Data;
 
@@ -74,8 +64,8 @@ namespace Eclipse.View
             fadeOutForMovieDelay.Elapsed += FadeOutForMovieDelay_Elapsed;
             fadeOutForMovieDelay.AutoReset = false;
 
-            // create a timer to delay for attract mode (90 seconds)
-            attractModeDelay = new Timer(90 * 1000);
+            // create a timer to delay for attract mode (60 seconds)
+            attractModeDelay = new Timer(60 * 1000);
             attractModeDelay.Elapsed += AttractModeDelay_Elapsed;
             attractModeDelay.AutoReset = false;
 

@@ -1,11 +1,7 @@
 ﻿using Eclipse.Models;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-// todo: fix create voice recognizer for 11.3 and later
 using System.Speech.Recognition;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Eclipse.Service
 {
@@ -63,6 +59,18 @@ namespace Eclipse.Service
 
             // kick off voice recognition 
             Recognizer.RecognizeAsync(RecognizeMode.Single);
+        }
+
+        public void TryCancelRecognition()
+        {
+            try
+            {
+                Recognizer.RecognizeAsyncCancel();
+            }
+            finally
+            {
+                // intentionally left blank
+            }
         }
 
         void SpeechHypothesized(object sender, SpeechHypothesizedEventArgs e)

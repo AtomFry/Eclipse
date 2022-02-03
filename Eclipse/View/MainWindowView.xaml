@@ -1457,9 +1457,9 @@
                   VerticalAlignment="Stretch"
                   Panel.ZIndex="700">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="6*"/>
+                    <RowDefinition Height="2*"/>
                     <!-- current games List -->
-                    <RowDefinition Height="3*"/>
+                    <RowDefinition Height="1*"/>
                     <!-- next games list -->
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
@@ -1531,14 +1531,15 @@
 
                         <Image Name="Image_Game2"
                                IsHitTestVisible="False"
-                            Source="{Binding CurrentGameList.Game2.GameFiles.FrontImage}"
+                               Source="{Binding CurrentGameList.Game2.GameFiles.FrontImage}"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 
                                Margin="2,2,2,2"
                                Stretch="Uniform"/>
 
-                        <Image Name="Image_Game3" Source="{Binding CurrentGameList.Game3.GameFiles.FrontImage}"
+                        <Image Name="Image_Game3" 
+                               Source="{Binding CurrentGameList.Game3.GameFiles.FrontImage}"
                                IsHitTestVisible="False"
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Stretch"
