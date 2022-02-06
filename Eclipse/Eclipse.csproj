@@ -64,10 +64,14 @@
     <Compile Include="Helpers\DirectoryInfoHelper.cs" />
     <Compile Include="Helpers\DisplayInfoHelper.cs" />
     <Compile Include="Helpers\LogHelper.cs" />
+    <Compile Include="Helpers\OpacityBrushHelper.cs" />
     <Compile Include="Helpers\RetroarchHelper.cs" />
+    <Compile Include="Models\EclipseSettings.cs" />
+    <Compile Include="Models\GameFiles.cs" />
     <Compile Include="Models\GameMatch.cs" />
     <Compile Include="Models\GameTitleGrammarBuilder.cs" />
     <Compile Include="Models\GameDetailOptionList.cs" />
+    <Compile Include="Models\PlaylistGame.cs" />
     <Compile Include="Models\ResourceImages.cs" />
     <Compile Include="Models\Option.cs" />
     <Compile Include="Models\ListCycle.cs" />

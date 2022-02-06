@@ -19,20 +19,21 @@ namespace Eclipse.View
     /// </summary>
     public partial class MainWindowView : UserControl, IBigBoxThemeElementPlugin
     {
-        MainWindowViewModel mainWindowViewModel;
-        private Timer backgroundImageChangeDelay;
-        private Timer fadeOutForMovieDelay;
-        private Timer attractModeDelay;
-        private Timer attractModeImageFadeInDelay;
-        private Timer attractModeChangeDelay;
-        private Timer attractModeLogoFadeInDelay;
-        private Timer attractModeLogoChangeDelay;
+        private readonly MainWindowViewModel mainWindowViewModel;
+
+        private BackgroundWorker stopVideoAndAnimationWorker;
+
+
+        private readonly Timer backgroundImageChangeDelay;
+        private readonly Timer fadeOutForMovieDelay;
+        private readonly Timer attractModeDelay;
+        private readonly Timer attractModeImageFadeInDelay;
+        private readonly Timer attractModeChangeDelay;
+        private readonly Timer attractModeLogoFadeInDelay;
+        private readonly Timer attractModeLogoChangeDelay;
 
         private BitmapImage activeBackgroundImage;
         private BitmapImage activeClearLogo;
-        private string activeMatchPercentageText;
-        private string activeReleaseYearText;
-        private string activeGameTitleText;
         private BitmapImage activeCommunityStarRatingImage;
         private BitmapImage activeUserStarRatingImage;
         private BitmapImage activePlayModeImage;
@@ -41,11 +42,14 @@ namespace Eclipse.View
         private BitmapImage activeAttractModeBackgroundImage;
         private BitmapImage activeAttractModeClearLogo;
 
-        private Storyboard BackgroundImageFadeInSlowStoryBoard;
+        private string activeMatchPercentageText;
+        private string activeReleaseYearText;
+        private string activeGameTitleText;
 
-        private LinearGradientBrush opacityBrush = GetOpacityBrush();
+        private readonly Storyboard BackgroundImageFadeInSlowStoryBoard;
 
-        int monitorWidth;
+        private readonly int monitorWidth;
+
         public MainWindowView()
         {
             InitializeComponent();
@@ -216,7 +220,6 @@ namespace Eclipse.View
                 attractModeImageFadeInDelay.Start();
             });
         }
-
         private void AttractModeLogoFadeInDelay_Elapsed(object sender, ElapsedEventArgs e)
         {
             Dispatcher.Invoke(() =>
@@ -232,27 +235,12 @@ namespace Eclipse.View
                 }
             }); 
         }
-
-
         private void AttractModeLogoChangeDelay_Elapsed(object sender, ElapsedEventArgs e)
         {
             Dispatcher.Invoke(() =>
             {
                 FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 0, 1000);
             });
-        }
-
-        public static LinearGradientBrush GetOpacityBrush()
-        {
-            LinearGradientBrush brush = new LinearGradientBrush();
-            brush.StartPoint = new Point(0, 0.5);
-            brush.EndPoint = new Point(1, 0.5);
-            brush.GradientStops.Add(new GradientStop(Colors.Transparent, 0.00));
-            brush.GradientStops.Add(new GradientStop(Colors.Black, 0.20));
-            brush.GradientStops.Add(new GradientStop(Colors.Black, 0.80));
-            brush.GradientStops.Add(new GradientStop(Colors.Black, 1.00));
-            brush.Freeze();
-            return brush;
         }
 
         public bool OnDown(bool held)
@@ -355,23 +343,6 @@ namespace Eclipse.View
             });
         }
 
-        // todo: do this with a background worker and keep trying to stop for a few seconds?  maybe only in certain cases like launching into a game or escaping to settings menu
-        private void StopEverything()
-        {
-            // pause the video
-            PauseVideo(Video_SelectedGame);
-
-            // stop timers
-            attractModeDelay.Stop();
-            attractModeImageFadeInDelay.Stop();
-            attractModeChangeDelay.Stop();
-            attractModeLogoFadeInDelay.Stop();
-            attractModeLogoChangeDelay.Stop();
-
-            fadeOutForMovieDelay.Stop();
-            backgroundImageChangeDelay.Stop();
-            BackgroundImageFadeInSlowStoryBoard.Stop();
-        }
 
         private void DoAnimateGameChange()
         {
@@ -584,17 +555,6 @@ namespace Eclipse.View
             // TODO: remove this?
         }
 
-        BackgroundWorker stopVideoAndAnimationWorker;
-        private void SetupStopVideoAndAnimationWorker()
-        {
-            stopVideoAndAnimationWorker = new BackgroundWorker();
-            stopVideoAndAnimationWorker.DoWork += StopVideoAndAnimationHandler;
-        }
-
-        public void StopVideoAndAnimations()
-        {
-            stopVideoAndAnimationWorker.RunWorkerAsync();
-        }
 
         // delegate called by view model when the rating changes to refresh the rating image
         public void UpdateRatingImage()
@@ -621,28 +581,8 @@ namespace Eclipse.View
             // fade in the rating image
             FadeFrameworkElementOpacity(Image_CommunityStarRating, 1, 300);
             FadeFrameworkElementOpacity(Image_UserStarRating, 1, 300);
-
         }
 
-        void StopVideoAndAnimationHandler(object sender, DoWorkEventArgs e)
-        {
-            // every 10th of a second for 1 seconds, try to stop everything
-            for(int i = 0; i < 10; i++)
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    try
-                    {
-                        StopEverything();
-                    }
-                    catch (Exception ex)
-                    {
-                        LogHelper.LogException(ex, "StopVideoAndAnimationWorker");
-                    }
-                });
-                System.Threading.Thread.Sleep(100);
-            }
-        }
 
         // setup fallback bezels once the media opens so we can identify whether we need the horizontal or veritical bezel
         private void Video_SelectedGame_MediaOpened(object sender, RoutedEventArgs e)
@@ -674,14 +614,66 @@ namespace Eclipse.View
             // set the opacity mask on the bezel if it's setup or on the video if no bezel
             if (activeGameBezelImage != null)
             {
-                Image_Bezel.OpacityMask = opacityBrush;
+                Image_Bezel.OpacityMask = OpacityBrushHelper.Instance.OpacityBrush;
                 Video_SelectedGame.OpacityMask = null;
             }
             else
             {
                 Image_Bezel.OpacityMask = null;
-                Video_SelectedGame.OpacityMask = opacityBrush;
+                Video_SelectedGame.OpacityMask = OpacityBrushHelper.Instance.OpacityBrush;
             }
+        }
+
+
+
+
+
+        private void SetupStopVideoAndAnimationWorker()
+        {
+            stopVideoAndAnimationWorker = new BackgroundWorker();
+            stopVideoAndAnimationWorker.DoWork += StopVideoAndAnimationHandler;
+        }
+
+        private void StopVideoAndAnimations()
+        {
+            stopVideoAndAnimationWorker.RunWorkerAsync();
+        }
+
+        private void StopVideoAndAnimationHandler(object sender, DoWorkEventArgs e)
+        {
+            // every 10th of a second for 1 seconds, try to stop everything
+            for (int i = 0; i < 10; i++)
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    try
+                    {
+                        StopEverything();
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.LogException(ex, "StopVideoAndAnimationWorker");
+                    }
+                });
+                System.Threading.Thread.Sleep(100);
+            }
+        }
+
+        // maybe only in certain cases like launching into a game or escaping to settings menu
+        private void StopEverything()
+        {
+            // pause the video
+            PauseVideo(Video_SelectedGame);
+
+            // stop timers
+            attractModeDelay.Stop();
+            attractModeImageFadeInDelay.Stop();
+            attractModeChangeDelay.Stop();
+            attractModeLogoFadeInDelay.Stop();
+            attractModeLogoChangeDelay.Stop();
+            fadeOutForMovieDelay.Stop();
+            backgroundImageChangeDelay.Stop();
+            BackgroundImageFadeInSlowStoryBoard.Stop();
         }
     }
 }

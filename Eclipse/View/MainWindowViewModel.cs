@@ -12,6 +12,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using Eclipse.Helpers;
+using System.Threading;
 
 namespace Eclipse.View
 {
@@ -28,9 +29,10 @@ namespace Eclipse.View
         private static bool loadedOnce = false;
         private List<Option<ListCategoryType>> listCategories;
         private ListCycle<GameList> listCycle;
-        public List<GameListSet> GameListSets { get; set; }
 
-        public SpeechRecognizer SpeechRecognizer { get; set; }
+        private List<GameListSet> GameListSets { get; set; }
+
+        private SpeechRecognizer SpeechRecognizer { get; set; }
 
         private static ConcurrentBag<GameMatch> GameBag = new ConcurrentBag<GameMatch>();
         private static ConcurrentBag<GameFiles> GameFilesBag = new ConcurrentBag<GameFiles>();
@@ -391,7 +393,7 @@ namespace Eclipse.View
                             where gameMatch.CategoryType == listCategoryType
                             group gameMatch by gameMatch.CategoryValue into gameGroup
                             select gameGroup;
-           
+
             foreach (var gameGroup in gameQuery)
             {
                 listOfGameList.Add(new GameList(gameGroup.Key, gameGroup.OrderBy(game => game.Game.SortTitleOrTitle).ToList()));
@@ -399,8 +401,8 @@ namespace Eclipse.View
 
             GameListSets.Add(new GameListSet
             {
-                GameLists = listOfGameList.OrderByDescending(list=>list.IsFavorites)
-                                            .ThenByDescending(list=>list.IsHistory)
+                GameLists = listOfGameList.OrderByDescending(list=>list.IsHistory)
+                                            .ThenByDescending(list=>list.IsFavorites)
                                             .ThenBy(list => list.ListDescription).ToList(),
                 ListCategoryType = listCategoryType
             });
@@ -650,7 +652,7 @@ namespace Eclipse.View
                         updateRemainingLoadingMessage();
 
                         GameFiles gameFiles = new GameFiles(game);
-                        gameFiles.SetupFiles();
+                        // gameFiles.SetupFiles();
                         GameFilesBag.Add(gameFiles);
 
                         GameMatch gameMatch = new GameMatch(game, gameFiles);
@@ -702,7 +704,9 @@ namespace Eclipse.View
                         }
 
                         // create a dictionary of playlist and game matches 
-                        var playlistGameQuery = from playlistGame in playlistGames where playlistGame.GameId == game.Id select playlistGame;
+                        IEnumerable<PlaylistGame> playlistGameQuery = from playlistGame in playlistGames 
+                                                where playlistGame.GameId == game.Id 
+                                                select playlistGame;
                         foreach (PlaylistGame playlistGame in playlistGameQuery)
                         {
                             GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Playlist, playlistGame.Playlist));
@@ -741,6 +745,10 @@ namespace Eclipse.View
                             }
                         }
                     });
+
+                    BackgroundWorker worker = new BackgroundWorker();
+                    worker.DoWork += SetupFiles;
+                    worker.RunWorkerAsync();
                 }
 
                 // create the voice recognition
@@ -761,14 +769,80 @@ namespace Eclipse.View
 
                 // default to display games by platform
                 ResetGameLists(ListCategoryType.Platform);
-
-                // start off with a random game
-                DoRandomGame(GetRandomFavoriteIndex());
             }
             catch (Exception ex)
             {
                 LogHelper.LogException(ex, "Initializion_loadData");
             }
+        }
+
+        private async void SetupFiles(object sender, DoWorkEventArgs e)
+        {
+            int? GameFilesCount = GameFilesBag?.Count;
+            int processedCount = 0;
+
+            await Task.Run(async () =>
+            {
+                Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
+
+                while (await SetupNextGameFiles())
+                {
+                    // just to be safe and avoid an infinite loop
+                    // check how many times we've been through the loop and stop after we have
+                    // processed enough to go through all game files
+                    processedCount++;
+                    if(processedCount > GameFilesCount)
+                    {
+                        break;
+                    }
+                }
+            });
+        }
+
+        private async Task<bool> SetupNextGameFiles()
+        {
+            bool moreGameFiles = false;
+
+            await Task.Run(async () =>
+            {
+                // setup a game in the current list 
+                IEnumerable<GameMatch> currentListQuery = CurrentGameList.MatchingGames.Where(g => !g.GameFiles.IsSetup);
+                if(currentListQuery.Any())
+                {
+                    GameMatch gameMatchCurrentList = currentListQuery.FirstOrDefault();
+                    if(gameMatchCurrentList?.GameFiles != null)
+                    {
+                        moreGameFiles = true;
+                        await gameMatchCurrentList.GameFiles.SetupFiles();
+                    }
+                }
+
+                // setup a game in the next list
+                IEnumerable<GameMatch> nextListQuery = NextGameList.MatchingGames.Where(g => !g.GameFiles.IsSetup);
+                if(nextListQuery.Any())
+                {
+                    GameMatch gameMatchNextList = nextListQuery.FirstOrDefault();
+                    if(gameMatchNextList?.GameFiles != null)
+                    {
+                        moreGameFiles = true;
+                        await gameMatchNextList.GameFiles.SetupFiles();
+                    }
+                }
+
+                // setup any game that still needs to be setup
+                IEnumerable<GameFiles> anyGameQuery = GameFilesBag.Where(gf => !gf.IsSetup);
+                if(anyGameQuery.Any())
+                {
+                    GameFiles anyGameFiles = anyGameQuery.FirstOrDefault();
+                    if(anyGameFiles != null)
+                    {
+                        moreGameFiles = true;
+                        await anyGameFiles.SetupFiles();
+                    }
+                }
+            });
+
+            return moreGameFiles;
         }
 
         public GameFiles GetNextGameFileCurrentList()
@@ -783,7 +857,7 @@ namespace Eclipse.View
                 GameMatch match = CurrentGameList.MatchingGames[i];
                 if(match?.GameFiles != null && !match.GameFiles.IsSetup)
                 {
-                    return (match.GameFiles);
+                    return match.GameFiles;
                 }
             }
 
@@ -876,7 +950,7 @@ namespace Eclipse.View
                 gameFiles = nextListQuery?.FirstOrDefault()?.GameFiles;
                 if (gameFiles != null)
                 {
-                    return (gameFiles);
+                    return gameFiles;
                 }
             }
 
@@ -1258,18 +1332,12 @@ namespace Eclipse.View
 
         private void CallStopVideoAndAnimationsFunction()
         {
-            if(StopVideoAndAnimationsFunction != null)
-            {
-                StopVideoAndAnimationsFunction();
-            }
+            StopVideoAndAnimationsFunction?.Invoke();
         }
 
         private void CallUpdateRatingImageFunction()
         {
-            if(UpdateRatingImageFunction != null)
-            {
-                UpdateRatingImageFunction();
-            }
+            UpdateRatingImageFunction?.Invoke();
         }
 
         private void CycleListBackward()
@@ -1338,7 +1406,7 @@ namespace Eclipse.View
                 if (IsDisplayingResults)
                 {
                     // if displaying first list 
-                    if ((listCycle.GetIndexValue(0) == 0))
+                    if (listCycle.GetIndexValue(0) == 0)
                     {
                         // if it's not displaying featured - change to display feature mode
                         if (!IsDisplayingFeature)
@@ -1350,9 +1418,12 @@ namespace Eclipse.View
                         // if it is displaying feature mode - change to regular results mode and go to prior list
                         else
                         {
-                            IsDisplayingFeature = false;
-                            CallFeatureChangeFunction();
-                            CycleListBackward();
+                            if (!held)
+                            {
+                                IsDisplayingFeature = false;
+                                CallFeatureChangeFunction();
+                                CycleListBackward();
+                            }
                             return;
                         }
                     }
@@ -1691,7 +1762,7 @@ namespace Eclipse.View
             {
                 return random.Next(0, favoritesList.MatchCount);
             }
-            return (-1);
+            return -1;
         }
 
         // start the current game
