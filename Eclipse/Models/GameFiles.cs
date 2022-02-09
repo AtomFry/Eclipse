@@ -1,4 +1,5 @@
 ﻿using Eclipse.Helpers;
+using Eclipse.Service;
 using System;
 using System.ComponentModel;
 using System.IO;
@@ -213,15 +214,18 @@ namespace Eclipse.Models
                 string customPath = frontImagePath.Replace(DirectoryInfoHelper.Instance.ApplicationPath, DirectoryInfoHelper.Instance.MediaResolutionSpecificFolder);
                 if (!string.IsNullOrWhiteSpace(customPath))
                 {
-                    if (File.Exists(customPath))
+                    if (!File.Exists(customPath))
                     {
-                        return new Uri(customPath);
+                        // scale the image and cache it
+                        ImageScaler.ScaleImage(frontImagePath, customPath);
                     }
+                    return new Uri(customPath);
                 }
             }
 
             return ResourceImages.DefaultFrontImage;
         }
+
         public static Uri ResolveClearLogoPath(IGame Game)
         {
             string clearLogoPath = Game.ClearLogoImagePath;
@@ -230,10 +234,12 @@ namespace Eclipse.Models
                 string customPath = clearLogoPath.Replace(DirectoryInfoHelper.Instance.ApplicationPath, DirectoryInfoHelper.Instance.MediaResolutionSpecificFolder);
                 if (!string.IsNullOrWhiteSpace(customPath))
                 {
-                    if (File.Exists(customPath))
+                    if (!File.Exists(customPath))
                     {
-                        return new Uri(customPath);
+                        // crop the image and cache it
+                        ImageScaler.CropImage(clearLogoPath, customPath);
                     }
+                    return new Uri(customPath);
                 }
             }
             return null;

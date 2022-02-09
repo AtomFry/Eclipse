@@ -18,8 +18,39 @@ using System.Xml.Linq;
 // hit because they load up far less frequently
 namespace Eclipse.Service
 {
-    public class ImageScaler
+    public sealed class ImageScaler
     {
+        private static readonly ImageScaler instance = new ImageScaler();
+
+        static ImageScaler()
+        {
+        }
+
+        private ImageScaler()
+        {
+        }
+
+        public static ImageScaler Instance
+        {
+            get
+            {
+                return instance;
+            }
+        }
+
+        private int desiredFrontImageHeight = 0;
+        public int DesiredFrontImageHeight
+        {
+            get
+            {
+                if(desiredFrontImageHeight == 0)
+                {
+                    desiredFrontImageHeight = GetDesiredHeight();
+                }
+                return desiredFrontImageHeight;
+            }
+        }
+ 
         public static int GetDesiredHeight()
         {
             /*
@@ -164,8 +195,6 @@ namespace Eclipse.Service
             return destImage;
         }
 
-
-
         public static IEnumerable<FileInfo> GetMissingFilesInFolder(string directory)
         {
             string pathA = directory;
@@ -222,6 +251,37 @@ namespace Eclipse.Service
             }
         }
 
+        public static void CropImage(string sourceFile, string destinationFile)
+        {
+            try
+            {
+                int originalHeight, originalWidth;
+
+                using (Image originalImage = Image.FromFile(sourceFile))
+                {
+                    originalHeight = originalImage.Height;
+                    originalWidth = originalImage.Width;
+
+                    using (Bitmap newBitmap = ResizeImage(originalImage, originalWidth, originalHeight))
+                    {
+                        string newFolder = Path.GetDirectoryName(destinationFile);
+
+                        if (!Directory.Exists(newFolder))
+                        {
+                            Directory.CreateDirectory(newFolder);
+                        }
+
+                        Bitmap croppedBitmap = Crop(newBitmap);
+                        croppedBitmap.Save(destinationFile);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.LogException(ex, $"CropImage: {sourceFile} | {destinationFile}");
+            }
+        }
+
         public static bool DefaultBoxFrontExists()
         {
             bool ret = false;
@@ -274,6 +334,41 @@ namespace Eclipse.Service
             catch (Exception ex)
             {
                 LogHelper.LogException(ex, "ScaleDefaultBoxFront");
+            }
+        }
+
+        public static void ScaleImage(string sourceFile, string destinationFile)
+        {
+            int desiredHeight = Instance.DesiredFrontImageHeight;
+
+            try
+            {
+                int originalHeight, originalWidth, desiredWidth;
+                double scale;
+
+                using (Image originalImage = Image.FromFile(sourceFile))
+                {
+                    originalHeight = originalImage.Height;
+                    originalWidth = originalImage.Width;
+
+                    scale = (double)((double)desiredHeight / (double)originalHeight);
+                    desiredWidth = (int)(originalWidth * scale);
+
+                    using (Bitmap newBitmap = ResizeImage(originalImage, desiredWidth, desiredHeight))
+                    {
+                        string newFolder = Path.GetDirectoryName(destinationFile);
+
+                        if (!Directory.Exists(newFolder))
+                        {
+                            Directory.CreateDirectory(newFolder);
+                        }
+                        newBitmap.Save(destinationFile);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.LogException(ex, "ScaleImage");
             }
         }
 
@@ -392,7 +487,6 @@ namespace Eclipse.Service
 
             return imageFrontFolders;
         }
-
 
         public static Bitmap Crop(Bitmap bmp)
         {

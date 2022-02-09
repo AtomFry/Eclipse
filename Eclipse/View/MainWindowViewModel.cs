@@ -597,24 +597,10 @@ namespace Eclipse.View
                     ImageScalingStartTime = DateTime.Now;
 
                     // add the count of missing files for the loading progress bar
-                    TotalProgressStepsCount += gameFrontFilesToProcess?.Count ?? 0;
                     TotalProgressStepsCount += platformLogosToProcess?.Count ?? 0;
-                    TotalProgressStepsCount += gameClearLogosToProcess?.Count ?? 0;
-
-                    ImagesToScaleCount += gameFrontFilesToProcess?.Count ?? 0;
                     ImagesToScaleCount += platformLogosToProcess?.Count ?? 0;
-                    ImagesToScaleCount += gameClearLogosToProcess?.Count ?? 0;
 
                     CompletedProgressStepsCount = 0;
-
-                    // scale the game front images
-                    foreach (FileInfo fileInfo in gameFrontFilesToProcess)
-                    {
-                        ImagesScaledCount += 1;
-                        CompletedProgressStepsCount += 1;
-                        ImageScaler.ScaleImage(fileInfo, desiredHeight);
-                        updateLoadingScaledImagesMessage();
-                    }
 
                     // scale the default box front image
                     if (scaleDefaultBoxFrontImage)
@@ -635,6 +621,7 @@ namespace Eclipse.View
                     }
 
                     // crop game clear logos 
+                    /*
                     foreach (FileInfo fileInfo in gameClearLogosToProcess)
                     {
                         ImagesScaledCount += 1;
@@ -642,6 +629,7 @@ namespace Eclipse.View
                         ImageScaler.CropImage(fileInfo);
                         updateLoadingScaledImagesMessage();
                     }
+                    */
 
                     ListCreationStartTime = DateTime.Now;
 
@@ -652,7 +640,6 @@ namespace Eclipse.View
                         updateRemainingLoadingMessage();
 
                         GameFiles gameFiles = new GameFiles(game);
-                        // gameFiles.SetupFiles();
                         GameFilesBag.Add(gameFiles);
 
                         GameMatch gameMatch = new GameMatch(game, gameFiles);
@@ -745,11 +732,11 @@ namespace Eclipse.View
                             }
                         }
                     });
-
-                    BackgroundWorker worker = new BackgroundWorker();
-                    worker.DoWork += SetupFiles;
-                    worker.RunWorkerAsync();
                 }
+
+                BackgroundWorker worker = new BackgroundWorker();
+                worker.DoWork += SetupFiles;
+                worker.RunWorkerAsync();
 
                 // create the voice recognition
                 CreateRecognizer();
@@ -803,44 +790,61 @@ namespace Eclipse.View
         {
             bool moreGameFiles = false;
 
-            await Task.Run(async () =>
+            try
             {
-                // setup a game in the current list 
-                IEnumerable<GameMatch> currentListQuery = CurrentGameList.MatchingGames.Where(g => !g.GameFiles.IsSetup);
-                if(currentListQuery.Any())
+                await Task.Run(async () =>
                 {
-                    GameMatch gameMatchCurrentList = currentListQuery.FirstOrDefault();
-                    if(gameMatchCurrentList?.GameFiles != null)
+                    // setup a game in the current list 
+                    if (CurrentGameList != null && CurrentGameList.MatchingGames != null)
                     {
-                        moreGameFiles = true;
-                        await gameMatchCurrentList.GameFiles.SetupFiles();
+                        IEnumerable<GameMatch> currentListQuery = CurrentGameList.MatchingGames.Where(g => !g.GameFiles.IsSetup);
+                        if (currentListQuery.Any())
+                        {
+                            GameMatch gameMatchCurrentList = currentListQuery.FirstOrDefault();
+                            if (gameMatchCurrentList?.GameFiles != null)
+                            {
+                                moreGameFiles = true;
+                                await gameMatchCurrentList.GameFiles.SetupFiles();
+                            }
+                        }
                     }
-                }
 
-                // setup a game in the next list
-                IEnumerable<GameMatch> nextListQuery = NextGameList.MatchingGames.Where(g => !g.GameFiles.IsSetup);
-                if(nextListQuery.Any())
-                {
-                    GameMatch gameMatchNextList = nextListQuery.FirstOrDefault();
-                    if(gameMatchNextList?.GameFiles != null)
+                    // setup a game in the next list
+                    if (NextGameList != null && NextGameList.MatchingGames != null)
                     {
-                        moreGameFiles = true;
-                        await gameMatchNextList.GameFiles.SetupFiles();
+                        IEnumerable<GameMatch> nextListQuery = NextGameList.MatchingGames.Where(g => !g.GameFiles.IsSetup);
+                        if (nextListQuery.Any())
+                        {
+                            GameMatch gameMatchNextList = nextListQuery.FirstOrDefault();
+                            if (gameMatchNextList?.GameFiles != null)
+                            {
+                                moreGameFiles = true;
+                                await gameMatchNextList.GameFiles.SetupFiles();
+                            }
+                        }
                     }
-                }
 
-                // setup any game that still needs to be setup
-                IEnumerable<GameFiles> anyGameQuery = GameFilesBag.Where(gf => !gf.IsSetup);
-                if(anyGameQuery.Any())
-                {
-                    GameFiles anyGameFiles = anyGameQuery.FirstOrDefault();
-                    if(anyGameFiles != null)
+                    // setup any game that still needs to be setup
+                    if (GameFilesBag != null)
                     {
-                        moreGameFiles = true;
-                        await anyGameFiles.SetupFiles();
+                        IEnumerable<GameFiles> anyGameQuery = GameFilesBag.Where(gf => !gf.IsSetup);
+                        if (anyGameQuery.Any())
+                        {
+                            GameFiles anyGameFiles = anyGameQuery.FirstOrDefault();
+                            if (anyGameFiles != null)
+                            {
+                                moreGameFiles = true;
+                                await anyGameFiles.SetupFiles();
+                            }
+                        }
                     }
-                }
-            });
+                });
+
+            }
+            catch (Exception ex)
+            {
+                LogHelper.LogException(ex, "SetupNextGameFiles");
+            }
 
             return moreGameFiles;
         }
