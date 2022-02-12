@@ -18,7 +18,7 @@ namespace Eclipse.View
 {
     public delegate void FeatureChangeFunction();
     public delegate void AnimateGameChangeFunction();
-    
+
     public delegate void IncrementLoadingProgressFunction();
     public delegate void StopVideoAndAnimations();
     public delegate void UpdateRatingImage();
@@ -265,7 +265,7 @@ namespace Eclipse.View
             get { return isRatingGame; }
             set
             {
-                if(isRatingGame != value)
+                if (isRatingGame != value)
                 {
                     isRatingGame = value;
                     PropertyChanged(this, new PropertyChangedEventArgs("IsRatingGame"));
@@ -375,7 +375,7 @@ namespace Eclipse.View
                 }
             }
 
-            if(includeHistory)
+            if (includeHistory)
             {
                 var historyGames = from gameMatch in GameBag
                                    where gameMatch.CategoryType == ListCategoryType.History
@@ -383,7 +383,7 @@ namespace Eclipse.View
                                    group gameMatch by gameMatch.CategoryValue into historyGroup
                                    select historyGroup;
 
-                foreach(var historyGroup in historyGames)
+                foreach (var historyGroup in historyGames)
                 {
                     listOfGameList.Add(new GameList(historyGroup.Key, historyGroup.OrderByDescending(game => game.Game.LastPlayedDate).ToList(), false, true));
                 }
@@ -401,8 +401,8 @@ namespace Eclipse.View
 
             GameListSets.Add(new GameListSet
             {
-                GameLists = listOfGameList.OrderByDescending(list=>list.IsHistory)
-                                            .ThenByDescending(list=>list.IsFavorites)
+                GameLists = listOfGameList.OrderByDescending(list => list.IsHistory)
+                                            .ThenByDescending(list => list.IsFavorites)
                                             .ThenBy(list => list.ListDescription).ToList(),
                 ListCategoryType = listCategoryType
             });
@@ -456,12 +456,12 @@ namespace Eclipse.View
         {
             IPlaylist[] allPlaylists = PluginHelper.DataManager.GetAllPlaylists();
             List<PlaylistGame> playlistGames = new List<PlaylistGame>();
-            foreach(IPlaylist playlist in allPlaylists)
+            foreach (IPlaylist playlist in allPlaylists)
             {
-                if(playlist.HasGames(false, false))
+                if (playlist.HasGames(false, false))
                 {
                     IGame[] games = playlist.GetAllGames(true);
-                    foreach(IGame game in games)
+                    foreach (IGame game in games)
                     {
                         playlistGames.Add(new PlaylistGame() { GameId = game.Id, Playlist = playlist.SortTitleOrTitle });
                     }
@@ -532,7 +532,7 @@ namespace Eclipse.View
 
             private set
             {
-                if(loadingOpacity != value)
+                if (loadingOpacity != value)
                 {
                     loadingOpacity = value;
                     PropertyChanged(this, new PropertyChangedEventArgs("LoadingOpacity"));
@@ -560,7 +560,7 @@ namespace Eclipse.View
         {
             try
             {
-                if(!loadedOnce)
+                if (!loadedOnce)
                 {
                     loadedOnce = true;
 
@@ -691,9 +691,9 @@ namespace Eclipse.View
                         }
 
                         // create a dictionary of playlist and game matches 
-                        IEnumerable<PlaylistGame> playlistGameQuery = from playlistGame in playlistGames 
-                                                where playlistGame.GameId == game.Id 
-                                                select playlistGame;
+                        IEnumerable<PlaylistGame> playlistGameQuery = from playlistGame in playlistGames
+                                                                      where playlistGame.GameId == game.Id
+                                                                      select playlistGame;
                         foreach (PlaylistGame playlistGame in playlistGameQuery)
                         {
                             GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Playlist, playlistGame.Playlist));
@@ -778,7 +778,7 @@ namespace Eclipse.View
                     // check how many times we've been through the loop and stop after we have
                     // processed enough to go through all game files
                     processedCount++;
-                    if(processedCount > GameFilesCount)
+                    if (processedCount > GameFilesCount)
                     {
                         break;
                     }
@@ -805,6 +805,11 @@ namespace Eclipse.View
                             {
                                 moreGameFiles = true;
                                 await gameMatchCurrentList.GameFiles.SetupFiles();
+
+                                if (gameMatchCurrentList?.GameFiles?.Game?.Id == currentGameList?.Game1?.Game?.Id)
+                                {
+                                    CallGameChangeFunction();
+                                }
                             }
                         }
                     }
@@ -851,21 +856,21 @@ namespace Eclipse.View
 
         public GameFiles GetNextGameFileCurrentList()
         {
-            if(CurrentGameList?.MatchingGames == null)
+            if (CurrentGameList?.MatchingGames == null)
             {
                 return null;
             }
 
-            for(int i = CurrentGameList.CurrentGameIndex; i < CurrentGameList.MatchingGames.Count; i++)
+            for (int i = CurrentGameList.CurrentGameIndex; i < CurrentGameList.MatchingGames.Count; i++)
             {
                 GameMatch match = CurrentGameList.MatchingGames[i];
-                if(match?.GameFiles != null && !match.GameFiles.IsSetup)
+                if (match?.GameFiles != null && !match.GameFiles.IsSetup)
                 {
                     return match.GameFiles;
                 }
             }
 
-            for(int i = 0; i < CurrentGameList.CurrentGameIndex; i++)
+            for (int i = 0; i < CurrentGameList.CurrentGameIndex; i++)
             {
                 GameMatch match = CurrentGameList.MatchingGames[i];
                 if (match?.GameFiles != null && !match.GameFiles.IsSetup)
@@ -1016,8 +1021,8 @@ namespace Eclipse.View
 
                 // get lists for matching series
                 var seriesGameListSetQuery = from gameListSet in GameListSets
-                            where gameListSet.ListCategoryType == ListCategoryType.Series
-                            select gameListSet;
+                                             where gameListSet.ListCategoryType == ListCategoryType.Series
+                                             select gameListSet;
 
                 GameListSet seriesGameListSet = seriesGameListSetQuery?.FirstOrDefault();
                 if (seriesGameListSet != null)
@@ -1025,10 +1030,10 @@ namespace Eclipse.View
                     foreach (string series in currentGame?.Game?.SeriesValues)
                     {
                         var seriesGameListQuery = from seriesGameList in seriesGameListSet.GameLists
-                                     where seriesGameList.ListDescription.Equals(series, StringComparison.InvariantCultureIgnoreCase)
-                                     select seriesGameList;
+                                                  where seriesGameList.ListDescription.Equals(series, StringComparison.InvariantCultureIgnoreCase)
+                                                  select seriesGameList;
 
-                        foreach(GameList gameList in seriesGameListQuery)
+                        foreach (GameList gameList in seriesGameListQuery)
                         {
                             moreLikeThisResults.Add(gameList);
                         }
@@ -1042,15 +1047,15 @@ namespace Eclipse.View
                                             select gameListSet;
 
                 GameListSet genreGameListSet = genreGameListSetQuery?.FirstOrDefault();
-                if(genreGameListSet != null)
+                if (genreGameListSet != null)
                 {
-                    foreach(string genre in currentGame?.Game?.Genres)
+                    foreach (string genre in currentGame?.Game?.Genres)
                     {
                         var genreGameListQuery = from genreGameList in genreGameListSet.GameLists
                                                  where genreGameList.ListDescription.Equals(genre, StringComparison.InvariantCultureIgnoreCase)
                                                  select genreGameList;
 
-                        foreach(GameList gameList in genreGameListQuery)
+                        foreach (GameList gameList in genreGameListQuery)
                         {
                             moreLikeThisResults.Add(gameList);
                         }
@@ -1060,8 +1065,8 @@ namespace Eclipse.View
 
                 // get platform list 
                 var platformGameListSetQuery = from gameListSet in GameListSets
-                                            where gameListSet.ListCategoryType == ListCategoryType.Platform
-                                            select gameListSet;
+                                               where gameListSet.ListCategoryType == ListCategoryType.Platform
+                                               select gameListSet;
 
                 GameListSet platformGameListSet = platformGameListSetQuery?.FirstOrDefault();
                 if (platformGameListSet != null)
@@ -1070,8 +1075,8 @@ namespace Eclipse.View
                     if (platform != null)
                     {
                         var platformGameListQuery = from platformGameList in platformGameListSet.GameLists
-                                                 where platformGameList.ListDescription.Equals(platform, StringComparison.InvariantCultureIgnoreCase)
-                                                 select platformGameList;
+                                                    where platformGameList.ListDescription.Equals(platform, StringComparison.InvariantCultureIgnoreCase)
+                                                    select platformGameList;
 
                         foreach (GameList gameList in platformGameListQuery)
                         {
@@ -1082,8 +1087,8 @@ namespace Eclipse.View
 
                 // get Developer list 
                 var developerGameListSetQuery = from gameListSet in GameListSets
-                                            where gameListSet.ListCategoryType == ListCategoryType.Developer
-                                            select gameListSet;
+                                                where gameListSet.ListCategoryType == ListCategoryType.Developer
+                                                select gameListSet;
 
                 GameListSet developerGameListSet = developerGameListSetQuery?.FirstOrDefault();
                 if (developerGameListSet != null)
@@ -1091,8 +1096,8 @@ namespace Eclipse.View
                     foreach (string developer in currentGame?.Game?.Developers)
                     {
                         var developerGameListQuery = from developerGameList in developerGameListSet.GameLists
-                                                 where developerGameList.ListDescription.Equals(developer, StringComparison.InvariantCultureIgnoreCase)
-                                                 select developerGameList;
+                                                     where developerGameList.ListDescription.Equals(developer, StringComparison.InvariantCultureIgnoreCase)
+                                                     select developerGameList;
 
                         foreach (GameList gameList in developerGameListQuery)
                         {
@@ -1124,8 +1129,8 @@ namespace Eclipse.View
 
                 // get Play mode list
                 var playModeGameListSetQuery = from gameListSet in GameListSets
-                                                where gameListSet.ListCategoryType == ListCategoryType.PlayMode
-                                                select gameListSet;
+                                               where gameListSet.ListCategoryType == ListCategoryType.PlayMode
+                                               select gameListSet;
 
                 GameListSet playModeGameListSet = playModeGameListSetQuery?.FirstOrDefault();
                 if (playModeGameListSet != null)
@@ -1133,8 +1138,8 @@ namespace Eclipse.View
                     foreach (string playMode in currentGame?.Game?.PlayModes)
                     {
                         var playModeGameListQuery = from playModeGameList in playModeGameListSet.GameLists
-                                                     where playModeGameList.ListDescription.Equals(playMode, StringComparison.InvariantCultureIgnoreCase)
-                                                     select playModeGameList;
+                                                    where playModeGameList.ListDescription.Equals(playMode, StringComparison.InvariantCultureIgnoreCase)
+                                                    select playModeGameList;
 
                         foreach (GameList gameList in playModeGameListQuery)
                         {
@@ -1145,18 +1150,18 @@ namespace Eclipse.View
 
                 // get Release year list
                 var releaseYearGameListSetQuery = from gameListSet in GameListSets
-                                                where gameListSet.ListCategoryType == ListCategoryType.ReleaseYear
-                                                select gameListSet;
+                                                  where gameListSet.ListCategoryType == ListCategoryType.ReleaseYear
+                                                  select gameListSet;
 
                 GameListSet releaseYearGameListSet = releaseYearGameListSetQuery?.FirstOrDefault();
                 if (releaseYearGameListSet != null)
                 {
                     int? releaseYear = currentGame?.Game?.ReleaseDate?.Year;
-                    if(releaseYear != null)
+                    if (releaseYear != null)
                     {
                         var releaseYearGameListQuery = from releaseYearGameList in releaseYearGameListSet.GameLists
-                                                     where releaseYearGameList.ListDescription.Equals(releaseYear.ToString(), StringComparison.InvariantCultureIgnoreCase)
-                                                     select releaseYearGameList;
+                                                       where releaseYearGameList.ListDescription.Equals(releaseYear.ToString(), StringComparison.InvariantCultureIgnoreCase)
+                                                       select releaseYearGameList;
 
                         foreach (GameList gameList in releaseYearGameListQuery)
                         {
@@ -1214,7 +1219,7 @@ namespace Eclipse.View
             IsRecognizing = false;
             List<GameList> voiceRecognitionResults = new List<GameList>();
 
-            if(!string.IsNullOrWhiteSpace(speechRecognizerResult.ErrorMessage))
+            if (!string.IsNullOrWhiteSpace(speechRecognizerResult.ErrorMessage))
             {
                 ErrorMessage = speechRecognizerResult.ErrorMessage;
                 return;
@@ -1556,7 +1561,7 @@ namespace Eclipse.View
                 }
 
                 // don't do anything when displaying more info
-                if(IsDisplayingMoreInfo)
+                if (IsDisplayingMoreInfo)
                 {
                     return;
                 }
@@ -1621,7 +1626,7 @@ namespace Eclipse.View
                     DoRandomGame(preAttractModeGameIndex);
                     return;
                 }
-                
+
                 // if picking category, going right closes category selection
                 if (IsPickingCategory)
                 {
@@ -1630,7 +1635,7 @@ namespace Eclipse.View
                     return;
                 }
 
-                if(IsRatingGame)
+                if (IsRatingGame)
                 {
                     // increment the game rating by 0.1
                     RateCurrentGame(0.5f);
@@ -1762,7 +1767,7 @@ namespace Eclipse.View
                     select list;
 
             GameList favoritesList = q?.FirstOrDefault();
-            if(favoritesList != null)
+            if (favoritesList != null)
             {
                 return random.Next(0, favoritesList.MatchCount);
             }
@@ -1793,7 +1798,7 @@ namespace Eclipse.View
                 else
                 {
                     // if it is - update the last played time to now
-                    foreach(var game in historyQuery)
+                    foreach (var game in historyQuery)
                     {
                         game.Game.LastPlayedDate = DateTime.Now;
                     }
@@ -1816,10 +1821,10 @@ namespace Eclipse.View
         private void FavoriteCurrentGame()
         {
             GameMatch currentGame = CurrentGameList?.Game1;
-            if(currentGame != null)
+            if (currentGame != null)
             {
                 currentGame.Favorite = !currentGame.Favorite;
-                
+
                 PluginHelper.DataManager.Save(false);
 
                 var gameMatchQuery = from gameMatch in GameBag
@@ -1827,7 +1832,7 @@ namespace Eclipse.View
                                      select gameMatch;
 
                 // flag the game as a favorite wherever it appears
-                foreach(var gameMatch in gameMatchQuery)
+                foreach (var gameMatch in gameMatchQuery)
                 {
                     gameMatch.Favorite = currentGame.Favorite;
                 }
@@ -1893,7 +1898,7 @@ namespace Eclipse.View
         {
             // clear the game list changed flag 
             gameListsChanged = false;
- 
+
             // recreate the lists
             CreateGameLists();
 
@@ -1906,7 +1911,7 @@ namespace Eclipse.View
                                  select list;
 
             var gameList = priorListQuery?.FirstOrDefault();
-            if(gameList != null)
+            if (gameList != null)
             {
                 // try to find the game in the list
                 var gameMatchQuery = from match in gameList.MatchingGames
@@ -1914,11 +1919,11 @@ namespace Eclipse.View
                                      select match;
 
                 var gameMatch = gameMatchQuery?.FirstOrDefault();
-                if(gameMatch != null)
+                if (gameMatch != null)
                 {
                     // the game is in the list 
                     int gameIndex = gameList.MatchingGames.FindIndex(mat => mat.Game.Id == preChangeGameId);
-                    if(gameIndex >= 0)
+                    if (gameIndex >= 0)
                     {
                         // jump to the game
                         DoRandomGame(gameList.ListSetStartIndex + gameIndex);
@@ -1927,14 +1932,14 @@ namespace Eclipse.View
                 }
 
                 // the game was not in the list so try the next game in the list 
-                if(gameList?.MatchingGames?.Count() > preChangeGameIndex)
+                if (gameList?.MatchingGames?.Count() > preChangeGameIndex)
                 {
                     DoRandomGame(gameList.ListSetStartIndex + preChangeGameIndex);
                     return;
                 }
 
                 // there was no next game so try a previous game in the list 
-                if(gameList?.MatchingGames?.Count() > preChangeGameIndex - 1)
+                if (gameList?.MatchingGames?.Count() > preChangeGameIndex - 1)
                 {
                     DoRandomGame(gameList.ListSetStartIndex + preChangeGameIndex - 1);
                     return;
@@ -1959,7 +1964,7 @@ namespace Eclipse.View
         private void RateCurrentGame(float changeAmount)
         {
             GameMatch currentGame = CurrentGameList?.Game1;
-            if(currentGame != null)
+            if (currentGame != null)
             {
                 float newRating = currentGame.UserRating + changeAmount;
                 if (newRating > 5) newRating = 5.0f;
@@ -2231,7 +2236,7 @@ namespace Eclipse.View
             }
             set
             {
-                if(playButtonImage != value)
+                if (playButtonImage != value)
                 {
                     playButtonImage = value;
                     PropertyChanged(this, new PropertyChangedEventArgs("PlayButtonImage"));
@@ -2249,7 +2254,7 @@ namespace Eclipse.View
 
             set
             {
-                if(moreInfoImage != value)
+                if (moreInfoImage != value)
                 {
                     moreInfoImage = value;
                     PropertyChanged(this, new PropertyChangedEventArgs("MoreInfoImage"));
@@ -2275,6 +2280,6 @@ namespace Eclipse.View
         public float StarOffset09 { get { return 0.9f; } }
         public float StarOffset10 { get { return 1.0f; } }
 
-        public event PropertyChangedEventHandler PropertyChanged = delegate {};
+        public event PropertyChangedEventHandler PropertyChanged = delegate { };
     }
 }
