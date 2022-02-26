@@ -620,21 +620,12 @@ namespace Eclipse.View
                         updateLoadingScaledImagesMessage();
                     }
 
-                    // crop game clear logos 
-                    /*
-                    foreach (FileInfo fileInfo in gameClearLogosToProcess)
-                    {
-                        ImagesScaledCount += 1;
-                        CompletedProgressStepsCount += 1;
-                        ImageScaler.CropImage(fileInfo);
-                        updateLoadingScaledImagesMessage();
-                    }
-                    */
-
                     ListCreationStartTime = DateTime.Now;
 
                     Parallel.ForEach(AllGames, (game) =>
                     {
+                        if (game.Broken || game.Hide) return;
+
                         GamesProcessedCount += 1;
                         CompletedProgressStepsCount += 1;
                         updateRemainingLoadingMessage();
@@ -2251,7 +2242,6 @@ namespace Eclipse.View
             {
                 return moreInfoImage;
             }
-
             set
             {
                 if (moreInfoImage != value)

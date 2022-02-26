@@ -507,18 +507,6 @@
                     </Rectangle.OpacityMask>
                 </Rectangle>
                
-                <TextBlock Text="Options"
-                           IsHitTestVisible="False"
-                           Grid.Row="0"
-                           Grid.Column="1"
-                           Grid.ColumnSpan="3"
-                           FontFamily="Calibri" 
-                           FontWeight="ExtraBold"
-                           FontSize="60" 
-                           Foreground="GhostWhite"
-                           TextAlignment="Center"
-                           HorizontalAlignment="Left"
-                           VerticalAlignment="Center"/>
                 <TextBlock Text="{Binding OptionList.Option6.LongDescription}"
                            IsHitTestVisible="False"
                            Grid.Row="1"
@@ -791,7 +779,7 @@
                                 Stretch="Uniform"
                                 Margin="5,5,5,5"
                                 Opacity="{Binding FeatureOption, Converter={StaticResource PlayGameOpacityConverter}}"
-                            Source="{Binding PlayButtonImage}"/>
+                                Source="{Binding PlayButtonImage}"/>
                         <Image Name="Image_MoreInfoButton"
                                IsHitTestVisible="False"
                                RenderOptions.BitmapScalingMode="HighQuality" 

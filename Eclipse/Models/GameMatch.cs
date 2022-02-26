@@ -134,7 +134,6 @@ namespace Eclipse.Models
 
         public ListCategoryType CategoryType { get; set; }
         public string CategoryValue { get; set; }
-
         #endregion
 
         public GameMatch()

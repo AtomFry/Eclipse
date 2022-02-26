@@ -15,7 +15,5 @@ namespace Eclipse.Service
         {
             return new List<IGame>(PluginHelper.DataManager.GetAllGames());
         }
-
-
     }
 }
