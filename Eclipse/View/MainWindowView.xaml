@@ -1364,6 +1364,9 @@
                        IsHitTestVisible="False"
                        Stretch="UniformToFill"
                        Panel.ZIndex="220"
+                       ClipToBounds="True"
+                       MaxHeight="{Binding ActualHeight, ElementName=Grid_Selected_Game_Background}"
+                       MaxWidth="{Binding ActualWidth, ElementName=Grid_Selected_Game_Background}"
                        RenderOptions.BitmapScalingMode="HighQuality" >
                     <Image.OpacityMask>
                         <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
@@ -1384,6 +1387,9 @@
                        IsHitTestVisible="False"
                        Panel.ZIndex="230"
                        Opacity="0"
+                       ClipToBounds="True"
+                       MaxHeight="{Binding ActualHeight, ElementName=Grid_Selected_Game_Background}"
+                       MaxWidth="{Binding ActualWidth, ElementName=Grid_Selected_Game_Background}"
                        RenderOptions.BitmapScalingMode="HighQuality" >
                     <Image.OpacityMask>
                         <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
