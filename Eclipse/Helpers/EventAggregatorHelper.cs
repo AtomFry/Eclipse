@@ -10,12 +10,13 @@ namespace Eclipse.Helpers
         {
         }
 
-        private EventAggregatorHelper() => eventAggregator = new EventAggregator();
+        private EventAggregatorHelper()
+        {
+            EventAggregator = new EventAggregator();
+        }
 
         public static EventAggregatorHelper Instance => instance;
 
-        private readonly EventAggregator eventAggregator;
-
-        public EventAggregator EventAggregator => eventAggregator;
+        public EventAggregator EventAggregator { get; }
     }
 }

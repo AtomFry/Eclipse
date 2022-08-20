@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 namespace Eclipse.Service
 {
-
     public sealed class OptionListService
     {
         private bool optionListSet = false;

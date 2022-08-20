@@ -23,8 +23,7 @@ namespace Eclipse.View
     {
         private ListCycle<GameList> listCycle;
         private List<GameListSet> GameListSets;
-        private SpeechRecognizer SpeechRecognizer;
-
+        private SpeechRecognizer speechRecognizer;
         private ConcurrentBag<GameMatch> gameBag;
         private ConcurrentBag<GameFiles> gameFilesBag;
 
@@ -46,9 +45,6 @@ namespace Eclipse.View
             IsInitializing = true;
 
             FeatureOption = FeatureGameOption.PlayGame;
-
-            // setup the list of options 
-            OptionList = OptionListService.Instance.OptionList;
         }
 
         public void InitializeData()
@@ -66,6 +62,9 @@ namespace Eclipse.View
                 // create folders that are required by the plugin
                 DirectoryInfoHelper.CreateFolders();
 
+                // setup the list of options 
+                OptionList = OptionListService.Instance.OptionList;
+
                 gameBag = GameBagService.Instance.GameBag;
                 gameFilesBag = GameBagService.Instance.GameFilesBag;
 
@@ -74,7 +73,7 @@ namespace Eclipse.View
                 worker.RunWorkerAsync();
 
                 // create the voice recognition
-                CreateRecognizer();
+                speechRecognizer = SpeechRecognizerService.Instance.GetRecognizer(RecognizeCompleted);
 
                 // prepare lists of games by different categories
                 GameListSets = new List<GameListSet>();
@@ -428,27 +427,6 @@ namespace Eclipse.View
             GetGamesByListCategoryType(ListCategoryType.Playlist, true, true);
         }
 
-        private bool CreateRecognizer()
-        {
-            try
-            {
-                // get the distinct set of phrases that can be used with voice recognition
-                List<string> titleElements = gameBag.Where(game => game.CategoryType == ListCategoryType.VoiceSearch)
-                    .GroupBy(game => game.CategoryValue)
-                    .Distinct()
-                    .Select(gameMatch => gameMatch.Key)
-                    .ToList();
-
-                SpeechRecognizer = new SpeechRecognizer(titleElements, RecognizeCompleted);
-            }
-            catch (Exception ex)
-            {
-                LogHelper.LogException(ex, "CreateRecognizer");
-            }
-
-            return (true);
-        }
-
         void DoMoreLikeCurrentGame()
         {
             GameMatch currentGame = CurrentGameList?.Game1;
@@ -626,7 +604,7 @@ namespace Eclipse.View
         public void DoRecognize()
         {
             // bail out if the recognizer didn't get setup properly
-            if (SpeechRecognizer == null)
+            if (speechRecognizer == null)
             {
                 return;
             }
@@ -652,7 +630,7 @@ namespace Eclipse.View
             IsPickingCategory = false;
             IsDisplayingError = false;
 
-            SpeechRecognizer.DoSpeechRecognition();
+            speechRecognizer.DoSpeechRecognition();
         }
 
         private void RecognizeCompleted(SpeechRecognizerResult speechRecognizerResult)
@@ -1515,7 +1493,7 @@ namespace Eclipse.View
             if (IsRecognizing)
             {
                 IsRecognizing = false;
-                SpeechRecognizer?.TryCancelRecognition();
+                speechRecognizer?.TryCancelRecognition();
                 return true;
             }
 

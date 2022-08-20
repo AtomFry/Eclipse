@@ -14,9 +14,6 @@ using Unbroken.LaunchBox.Plugins.Data;
 
 namespace Eclipse.View
 {
-    /// <summary>
-    /// Interaction logic for MainWindowView.xaml
-    /// </summary>
     public partial class MainWindowView : UserControl, IBigBoxThemeElementPlugin
     {
         private readonly MainWindowViewModel mainWindowViewModel;

@@ -1,10 +1,61 @@
-﻿using Eclipse.Models;
+﻿using Eclipse.Helpers;
+using Eclipse.Models;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Speech.Recognition;
 
 namespace Eclipse.Service
 {
+    public class SpeechRecognizerService
+    {
+        private bool isSetup;
+        private SpeechRecognizer speechRecognizer;        
+
+        public SpeechRecognizer GetRecognizer(RecognitionCompletedDelegate recognitionCompletedDelegate)
+        {
+            if (!isSetup)
+            {
+                isSetup = true;
+
+                try
+                {
+                    ConcurrentBag<GameMatch> gameBag = GameBagService.Instance.GameBag;
+
+                    // get the distinct set of phrases that can be used with voice recognition
+                    List<string> titleElements = gameBag.Where(game => game.CategoryType == ListCategoryType.VoiceSearch)
+                        .GroupBy(game => game.CategoryValue)
+                        .Distinct()
+                        .Select(gameMatch => gameMatch.Key)
+                        .ToList();
+
+                    speechRecognizer = new SpeechRecognizer(titleElements, recognitionCompletedDelegate);
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.LogException(ex, "CreateRecognizer");
+                }
+            }
+
+            return speechRecognizer;            
+        }
+
+        #region singleton implementation 
+        public static SpeechRecognizerService Instance => instance;
+
+        private static readonly SpeechRecognizerService instance = new SpeechRecognizerService();
+
+        static SpeechRecognizerService()
+        {
+        }
+
+        private SpeechRecognizerService()
+        {
+        }
+        #endregion
+    }
+
     public class RecognizedPhrase
     {
         public string Phrase { get; set; }
