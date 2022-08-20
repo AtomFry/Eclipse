@@ -35,6 +35,9 @@
   <ItemGroup>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="Prism, Version=8.1.97.5141, Culture=neutral, PublicKeyToken=40ee6c3a2184dc59, processorArchitecture=MSIL">
+      <HintPath>..\packages\Prism.Core.8.1.97\lib\net47\Prism.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -63,9 +66,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Converters\DivideByConverter.cs" />
+    <Compile Include="Event\Event.cs" />
     <Compile Include="Helpers\EclipseConstants.cs" />
     <Compile Include="Helpers\DirectoryInfoHelper.cs" />
     <Compile Include="Helpers\DisplayInfoHelper.cs" />
+    <Compile Include="Helpers\EventAggregatorHelper.cs" />
     <Compile Include="Helpers\LogHelper.cs" />
     <Compile Include="Helpers\OpacityBrushHelper.cs" />
     <Compile Include="Helpers\RetroarchHelper.cs" />
@@ -81,6 +86,7 @@
     <Compile Include="Models\Enums.cs" />
     <Compile Include="Models\GameList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Service\BezelService.cs" />
     <Compile Include="Service\DataService.cs" />
     <Compile Include="Service\ImageScaler.cs" />
     <Compile Include="Service\SpeechRecognizer.cs" />
@@ -98,199 +104,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\AchievementView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\BackgroundView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\BoxesGamesView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\BoxGameView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\BoxListView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\CoverFlowGamesView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\CoverFlowWithDetailsGamesView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\ErrorPopupView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\FilterDetailsView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\FilterView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\GameDetailsView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\GameMarqueeView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\HorizontalMenuItemView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\HorizontalWheel1GamesView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\HorizontalWheel2GamesView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\HorizontalWheel3GamesView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\ImagesView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\ImageView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\KeyboardView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\MenuItemView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\MusicNotificationView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\OptionsButtonMenuItemView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\OptionsCheckBoxMenuItemView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\OptionsControllerButtonMenuItemView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\OptionsKeyboardMappingMenuItemView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\OptionsListMenuItemView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\OptionsPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\OptionsView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\PlatformMarqueeView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
     <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\PlatformWheel1FiltersView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\PlatformWheel2FiltersView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\PlatformWheel3FiltersView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\PlatformWheel4FiltersView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\SystemView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\TextFiltersView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\TextGamesView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\TextGameView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\TextListView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\ThumbnailGameView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\ThumbnailListView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\TwoColumnGameDetailsView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\Wall2GamesView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\Wall3GamesView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\Wall4GamesView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\WallGamesView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\Wheel2GamesView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\Wheel3GamesView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\Wheel4GamesView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\WheelGamesView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
@@ -403,12 +217,9 @@
     <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Images\Platforms\Clear Logo\ReadMe.txt" />
     <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Images\Platforms\Device\ReadMe.txt" />
     <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Images\Platforms\Fanart\ReadMe.txt" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\References\Caliburn.Micro.dll" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\References\Caliburn.Micro.Platform.Core.dll" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\References\Caliburn.Micro.Platform.dll" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\References\System.Windows.Interactivity.dll" />
     <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\ThemeSettings.xml" />
     <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Videos\Platforms\ReadMe.txt" />
+    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Prism.dll" />
     <Content Include="Eclipse\README.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -431,6 +242,7 @@
     <Folder Include="Eclipse\LaunchBox\StartupThemes\Eclipse\Images\" />
     <Folder Include="Eclipse\LaunchBox\StartupThemes\Eclipse\Media\" />
     <Folder Include="Eclipse\LaunchBox\Themes\Eclipse\Plugins\" />
+    <Folder Include="Eclipse\LaunchBox\Themes\Eclipse\References\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

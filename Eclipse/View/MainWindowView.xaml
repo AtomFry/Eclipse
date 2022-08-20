@@ -161,7 +161,6 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-
             <Image Name="Image_LaunchBoxLogo"
                         IsHitTestVisible="False"
                         RenderOptions.BitmapScalingMode="HighQuality" 
@@ -181,29 +180,6 @@
                     </TransformGroup>
                 </Image.RenderTransform>
             </Image>
-
-            <ProgressBar Name="ProgressBar_Loading"
-                         IsHitTestVisible="False"
-                         Grid.Row="5"
-                         Minimum="0"
-                         Maximum="{Binding TotalProgressStepsCount}"
-                         Value="{Binding CompletedProgressStepsCount}"
-                         Foreground="WhiteSmoke"
-                         Background="DimGray"
-                         Height="30"
-                         HorizontalAlignment="Stretch"
-                         VerticalAlignment="Bottom">
-            </ProgressBar>
-            <TextBlock Name="TextBlock_Loading_Message"
-                       IsHitTestVisible="False"
-                   Text="{Binding LoadingMessage}"
-                   Grid.Row="5"
-                   Foreground="MidnightBlue"
-                   FontFamily="Calibri"
-                   FontSize="22"
-                   HorizontalAlignment="Stretch"
-                   VerticalAlignment="Bottom"
-                   TextAlignment="Center"/>
         </Grid>
         <!-- END LOADING -->
 

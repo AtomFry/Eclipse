@@ -23,7 +23,6 @@ namespace Eclipse.View
 
         private BackgroundWorker stopVideoAndAnimationWorker;
 
-
         private readonly Timer backgroundImageChangeDelay;
         private readonly Timer fadeOutForMovieDelay;
         private readonly Timer attractModeDelay;
@@ -101,9 +100,6 @@ namespace Eclipse.View
             // pass in the animation function that can be called whenever a game changes
             mainWindowViewModel.GameChangeFunction = DoAnimateGameChange;
 
-            // pass in the function that can be called whenever the featured game function changes
-            mainWindowViewModel.FeatureChangeFunction = ChangedFeatureSetting;
-
             // pass in a function that will stop animations and videos when games are started or voice recognition is happening
             mainWindowViewModel.StopVideoAndAnimationsFunction = StopVideoAndAnimations;
 
@@ -117,8 +113,6 @@ namespace Eclipse.View
         // when the AttractModeDelay elapses, start into attract mode 
         private void AttractModeDelay_Elapsed(object sender, ElapsedEventArgs e)
         {
-            mainWindowViewModel.SetPreAttractModeGame();
-
             Dispatcher.Invoke(() =>
             {
                 // reset the background image - it should already be faded out but make sure
@@ -162,7 +156,7 @@ namespace Eclipse.View
                 mainWindowViewModel.NextAttractModeGame();
 
                 // get the next image to use for a attract mode background
-                activeAttractModeBackgroundImage = new BitmapImage(mainWindowViewModel.CurrentGameList.Game1.GameFiles.BackgroundImage);
+                activeAttractModeBackgroundImage = new BitmapImage(mainWindowViewModel.AttractModeGame.GameFiles.BackgroundImage);
 
                 // assign the image and fade it in
                 if (activeAttractModeBackgroundImage != null)
@@ -224,7 +218,7 @@ namespace Eclipse.View
         {
             Dispatcher.Invoke(() =>
             {
-                activeAttractModeClearLogo = new BitmapImage(mainWindowViewModel.CurrentGameList.Game1.GameFiles.ClearLogo);
+                activeAttractModeClearLogo = new BitmapImage(mainWindowViewModel.AttractModeGame.GameFiles.ClearLogo);
                 if (activeAttractModeClearLogo != null)
                 {
                     Image_AttractModeClearLogo.Source = activeAttractModeClearLogo;
@@ -550,12 +544,6 @@ namespace Eclipse.View
             }
         }
 
-        public void ChangedFeatureSetting()
-        {
-            // TODO: remove this?
-        }
-
-
         // delegate called by view model when the rating changes to refresh the rating image
         public void UpdateRatingImage()
         {
@@ -594,14 +582,15 @@ namespace Eclipse.View
                 // do not load bezel if aspect ratio  16:9 (width/height > 1.7)
                 if (Video_SelectedGame.NaturalVideoHeight != 0)
                 {
-                    if((float)((float)(Video_SelectedGame.NaturalVideoWidth / (float)Video_SelectedGame.NaturalVideoHeight)) < 1.7)
+                    if ((float)((float)(Video_SelectedGame.NaturalVideoWidth / (float)Video_SelectedGame.NaturalVideoHeight)) < 1.7)
                     {
                         BezelOrientation defaultBezelOrientation = BezelOrientation.Horizontal;
                         if (Video_SelectedGame.NaturalVideoWidth < Video_SelectedGame.NaturalVideoHeight)
                         {
                             defaultBezelOrientation = BezelOrientation.Vertical;
                         }
-                        gameBezelUri = mainWindowViewModel.GetDefaultBezel(BezelType.PlatformDefault, defaultBezelOrientation, mainWindowViewModel.CurrentGameList.Game1.Game.Platform);
+
+                        gameBezelUri = BezelService.Instance.GetDefaultBezel(BezelType.PlatformDefault, defaultBezelOrientation, mainWindowViewModel.CurrentGameList.Game1.Game.Platform);
                     }
                 }
             }

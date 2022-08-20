@@ -255,16 +255,8 @@ namespace Eclipse.Helpers
 
         private DirectoryInfoHelper()
         {
-
         }
 
-        public static DirectoryInfoHelper Instance
-        {
-            get
-            {
-                return instance;
-            }
-        }
+        public static DirectoryInfoHelper Instance => instance;
     }
-
 }

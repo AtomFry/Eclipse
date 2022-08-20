@@ -16,71 +16,251 @@ using System.Threading;
 
 namespace Eclipse.View
 {
-    public delegate void FeatureChangeFunction();
     public delegate void AnimateGameChangeFunction();
-
     public delegate void IncrementLoadingProgressFunction();
     public delegate void StopVideoAndAnimations();
     public delegate void UpdateRatingImage();
 
-    class MainWindowViewModel : INotifyPropertyChanged
+    public class MainWindowViewModel : INotifyPropertyChanged
     {
-        private static List<PlaylistGame> playlistGames;
         private static bool loadedOnce = false;
-        private List<Option<ListCategoryType>> listCategories;
         private ListCycle<GameList> listCycle;
-
-        private List<GameListSet> GameListSets { get; set; }
-
-        private SpeechRecognizer SpeechRecognizer { get; set; }
-
-        private static ConcurrentBag<GameMatch> GameBag = new ConcurrentBag<GameMatch>();
-        private static ConcurrentBag<GameFiles> GameFilesBag = new ConcurrentBag<GameFiles>();
-
-        // store platform bezels and default bezels in dictionary for easy lookup
-        // this is probably terrible design but the problem is I won't know the video orientation in the GameMatch, I get that once the MediaElement is loaded over in the view
-        // TODO: add game title (or id) here to take care of all game bezels too - currently game specific bezels are loaded up in the GameMatch
-        // Key: <BezelType, BezelOrientation, Platform> 
-        private static Dictionary<Tuple<BezelType, BezelOrientation, string>, Uri> BezelDictionary = new Dictionary<Tuple<BezelType, BezelOrientation, string>, Uri>();
-
-
-        public FeatureChangeFunction FeatureChangeFunction { get; set; }
-        public AnimateGameChangeFunction GameChangeFunction { get; set; }
-        public StopVideoAndAnimations StopVideoAndAnimationsFunction { get; set; }
-        public UpdateRatingImage UpdateRatingImageFunction { get; set; }
-
-        private GameDetailOption gameDetailOption;
-        public GameDetailOption GameDetailOption
-        {
-            get { return gameDetailOption; }
-            set
-            {
-                {
-                    gameDetailOption = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("GameDetailOption"));
-                }
-            }
-        }
-
-
-        private List<IGame> allGames;
-        public List<IGame> AllGames
-        {
-            get { return allGames; }
-            set
-            {
-                if (allGames != value)
-                {
-                    allGames = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("AllGames"));
-                }
-            }
-        }
+        private List<GameListSet> GameListSets;
+        private SpeechRecognizer SpeechRecognizer;
+        private static readonly List<IGame> AllGames = DataService.GetGames();
+        private static readonly List<PlaylistGame> PlaylistGames = new List<PlaylistGame>();
+        private static readonly ConcurrentBag<GameMatch> GameBag = new ConcurrentBag<GameMatch>();
+        private static readonly ConcurrentBag<GameFiles> GameFilesBag = new ConcurrentBag<GameFiles>();
 
         private bool isInitializing;
+        private bool isPickingCategory;
+        private bool isDisplayingFeature;
+        private bool isDisplayingAttractMode;
+        private bool isRecognizing;
+        private bool isDisplayingResults;
+        private bool isDisplayingMoreInfo;
+        private bool isDisplayingError;
+        private bool isRatingGame;
+
+        private GameDetailOption gameDetailOption;
+        private string errorMessage;
+
+        public MainWindowViewModel()
+        {
+            IsInitializing = true;
+
+            FeatureOption = FeatureGameOption.PlayGame;
+
+            // setup the list of options 
+            OptionList = new OptionList(new List<Option<ListCategoryType>>
+            {
+                new Option<ListCategoryType> { Name = "Platform", EnumOption = ListCategoryType.Platform, SortOrder = 1, ShortDescription = "Platform", LongDescription = "Platform" },
+                new Option<ListCategoryType> { Name = "Genre", EnumOption = ListCategoryType.Genre, SortOrder = 2, ShortDescription = "Genre", LongDescription = "Genre" },
+                new Option<ListCategoryType> { Name = "Series", EnumOption = ListCategoryType.Series, SortOrder = 3, ShortDescription = "Series", LongDescription = "Series" },
+                new Option<ListCategoryType> { Name = "Playlist", EnumOption = ListCategoryType.Playlist, SortOrder = 4, ShortDescription = "Playlist", LongDescription = "Playlist" },
+                new Option<ListCategoryType> { Name = "Play mode", EnumOption = ListCategoryType.PlayMode, SortOrder = 5, ShortDescription = "Mode", LongDescription = "Play mode" },
+                new Option<ListCategoryType> { Name = "Developer", EnumOption = ListCategoryType.Developer, SortOrder = 6, ShortDescription = "Dev", LongDescription = "Developer" },
+                new Option<ListCategoryType> { Name = "Publisher", EnumOption = ListCategoryType.Publisher, SortOrder = 7, ShortDescription = "Pub", LongDescription = "Publisher" },
+                new Option<ListCategoryType> { Name = "Year", EnumOption = ListCategoryType.ReleaseYear, SortOrder = 8, ShortDescription = "Year", LongDescription = "Release year" },
+                new Option<ListCategoryType> { Name = "Random", EnumOption = ListCategoryType.RandomGame, SortOrder = 9, ShortDescription = "Random", LongDescription = "Random game" },
+                new Option<ListCategoryType> { Name = "Voice search", EnumOption = ListCategoryType.VoiceSearch, SortOrder = 10, ShortDescription = "Voice", LongDescription = "Voice search" }
+            });
+        }
+
+        public void InitializeData()
+        {
+            BackgroundWorker worker = new BackgroundWorker();
+            worker.WorkerReportsProgress = true;
+            worker.DoWork += Initialization_LoadData;
+            worker.RunWorkerAsync();
+        }
+
+        private void Initialization_LoadData(object sender, DoWorkEventArgs e)
+        {
+            try
+            {
+                if (!loadedOnce)
+                {
+                    loadedOnce = true;
+
+                    // create folders that are required by the plugin
+                    DirectoryInfoHelper.CreateFolders();
+
+                    // get a list of playlist games 
+                    IPlaylist[] allPlaylists = PluginHelper.DataManager.GetAllPlaylists();
+                    foreach (IPlaylist playlist in allPlaylists)
+                    {
+                        if (playlist.HasGames(false, false))
+                        {
+                            IGame[] games = playlist.GetAllGames(true);
+                            foreach (IGame game in games)
+                            {
+                                PlaylistGames.Add(new PlaylistGame() { GameId = game.Id, Playlist = playlist.SortTitleOrTitle });
+                            }
+                        }
+                    }
+
+                    // prescale box front images - doing this here so it's easier to update the progress bar
+                    // get list of image files in launchbox folders that are missing from the plug-in folders
+                    List<FileInfo> gameFrontFilesToProcess = ImageScaler.GetMissingGameFrontImageFiles();
+                    List<FileInfo> platformLogosToProcess = ImageScaler.GetMissingPlatformClearLogoFiles();
+                    List<FileInfo> gameClearLogosToProcess = ImageScaler.GetMissingGameClearLogoFiles();
+                    bool scaleDefaultBoxFrontImage = !ImageScaler.DefaultBoxFrontExists();
+
+                    // get the desired height of pre-scaled box images based on the monitor's resolution
+                    // only need this if we have anything to process
+                    int desiredHeight = 0;
+                    if ((gameFrontFilesToProcess.Count > 0)
+                        || (platformLogosToProcess.Count > 0)
+                        || (gameClearLogosToProcess.Count > 0)
+                        || scaleDefaultBoxFrontImage)
+                    {
+                        desiredHeight = ImageScaler.GetDesiredHeight();
+                    }
+
+                    // scale the default box front image
+                    if (scaleDefaultBoxFrontImage)
+                    {
+                        ImageScaler.ScaleDefaultBoxFront(desiredHeight);
+                    }
+
+                    // crop platform clear logos 
+                    foreach (FileInfo fileInfo in platformLogosToProcess)
+                    {
+                        ImageScaler.CropImage(fileInfo);
+                    }
+
+                    Parallel.ForEach(AllGames, (game) =>
+                    {
+                        if (game.Broken || game.Hide)
+                        {
+                            return;
+                        }
+
+                        GameFiles gameFiles = new GameFiles(game);
+                        GameFilesBag.Add(gameFiles);
+
+                        GameMatch gameMatch = new GameMatch(game, gameFiles);
+
+                        if (game.Favorite)
+                        {
+                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Favorites, ListCategoryType.Favorites.ToString()));
+                        }
+
+                        if (game.LastPlayedDate != null)
+                        {
+                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.History, ListCategoryType.History.ToString()));
+                        }
+
+                        // create a dictionary of platform game matches
+                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Platform, game.Platform));
+
+                        // create a dictionary of release year game matches
+                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.ReleaseYear, gameMatch.ReleaseYear));
+
+                        // create a dictionary of play modes and game matches
+                        foreach (string playMode in game.PlayModes)
+                        {
+                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.PlayMode, playMode));
+                        }
+
+                        // create a dictionary of Genres and game matches
+                        foreach (string genre in game.Genres)
+                        {
+                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Genre, genre));
+                        }
+
+                        // create a dictionary of publishers and game matches
+                        foreach (string publisher in game.Publishers)
+                        {
+                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Publisher, publisher));
+                        }
+
+                        // create a dictionary of developers and game matches
+                        foreach (string developer in game.Developers)
+                        {
+                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Developer, developer));
+                        }
+
+                        // create a dictionary of series and game matches
+                        foreach (string series in game.SeriesValues)
+                        {
+                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Series, series));
+                        }
+
+                        // create a dictionary of playlist and game matches 
+                        IEnumerable<PlaylistGame> playlistGameQuery = from playlistGame in PlaylistGames
+                                                                      where playlistGame.GameId == game.Id
+                                                                      select playlistGame;
+                        foreach (PlaylistGame playlistGame in playlistGameQuery)
+                        {
+                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Playlist, playlistGame.Playlist));
+                        }
+
+                        // create voice recognition grammar library for the game
+                        GameTitleGrammarBuilder gameTitleGrammarBuilder = new GameTitleGrammarBuilder(game);
+                        foreach (GameTitleGrammar gameTitleGrammar in gameTitleGrammarBuilder.gameTitleGrammars)
+                        {
+                            if (!string.IsNullOrWhiteSpace(gameTitleGrammar.Title))
+                            {
+                                GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammar.Title, TitleMatchType.FullTitleMatch, gameTitleGrammar.Title));
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(gameTitleGrammar.MainTitle))
+                            {
+                                GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammar.MainTitle, TitleMatchType.MainTitleMatch, gameTitleGrammar.Title));
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(gameTitleGrammar.Subtitle))
+                            {
+                                GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammar.Subtitle, TitleMatchType.SubtitleMatch, gameTitleGrammar.Title));
+                            }
+
+                            for (int i = 0; i < gameTitleGrammar.TitleWords.Count; i++)
+                            {
+                                StringBuilder sb = new StringBuilder();
+                                for (int j = i; j < gameTitleGrammar.TitleWords.Count; j++)
+                                {
+                                    sb.Append($"{gameTitleGrammar.TitleWords[j]} ");
+                                    if (!GameTitleGrammar.IsNoiseWord(sb.ToString().Trim()))
+                                    {
+                                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, sb.ToString().Trim(), TitleMatchType.FullTitleContains, gameTitleGrammar.Title));
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                BackgroundWorker worker = new BackgroundWorker();
+                worker.DoWork += SetupFiles;
+                worker.RunWorkerAsync();
+
+                // create the voice recognition
+                CreateRecognizer();
+
+                // prepare lists of games by different categories
+                GameListSets = new List<GameListSet>();
+
+                // populate the lists 
+                CreateGameLists();
+
+                // flag initialization complete - display results
+                IsInitializing = false;
+                IsDisplayingResults = true;
+
+                // default to display games by platform
+                ResetGameLists(ListCategoryType.Platform);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.LogException(ex, "Initializion_loadData");
+            }
+        }
+
         public bool IsInitializing
         {
-            get { return isInitializing; }
+            get => isInitializing;
             set
             {
                 if (isInitializing != value)
@@ -91,10 +271,9 @@ namespace Eclipse.View
             }
         }
 
-        private bool isPickingCategory;
         public bool IsPickingCategory
         {
-            get { return isPickingCategory; }
+            get => isPickingCategory;
             set
             {
                 if (isPickingCategory != value)
@@ -105,10 +284,9 @@ namespace Eclipse.View
             }
         }
 
-        private bool isDisplayingFeature;
         public bool IsDisplayingFeature
         {
-            get { return isDisplayingFeature; }
+            get => isDisplayingFeature;
             set
             {
                 if (isDisplayingFeature != value)
@@ -119,10 +297,9 @@ namespace Eclipse.View
             }
         }
 
-        private bool isDisplayingAttractMode;
         public bool IsDisplayingAttractMode
         {
-            get { return isDisplayingAttractMode; }
+            get => isDisplayingAttractMode;
             set
             {
                 if (isDisplayingAttractMode != value)
@@ -133,10 +310,9 @@ namespace Eclipse.View
             }
         }
 
-        private bool isRecognizing;
         public bool IsRecognizing
         {
-            get { return isRecognizing; }
+            get => isRecognizing;
             set
             {
                 if (isRecognizing != value)
@@ -147,10 +323,9 @@ namespace Eclipse.View
             }
         }
 
-        private bool isDisplayingResults;
         public bool IsDisplayingResults
         {
-            get { return isDisplayingResults; }
+            get => isDisplayingResults;
             set
             {
                 if (isDisplayingResults != value)
@@ -161,10 +336,9 @@ namespace Eclipse.View
             }
         }
 
-        private bool isDisplayingError;
         public bool IsDisplayingError
         {
-            get { return isDisplayingError; }
+            get => isDisplayingError;
             set
             {
                 if (isDisplayingError != value)
@@ -175,10 +349,9 @@ namespace Eclipse.View
             }
         }
 
-        private bool isDisplayingMoreInfo;
         public bool IsDisplayingMoreInfo
         {
-            get { return isDisplayingMoreInfo; }
+            get => isDisplayingMoreInfo;
             set
             {
                 if (isDisplayingMoreInfo != value)
@@ -189,10 +362,34 @@ namespace Eclipse.View
             }
         }
 
-        private string errorMessage;
+        public bool IsRatingGame
+        {
+            get => isRatingGame;
+            set
+            {
+                if (isRatingGame != value)
+                {
+                    isRatingGame = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("IsRatingGame"));
+                }
+            }
+        }
+
+        public GameDetailOption GameDetailOption
+        {
+            get => gameDetailOption;
+            set
+            {
+                {
+                    gameDetailOption = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("GameDetailOption"));
+                }
+            }
+        }
+
         public string ErrorMessage
         {
-            get { return errorMessage; }
+            get => errorMessage;
             set
             {
                 if (errorMessage != value)
@@ -204,75 +401,10 @@ namespace Eclipse.View
         }
 
 
-        private int totalProgressStepsCount;
-        public int TotalProgressStepsCount
-        {
-            get { return totalProgressStepsCount; }
-            set
-            {
-                if (totalProgressStepsCount != value)
-                {
-                    totalProgressStepsCount = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("TotalProgressStepsCount"));
-                }
-            }
-        }
 
-        private string loadingMessage;
-        public string LoadingMessage
-        {
-            get { return loadingMessage; }
-            set
-            {
-                if (loadingMessage != value)
-                {
-                    loadingMessage = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("LoadingMessage"));
-                }
-            }
-        }
-        private int completedProgressStepsCount;
-        public int CompletedProgressStepsCount
-        {
-            get { return completedProgressStepsCount; }
-            set
-            {
-                if (completedProgressStepsCount != value)
-                {
-                    completedProgressStepsCount = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("CompletedProgressStepsCount"));
-                }
-            }
-        }
-
-        private List<Option> categoryList;
-        public List<Option> CategoryList
-        {
-            get { return categoryList; }
-            set
-            {
-                if (categoryList != value)
-                {
-                    categoryList = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("CategoryList"));
-                }
-            }
-        }
-
-        private bool isRatingGame;
-        public bool IsRatingGame
-        {
-            get { return isRatingGame; }
-            set
-            {
-                if (isRatingGame != value)
-                {
-                    isRatingGame = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("IsRatingGame"));
-                }
-            }
-        }
-
+        public AnimateGameChangeFunction GameChangeFunction { get; set; }
+        public StopVideoAndAnimations StopVideoAndAnimationsFunction { get; set; }
+        public UpdateRatingImage UpdateRatingImageFunction { get; set; }
 
         private GameListSet currentGameListSet;
         public GameListSet CurrentGameListSet
@@ -291,7 +423,7 @@ namespace Eclipse.View
         private OptionList optionList;
         public OptionList OptionList
         {
-            get { return optionList; }
+            get => optionList;
             set
             {
                 if (optionList != value)
@@ -300,58 +432,6 @@ namespace Eclipse.View
                     PropertyChanged(this, new PropertyChangedEventArgs("OptionList"));
                 }
             }
-        }
-
-        private void SetupCategoryList()
-        {
-            listCategories = new List<Option<ListCategoryType>>();
-            listCategories.Add(new Option<ListCategoryType> { Name = "Platform", EnumOption = ListCategoryType.Platform, SortOrder = 1, ShortDescription = "Platform", LongDescription = "Platform" });
-            listCategories.Add(new Option<ListCategoryType> { Name = "Genre", EnumOption = ListCategoryType.Genre, SortOrder = 2, ShortDescription = "Genre", LongDescription = "Genre" });
-            listCategories.Add(new Option<ListCategoryType> { Name = "Series", EnumOption = ListCategoryType.Series, SortOrder = 3, ShortDescription = "Series", LongDescription = "Series" });
-            listCategories.Add(new Option<ListCategoryType> { Name = "Playlist", EnumOption = ListCategoryType.Playlist, SortOrder = 4, ShortDescription = "Playlist", LongDescription = "Playlist" });
-            listCategories.Add(new Option<ListCategoryType> { Name = "Play mode", EnumOption = ListCategoryType.PlayMode, SortOrder = 5, ShortDescription = "Mode", LongDescription = "Play mode" });
-            listCategories.Add(new Option<ListCategoryType> { Name = "Developer", EnumOption = ListCategoryType.Developer, SortOrder = 6, ShortDescription = "Dev", LongDescription = "Developer" });
-            listCategories.Add(new Option<ListCategoryType> { Name = "Publisher", EnumOption = ListCategoryType.Publisher, SortOrder = 7, ShortDescription = "Pub", LongDescription = "Publisher" });
-            listCategories.Add(new Option<ListCategoryType> { Name = "Year", EnumOption = ListCategoryType.ReleaseYear, SortOrder = 8, ShortDescription = "Year", LongDescription = "Release year" });
-            listCategories.Add(new Option<ListCategoryType> { Name = "Random", EnumOption = ListCategoryType.RandomGame, SortOrder = 9, ShortDescription = "Random", LongDescription = "Random game" });
-            listCategories.Add(new Option<ListCategoryType> { Name = "Voice search", EnumOption = ListCategoryType.VoiceSearch, SortOrder = 10, ShortDescription = "Voice", LongDescription = "Voice search" });
-            OptionList = new OptionList(listCategories);
-        }
-
-        // get platform bezels if game bezel is not there
-        private void GetPlatformBezels()
-        {
-            // platform bezel path 
-            // ..\LaunchBox\Plugins\Eclipse\Media\Bezels\{PLATFORM}\Horizontal.png
-            // ..\LaunchBox\Plugins\Eclipse\Media\Bezels\{PLATFORM}\Vertical.png
-            List<IPlatform> platforms = new List<IPlatform>(PluginHelper.DataManager.GetAllPlatforms());
-            foreach (var platform in platforms)
-            {
-                Tuple<BezelType, BezelOrientation, string> platformHorizontalBezelKey = new Tuple<BezelType, BezelOrientation, string>(BezelType.PlatformDefault, BezelOrientation.Horizontal, platform.Name);
-                Tuple<BezelType, BezelOrientation, string> platformVerticalBezelKey = new Tuple<BezelType, BezelOrientation, string>(BezelType.PlatformDefault, BezelOrientation.Vertical, platform.Name);
-
-                string platformHorizontalBezelPath = Path.Combine(DirectoryInfoHelper.Instance.BezelFolder, platform.Name, "Horizontal.png");
-                string platformVerticalBezelPath = Path.Combine(DirectoryInfoHelper.Instance.BezelFolder, platform.Name, "Vertical.png");
-
-                if (File.Exists(platformHorizontalBezelPath)) BezelDictionary.Add(platformHorizontalBezelKey, new Uri(platformHorizontalBezelPath));
-                if (File.Exists(platformVerticalBezelPath)) BezelDictionary.Add(platformVerticalBezelKey, new Uri(platformVerticalBezelPath));
-            }
-        }
-
-        // get default bezels if game bezel and platform bezel is not there
-        private void GetDefaultBezels()
-        {
-            // default bezel path 
-            // ..\LaunchBox\Plugins\Eclipse\Media\Bezels\DEFAULT\Horizontal.png
-            // ..\LaunchBox\Plugins\Eclipse\Media\Bezels\DEFAULT\Vertical.png
-            Tuple<BezelType, BezelOrientation, string> defaultHorizontalBezelKey = new Tuple<BezelType, BezelOrientation, string>(BezelType.Default, BezelOrientation.Horizontal, string.Empty);
-            Tuple<BezelType, BezelOrientation, string> defaultVerticalBezelKey = new Tuple<BezelType, BezelOrientation, string>(BezelType.Default, BezelOrientation.Vertical, string.Empty);
-
-            string defaultHorizontalBezelPath = Path.Combine(DirectoryInfoHelper.Instance.BezelFolder, "Default", "Horizontal.png");
-            string defaultVerticalBezelPath = Path.Combine(DirectoryInfoHelper.Instance.BezelFolder, "Default", "Vertical.png");
-
-            if (File.Exists(defaultHorizontalBezelPath)) BezelDictionary.Add(defaultHorizontalBezelKey, new Uri(defaultHorizontalBezelPath));
-            if (File.Exists(defaultVerticalBezelPath)) BezelDictionary.Add(defaultVerticalBezelKey, new Uri(defaultVerticalBezelPath));
         }
 
         private void GetGamesByListCategoryType(ListCategoryType listCategoryType, bool includeFavorites = false, bool includeHistory = false)
@@ -406,352 +486,6 @@ namespace Eclipse.View
                                             .ThenBy(list => list.ListDescription).ToList(),
                 ListCategoryType = listCategoryType
             });
-        }
-
-        public MainWindowViewModel()
-        {
-            IsInitializing = true;
-            FeatureOption = FeatureGameOption.PlayGame;
-
-            // get all the games from the launchbox install
-            AllGames = DataService.GetGames();
-        }
-
-        public Uri GetDefaultBezel(BezelType bezelType, BezelOrientation bezelOrientation, string platformName)
-        {
-            Uri bezelUri = GetBezel(bezelType, bezelOrientation, platformName);
-            if (bezelUri != null)
-            {
-                return bezelUri;
-            }
-
-            // try the default bezel
-            if (bezelType != BezelType.Default)
-            {
-                bezelUri = GetBezel(BezelType.Default, bezelOrientation, string.Empty);
-            }
-
-            return bezelUri;
-        }
-
-        private Uri GetBezel(BezelType bezelType, BezelOrientation bezelOrientation, string platformName)
-        {
-            Uri bezelUri;
-
-            Tuple<BezelType, BezelOrientation, string> bezelKey = new Tuple<BezelType, BezelOrientation, string>(bezelType, bezelOrientation, platformName);
-            BezelDictionary.TryGetValue(bezelKey, out bezelUri);
-
-            return bezelUri;
-        }
-
-        public void InitializeData()
-        {
-            BackgroundWorker worker = new BackgroundWorker();
-            worker.WorkerReportsProgress = true;
-            worker.DoWork += Initialization_LoadData;
-            worker.RunWorkerAsync();
-        }
-
-        private static List<PlaylistGame> GetPlaylistGames()
-        {
-            IPlaylist[] allPlaylists = PluginHelper.DataManager.GetAllPlaylists();
-            List<PlaylistGame> playlistGames = new List<PlaylistGame>();
-            foreach (IPlaylist playlist in allPlaylists)
-            {
-                if (playlist.HasGames(false, false))
-                {
-                    IGame[] games = playlist.GetAllGames(true);
-                    foreach (IGame game in games)
-                    {
-                        playlistGames.Add(new PlaylistGame() { GameId = game.Id, Playlist = playlist.SortTitleOrTitle });
-                    }
-                }
-            }
-
-            return playlistGames;
-        }
-
-        private int GamesToProcessCount = 0;
-        private int GamesProcessedCount = 0;
-        private int ImagesToScaleCount = 0;
-        private int ImagesScaledCount = 0;
-
-        private DateTime ImageScalingStartTime;
-        private void updateLoadingScaledImagesMessage()
-        {
-            updateLoadingOpacity();
-
-            if (ImagesScaledCount % 10 != 0) return;
-
-            TimeSpan elapsedTime = DateTime.Now - ImageScalingStartTime;
-            double elapsedSeconds = elapsedTime.TotalSeconds;
-
-            if (elapsedSeconds == 0) elapsedSeconds = 1;
-
-            double scaleRate = ImagesScaledCount / elapsedSeconds;
-
-            if (scaleRate == 0) scaleRate = 1;
-
-            double remainingSeconds = (ImagesToScaleCount - ImagesScaledCount) / scaleRate;
-
-            TimeSpan remainingTimeSpan = TimeSpan.FromSeconds(remainingSeconds);
-
-            LoadingMessage = string.Format("Updating image cache ({3}/{4}) {0:D2}:{1:D2}:{2:D2}", remainingTimeSpan.Hours, remainingTimeSpan.Minutes, remainingTimeSpan.Seconds, ImagesScaledCount, ImagesToScaleCount);
-        }
-
-        private DateTime ListCreationStartTime;
-        private void updateRemainingLoadingMessage()
-        {
-            updateLoadingOpacity();
-
-            if (GamesProcessedCount % 10 != 0) return;
-
-            TimeSpan elapsedTime = DateTime.Now - ListCreationStartTime;
-            double elapsedSeconds = elapsedTime.TotalSeconds;
-
-            if (elapsedSeconds == 0) elapsedSeconds = 1;
-
-            double gameProcessRate = GamesProcessedCount / elapsedSeconds;
-
-            if (gameProcessRate == 0) gameProcessRate = 1;
-
-            double remainingSeconds = (GamesToProcessCount - GamesProcessedCount) / gameProcessRate;
-
-            TimeSpan remainingTimeSpan = TimeSpan.FromSeconds(remainingSeconds);
-
-            LoadingMessage = string.Format("Creating game lists ({3}/{4}) {0:D2}:{1:D2}:{2:D2}", remainingTimeSpan.Hours, remainingTimeSpan.Minutes, remainingTimeSpan.Seconds, GamesProcessedCount, GamesToProcessCount);
-        }
-
-        private double loadingOpacity;
-        public double LoadingOpacity
-        {
-            get
-            {
-                return loadingOpacity;
-            }
-
-            private set
-            {
-                if (loadingOpacity != value)
-                {
-                    loadingOpacity = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("LoadingOpacity"));
-                }
-            }
-        }
-
-        private void updateLoadingOpacity()
-        {
-            if (totalProgressStepsCount == 0)
-            {
-                LoadingOpacity = 0;
-            }
-            else
-            {
-                double calculatedOpacity = 0.2 + (double)completedProgressStepsCount / (double)totalProgressStepsCount;
-
-                if (calculatedOpacity > 1) calculatedOpacity = 1;
-
-                LoadingOpacity = calculatedOpacity;
-            }
-        }
-
-        void Initialization_LoadData(object sender, DoWorkEventArgs e)
-        {
-            try
-            {
-                if (!loadedOnce)
-                {
-                    loadedOnce = true;
-
-                    // create folders that are required by the plugin
-                    DirectoryInfoHelper.CreateFolders();
-
-                    // gets games by playlist so they can be used while processing games below 
-                    playlistGames = GetPlaylistGames();
-
-                    // get platform bezels
-                    GetPlatformBezels();
-                    GetDefaultBezels();
-
-                    // get the total count of games for the progress bar
-                    TotalProgressStepsCount = AllGames?.Count ?? 0;
-                    GamesToProcessCount = AllGames?.Count ?? 0;
-
-                    // prescale box front images - doing this here so it's easier to update the progress bar
-                    // get list of image files in launchbox folders that are missing from the plug-in folders
-                    List<FileInfo> gameFrontFilesToProcess = ImageScaler.GetMissingGameFrontImageFiles();
-                    List<FileInfo> platformLogosToProcess = ImageScaler.GetMissingPlatformClearLogoFiles();
-                    List<FileInfo> gameClearLogosToProcess = ImageScaler.GetMissingGameClearLogoFiles();
-                    bool scaleDefaultBoxFrontImage = !ImageScaler.DefaultBoxFrontExists();
-
-                    // get the desired height of pre-scaled box images based on the monitor's resolution
-                    // only need this if we have anything to process
-                    int desiredHeight = 0;
-                    if ((gameFrontFilesToProcess.Count > 0) || (platformLogosToProcess.Count > 0) || (gameClearLogosToProcess.Count > 0) || scaleDefaultBoxFrontImage)
-                    {
-                        LoadingMessage = $"PRESCALING IMAGES";
-                        desiredHeight = ImageScaler.GetDesiredHeight();
-                    }
-
-                    ImageScalingStartTime = DateTime.Now;
-
-                    // add the count of missing files for the loading progress bar
-                    TotalProgressStepsCount += platformLogosToProcess?.Count ?? 0;
-                    ImagesToScaleCount += platformLogosToProcess?.Count ?? 0;
-
-                    CompletedProgressStepsCount = 0;
-
-                    // scale the default box front image
-                    if (scaleDefaultBoxFrontImage)
-                    {
-                        ImagesScaledCount += 1;
-                        CompletedProgressStepsCount += 1;
-                        ImageScaler.ScaleDefaultBoxFront(desiredHeight);
-                        updateLoadingScaledImagesMessage();
-                    }
-
-                    // crop platform clear logos 
-                    foreach (FileInfo fileInfo in platformLogosToProcess)
-                    {
-                        ImagesScaledCount += 1;
-                        CompletedProgressStepsCount += 1;
-                        ImageScaler.CropImage(fileInfo);
-                        updateLoadingScaledImagesMessage();
-                    }
-
-                    ListCreationStartTime = DateTime.Now;
-
-                    Parallel.ForEach(AllGames, (game) =>
-                    {
-                        if (game.Broken || game.Hide) return;
-
-                        GamesProcessedCount += 1;
-                        CompletedProgressStepsCount += 1;
-                        updateRemainingLoadingMessage();
-
-                        GameFiles gameFiles = new GameFiles(game);
-                        GameFilesBag.Add(gameFiles);
-
-                        GameMatch gameMatch = new GameMatch(game, gameFiles);
-
-                        if (game.Favorite)
-                        {
-                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Favorites, ListCategoryType.Favorites.ToString()));
-                        }
-
-                        if (game.LastPlayedDate != null)
-                        {
-                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.History, ListCategoryType.History.ToString()));
-                        }
-
-                        // create a dictionary of platform game matches
-                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Platform, game.Platform));
-
-                        // create a dictionary of release year game matches
-                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.ReleaseYear, gameMatch.ReleaseYear));
-
-                        // create a dictionary of play modes and game matches
-                        foreach (string playMode in game.PlayModes)
-                        {
-                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.PlayMode, playMode));
-                        }
-
-                        // create a dictionary of Genres and game matches
-                        foreach (string genre in game.Genres)
-                        {
-                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Genre, genre));
-                        }
-
-                        // create a dictionary of publishers and game matches
-                        foreach (string publisher in game.Publishers)
-                        {
-                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Publisher, publisher));
-                        }
-
-                        // create a dictionary of developers and game matches
-                        foreach (string developer in game.Developers)
-                        {
-                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Developer, developer));
-                        }
-
-                        // create a dictionary of series and game matches
-                        foreach (string series in game.SeriesValues)
-                        {
-                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Series, series));
-                        }
-
-                        // create a dictionary of playlist and game matches 
-                        IEnumerable<PlaylistGame> playlistGameQuery = from playlistGame in playlistGames
-                                                                      where playlistGame.GameId == game.Id
-                                                                      select playlistGame;
-                        foreach (PlaylistGame playlistGame in playlistGameQuery)
-                        {
-                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Playlist, playlistGame.Playlist));
-                        }
-
-                        // create voice recognition grammar library for the game
-                        GameTitleGrammarBuilder gameTitleGrammarBuilder = new GameTitleGrammarBuilder(game);
-                        foreach (GameTitleGrammar gameTitleGrammar in gameTitleGrammarBuilder.gameTitleGrammars)
-                        {
-                            if (!string.IsNullOrWhiteSpace(gameTitleGrammar.Title))
-                            {
-                                GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammar.Title, TitleMatchType.FullTitleMatch, gameTitleGrammar.Title));
-                            }
-
-                            if (!string.IsNullOrWhiteSpace(gameTitleGrammar.MainTitle))
-                            {
-                                GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammar.MainTitle, TitleMatchType.MainTitleMatch, gameTitleGrammar.Title));
-                            }
-
-                            if (!string.IsNullOrWhiteSpace(gameTitleGrammar.Subtitle))
-                            {
-                                GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammar.Subtitle, TitleMatchType.SubtitleMatch, gameTitleGrammar.Title));
-                            }
-
-                            for (int i = 0; i < gameTitleGrammar.TitleWords.Count; i++)
-                            {
-                                StringBuilder sb = new StringBuilder();
-                                for (int j = i; j < gameTitleGrammar.TitleWords.Count; j++)
-                                {
-                                    sb.Append($"{gameTitleGrammar.TitleWords[j]} ");
-                                    if (!GameTitleGrammar.IsNoiseWord(sb.ToString().Trim()))
-                                    {
-                                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, sb.ToString().Trim(), TitleMatchType.FullTitleContains, gameTitleGrammar.Title));
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
-
-                BackgroundWorker worker = new BackgroundWorker();
-                worker.DoWork += SetupFiles;
-                worker.RunWorkerAsync();
-
-                // create the voice recognition
-                CreateRecognizer();
-
-                // create the list of options
-                SetupCategoryList();
-
-                // prepare lists of games by different categories
-                GameListSets = new List<GameListSet>();
-
-                // populate the lists 
-                CreateGameLists();
-
-                // flag initialization complete - display results
-                IsInitializing = false;
-                IsDisplayingResults = true;
-
-                // default to display games by platform
-                ResetGameLists(ListCategoryType.Platform);
-            }
-            catch (Exception ex)
-            {
-                LogHelper.LogException(ex, "Initializion_loadData");
-            }
         }
 
         private async void SetupFiles(object sender, DoWorkEventArgs e)
@@ -845,131 +579,6 @@ namespace Eclipse.View
             return moreGameFiles;
         }
 
-        public GameFiles GetNextGameFileCurrentList()
-        {
-            if (CurrentGameList?.MatchingGames == null)
-            {
-                return null;
-            }
-
-            for (int i = CurrentGameList.CurrentGameIndex; i < CurrentGameList.MatchingGames.Count; i++)
-            {
-                GameMatch match = CurrentGameList.MatchingGames[i];
-                if (match?.GameFiles != null && !match.GameFiles.IsSetup)
-                {
-                    return match.GameFiles;
-                }
-            }
-
-            for (int i = 0; i < CurrentGameList.CurrentGameIndex; i++)
-            {
-                GameMatch match = CurrentGameList.MatchingGames[i];
-                if (match?.GameFiles != null && !match.GameFiles.IsSetup)
-                {
-                    return (match.GameFiles);
-                }
-            }
-
-            return null;
-        }
-
-        public GameFiles GetNextGameFileNextList()
-        {
-            if (NextGameList?.MatchingGames == null)
-            {
-                return null;
-            }
-
-            for (int i = NextGameList.CurrentGameIndex; i < NextGameList.MatchingGames.Count; i++)
-            {
-                GameMatch match = NextGameList.MatchingGames[i];
-                if (match?.GameFiles != null && !match.GameFiles.IsSetup)
-                {
-                    return (match.GameFiles);
-                }
-            }
-
-            for (int i = 0; i < NextGameList.CurrentGameIndex; i++)
-            {
-                GameMatch match = NextGameList.MatchingGames[i];
-                if (match?.GameFiles != null && !match.GameFiles.IsSetup)
-                {
-                    return (match.GameFiles);
-                }
-            }
-
-            return null;
-        }
-
-        public GameFiles GetNextGameFileAnyGame()
-        {
-            GameFiles gameFiles = null;
-            if (GameFilesBag != null)
-            {
-                var anyGameQuery =
-                    from g in GameFilesBag
-                    where g.IsSetup == false
-                    select g;
-                gameFiles = anyGameQuery?.FirstOrDefault();
-                if (gameFiles != null)
-                {
-                    return (gameFiles);
-                }
-            }
-
-            return null;
-        }
-
-        // get a game whose images are not yet loaded 
-        public GameFiles GetNextGameToLoad()
-        {
-            GameFiles gameFiles = null;
-
-            if (CurrentGameList?.MatchingGames != null)
-            {
-                var currentListQuery =
-                    from g in CurrentGameList.MatchingGames
-                    where g.GameFiles.IsSetup == false
-                    && CurrentGameList.MatchingGames.IndexOf(g) >= CurrentGameList.CurrentGameIndex
-                    select g;
-
-                gameFiles = currentListQuery?.FirstOrDefault()?.GameFiles;
-                if (gameFiles != null)
-                {
-                    return (gameFiles);
-                }
-            }
-
-            if (NextGameList?.MatchingGames != null)
-            {
-                var nextListQuery =
-                    from g in NextGameList.MatchingGames
-                    where g.GameFiles.IsSetup == false
-                    && NextGameList.MatchingGames.IndexOf(g) >= NextGameList.CurrentGameIndex
-                    select g;
-                gameFiles = nextListQuery?.FirstOrDefault()?.GameFiles;
-                if (gameFiles != null)
-                {
-                    return gameFiles;
-                }
-            }
-
-            if (GameFilesBag != null)
-            {
-                var anyGameQuery =
-                    from g in GameFilesBag
-                    where g.IsSetup == false
-                    select g;
-                gameFiles = anyGameQuery?.FirstOrDefault();
-                if (gameFiles != null)
-                {
-                    return (gameFiles);
-                }
-            }
-
-            return null;
-        }
-
         private void CreateGameLists()
         {
             GetGamesByListCategoryType(ListCategoryType.Platform, true, true);
@@ -1055,9 +664,9 @@ namespace Eclipse.View
 
 
                 // get platform list 
-                var platformGameListSetQuery = from gameListSet in GameListSets
-                                               where gameListSet.ListCategoryType == ListCategoryType.Platform
-                                               select gameListSet;
+                IEnumerable<GameListSet> platformGameListSetQuery = from gameListSet in GameListSets
+                                                                    where gameListSet.ListCategoryType == ListCategoryType.Platform
+                                                                    select gameListSet;
 
                 GameListSet platformGameListSet = platformGameListSetQuery?.FirstOrDefault();
                 if (platformGameListSet != null)
@@ -1077,16 +686,16 @@ namespace Eclipse.View
                 }
 
                 // get Developer list 
-                var developerGameListSetQuery = from gameListSet in GameListSets
-                                                where gameListSet.ListCategoryType == ListCategoryType.Developer
-                                                select gameListSet;
+                IEnumerable<GameListSet> developerGameListSetQuery = from gameListSet in GameListSets
+                                                                     where gameListSet.ListCategoryType == ListCategoryType.Developer
+                                                                     select gameListSet;
 
                 GameListSet developerGameListSet = developerGameListSetQuery?.FirstOrDefault();
                 if (developerGameListSet != null)
                 {
                     foreach (string developer in currentGame?.Game?.Developers)
                     {
-                        var developerGameListQuery = from developerGameList in developerGameListSet.GameLists
+                        IEnumerable<GameList> developerGameListQuery = from developerGameList in developerGameListSet.GameLists
                                                      where developerGameList.ListDescription.Equals(developer, StringComparison.InvariantCultureIgnoreCase)
                                                      select developerGameList;
 
@@ -1098,18 +707,18 @@ namespace Eclipse.View
                 }
 
                 // get Publisher list
-                var publisherGameListSetQuery = from gameListSet in GameListSets
-                                                where gameListSet.ListCategoryType == ListCategoryType.Publisher
-                                                select gameListSet;
+                IEnumerable<GameListSet> publisherGameListSetQuery = from gameListSet in GameListSets
+                                                                     where gameListSet.ListCategoryType == ListCategoryType.Publisher
+                                                                     select gameListSet;
 
                 GameListSet publisherGameListSet = publisherGameListSetQuery?.FirstOrDefault();
                 if (publisherGameListSet != null)
                 {
                     foreach (string publisher in currentGame?.Game?.Publishers)
                     {
-                        var publisherGameListQuery = from publisherGameList in publisherGameListSet.GameLists
-                                                     where publisherGameList.ListDescription.Equals(publisher, StringComparison.InvariantCultureIgnoreCase)
-                                                     select publisherGameList;
+                        IEnumerable<GameList> publisherGameListQuery = from publisherGameList in publisherGameListSet.GameLists
+                                                                       where publisherGameList.ListDescription.Equals(publisher, StringComparison.InvariantCultureIgnoreCase)
+                                                                       select publisherGameList;
 
                         foreach (GameList gameList in publisherGameListQuery)
                         {
@@ -1119,18 +728,18 @@ namespace Eclipse.View
                 }
 
                 // get Play mode list
-                var playModeGameListSetQuery = from gameListSet in GameListSets
-                                               where gameListSet.ListCategoryType == ListCategoryType.PlayMode
-                                               select gameListSet;
+                IEnumerable<GameListSet> playModeGameListSetQuery = from gameListSet in GameListSets
+                                                                    where gameListSet.ListCategoryType == ListCategoryType.PlayMode
+                                                                    select gameListSet;
 
                 GameListSet playModeGameListSet = playModeGameListSetQuery?.FirstOrDefault();
                 if (playModeGameListSet != null)
                 {
                     foreach (string playMode in currentGame?.Game?.PlayModes)
                     {
-                        var playModeGameListQuery = from playModeGameList in playModeGameListSet.GameLists
-                                                    where playModeGameList.ListDescription.Equals(playMode, StringComparison.InvariantCultureIgnoreCase)
-                                                    select playModeGameList;
+                        IEnumerable<GameList> playModeGameListQuery = from playModeGameList in playModeGameListSet.GameLists
+                                                                      where playModeGameList.ListDescription.Equals(playMode, StringComparison.InvariantCultureIgnoreCase)
+                                                                      select playModeGameList;
 
                         foreach (GameList gameList in playModeGameListQuery)
                         {
@@ -1140,7 +749,7 @@ namespace Eclipse.View
                 }
 
                 // get Release year list
-                var releaseYearGameListSetQuery = from gameListSet in GameListSets
+                IEnumerable<GameListSet> releaseYearGameListSetQuery = from gameListSet in GameListSets
                                                   where gameListSet.ListCategoryType == ListCategoryType.ReleaseYear
                                                   select gameListSet;
 
@@ -1150,7 +759,7 @@ namespace Eclipse.View
                     int? releaseYear = currentGame?.Game?.ReleaseDate?.Year;
                     if (releaseYear != null)
                     {
-                        var releaseYearGameListQuery = from releaseYearGameList in releaseYearGameListSet.GameLists
+                        IEnumerable<GameList> releaseYearGameListQuery = from releaseYearGameList in releaseYearGameListSet.GameLists
                                                        where releaseYearGameList.ListDescription.Equals(releaseYear.ToString(), StringComparison.InvariantCultureIgnoreCase)
                                                        select releaseYearGameList;
 
@@ -1177,21 +786,25 @@ namespace Eclipse.View
             }
         }
 
-
-
         public void DoRecognize()
         {
             // bail out if the recognizer didn't get setup properly
             if (SpeechRecognizer == null)
+            {
                 return;
+            }
 
             // bail out if already recognizing speech
             if (IsRecognizing)
+            {
                 return;
+            }
 
             // bail out if still initializing
             if (IsInitializing)
+            {
                 return;
+            }
 
             // stop any video or animations
             CallStopVideoAndAnimationsFunction();
@@ -1205,7 +818,7 @@ namespace Eclipse.View
             SpeechRecognizer.DoSpeechRecognition();
         }
 
-        void RecognizeCompleted(SpeechRecognizerResult speechRecognizerResult)
+        private void RecognizeCompleted(SpeechRecognizerResult speechRecognizerResult)
         {
             IsRecognizing = false;
             List<GameList> voiceRecognitionResults = new List<GameList>();
@@ -1221,15 +834,15 @@ namespace Eclipse.View
             if (speechRecognizerResult?.RecognizedPhrases?.Count() > 0)
             {
                 // in case the same phrase was recognized multiple times, group by phrase and keep only the max confidence
-                var distinctGameLists = speechRecognizerResult?.RecognizedPhrases
+                List<GameList> distinctGameLists = speechRecognizerResult?.RecognizedPhrases
                     .GroupBy(s => s.Phrase)
                     .Select(s => new GameList { ListDescription = s.Key, Confidence = s.Max(m => m.Confidence) }).ToList();
 
                 // loop through the gamelists (one list for each hypothesized phrase)
-                foreach (var gameList in distinctGameLists)
+                foreach (GameList gameList in distinctGameLists)
                 {
                     // get the list of matching games for the phrase from the GameTitlePhrases dictionary 
-                    var query = from game in GameBag
+                    IEnumerable<GameMatch> query = from game in GameBag
                                 where game.CategoryType == ListCategoryType.VoiceSearch
                                 && game.CategoryValue == gameList.ListDescription
                                 group game by game into grouping
@@ -1239,7 +852,7 @@ namespace Eclipse.View
                     {
                         List<GameMatch> matches = query.ToList();
 
-                        foreach (var game in matches)
+                        foreach (GameMatch game in matches)
                         {
                             game.SetupVoiceMatchPercentage(gameList.Confidence, gameList.ListDescription);
                         }
@@ -1266,36 +879,24 @@ namespace Eclipse.View
             CallGameChangeFunction();
         }
 
-
-        public int preAttractModeGameIndex { get; set; }
-        public void SetPreAttractModeGame()
+        private GameMatch attractModeGame;
+        public GameMatch AttractModeGame
         {
-            preAttractModeGameIndex = currentGameList.ListSetStartIndex + currentGameList.CurrentGameIndex - 1;
+            get => attractModeGame;
+            set
+            {
+                if (attractModeGame != value)
+                {
+                    attractModeGame = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("AttractModeGame"));
+                }
+            }
         }
 
         public void NextAttractModeGame()
         {
-            int randomIndex = random.Next(0, CurrentGameListSet.TotalGameCount);
-
-            // find the index of which list it's in 
-            for (int listIndex = 0; listIndex < CurrentGameListSet.GameLists.Count; listIndex++)
-            {
-                GameList gameList = CurrentGameListSet.GameLists[listIndex];
-
-                if (gameList.ListSetStartIndex <= randomIndex && gameList.ListSetEndIndex >= randomIndex)
-                {
-                    // once found, cycle to that list
-                    listCycle.SetCurrentIndex(listIndex);
-
-                    // refresh the game lists so we can get a handle on the current list
-                    CurrentGameList = listCycle.GetItem(0);
-                    NextGameList = listCycle.GetItem(1);
-
-                    // setup the game list to the random game index 
-                    CurrentGameList.SetGameIndex(randomIndex - gameList.ListSetStartIndex);
-                    break;
-                }
-            }
+            int randomIndex = random.Next(GameBag.Count);
+            AttractModeGame = GameBag.ElementAt(randomIndex);
         }
 
         private void RefreshGameLists()
@@ -1303,8 +904,6 @@ namespace Eclipse.View
             if (listCycle?.GenericList?.Count == 0)
             {
                 IsDisplayingError = true;
-
-                // TODO: better message/handling of potential problems
                 ErrorMessage = "A problem occurred trying to refresh the list of games";
                 return;
             }
@@ -1316,18 +915,7 @@ namespace Eclipse.View
 
         private void CallGameChangeFunction()
         {
-            if (GameChangeFunction != null)
-            {
-                GameChangeFunction();
-            }
-        }
-
-        private void CallFeatureChangeFunction()
-        {
-            if (FeatureChangeFunction != null)
-            {
-                FeatureChangeFunction();
-            }
+            GameChangeFunction?.Invoke();
         }
 
         private void CallStopVideoAndAnimationsFunction()
@@ -1367,7 +955,6 @@ namespace Eclipse.View
                 if (IsDisplayingAttractMode)
                 {
                     IsDisplayingAttractMode = false;
-                    DoRandomGame(preAttractModeGameIndex);
                     return;
                 }
 
@@ -1412,7 +999,6 @@ namespace Eclipse.View
                         if (!IsDisplayingFeature)
                         {
                             IsDisplayingFeature = true;
-                            CallFeatureChangeFunction();
                             return;
                         }
                         // if it is displaying feature mode - change to regular results mode and go to prior list
@@ -1421,7 +1007,6 @@ namespace Eclipse.View
                             if (!held)
                             {
                                 IsDisplayingFeature = false;
-                                CallFeatureChangeFunction();
                                 CycleListBackward();
                             }
                             return;
@@ -1431,7 +1016,6 @@ namespace Eclipse.View
                     if (IsDisplayingFeature)
                     {
                         IsDisplayingFeature = false;
-                        CallFeatureChangeFunction();
                         return;
                     }
 
@@ -1460,7 +1044,6 @@ namespace Eclipse.View
                 if (IsDisplayingAttractMode)
                 {
                     IsDisplayingAttractMode = false;
-                    DoRandomGame(preAttractModeGameIndex);
                     return;
                 }
 
@@ -1499,7 +1082,6 @@ namespace Eclipse.View
                 if (isDisplayingFeature)
                 {
                     IsDisplayingFeature = false;
-                    CallFeatureChangeFunction();
                     return;
                 }
 
@@ -1523,7 +1105,6 @@ namespace Eclipse.View
                 if (IsDisplayingAttractMode)
                 {
                     IsDisplayingAttractMode = false;
-                    DoRandomGame(preAttractModeGameIndex);
                     return;
                 }
 
@@ -1614,7 +1195,6 @@ namespace Eclipse.View
                 if (IsDisplayingAttractMode)
                 {
                     IsDisplayingAttractMode = false;
-                    DoRandomGame(preAttractModeGameIndex);
                     return;
                 }
 
@@ -1676,7 +1256,6 @@ namespace Eclipse.View
             if (IsDisplayingAttractMode)
             {
                 IsDisplayingAttractMode = false;
-                DoRandomGame(preAttractModeGameIndex);
                 return;
             }
 
@@ -1696,7 +1275,6 @@ namespace Eclipse.View
             if (IsDisplayingAttractMode)
             {
                 IsDisplayingAttractMode = false;
-                DoRandomGame(preAttractModeGameIndex);
                 return;
             }
 
@@ -1706,7 +1284,7 @@ namespace Eclipse.View
         private void ResetGameLists(ListCategoryType listCategoryType)
         {
             // get the game list from the GameListSet for the given listCategoryType
-            var query = from gameListSet in GameListSets
+            IEnumerable<GameListSet> query = from gameListSet in GameListSets
                         where gameListSet.ListCategoryType == listCategoryType
                         select gameListSet;
 
@@ -1751,20 +1329,6 @@ namespace Eclipse.View
             CallGameChangeFunction();
         }
 
-        private int GetRandomFavoriteIndex()
-        {
-            var q = from list in CurrentGameListSet.GameLists
-                    where list.ListDescription.Equals("Favorites", StringComparison.InvariantCultureIgnoreCase)
-                    select list;
-
-            GameList favoritesList = q?.FirstOrDefault();
-            if (favoritesList != null)
-            {
-                return random.Next(0, favoritesList.MatchCount);
-            }
-            return -1;
-        }
-
         // start the current game
         private void PlayCurrentGame()
         {
@@ -1773,11 +1337,11 @@ namespace Eclipse.View
             if (currentGame != null)
             {
                 // check if the game is in the history list already
-                var historyQuery = GameBag.Where(g => g.Game.Id == currentGame.Id && g.CategoryType == ListCategoryType.History);
+                IEnumerable<GameMatch> historyQuery = GameBag.Where(g => g.Game.Id == currentGame.Id && g.CategoryType == ListCategoryType.History);
                 if (!historyQuery.Any())
                 {
                     // setting the last played date will make it show up in the history after launching a game
-                    var game = CurrentGameList?.Game1?.Game;
+                    IGame game = CurrentGameList?.Game1?.Game;
                     if (game != null)
                     {
                         game.LastPlayedDate = DateTime.Now;
@@ -1789,15 +1353,15 @@ namespace Eclipse.View
                 else
                 {
                     // if it is - update the last played time to now
-                    foreach (var game in historyQuery)
+                    foreach (GameMatch game in historyQuery)
                     {
                         game.Game.LastPlayedDate = DateTime.Now;
                     }
                 }
 
                 // reset the lists so the updated history reflects - first save the current game details then reload the lists 
-                saveStateForGameListChange();
-                resetListsAfterChange();
+                SaveStateForGameListChange();
+                ResetListsAfterChange();
 
                 // stop everything in the UI
                 CallStopVideoAndAnimationsFunction();
@@ -1818,12 +1382,12 @@ namespace Eclipse.View
 
                 PluginHelper.DataManager.Save(false);
 
-                var gameMatchQuery = from gameMatch in GameBag
+                IEnumerable<GameMatch> gameMatchQuery = from gameMatch in GameBag
                                      where gameMatch.Game.Id == currentGame.Game.Id
                                      select gameMatch;
 
                 // flag the game as a favorite wherever it appears
-                foreach (var gameMatch in gameMatchQuery)
+                foreach (GameMatch gameMatch in gameMatchQuery)
                 {
                     gameMatch.Favorite = currentGame.Favorite;
                 }
@@ -1837,7 +1401,7 @@ namespace Eclipse.View
                 }
 
                 // save state so we can get back to the current game
-                saveStateForGameListChange();
+                SaveStateForGameListChange();
             }
         }
 
@@ -1853,12 +1417,11 @@ namespace Eclipse.View
         private ListCategoryType preChangeListCategoryType;
         private string preChangeListDescription;
         private string preChangeGameId;
-        private int preChangeGameListStartIndex;
         private int preChangeGameIndex;
 
         // call this when lists are about to change to save which list set, list, and game we were on so we can find our way back after rebuilding lists
         // this is needed when game lists are going to change (i.e. adding/removing favorites, adding/removing from history)
-        private void saveStateForGameListChange()
+        private void SaveStateForGameListChange()
         {
             // flag the favorites list has changed 
             gameListsChanged = true;
@@ -1876,16 +1439,13 @@ namespace Eclipse.View
             // get the game id that we are on 
             preChangeGameId = currentGameList.Game1.Game.Id;
 
-            // get the starting index for the list within the list set
-            preChangeGameListStartIndex = currentGameList.ListSetStartIndex;
-
             // get the index of the game within the list 
             preChangeGameIndex = currentGameList.CurrentGameIndex;
         }
 
         // call this when lists have changed (i.e. game added/removed from favorites history list)
         // will try to find the game in the same list - if it can't (i.e. in favorites and game removed from favorites) then jumps to the next game
-        private void resetListsAfterChange()
+        private void ResetListsAfterChange()
         {
             // clear the game list changed flag 
             gameListsChanged = false;
@@ -1951,15 +1511,22 @@ namespace Eclipse.View
             }
         }
 
-
         private void RateCurrentGame(float changeAmount)
         {
             GameMatch currentGame = CurrentGameList?.Game1;
             if (currentGame != null)
             {
                 float newRating = currentGame.UserRating + changeAmount;
-                if (newRating > 5) newRating = 5.0f;
-                if (newRating < 0) newRating = 0.0f;
+
+                if (newRating > 5)
+                {
+                    newRating = 5.0f;
+                }
+
+                if (newRating < 0)
+                {
+                    newRating = 0.0f;
+                }
 
                 currentGame.UserRating = newRating;
             }
@@ -1980,7 +1547,6 @@ namespace Eclipse.View
                 CallUpdateRatingImageFunction();
             }
         }
-
 
         public void DoEnter()
         {
@@ -2120,7 +1686,6 @@ namespace Eclipse.View
             if (IsDisplayingAttractMode)
             {
                 IsDisplayingAttractMode = false;
-                DoRandomGame(preAttractModeGameIndex);
                 return true;
             }
 
@@ -2128,7 +1693,7 @@ namespace Eclipse.View
             {
                 if (gameListsChanged)
                 {
-                    resetListsAfterChange();
+                    ResetListsAfterChange();
                 }
 
                 IsDisplayingMoreInfo = false;
@@ -2157,9 +1722,10 @@ namespace Eclipse.View
         private GameList currentGameList;
         public GameList CurrentGameList
         {
-            get { return currentGameList; }
+            get => currentGameList;
             set
             {
+                if (currentGameList != value)
                 {
                     currentGameList = value;
                     PropertyChanged(this, new PropertyChangedEventArgs("CurrentGameList"));
@@ -2170,7 +1736,7 @@ namespace Eclipse.View
         private GameList nextGameList;
         public GameList NextGameList
         {
-            get { return nextGameList; }
+            get => nextGameList;
             set
             {
                 if (nextGameList != value)
@@ -2200,11 +1766,11 @@ namespace Eclipse.View
                     featureOption = value;
                     PropertyChanged(this, new PropertyChangedEventArgs("FeatureOption"));
                 }
-                setButtonImages();
+                SetButtonImages();
             }
         }
 
-        private void setButtonImages()
+        private void SetButtonImages()
         {
             if (featureOption == FeatureGameOption.PlayGame)
             {
@@ -2221,10 +1787,6 @@ namespace Eclipse.View
         private Uri playButtonImage;
         public Uri PlayButtonImage
         {
-            get
-            {
-                return playButtonImage;
-            }
             set
             {
                 if (playButtonImage != value)
@@ -2238,10 +1800,7 @@ namespace Eclipse.View
         private Uri moreInfoImage;
         public Uri MoreInfoImage
         {
-            get
-            {
-                return moreInfoImage;
-            }
+            get => moreInfoImage;
             set
             {
                 if (moreInfoImage != value)
@@ -2252,23 +1811,22 @@ namespace Eclipse.View
             }
         }
 
-        public int Star1 { get { return 1; } }
-        public int Star2 { get { return 2; } }
-        public int Star3 { get { return 3; } }
-        public int Star4 { get { return 4; } }
-        public int Star5 { get { return 5; } }
-
-        public float StarOffset00 { get { return 0.0f; } }
-        public float StarOffset01 { get { return 0.1f; } }
-        public float StarOffset02 { get { return 0.2f; } }
-        public float StarOffset03 { get { return 0.3f; } }
-        public float StarOffset04 { get { return 0.4f; } }
-        public float StarOffset05 { get { return 0.5f; } }
-        public float StarOffset06 { get { return 0.6f; } }
-        public float StarOffset07 { get { return 0.7f; } }
-        public float StarOffset08 { get { return 0.8f; } }
-        public float StarOffset09 { get { return 0.9f; } }
-        public float StarOffset10 { get { return 1.0f; } }
+        public int Star1 => 1;
+        public int Star2 => 2;
+        public int Star3 => 3;
+        public int Star4 => 4;
+        public int Star5 => 5;
+        public float StarOffset00 => 0.0f;
+        public float StarOffset01 => 0.1f;
+        public float StarOffset02 => 0.2f;
+        public float StarOffset03 => 0.3f;
+        public float StarOffset04 => 0.4f;
+        public float StarOffset05 => 0.5f;
+        public float StarOffset06 => 0.6f;
+        public float StarOffset07 => 0.7f;
+        public float StarOffset08 => 0.8f;
+        public float StarOffset09 => 0.9f;
+        public float StarOffset10 => 1.0f;
 
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
     }
