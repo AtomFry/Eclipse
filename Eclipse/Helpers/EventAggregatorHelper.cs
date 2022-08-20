@@ -14,7 +14,7 @@ namespace Eclipse.Helpers
 
         public static EventAggregatorHelper Instance => instance;
 
-        private EventAggregator eventAggregator;
+        private readonly EventAggregator eventAggregator;
 
         public EventAggregator EventAggregator => eventAggregator;
     }

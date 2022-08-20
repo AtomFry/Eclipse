@@ -3,12 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using Unbroken.LaunchBox.Plugins;
 using Unbroken.LaunchBox.Plugins.Data;
 using System.Data;
 using Eclipse.Models;
-using System.IO;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using Eclipse.Helpers;
@@ -23,16 +21,13 @@ namespace Eclipse.View
 
     public class MainWindowViewModel : INotifyPropertyChanged
     {
-        private static bool loadedOnce = false;
         private ListCycle<GameList> listCycle;
         private List<GameListSet> GameListSets;
         private SpeechRecognizer SpeechRecognizer;
 
-        private static readonly List<IGame> AllGames = DataService.GetGames();
-        private static readonly List<PlaylistGame> PlaylistGames = new List<PlaylistGame>();
-        private static readonly ConcurrentBag<GameMatch> GameBag = new ConcurrentBag<GameMatch>();
-        private static readonly ConcurrentBag<GameFiles> GameFilesBag = new ConcurrentBag<GameFiles>();
- 
+        private ConcurrentBag<GameMatch> gameBag;
+        private ConcurrentBag<GameFiles> gameFilesBag;
+
         private bool isInitializing;
         private bool isPickingCategory;
         private bool isDisplayingFeature;
@@ -53,19 +48,7 @@ namespace Eclipse.View
             FeatureOption = FeatureGameOption.PlayGame;
 
             // setup the list of options 
-            OptionList = new OptionList(new List<Option<ListCategoryType>>
-            {
-                new Option<ListCategoryType> { Name = "Platform", EnumOption = ListCategoryType.Platform, SortOrder = 1, ShortDescription = "Platform", LongDescription = "Platform" },
-                new Option<ListCategoryType> { Name = "Genre", EnumOption = ListCategoryType.Genre, SortOrder = 2, ShortDescription = "Genre", LongDescription = "Genre" },
-                new Option<ListCategoryType> { Name = "Series", EnumOption = ListCategoryType.Series, SortOrder = 3, ShortDescription = "Series", LongDescription = "Series" },
-                new Option<ListCategoryType> { Name = "Playlist", EnumOption = ListCategoryType.Playlist, SortOrder = 4, ShortDescription = "Playlist", LongDescription = "Playlist" },
-                new Option<ListCategoryType> { Name = "Play mode", EnumOption = ListCategoryType.PlayMode, SortOrder = 5, ShortDescription = "Mode", LongDescription = "Play mode" },
-                new Option<ListCategoryType> { Name = "Developer", EnumOption = ListCategoryType.Developer, SortOrder = 6, ShortDescription = "Dev", LongDescription = "Developer" },
-                new Option<ListCategoryType> { Name = "Publisher", EnumOption = ListCategoryType.Publisher, SortOrder = 7, ShortDescription = "Pub", LongDescription = "Publisher" },
-                new Option<ListCategoryType> { Name = "Year", EnumOption = ListCategoryType.ReleaseYear, SortOrder = 8, ShortDescription = "Year", LongDescription = "Release year" },
-                new Option<ListCategoryType> { Name = "Random", EnumOption = ListCategoryType.RandomGame, SortOrder = 9, ShortDescription = "Random", LongDescription = "Random game" },
-                new Option<ListCategoryType> { Name = "Voice search", EnumOption = ListCategoryType.VoiceSearch, SortOrder = 10, ShortDescription = "Voice", LongDescription = "Voice search" }
-            });
+            OptionList = OptionListService.Instance.OptionList;
         }
 
         public void InitializeData()
@@ -80,158 +63,11 @@ namespace Eclipse.View
         {
             try
             {
-                if (!loadedOnce)
-                {
-                    loadedOnce = true;
+                // create folders that are required by the plugin
+                DirectoryInfoHelper.CreateFolders();
 
-                    // create folders that are required by the plugin
-                    DirectoryInfoHelper.CreateFolders();
-
-                    // get a list of playlist games 
-                    IPlaylist[] allPlaylists = PluginHelper.DataManager.GetAllPlaylists();
-                    foreach (IPlaylist playlist in allPlaylists)
-                    {
-                        if (playlist.HasGames(false, false))
-                        {
-                            IGame[] games = playlist.GetAllGames(true);
-                            foreach (IGame game in games)
-                            {
-                                PlaylistGames.Add(new PlaylistGame() { GameId = game.Id, Playlist = playlist.SortTitleOrTitle });
-                            }
-                        }
-                    }
-
-                    // prescale box front images - doing this here so it's easier to update the progress bar
-                    // get list of image files in launchbox folders that are missing from the plug-in folders
-                    List<FileInfo> gameFrontFilesToProcess = ImageScaler.GetMissingGameFrontImageFiles();
-                    List<FileInfo> platformLogosToProcess = ImageScaler.GetMissingPlatformClearLogoFiles();
-                    List<FileInfo> gameClearLogosToProcess = ImageScaler.GetMissingGameClearLogoFiles();
-                    bool scaleDefaultBoxFrontImage = !ImageScaler.DefaultBoxFrontExists();
-
-                    // get the desired height of pre-scaled box images based on the monitor's resolution
-                    // only need this if we have anything to process
-                    int desiredHeight = 0;
-                    if ((gameFrontFilesToProcess.Count > 0)
-                        || (platformLogosToProcess.Count > 0)
-                        || (gameClearLogosToProcess.Count > 0)
-                        || scaleDefaultBoxFrontImage)
-                    {
-                        desiredHeight = ImageScaler.GetDesiredHeight();
-                    }
-
-                    // scale the default box front image
-                    if (scaleDefaultBoxFrontImage)
-                    {
-                        ImageScaler.ScaleDefaultBoxFront(desiredHeight);
-                    }
-
-                    // crop platform clear logos 
-                    foreach (FileInfo fileInfo in platformLogosToProcess)
-                    {
-                        ImageScaler.CropImage(fileInfo);
-                    }
-
-                    Parallel.ForEach(AllGames, (game) =>
-                    {
-                        if (game.Broken || game.Hide)
-                        {
-                            return;
-                        }
-
-                        GameFiles gameFiles = new GameFiles(game);
-                        GameFilesBag.Add(gameFiles);
-
-                        GameMatch gameMatch = new GameMatch(game, gameFiles);
-
-                        if (game.Favorite)
-                        {
-                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Favorites, ListCategoryType.Favorites.ToString()));
-                        }
-
-                        if (game.LastPlayedDate != null)
-                        {
-                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.History, ListCategoryType.History.ToString()));
-                        }
-
-                        // create a dictionary of platform game matches
-                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Platform, game.Platform));
-
-                        // create a dictionary of release year game matches
-                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.ReleaseYear, gameMatch.ReleaseYear));
-
-                        // create a dictionary of play modes and game matches
-                        foreach (string playMode in game.PlayModes)
-                        {
-                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.PlayMode, playMode));
-                        }
-
-                        // create a dictionary of Genres and game matches
-                        foreach (string genre in game.Genres)
-                        {
-                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Genre, genre));
-                        }
-
-                        // create a dictionary of publishers and game matches
-                        foreach (string publisher in game.Publishers)
-                        {
-                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Publisher, publisher));
-                        }
-
-                        // create a dictionary of developers and game matches
-                        foreach (string developer in game.Developers)
-                        {
-                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Developer, developer));
-                        }
-
-                        // create a dictionary of series and game matches
-                        foreach (string series in game.SeriesValues)
-                        {
-                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Series, series));
-                        }
-
-                        // create a dictionary of playlist and game matches 
-                        IEnumerable<PlaylistGame> playlistGameQuery = from playlistGame in PlaylistGames
-                                                                      where playlistGame.GameId == game.Id
-                                                                      select playlistGame;
-                        foreach (PlaylistGame playlistGame in playlistGameQuery)
-                        {
-                            GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Playlist, playlistGame.Playlist));
-                        }
-
-                        // create voice recognition grammar library for the game
-                        GameTitleGrammarBuilder gameTitleGrammarBuilder = new GameTitleGrammarBuilder(game);
-                        foreach (GameTitleGrammar gameTitleGrammar in gameTitleGrammarBuilder.gameTitleGrammars)
-                        {
-                            if (!string.IsNullOrWhiteSpace(gameTitleGrammar.Title))
-                            {
-                                GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammar.Title, TitleMatchType.FullTitleMatch, gameTitleGrammar.Title));
-                            }
-
-                            if (!string.IsNullOrWhiteSpace(gameTitleGrammar.MainTitle))
-                            {
-                                GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammar.MainTitle, TitleMatchType.MainTitleMatch, gameTitleGrammar.Title));
-                            }
-
-                            if (!string.IsNullOrWhiteSpace(gameTitleGrammar.Subtitle))
-                            {
-                                GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammar.Subtitle, TitleMatchType.SubtitleMatch, gameTitleGrammar.Title));
-                            }
-
-                            for (int i = 0; i < gameTitleGrammar.TitleWords.Count; i++)
-                            {
-                                StringBuilder sb = new StringBuilder();
-                                for (int j = i; j < gameTitleGrammar.TitleWords.Count; j++)
-                                {
-                                    sb.Append($"{gameTitleGrammar.TitleWords[j]} ");
-                                    if (!GameTitleGrammar.IsNoiseWord(sb.ToString().Trim()))
-                                    {
-                                        GameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, sb.ToString().Trim(), TitleMatchType.FullTitleContains, gameTitleGrammar.Title));
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
+                gameBag = GameBagService.Instance.GameBag;
+                gameFilesBag = GameBagService.Instance.GameFilesBag;
 
                 BackgroundWorker worker = new BackgroundWorker();
                 worker.DoWork += SetupFiles;
@@ -444,7 +280,7 @@ namespace Eclipse.View
 
             if (includeFavorites)
             {
-                var favoriteGames = from gameMatch in GameBag
+                var favoriteGames = from gameMatch in gameBag
                                     where gameMatch.CategoryType == ListCategoryType.Favorites
                                     && gameMatch.Game.Favorite == true
                                     group gameMatch by gameMatch.CategoryValue into favoritesGroup
@@ -458,7 +294,7 @@ namespace Eclipse.View
 
             if (includeHistory)
             {
-                var historyGames = from gameMatch in GameBag
+                var historyGames = from gameMatch in gameBag
                                    where gameMatch.CategoryType == ListCategoryType.History
                                    && gameMatch.Game.LastPlayedDate != null
                                    group gameMatch by gameMatch.CategoryValue into historyGroup
@@ -470,7 +306,7 @@ namespace Eclipse.View
                 }
             }
 
-            var gameQuery = from gameMatch in GameBag
+            var gameQuery = from gameMatch in gameBag
                             where gameMatch.CategoryType == listCategoryType
                             group gameMatch by gameMatch.CategoryValue into gameGroup
                             select gameGroup;
@@ -491,7 +327,7 @@ namespace Eclipse.View
 
         private async void SetupFiles(object sender, DoWorkEventArgs e)
         {
-            int? GameFilesCount = GameFilesBag?.Count;
+            int? GameFilesCount = gameFilesBag?.Count;
             int processedCount = 0;
 
             await Task.Run(async () =>
@@ -556,9 +392,9 @@ namespace Eclipse.View
                     }
 
                     // setup any game that still needs to be setup
-                    if (GameFilesBag != null)
+                    if (gameFilesBag != null)
                     {
-                        IEnumerable<GameFiles> anyGameQuery = GameFilesBag.Where(gf => !gf.IsSetup);
+                        IEnumerable<GameFiles> anyGameQuery = gameFilesBag.Where(gf => !gf.IsSetup);
                         if (anyGameQuery.Any())
                         {
                             GameFiles anyGameFiles = anyGameQuery.FirstOrDefault();
@@ -597,7 +433,7 @@ namespace Eclipse.View
             try
             {
                 // get the distinct set of phrases that can be used with voice recognition
-                List<string> titleElements = GameBag.Where(game => game.CategoryType == ListCategoryType.VoiceSearch)
+                List<string> titleElements = gameBag.Where(game => game.CategoryType == ListCategoryType.VoiceSearch)
                     .GroupBy(game => game.CategoryValue)
                     .Distinct()
                     .Select(gameMatch => gameMatch.Key)
@@ -697,8 +533,8 @@ namespace Eclipse.View
                     foreach (string developer in currentGame?.Game?.Developers)
                     {
                         IEnumerable<GameList> developerGameListQuery = from developerGameList in developerGameListSet.GameLists
-                                                     where developerGameList.ListDescription.Equals(developer, StringComparison.InvariantCultureIgnoreCase)
-                                                     select developerGameList;
+                                                                       where developerGameList.ListDescription.Equals(developer, StringComparison.InvariantCultureIgnoreCase)
+                                                                       select developerGameList;
 
                         foreach (GameList gameList in developerGameListQuery)
                         {
@@ -751,8 +587,8 @@ namespace Eclipse.View
 
                 // get Release year list
                 IEnumerable<GameListSet> releaseYearGameListSetQuery = from gameListSet in GameListSets
-                                                  where gameListSet.ListCategoryType == ListCategoryType.ReleaseYear
-                                                  select gameListSet;
+                                                                       where gameListSet.ListCategoryType == ListCategoryType.ReleaseYear
+                                                                       select gameListSet;
 
                 GameListSet releaseYearGameListSet = releaseYearGameListSetQuery?.FirstOrDefault();
                 if (releaseYearGameListSet != null)
@@ -761,8 +597,8 @@ namespace Eclipse.View
                     if (releaseYear != null)
                     {
                         IEnumerable<GameList> releaseYearGameListQuery = from releaseYearGameList in releaseYearGameListSet.GameLists
-                                                       where releaseYearGameList.ListDescription.Equals(releaseYear.ToString(), StringComparison.InvariantCultureIgnoreCase)
-                                                       select releaseYearGameList;
+                                                                         where releaseYearGameList.ListDescription.Equals(releaseYear.ToString(), StringComparison.InvariantCultureIgnoreCase)
+                                                                         select releaseYearGameList;
 
                         foreach (GameList gameList in releaseYearGameListQuery)
                         {
@@ -843,11 +679,11 @@ namespace Eclipse.View
                 foreach (GameList gameList in distinctGameLists)
                 {
                     // get the list of matching games for the phrase from the GameTitlePhrases dictionary 
-                    IEnumerable<GameMatch> query = from game in GameBag
-                                where game.CategoryType == ListCategoryType.VoiceSearch
-                                && game.CategoryValue == gameList.ListDescription
-                                group game by game into grouping
-                                select GameMatch.CloneGameMatch(grouping.Key, ListCategoryType.VoiceSearch, gameList.ListDescription, grouping.Max(g => g.TitleMatchType), grouping.Key.ConvertedTitle);
+                    IEnumerable<GameMatch> query = from game in gameBag
+                                                   where game.CategoryType == ListCategoryType.VoiceSearch
+                                                   && game.CategoryValue == gameList.ListDescription
+                                                   group game by game into grouping
+                                                   select GameMatch.CloneGameMatch(grouping.Key, ListCategoryType.VoiceSearch, gameList.ListDescription, grouping.Max(g => g.TitleMatchType), grouping.Key.ConvertedTitle);
 
                     if (query.Any())
                     {
@@ -896,8 +732,8 @@ namespace Eclipse.View
 
         public void NextAttractModeGame()
         {
-            int randomIndex = random.Next(GameBag.Count);
-            AttractModeGame = GameBag.ElementAt(randomIndex);
+            int randomIndex = random.Next(gameBag.Count);
+            AttractModeGame = gameBag.ElementAt(randomIndex);
         }
 
         private void RefreshGameLists()
@@ -1286,8 +1122,8 @@ namespace Eclipse.View
         {
             // get the game list from the GameListSet for the given listCategoryType
             IEnumerable<GameListSet> query = from gameListSet in GameListSets
-                        where gameListSet.ListCategoryType == listCategoryType
-                        select gameListSet;
+                                             where gameListSet.ListCategoryType == listCategoryType
+                                             select gameListSet;
 
             CurrentGameListSet = query?.FirstOrDefault();
             if (CurrentGameListSet != null)
@@ -1338,7 +1174,7 @@ namespace Eclipse.View
             if (currentGame != null)
             {
                 // check if the game is in the history list already
-                IEnumerable<GameMatch> historyQuery = GameBag.Where(g => g.Game.Id == currentGame.Id && g.CategoryType == ListCategoryType.History);
+                IEnumerable<GameMatch> historyQuery = gameBag.Where(g => g.Game.Id == currentGame.Id && g.CategoryType == ListCategoryType.History);
                 if (!historyQuery.Any())
                 {
                     // setting the last played date will make it show up in the history after launching a game
@@ -1349,7 +1185,7 @@ namespace Eclipse.View
                     }
 
                     // if not - add it to the history list
-                    GameBag.Add(GameMatch.CloneGameMatch(CurrentGameList?.Game1, ListCategoryType.History, ListCategoryType.History.ToString()));
+                    gameBag.Add(GameMatch.CloneGameMatch(CurrentGameList?.Game1, ListCategoryType.History, ListCategoryType.History.ToString()));
                 }
                 else
                 {
@@ -1383,9 +1219,9 @@ namespace Eclipse.View
 
                 PluginHelper.DataManager.Save(false);
 
-                IEnumerable<GameMatch> gameMatchQuery = from gameMatch in GameBag
-                                     where gameMatch.Game.Id == currentGame.Game.Id
-                                     select gameMatch;
+                IEnumerable<GameMatch> gameMatchQuery = from gameMatch in gameBag
+                                                        where gameMatch.Game.Id == currentGame.Game.Id
+                                                        select gameMatch;
 
                 // flag the game as a favorite wherever it appears
                 foreach (GameMatch gameMatch in gameMatchQuery)
@@ -1393,12 +1229,12 @@ namespace Eclipse.View
                     gameMatch.Favorite = currentGame.Favorite;
                 }
 
-                gameMatchQuery = GameBag.Where(g => g.Favorite && g.Game.Id == currentGame.Game.Id && g.CategoryType == ListCategoryType.Favorites);
+                gameMatchQuery = gameBag.Where(g => g.Favorite && g.Game.Id == currentGame.Game.Id && g.CategoryType == ListCategoryType.Favorites);
 
                 // add to the game bag in the favorites category 
                 if (currentGame.Favorite && !gameMatchQuery.Any())
                 {
-                    GameBag.Add(GameMatch.CloneGameMatch(currentGame, ListCategoryType.Favorites, ListCategoryType.Favorites.ToString()));
+                    gameBag.Add(GameMatch.CloneGameMatch(currentGame, ListCategoryType.Favorites, ListCategoryType.Favorites.ToString()));
                 }
 
                 // save state so we can get back to the current game
