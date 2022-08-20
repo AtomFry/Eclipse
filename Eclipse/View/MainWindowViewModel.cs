@@ -27,11 +27,12 @@ namespace Eclipse.View
         private ListCycle<GameList> listCycle;
         private List<GameListSet> GameListSets;
         private SpeechRecognizer SpeechRecognizer;
+
         private static readonly List<IGame> AllGames = DataService.GetGames();
         private static readonly List<PlaylistGame> PlaylistGames = new List<PlaylistGame>();
         private static readonly ConcurrentBag<GameMatch> GameBag = new ConcurrentBag<GameMatch>();
         private static readonly ConcurrentBag<GameFiles> GameFilesBag = new ConcurrentBag<GameFiles>();
-
+ 
         private bool isInitializing;
         private bool isPickingCategory;
         private bool isDisplayingFeature;
