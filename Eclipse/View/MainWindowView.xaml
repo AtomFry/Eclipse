@@ -686,7 +686,6 @@
                                 Stretch="Uniform"/>
                     </StackPanel>
                 </Grid>
-
                 <Grid Grid.Row="2" Grid.RowSpan="1"
                       IsHitTestVisible="False"
                       Visibility="{Binding IsDisplayingFeature, Converter={StaticResource BoolToVis}}"

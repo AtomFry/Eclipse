@@ -76,8 +76,8 @@ namespace Eclipse.Models
         public IGame Game { get; set; }
 
         private GameFiles gameFiles;
-        public GameFiles GameFiles 
-        { 
+        public GameFiles GameFiles
+        {
             get { return gameFiles; } 
             set
             {
@@ -88,7 +88,7 @@ namespace Eclipse.Models
                 }
             }
         }
-        
+
         public TitleMatchType TitleMatchType { get; set; }
 
         public string ConvertedTitle { get; set; }

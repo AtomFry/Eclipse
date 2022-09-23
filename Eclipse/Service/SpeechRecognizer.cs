@@ -13,7 +13,7 @@ namespace Eclipse.Service
         private bool isSetup;
         private SpeechRecognizer speechRecognizer;        
 
-        public SpeechRecognizer GetRecognizer(RecognitionCompletedDelegate recognitionCompletedDelegate)
+        public SpeechRecognizer GetRecognizer()
         {
             if (!isSetup)
             {
@@ -30,7 +30,7 @@ namespace Eclipse.Service
                         .Select(gameMatch => gameMatch.Key)
                         .ToList();
 
-                    speechRecognizer = new SpeechRecognizer(titleElements, recognitionCompletedDelegate);
+                    speechRecognizer = new SpeechRecognizer(titleElements);
                 }
                 catch (Exception ex)
                 {
@@ -72,15 +72,13 @@ namespace Eclipse.Service
 
     public class SpeechRecognizer
     {
-        private RecognitionCompletedDelegate RecognitionCompletedDelegate;
+        public RecognitionCompletedDelegate RecognitionCompletedDelegate { get; set; }
         private SpeechRecognizerResult SpeechRecognizerResult;
 
         private SpeechRecognitionEngine Recognizer { get; set; }
 
-        public SpeechRecognizer(List<string> grammarPhrases, RecognitionCompletedDelegate recognitionCompletedDelegate)
+        public SpeechRecognizer(List<string> grammarPhrases)
         {
-            RecognitionCompletedDelegate = recognitionCompletedDelegate;
-
             // add the distinct phrases to the list of choices
             Choices choices = new Choices();
             choices.Add(grammarPhrases.ToArray());
@@ -103,8 +101,10 @@ namespace Eclipse.Service
             Recognizer.RecognizeAsyncCancel();
         }
 
-        public void DoSpeechRecognition()
+        public void DoSpeechRecognition(RecognitionCompletedDelegate recognitionCompletedDelegate)
         {
+            RecognitionCompletedDelegate = recognitionCompletedDelegate;
+
             // reset the result
             SpeechRecognizerResult = new SpeechRecognizerResult();
 

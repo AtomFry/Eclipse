@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using Eclipse.Helpers;
 using System.Threading;
+using Eclipse.State;
+using System.Windows.Media;
 
 namespace Eclipse.View
 {
@@ -21,11 +23,10 @@ namespace Eclipse.View
 
     public class MainWindowViewModel : INotifyPropertyChanged
     {
-        private ListCycle<GameList> listCycle;
-        private List<GameListSet> GameListSets;
-        private SpeechRecognizer speechRecognizer;
-        private ConcurrentBag<GameMatch> gameBag;
-        private ConcurrentBag<GameFiles> gameFilesBag;
+        public ListCycle<GameList> listCycle;
+        public List<GameListSet> GameListSets;
+        public ConcurrentBag<GameMatch> gameBag;
+        public ConcurrentBag<GameFiles> gameFilesBag;
 
         private bool isInitializing;
         private bool isPickingCategory;
@@ -40,58 +41,15 @@ namespace Eclipse.View
         private GameDetailOption gameDetailOption;
         private string errorMessage;
 
+        public EclipseStateContext EclipseStateContext { get; set; }
+
         public MainWindowViewModel()
         {
             IsInitializing = true;
 
             FeatureOption = FeatureGameOption.PlayGame;
-        }
 
-        public void InitializeData()
-        {
-            BackgroundWorker worker = new BackgroundWorker();
-            worker.WorkerReportsProgress = true;
-            worker.DoWork += Initialization_LoadData;
-            worker.RunWorkerAsync();
-        }
-
-        private void Initialization_LoadData(object sender, DoWorkEventArgs e)
-        {
-            try
-            {
-                // create folders that are required by the plugin
-                DirectoryInfoHelper.CreateFolders();
-
-                // setup the list of options 
-                OptionList = OptionListService.Instance.OptionList;
-
-                gameBag = GameBagService.Instance.GameBag;
-                gameFilesBag = GameBagService.Instance.GameFilesBag;
-
-                BackgroundWorker worker = new BackgroundWorker();
-                worker.DoWork += SetupFiles;
-                worker.RunWorkerAsync();
-
-                // create the voice recognition
-                speechRecognizer = SpeechRecognizerService.Instance.GetRecognizer(RecognizeCompleted);
-
-                // prepare lists of games by different categories
-                GameListSets = new List<GameListSet>();
-
-                // populate the lists 
-                CreateGameLists();
-
-                // flag initialization complete - display results
-                IsInitializing = false;
-                IsDisplayingResults = true;
-
-                // default to display games by platform
-                ResetGameLists(ListCategoryType.Platform);
-            }
-            catch (Exception ex)
-            {
-                LogHelper.LogException(ex, "Initializion_loadData");
-            }
+            EclipseStateContext = new EclipseStateContext(this);
         }
 
         public bool IsInitializing
@@ -236,8 +194,6 @@ namespace Eclipse.View
             }
         }
 
-
-
         public AnimateGameChangeFunction GameChangeFunction { get; set; }
         public StopVideoAndAnimations StopVideoAndAnimationsFunction { get; set; }
         public UpdateRatingImage UpdateRatingImageFunction { get; set; }
@@ -324,7 +280,7 @@ namespace Eclipse.View
             });
         }
 
-        private async void SetupFiles(object sender, DoWorkEventArgs e)
+        public async void SetupFiles(object sender, DoWorkEventArgs e)
         {
             int? GameFilesCount = gameFilesBag?.Count;
             int processedCount = 0;
@@ -415,7 +371,7 @@ namespace Eclipse.View
             return moreGameFiles;
         }
 
-        private void CreateGameLists()
+        public void CreateGameLists()
         {
             GetGamesByListCategoryType(ListCategoryType.Platform, true, true);
             GetGamesByListCategoryType(ListCategoryType.ReleaseYear);
@@ -427,7 +383,7 @@ namespace Eclipse.View
             GetGamesByListCategoryType(ListCategoryType.Playlist, true, true);
         }
 
-        void DoMoreLikeCurrentGame()
+        public void DoMoreLikeCurrentGame()
         {
             GameMatch currentGame = CurrentGameList?.Game1;
             if (currentGame != null)
@@ -601,99 +557,6 @@ namespace Eclipse.View
             }
         }
 
-        public void DoRecognize()
-        {
-            // bail out if the recognizer didn't get setup properly
-            if (speechRecognizer == null)
-            {
-                return;
-            }
-
-            // bail out if already recognizing speech
-            if (IsRecognizing)
-            {
-                return;
-            }
-
-            // bail out if still initializing
-            if (IsInitializing)
-            {
-                return;
-            }
-
-            // stop any video or animations
-            CallStopVideoAndAnimationsFunction();
-
-            // flag recognizing and disable error, settings (category) and rating game
-            IsRecognizing = true;
-            IsRatingGame = false;
-            IsPickingCategory = false;
-            IsDisplayingError = false;
-
-            speechRecognizer.DoSpeechRecognition();
-        }
-
-        private void RecognizeCompleted(SpeechRecognizerResult speechRecognizerResult)
-        {
-            IsRecognizing = false;
-            List<GameList> voiceRecognitionResults = new List<GameList>();
-
-            if (!string.IsNullOrWhiteSpace(speechRecognizerResult.ErrorMessage))
-            {
-                ErrorMessage = speechRecognizerResult.ErrorMessage;
-                return;
-            }
-
-            // speech hypothesized adds phrases that it heard to the TempGameLists collection
-            // for each phrase, get the set of matching games from the GameTitlePhrases dictionary
-            if (speechRecognizerResult?.RecognizedPhrases?.Count() > 0)
-            {
-                // in case the same phrase was recognized multiple times, group by phrase and keep only the max confidence
-                List<GameList> distinctGameLists = speechRecognizerResult?.RecognizedPhrases
-                    .GroupBy(s => s.Phrase)
-                    .Select(s => new GameList { ListDescription = s.Key, Confidence = s.Max(m => m.Confidence) }).ToList();
-
-                // loop through the gamelists (one list for each hypothesized phrase)
-                foreach (GameList gameList in distinctGameLists)
-                {
-                    // get the list of matching games for the phrase from the GameTitlePhrases dictionary 
-                    IEnumerable<GameMatch> query = from game in gameBag
-                                                   where game.CategoryType == ListCategoryType.VoiceSearch
-                                                   && game.CategoryValue == gameList.ListDescription
-                                                   group game by game into grouping
-                                                   select GameMatch.CloneGameMatch(grouping.Key, ListCategoryType.VoiceSearch, gameList.ListDescription, grouping.Max(g => g.TitleMatchType), grouping.Key.ConvertedTitle);
-
-                    if (query.Any())
-                    {
-                        List<GameMatch> matches = query.ToList();
-
-                        foreach (GameMatch game in matches)
-                        {
-                            game.SetupVoiceMatchPercentage(gameList.Confidence, gameList.ListDescription);
-                        }
-                        gameList.MatchingGames = matches.OrderByDescending(match => match.MatchPercentage).ToList();
-                        voiceRecognitionResults.Add(gameList);
-                    }
-                }
-            }
-
-            // remove any prior voice search set and then add these results in the voice search category
-            GameListSets.RemoveAll(set => set.ListCategoryType == ListCategoryType.VoiceSearch);
-            GameListSets.Add(new GameListSet
-            {
-                ListCategoryType = ListCategoryType.VoiceSearch,
-                GameLists = voiceRecognitionResults
-                                .OrderByDescending(list => list.MaxMatchPercentage)
-                                .ThenByDescending(list => list.MaxTitleLength)
-                                .ToList()
-            });
-
-            // display voice search results
-            ResetGameLists(ListCategoryType.VoiceSearch);
-            IsDisplayingResults = true;
-            CallGameChangeFunction();
-        }
-
         private GameMatch attractModeGame;
         public GameMatch AttractModeGame
         {
@@ -728,12 +591,12 @@ namespace Eclipse.View
             CallGameChangeFunction();
         }
 
-        private void CallGameChangeFunction()
+        public void CallGameChangeFunction()
         {
             GameChangeFunction?.Invoke();
         }
 
-        private void CallStopVideoAndAnimationsFunction()
+        public void CallStopVideoAndAnimationsFunction()
         {
             StopVideoAndAnimationsFunction?.Invoke();
         }
@@ -743,360 +606,49 @@ namespace Eclipse.View
             UpdateRatingImageFunction?.Invoke();
         }
 
-        private void CycleListBackward()
+        public void CycleListBackward()
         {
             listCycle.CycleBackward();
             RefreshGameLists();
         }
 
-        private void CycleListForward()
+        public void CycleListForward()
         {
             listCycle.CycleForward();
             RefreshGameLists();
         }
 
-        public void DoUp(bool held)
+        public bool DoUp(bool held)
         {
-            try
-            {
-                // stop displaying error
-                if (IsDisplayingError)
-                {
-                    IsDisplayingError = false;
-                    return;
-                }
-
-                // stop displaying attract mode 
-                if (IsDisplayingAttractMode)
-                {
-                    IsDisplayingAttractMode = false;
-                    return;
-                }
-
-                if (IsPickingCategory)
-                {
-                    OptionList.CycleBackward();
-                    return;
-                }
-
-                if (IsDisplayingMoreInfo)
-                {
-                    switch (GameDetailOption)
-                    {
-                        case GameDetailOption.Play:
-                            GameDetailOption = GameDetailOption.Rating;
-                            IsRatingGame = true;
-                            break;
-
-                        case GameDetailOption.Favorite:
-                            GameDetailOption = GameDetailOption.Play;
-                            break;
-
-                        case GameDetailOption.MoreLikeThis:
-                            GameDetailOption = GameDetailOption.Favorite;
-                            break;
-
-                        case GameDetailOption.Rating:
-                            GameDetailOption = GameDetailOption.MoreLikeThis;
-                            IsRatingGame = false;
-                            SaveRatingCurrentGame();
-                            break;
-                    }
-                    return;
-                }
-
-                if (IsDisplayingResults)
-                {
-                    // if displaying first list 
-                    if (listCycle.GetIndexValue(0) == 0)
-                    {
-                        // if it's not displaying featured - change to display feature mode
-                        if (!IsDisplayingFeature)
-                        {
-                            IsDisplayingFeature = true;
-                            return;
-                        }
-                        // if it is displaying feature mode - change to regular results mode and go to prior list
-                        else
-                        {
-                            if (!held)
-                            {
-                                IsDisplayingFeature = false;
-                                CycleListBackward();
-                            }
-                            return;
-                        }
-                    }
-
-                    if (IsDisplayingFeature)
-                    {
-                        IsDisplayingFeature = false;
-                        return;
-                    }
-
-                    // cycle to prior list
-                    CycleListBackward();
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.LogException(ex, "DoUp");
-            }
+            return EclipseStateContext.OnUp(held);
         }
 
-        public void DoDown(bool held)
+        public bool DoDown(bool held)
         {
-            try
-            {
-                // stop displaying error
-                if (IsDisplayingError)
-                {
-                    IsDisplayingError = false;
-                    return;
-                }
-
-                if (IsDisplayingAttractMode)
-                {
-                    IsDisplayingAttractMode = false;
-                    return;
-                }
-
-                if (isPickingCategory)
-                {
-                    OptionList.CycleForward();
-                    return;
-                }
-
-                if (isDisplayingMoreInfo)
-                {
-                    switch (GameDetailOption)
-                    {
-                        case GameDetailOption.Play:
-                            GameDetailOption = GameDetailOption.Favorite;
-                            break;
-
-                        case GameDetailOption.Favorite:
-                            GameDetailOption = GameDetailOption.MoreLikeThis;
-                            break;
-
-                        case GameDetailOption.MoreLikeThis:
-                            GameDetailOption = GameDetailOption.Rating;
-                            IsRatingGame = true;
-                            break;
-
-                        case GameDetailOption.Rating:
-                            GameDetailOption = GameDetailOption.Play;
-                            IsRatingGame = false;
-                            SaveRatingCurrentGame();
-                            break;
-                    }
-                    return;
-                }
-
-                if (isDisplayingFeature)
-                {
-                    IsDisplayingFeature = false;
-                    return;
-                }
-
-                if (isDisplayingResults)
-                {
-                    // cycle to next list
-                    CycleListForward();
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.LogException(ex, "DoDown");
-            }
+            return EclipseStateContext.OnDown(held);
         }
 
-        public void DoLeft(bool held)
+        public bool DoLeft(bool held)
         {
-            try
-            {
-                if (IsDisplayingAttractMode)
-                {
-                    IsDisplayingAttractMode = false;
-                    return;
-                }
-
-                // stop displaying error
-                if (IsDisplayingError)
-                {
-                    IsDisplayingError = false;
-                    return;
-                }
-
-                // if picking category and going left then close the category and keep going left
-                if (IsPickingCategory)
-                {
-                    // todo: playing with not letting go left from the settings/category selection
-                    //IsPickingCategory = false;
-                    //CurrentGameList.CycleBackward();
-                    //CallGameChangeFunction();
-                    return;
-                }
-
-                if (IsRatingGame)
-                {
-                    // increment the game rating by 0.1
-                    RateCurrentGame(-0.5f);
-                    return;
-                }
-
-                // don't do anything when displaying more info
-                if (IsDisplayingMoreInfo)
-                {
-                    return;
-                }
-
-                if (IsDisplayingFeature)
-                {
-                    // toggle the feature option
-                    if (FeatureOption == FeatureGameOption.MoreInfo)
-                    {
-                        FeatureOption = FeatureGameOption.PlayGame;
-                        return;
-                    }
-
-                    // open the settings/category menu
-                    if (FeatureOption == FeatureGameOption.PlayGame)
-                    {
-                        // display category options
-                        IsPickingCategory = true;
-                        return;
-                    }
-                }
-
-                // if current game is the first game then going left displays the category options
-                if (IsDisplayingResults && CurrentGameList.CurrentGameIndex == 0)
-                {
-                    if (!held)
-                    {
-                        IsPickingCategory = true;
-                    }
-                    return;
-                }
-
-                // cycle left to prior game if 1st game is other than index 0 Index1 != 0
-                if (IsDisplayingResults && CurrentGameList.CurrentGameIndex != 0)
-                {
-                    CurrentGameList.CycleBackward();
-                    CallGameChangeFunction();
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.LogException(ex, "DoLeft");
-            }
+            return EclipseStateContext.OnLeft(held);
         }
 
-        public void DoRight(bool held)
+        public bool DoRight(bool held)
         {
-            try
-            {
-                // stop displaying error
-                if (IsDisplayingError)
-                {
-                    IsDisplayingError = false;
-                    return;
-                }
-
-                // stop displaying attract mode 
-                if (IsDisplayingAttractMode)
-                {
-                    IsDisplayingAttractMode = false;
-                    return;
-                }
-
-                // if picking category, going right closes category selection
-                if (IsPickingCategory)
-                {
-                    IsPickingCategory = false;
-                    CallGameChangeFunction();
-                    return;
-                }
-
-                if (IsRatingGame)
-                {
-                    // increment the game rating by 0.1
-                    RateCurrentGame(0.5f);
-                    return;
-                }
-
-                // don't do anything when displaying more info
-                if (IsDisplayingMoreInfo)
-                {
-                    return;
-                }
-
-                // toggle the feature option
-                if (IsDisplayingFeature)
-                {
-                    if (FeatureOption == FeatureGameOption.PlayGame)
-                    {
-                        FeatureOption = FeatureGameOption.MoreInfo;
-                    }
-                    return;
-                }
-
-                if (IsDisplayingResults)
-                {
-                    // cycle right to next game
-                    CurrentGameList.CycleForward();
-                    CallGameChangeFunction();
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.LogException(ex, "DoRight");
-            }
+            return EclipseStateContext.OnRight(held);
         }
 
-        public void DoPageUp()
+        public bool DoPageUp()
         {
-            // stop displaying error
-            if (IsDisplayingError)
-            {
-                IsDisplayingError = false;
-                return;
-            }
-
-            // stop displaying attract mode 
-            if (IsDisplayingAttractMode)
-            {
-                IsDisplayingAttractMode = false;
-                return;
-            }
-
-            DoRandomGame();
+            return EclipseStateContext.OnPageUp();
         }
 
-        public void DoPageDown()
+        public bool DoPageDown()
         {
-            // stop displaying error
-            if (IsDisplayingError)
-            {
-                IsDisplayingError = false;
-                return;
-            }
-
-            // stop displaying attract mode 
-            if (IsDisplayingAttractMode)
-            {
-                IsDisplayingAttractMode = false;
-                return;
-            }
-
-            DoRecognize();
+            return EclipseStateContext.OnPageDown();
         }
 
-        private void ResetGameLists(ListCategoryType listCategoryType)
+        public void ResetGameLists(ListCategoryType listCategoryType)
         {
             // get the game list from the GameListSet for the given listCategoryType
             IEnumerable<GameListSet> query = from gameListSet in GameListSets
@@ -1145,7 +697,7 @@ namespace Eclipse.View
         }
 
         // start the current game
-        private void PlayCurrentGame()
+        public void PlayCurrentGame()
         {
             // get a handle on the current game 
             IGame currentGame = CurrentGameList?.Game1?.Game;
@@ -1188,7 +740,7 @@ namespace Eclipse.View
         }
 
         // mark current game as a favorite
-        private void FavoriteCurrentGame()
+        public void FavoriteCurrentGame()
         {
             GameMatch currentGame = CurrentGameList?.Game1;
             if (currentGame != null)
@@ -1256,6 +808,14 @@ namespace Eclipse.View
 
             // get the index of the game within the list 
             preChangeGameIndex = currentGameList.CurrentGameIndex;
+        }
+
+        public void CheckResetGameLists()
+        {
+            if (gameListsChanged)
+            {
+                ResetListsAfterChange();
+            }
         }
 
         // call this when lists have changed (i.e. game added/removed from favorites history list)
@@ -1326,7 +886,7 @@ namespace Eclipse.View
             }
         }
 
-        private void RateCurrentGame(float changeAmount)
+        public void RateCurrentGame(float changeAmount)
         {
             GameMatch currentGame = CurrentGameList?.Game1;
             if (currentGame != null)
@@ -1347,7 +907,7 @@ namespace Eclipse.View
             }
         }
 
-        private void SaveRatingCurrentGame()
+        public void SaveRatingCurrentGame()
         {
             GameMatch currentGame = CurrentGameList?.Game1;
             if (currentGame != null)
@@ -1363,175 +923,14 @@ namespace Eclipse.View
             }
         }
 
-        public void DoEnter()
+        public bool DoEnter()
         {
-            // stop displaying error
-            if (IsDisplayingError)
-            {
-                IsDisplayingError = false;
-                return;
-            }
-
-            // stop displaying attract mode 
-            if (IsDisplayingAttractMode)
-            {
-                IsDisplayingAttractMode = false;
-                CallGameChangeFunction();
-                return;
-            }
-
-            if (IsPickingCategory)
-            {
-                IsPickingCategory = false;
-
-                Option<ListCategoryType> option = OptionList.Option0;
-                switch (option.EnumOption)
-                {
-                    case ListCategoryType.VoiceSearch:
-                        DoRecognize();
-                        break;
-
-                    case ListCategoryType.RandomGame:
-                        DoRandomGame();
-                        break;
-
-                    case ListCategoryType.ReleaseYear:
-                        ResetGameLists(ListCategoryType.ReleaseYear);
-                        break;
-
-                    case ListCategoryType.Platform:
-                        ResetGameLists(ListCategoryType.Platform);
-                        break;
-
-                    case ListCategoryType.Developer:
-                        ResetGameLists(ListCategoryType.Developer);
-                        break;
-
-                    case ListCategoryType.Genre:
-                        ResetGameLists(ListCategoryType.Genre);
-                        break;
-
-                    case ListCategoryType.Playlist:
-                        ResetGameLists(ListCategoryType.Playlist);
-                        break;
-
-                    case ListCategoryType.PlayMode:
-                        ResetGameLists(ListCategoryType.PlayMode);
-                        break;
-
-                    case ListCategoryType.Publisher:
-                        ResetGameLists(ListCategoryType.Publisher);
-                        break;
-
-                    case ListCategoryType.Series:
-                        ResetGameLists(ListCategoryType.Series);
-                        break;
-                }
-
-                return;
-            }
-
-            if (IsDisplayingMoreInfo)
-            {
-                switch (GameDetailOption)
-                {
-                    case GameDetailOption.Play:
-                        PlayCurrentGame();
-                        break;
-
-                    case GameDetailOption.Favorite:
-                        FavoriteCurrentGame();
-                        break;
-
-                    case GameDetailOption.Rating:
-                        if (IsRatingGame)
-                        {
-                            SaveRatingCurrentGame();
-                        }
-                        break;
-
-                    case GameDetailOption.MoreLikeThis:
-                        DoMoreLikeCurrentGame();
-                        break;
-                }
-                return;
-            }
-
-            if (IsDisplayingFeature && FeatureOption == FeatureGameOption.MoreInfo)
-            {
-                GameDetailOption = GameDetailOption.Play;
-                IsDisplayingMoreInfo = true;
-                return;
-            }
-
-            if (isDisplayingFeature && FeatureOption == FeatureGameOption.PlayGame)
-            {
-                // start the current game
-                PlayCurrentGame();
-                return;
-            }
-
-            if (isDisplayingResults)
-            {
-                GameDetailOption = GameDetailOption.Play;
-                IsDisplayingFeature = true;
-                IsDisplayingMoreInfo = true;
-                return;
-            }
+            return EclipseStateContext.OnEnter();
         }
 
         public bool DoEscape()
         {
-            // stop displaying error
-            if (IsDisplayingError)
-            {
-                IsDisplayingError = false;
-                return true;
-            }
-
-            // stop speech recognition 
-            if (IsRecognizing)
-            {
-                IsRecognizing = false;
-                speechRecognizer?.TryCancelRecognition();
-                return true;
-            }
-
-            // stop displaying attract mode 
-            if (IsDisplayingAttractMode)
-            {
-                IsDisplayingAttractMode = false;
-                return true;
-            }
-
-            if (IsDisplayingMoreInfo)
-            {
-                if (gameListsChanged)
-                {
-                    ResetListsAfterChange();
-                }
-
-                IsDisplayingMoreInfo = false;
-                IsDisplayingFeature = false;
-                IsRatingGame = false;
-                return true;
-            }
-
-            // let bigbox handle escape and go to the bigbox menu
-            if (IsPickingCategory)
-            {
-                return false;
-            }
-
-            // if displaying results - open the settings 
-            if (IsDisplayingResults)
-            {
-                IsPickingCategory = true;
-                return true;
-            }
-
-            // let bigbox handle escape and go to the bigbox menu
-            return false;
+            return EclipseStateContext.OnEscape();
         }
 
         private GameList currentGameList;
@@ -1602,6 +1001,7 @@ namespace Eclipse.View
         private Uri playButtonImage;
         public Uri PlayButtonImage
         {
+            get => playButtonImage;
             set
             {
                 if (playButtonImage != value)
@@ -1633,14 +1033,8 @@ namespace Eclipse.View
         public int Star5 => 5;
         public float StarOffset00 => 0.0f;
         public float StarOffset01 => 0.1f;
-        public float StarOffset02 => 0.2f;
-        public float StarOffset03 => 0.3f;
-        public float StarOffset04 => 0.4f;
         public float StarOffset05 => 0.5f;
         public float StarOffset06 => 0.6f;
-        public float StarOffset07 => 0.7f;
-        public float StarOffset08 => 0.8f;
-        public float StarOffset09 => 0.9f;
         public float StarOffset10 => 1.0f;
 
         public event PropertyChangedEventHandler PropertyChanged = delegate { };

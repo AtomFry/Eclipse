@@ -16,17 +16,13 @@ namespace Eclipse.View
 {
     public partial class MainWindowView : UserControl, IBigBoxThemeElementPlugin
     {
+        private readonly AttractModeService attractModeService;
         private readonly MainWindowViewModel mainWindowViewModel;
 
         private BackgroundWorker stopVideoAndAnimationWorker;
 
         private readonly Timer backgroundImageChangeDelay;
         private readonly Timer fadeOutForMovieDelay;
-        private readonly Timer attractModeDelay;
-        private readonly Timer attractModeImageFadeInDelay;
-        private readonly Timer attractModeChangeDelay;
-        private readonly Timer attractModeLogoFadeInDelay;
-        private readonly Timer attractModeLogoChangeDelay;
 
         private BitmapImage activeBackgroundImage;
         private BitmapImage activeClearLogo;
@@ -64,31 +60,6 @@ namespace Eclipse.View
             fadeOutForMovieDelay.Elapsed += FadeOutForMovieDelay_Elapsed;
             fadeOutForMovieDelay.AutoReset = false;
 
-            // create a timer to delay for attract mode (60 seconds)
-            attractModeDelay = new Timer(60 * 1000);
-            attractModeDelay.Elapsed += AttractModeDelay_Elapsed;
-            attractModeDelay.AutoReset = false;
-
-            // create a timer to delay before fading in an image (2 seconds?)
-            attractModeImageFadeInDelay = new Timer(4 * 1000);
-            attractModeImageFadeInDelay.Elapsed += AttractModeImageFadeInDelay_Elapsed;
-            attractModeImageFadeInDelay.AutoReset = false;
-
-            // create a timer to delay between switching games in attract mode (15 seconds)
-            attractModeChangeDelay = new Timer(15 * 1000);
-            attractModeChangeDelay.Elapsed += AttractModeChangeDelay_Elapsed;
-            attractModeChangeDelay.AutoReset = false;
-
-            // create a timer to delay before fading in the game logo in attract mode (3 seconds)
-            attractModeLogoFadeInDelay = new Timer(4 * 1000);
-            attractModeLogoFadeInDelay.Elapsed += AttractModeLogoFadeInDelay_Elapsed;
-            attractModeLogoFadeInDelay.AutoReset = false;
-
-            // create a timer to delay before fading out the game logo in attract mode (9 seconds)
-            attractModeLogoChangeDelay = new Timer(9 * 1000);
-            attractModeLogoChangeDelay.Elapsed += AttractModeLogoChangeDelay_Elapsed;
-            attractModeLogoChangeDelay.AutoReset = false;
-
             BackgroundImageFadeInSlowStoryBoard = FindResource("BackgroundImageFadeInSlow") as Storyboard;
 
             // get handle on the view model 
@@ -103,12 +74,28 @@ namespace Eclipse.View
             // pass in a function that will update the rating image 
             mainWindowViewModel.UpdateRatingImageFunction = UpdateRatingImage;
 
-            // sets up the game lists and voice recognition
-            mainWindowViewModel.InitializeData();
+            attractModeService = AttractModeService.Instance;
+            attractModeService.MainWindowViewModel = mainWindowViewModel;
+            attractModeService.MainWindowView = this;
         }
 
-        // when the AttractModeDelay elapses, start into attract mode 
-        private void AttractModeDelay_Elapsed(object sender, ElapsedEventArgs e)
+        public void AttractModeTurnOff()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                FadeFrameworkElementOpacity(Image_AttractModeBackgroundImage, 0, 500);
+                Image_AttractModeBackgroundImage.Source = null;
+                Image_AttractModeBackgroundImage.RenderTransform = null;
+
+                FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 0, 500);
+                Image_AttractModeClearLogo.Source = null;
+
+                FadeFrameworkElementOpacity(Grid_AttractMode, 0, 500);
+                mainWindowViewModel.IsDisplayingAttractMode = false;
+            });
+        }
+
+        public void AttractModeFadeToBlack()
         {
             Dispatcher.Invoke(() =>
             {
@@ -128,17 +115,10 @@ namespace Eclipse.View
 
                 // fade the grid in if it isn't already
                 FadeFrameworkElementOpacity(Grid_AttractMode, 1, 1000);
-
-                // start timer to delay until the next image will fade in 
-                attractModeImageFadeInDelay.Start();
             });
         }
 
-        // indicates whether to slide attract mode image left or right 
-        private bool attractModeSlideLeft = true;
-
-        // after delay (about 1 second) - fade in the attract mode background image
-        private void AttractModeImageFadeInDelay_Elapsed(object sender, ElapsedEventArgs e)
+        public void AttractModeFadeInAndSlideBackground(bool slideLeft)
         {
             Dispatcher.Invoke(() =>
             {
@@ -162,18 +142,13 @@ namespace Eclipse.View
                     FadeFrameworkElementOpacity(Image_AttractModeBackgroundImage, 1, 3000);
                 }
 
-                // start timer before we fade in the attract mode clear logo
-                attractModeLogoFadeInDelay.Start();
-
-                /*
-                 * To slide left - set canvas left edge to 0 and shift image from 0 to (monitorWidth - ImageWidth) (i.e. from 0 to -25)
-                 * To slide right - set canvas left edge to (monitorWidth - imageWidth) and shift image from 0 to imageWidth - monitorWidth (i.e. from 0 to 25)
-                 */
+                // To slide left - set canvas left edge to 0 and shift image from 0 to (monitorWidth - ImageWidth) (i.e. from 0 to -25)
+                // To slide right - set canvas left edge to (monitorWidth - imageWidth) and shift image from 0 to imageWidth - monitorWidth (i.e. from 0 to 25)
                 double attractCanvasLeftCoordinate, // where to start the canvas  
                         shiftCanvasFrom,            // where to shift from
                         shiftCanvasTo;              // where to shift to
 
-                if(attractModeSlideLeft)
+                if (slideLeft)
                 {
                     attractCanvasLeftCoordinate = 0;
                     shiftCanvasFrom = 0;
@@ -189,29 +164,11 @@ namespace Eclipse.View
                 // shift the canvas
                 Canvas.SetLeft(Canvas_AttractModeInnerCanvas, attractCanvasLeftCoordinate);
                 ShiftFrameworkElement(Canvas_AttractModeInnerCanvas, shiftCanvasFrom, shiftCanvasTo, 17 * 1000);
-
-                // flip the variable to slide the other way next time
-                attractModeSlideLeft = !attractModeSlideLeft;
-
-                // start the delay between attract mode games 
-                attractModeChangeDelay.Start();
             });
+
         }
 
-        // when the AttractModeChangeDelay elapses, change games and continue attract mode
-        private void AttractModeChangeDelay_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                // fade out this image 
-                FadeFrameworkElementOpacity(Image_AttractModeBackgroundImage, 0, 3000);
-                FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 0, 500);
-
-                // start timer to delay until the next image will fade in
-                attractModeImageFadeInDelay.Start();
-            });
-        }
-        private void AttractModeLogoFadeInDelay_Elapsed(object sender, ElapsedEventArgs e)
+        public void AttractModeFadeInLogo()
         {
             Dispatcher.Invoke(() =>
             {
@@ -220,30 +177,31 @@ namespace Eclipse.View
                 {
                     Image_AttractModeClearLogo.Source = activeAttractModeClearLogo;
                     FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 1, 1500);
-
-                    // start a timer to delay until we are ready to fade the clear logo out 
-                    attractModeLogoChangeDelay.Start();
                 }
-            }); 
+            });
+
         }
-        private void AttractModeLogoChangeDelay_Elapsed(object sender, ElapsedEventArgs e)
+
+        // when the AttractModeChangeDelay elapses, change games and continue attract mode
+        public void AttractModeFadeOutBackgroundAndLogo()
         {
             Dispatcher.Invoke(() =>
             {
-                FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 0, 1000);
+                // fade out this image 
+                FadeFrameworkElementOpacity(Image_AttractModeBackgroundImage, 0, 3000);
+                FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 0, 500);
             });
+
         }
 
         public bool OnDown(bool held)
         {
-            mainWindowViewModel.DoDown(held);
-            return true;
+            return mainWindowViewModel.DoDown(held);
         }
 
         public bool OnEnter()
         {
-            mainWindowViewModel.DoEnter();
-            return true;
+            return mainWindowViewModel.DoEnter();
         }
 
         public bool OnEscape()
@@ -253,26 +211,22 @@ namespace Eclipse.View
 
         public bool OnLeft(bool held)
         {
-            mainWindowViewModel.DoLeft(held);
-            return true;
+            return mainWindowViewModel.DoLeft(held);
         }
 
         public bool OnPageDown()
         {
-            mainWindowViewModel.DoPageDown();
-            return true;
+            return mainWindowViewModel.DoPageDown();
         }
 
         public bool OnPageUp()
         {
-            mainWindowViewModel.DoPageUp();
-            return true;
+            return mainWindowViewModel.DoPageUp();
         }
 
         public bool OnRight(bool held)
         {
-            mainWindowViewModel.DoRight(held);
-            return true;
+            return mainWindowViewModel.DoRight(held);
         }
 
         public void OnSelectionChanged(FilterType filterType, string filterValue, IPlatform platform, IPlatformCategory category, IPlaylist playlist, IGame game)
@@ -281,8 +235,7 @@ namespace Eclipse.View
 
         public bool OnUp(bool held)
         {
-            mainWindowViewModel.DoUp(held);
-            return true;
+            return mainWindowViewModel.DoUp(held);
         }
 
 
@@ -314,6 +267,9 @@ namespace Eclipse.View
         // animates change in opacity to specified opacity value and given duration
         private void FadeFrameworkElementOpacity(FrameworkElement element, double newOpacityValue, double durationInMilliseconds)
         {
+            // todo: delete log code
+            LogHelper.Log($"Fading {element.Name} from {element.Opacity} to {newOpacityValue} at {DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff tt")}");
+
             if (element.Opacity != newOpacityValue)
             {
                 DoubleAnimation dimElement = new DoubleAnimation(element.Opacity, newOpacityValue, TimeSpan.FromMilliseconds(durationInMilliseconds));
@@ -334,7 +290,6 @@ namespace Eclipse.View
             });
         }
 
-
         private void DoAnimateGameChange()
         {
             Dispatcher.Invoke(() =>
@@ -350,13 +305,16 @@ namespace Eclipse.View
                         DimBackground();
 
                         // dim logo image
+                        Image_Displayed_GameClearLogo.Opacity = 0.15;
                         FadeFrameworkElementOpacity(Image_Displayed_GameClearLogo, 0.15, 25);
 
                         // dim game title text all the way to 0 
                         // this is a backup for missing logo image
+                        TextBlock_Displayed_GameTitle.Opacity = 0;
                         FadeFrameworkElementOpacity(TextBlock_Displayed_GameTitle, 0.00, 25);
 
                         // dim game details
+                        Grid_SelectedGameDetails.Opacity = 0.15;
                         FadeFrameworkElementOpacity(Grid_SelectedGameDetails, 0.15, 25);
 
                         // get a handle on the active game's background image
@@ -426,8 +384,6 @@ namespace Eclipse.View
             });
         }
 
-
-
         // delay for an interval when selecting games and then fade in the current selected game
         private void BackgroundImageChangeDelay_Elapsed(object sender, ElapsedEventArgs e)
         {
@@ -486,10 +442,6 @@ namespace Eclipse.View
                     {
                         fadeOutForMovieDelay.Start();
                     }
-                    else
-                    {
-                        attractModeDelay.Start();
-                    }
                 }
                 catch (Exception ex)
                 {
@@ -506,6 +458,8 @@ namespace Eclipse.View
                 {
                     if (Video_SelectedGame != null)
                     {
+                        attractModeService.StopAttractMode();
+
                         PlayVideo(Video_SelectedGame);
 
                         // fade background images while the video plays
@@ -532,7 +486,8 @@ namespace Eclipse.View
                     // fade in background image
                     FadeFrameworkElementOpacity(Image_Selected_Background_Black, 1, 500);
                     FadeFrameworkElementOpacity(Image_Displayed_BackgroundImage, 1, 500);
-                    attractModeDelay.Start();
+
+                    attractModeService.RestartAttractMode();
                 });
             }
             catch(Exception ex)
@@ -652,11 +607,6 @@ namespace Eclipse.View
             PauseVideo(Video_SelectedGame);
 
             // stop timers
-            attractModeDelay.Stop();
-            attractModeImageFadeInDelay.Stop();
-            attractModeChangeDelay.Stop();
-            attractModeLogoFadeInDelay.Stop();
-            attractModeLogoChangeDelay.Stop();
             fadeOutForMovieDelay.Stop();
             backgroundImageChangeDelay.Stop();
             BackgroundImageFadeInSlowStoryBoard.Stop();
