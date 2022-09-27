@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Eclipse.Models
 {
@@ -20,9 +15,7 @@ namespace Eclipse.Models
         PlayMode,
         Developer,
         Publisher,
-        MoreLikeThis,
-        Favorites,
-        History
+        MoreLikeThis
     }
 
     public class OptionList : INotifyPropertyChanged

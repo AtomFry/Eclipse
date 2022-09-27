@@ -236,29 +236,20 @@ namespace Eclipse.View
             if (includeFavorites)
             {
                 var favoriteGames = from gameMatch in gameBag
-                                    where gameMatch.CategoryType == ListCategoryType.Favorites
+                                    where gameMatch.CategoryType == ListCategoryType.Platform
                                     && gameMatch.Game.Favorite == true
-                                    group gameMatch by gameMatch.CategoryValue into favoritesGroup
-                                    select favoritesGroup;
+                                    select gameMatch;
 
-                foreach (var favoritesGroup in favoriteGames)
-                {
-                    listOfGameList.Add(new GameList(favoritesGroup.Key, favoritesGroup.OrderBy(game => game.Game.SortTitleOrTitle).ToList(), true));
-                }
+                listOfGameList.Add(new GameList("Favorites", favoriteGames.OrderBy(game => game.Game.SortTitleOrTitle).ToList(), true));
             }
 
             if (includeHistory)
             {
                 var historyGames = from gameMatch in gameBag
-                                   where gameMatch.CategoryType == ListCategoryType.History
+                                   where gameMatch.CategoryType == ListCategoryType.Platform
                                    && gameMatch.Game.LastPlayedDate != null
-                                   group gameMatch by gameMatch.CategoryValue into historyGroup
-                                   select historyGroup;
-
-                foreach (var historyGroup in historyGames)
-                {
-                    listOfGameList.Add(new GameList(historyGroup.Key, historyGroup.OrderByDescending(game => game.Game.LastPlayedDate).ToList(), false, true));
-                }
+                                   select gameMatch;
+                listOfGameList.Add(new GameList("History", historyGames.OrderByDescending(game => game.Game.LastPlayedDate).ToList(), false, true));
             }
 
             var gameQuery = from gameMatch in gameBag
@@ -703,28 +694,7 @@ namespace Eclipse.View
             IGame currentGame = CurrentGameList?.Game1?.Game;
             if (currentGame != null)
             {
-                // check if the game is in the history list already
-                IEnumerable<GameMatch> historyQuery = gameBag.Where(g => g.Game.Id == currentGame.Id && g.CategoryType == ListCategoryType.History);
-                if (!historyQuery.Any())
-                {
-                    // setting the last played date will make it show up in the history after launching a game
-                    IGame game = CurrentGameList?.Game1?.Game;
-                    if (game != null)
-                    {
-                        game.LastPlayedDate = DateTime.Now;
-                    }
-
-                    // if not - add it to the history list
-                    gameBag.Add(GameMatch.CloneGameMatch(CurrentGameList?.Game1, ListCategoryType.History, ListCategoryType.History.ToString()));
-                }
-                else
-                {
-                    // if it is - update the last played time to now
-                    foreach (GameMatch game in historyQuery)
-                    {
-                        game.Game.LastPlayedDate = DateTime.Now;
-                    }
-                }
+                currentGame.LastPlayedDate = DateTime.Now;
 
                 // reset the lists so the updated history reflects - first save the current game details then reload the lists 
                 SaveStateForGameListChange();
@@ -757,14 +727,6 @@ namespace Eclipse.View
                 foreach (GameMatch gameMatch in gameMatchQuery)
                 {
                     gameMatch.Favorite = currentGame.Favorite;
-                }
-
-                gameMatchQuery = gameBag.Where(g => g.Favorite && g.Game.Id == currentGame.Game.Id && g.CategoryType == ListCategoryType.Favorites);
-
-                // add to the game bag in the favorites category 
-                if (currentGame.Favorite && !gameMatchQuery.Any())
-                {
-                    gameBag.Add(GameMatch.CloneGameMatch(currentGame, ListCategoryType.Favorites, ListCategoryType.Favorites.ToString()));
                 }
 
                 // save state so we can get back to the current game

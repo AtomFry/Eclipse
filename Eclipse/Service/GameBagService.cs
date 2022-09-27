@@ -89,16 +89,6 @@ namespace Eclipse.Service
 
                 GameMatch gameMatch = new GameMatch(game, gameFiles);
 
-                if (game.Favorite)
-                {
-                    gameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Favorites, ListCategoryType.Favorites.ToString()));
-                }
-
-                if (game.LastPlayedDate != null)
-                {
-                    gameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.History, ListCategoryType.History.ToString()));
-                }
-
                 // create a dictionary of platform game matches
                 gameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.Platform, game.Platform));
 
