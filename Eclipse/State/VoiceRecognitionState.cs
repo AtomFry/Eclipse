@@ -42,7 +42,7 @@ namespace Eclipse.State
         {
             speechRecognizer.TryCancelRecognition();
             EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
-            eclipseStateContext.TransitionToState(new SelectingGameState());
+            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }
 
@@ -77,7 +77,7 @@ namespace Eclipse.State
             if (speechRecognizer == null)
             {
                 EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
-                EclipseStateContext.TransitionToState(new SelectingGameState());
+                EclipseStateContext.TransitionToState(EclipseStateContext.GetState(typeof(SelectingGameState)));
                 return;
             }
 
@@ -95,7 +95,11 @@ namespace Eclipse.State
             catch(Exception ex)
             {
                 EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
-                EclipseStateContext.TransitionToState(new DisplayingErrorState(ex.Message));
+
+                DisplayingErrorState displayingErrorState = EclipseStateContext.GetState(typeof(DisplayingErrorState)) as DisplayingErrorState;
+                displayingErrorState.ErrorMessage = ex.Message;
+
+                EclipseStateContext.TransitionToState(displayingErrorState);
             }
         }
 
@@ -106,7 +110,10 @@ namespace Eclipse.State
             if (!string.IsNullOrWhiteSpace(speechRecognizerResult.ErrorMessage))
             {
                 EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
-                EclipseStateContext.TransitionToState(new DisplayingErrorState(speechRecognizerResult.ErrorMessage));
+
+                DisplayingErrorState displayingErrorState = EclipseStateContext.GetState(typeof(DisplayingErrorState)) as DisplayingErrorState;
+                displayingErrorState.ErrorMessage = speechRecognizerResult.ErrorMessage;
+                EclipseStateContext.TransitionToState(displayingErrorState);
                 return;
             }
 
@@ -161,12 +168,14 @@ namespace Eclipse.State
                 // display voice search results
                 EclipseStateContext.MainWindowViewModel.ResetGameLists(ListCategoryType.VoiceSearch);
                 EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
-                EclipseStateContext.TransitionToState(new SelectingGameState());
+                EclipseStateContext.TransitionToState(EclipseStateContext.GetState(typeof(SelectingGameState)));
             }
             catch(Exception ex)
             {
                 EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
-                EclipseStateContext.TransitionToState(new DisplayingErrorState(ex.Message));
+                DisplayingErrorState displayingErrorState = EclipseStateContext.GetState(typeof(DisplayingErrorState)) as DisplayingErrorState;
+                displayingErrorState.ErrorMessage = ex.Message;
+                EclipseStateContext.TransitionToState(displayingErrorState);
                 return;
             }
         }

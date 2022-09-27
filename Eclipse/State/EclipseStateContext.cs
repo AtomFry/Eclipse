@@ -1,9 +1,23 @@
 ﻿using Eclipse.View;
+using System;
+using System.Collections.Generic;
 
 namespace Eclipse.State
 {
     public class EclipseStateContext
     {
+        private Dictionary<Type, EclipseState> _stateCache = new Dictionary<Type, EclipseState>();
+
+        public EclipseState GetState(Type type)
+        {
+            if (!_stateCache.ContainsKey(type))
+            {
+                EclipseState instance = Activator.CreateInstance(type) as EclipseState;
+                _stateCache.Add(type, instance);
+            }
+            return _stateCache[type];
+        }
+
         public EclipseState CurrentState { get; private set; }
 
         public MainWindowViewModel MainWindowViewModel { get; private set; }
@@ -11,7 +25,8 @@ namespace Eclipse.State
         public EclipseStateContext(MainWindowViewModel viewModel)
         {
             MainWindowViewModel = viewModel;
-            TransitionToState(new LoadingState());
+
+            TransitionToState(GetState(typeof(LoadingState)));
         }
 
         public void TransitionToState(EclipseState newState)

@@ -44,7 +44,7 @@ namespace Eclipse.State
 
             eclipseStateContext.MainWindowViewModel.IsDisplayingFeature = false;
             eclipseStateContext.MainWindowViewModel.IsDisplayingMoreInfo = false;
-            eclipseStateContext.TransitionToState(new SelectingGameState());
+            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }
 
@@ -57,7 +57,7 @@ namespace Eclipse.State
         public bool OnPageDown(EclipseStateContext eclipseStateContext)
         {
             attractModeService.RestartAttractMode();
-            eclipseStateContext.TransitionToState(new VoiceRecognitionState());
+            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(VoiceRecognitionState)));
             return true;
         }
 
@@ -77,7 +77,7 @@ namespace Eclipse.State
         public bool OnUp(EclipseStateContext eclipseStateContext, bool held)
         {
             attractModeService.RestartAttractMode();
-            eclipseStateContext.TransitionToState(new GameDetailOptionRatingState());
+            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(GameDetailOptionRatingState)));
             return true;
         }
     }

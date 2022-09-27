@@ -38,7 +38,13 @@ namespace Eclipse.Service
         // when the AttractModeDelay elapses, start into attract mode 
         private void AttractModeDelay_Elapsed(object sender, ElapsedEventArgs e)
         {
-            MainWindowViewModel.EclipseStateContext.TransitionToState(new AttractModeState(MainWindowViewModel, MainWindowView, MainWindowViewModel.EclipseStateContext.CurrentState));
+            AttractModeState attractModeState = MainWindowViewModel.EclipseStateContext.GetState(typeof(AttractModeState)) as AttractModeState;
+
+            attractModeState.MainWindowView = MainWindowView;
+            attractModeState.MainWindowViewModel = MainWindowViewModel;
+            attractModeState.PreviousState = MainWindowViewModel.EclipseStateContext.CurrentState;
+
+            MainWindowViewModel.EclipseStateContext.TransitionToState(attractModeState);
         }
 
         public void StopAttractMode()

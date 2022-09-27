@@ -33,7 +33,7 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
 
-            eclipseStateContext.TransitionToState(new GameDetailOptionPlayState());
+            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(GameDetailOptionPlayState)));
             return true;
         }
 
@@ -41,7 +41,7 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
 
-            eclipseStateContext.TransitionToState(new SelectingOptionsState());
+            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingOptionsState)));
             return true;
         }
 
@@ -52,7 +52,7 @@ namespace Eclipse.State
             if (eclipseStateContext.MainWindowViewModel.CurrentGameList.CurrentGameIndex == 0 && !held)
             {
                 // first game and going left and not held down, open the options 
-                eclipseStateContext.TransitionToState(new SelectingOptionsState());
+                eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingOptionsState)));
                 return true;
             }
 
@@ -70,7 +70,7 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
 
-            eclipseStateContext.TransitionToState(new VoiceRecognitionState());
+            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(VoiceRecognitionState)));
             return true;
         }
 
@@ -98,7 +98,7 @@ namespace Eclipse.State
             // if displaying first list 
             if (eclipseStateContext.MainWindowViewModel.listCycle.GetIndexValue(0) == 0)
             {
-                eclipseStateContext.TransitionToState(new FeatureOptionPlayState());
+                eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(FeatureOptionPlayState))); 
                 return true;
             }
 

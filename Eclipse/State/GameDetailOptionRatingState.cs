@@ -27,7 +27,7 @@ namespace Eclipse.State
             attractModeService.RestartAttractMode();
             eclipseStateContext.MainWindowViewModel.IsRatingGame = false;
             eclipseStateContext.MainWindowViewModel.SaveRatingCurrentGame();
-            eclipseStateContext.TransitionToState(new GameDetailOptionPlayState());
+            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(GameDetailOptionPlayState)));
             return true;
         }
 
@@ -46,7 +46,7 @@ namespace Eclipse.State
 
             eclipseStateContext.MainWindowViewModel.IsDisplayingFeature = false;
             eclipseStateContext.MainWindowViewModel.IsDisplayingMoreInfo = false;
-            eclipseStateContext.TransitionToState(new SelectingGameState());
+            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }
 
@@ -61,7 +61,7 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
             eclipseStateContext.MainWindowViewModel.IsRatingGame = false;
-            eclipseStateContext.TransitionToState(new VoiceRecognitionState());
+            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(VoiceRecognitionState)));
             return true;
         }
 
@@ -86,7 +86,7 @@ namespace Eclipse.State
             attractModeService.RestartAttractMode();
             eclipseStateContext.MainWindowViewModel.IsRatingGame = false;
             eclipseStateContext.MainWindowViewModel.SaveRatingCurrentGame();
-            eclipseStateContext.TransitionToState(new GameDetailOptionMoreState());
+            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(GameDetailOptionMoreState)));
             return true;
         }
     }

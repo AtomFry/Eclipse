@@ -8,21 +8,17 @@ namespace Eclipse.State
     public class AttractModeState : EclipseState
     {
         private readonly AttractModeService attractModeService;
-        private MainWindowViewModel mainWindowViewModel;
-        private MainWindowView mainWindowView;
-        private EclipseState previousState;
+        
+        public MainWindowViewModel MainWindowViewModel { get; set; }
+        public  MainWindowView MainWindowView { get; set; }
+        public EclipseState PreviousState { get; set; }
 
         private readonly Timer attractModeImageFadeInDelay;
         private readonly Timer attractModeChangeDelay;
         private readonly Timer attractModeLogoFadeInDelay;
 
-
-        public AttractModeState(MainWindowViewModel _mainWindowViewModel, MainWindowView _mainWindowView, EclipseState _previousState)
+        public AttractModeState()
         {
-            mainWindowViewModel = _mainWindowViewModel;
-            mainWindowView = _mainWindowView;
-            previousState = _previousState;
-
             attractModeService = AttractModeService.Instance;
 
             // create a timer to delay before fading in an image (2 seconds?)
@@ -44,7 +40,7 @@ namespace Eclipse.State
         public void EnterState(EclipseStateContext eclipseStateContext)
         {
             // fade the grid in if it isn't already
-            mainWindowView.AttractModeFadeToBlack();
+            MainWindowView.AttractModeFadeToBlack();
 
             // start timer to delay until the next image will fade in 
             attractModeImageFadeInDelay.Start();
@@ -108,10 +104,10 @@ namespace Eclipse.State
             attractModeSlideLeft = !attractModeSlideLeft;
 
             // get next attract mode game 
-            mainWindowViewModel.NextAttractModeGame();
+            MainWindowViewModel.NextAttractModeGame();
 
             // call UI to fade in and slide background
-            mainWindowView.AttractModeFadeInAndSlideBackground(attractModeSlideLeft);
+            MainWindowView.AttractModeFadeInAndSlideBackground(attractModeSlideLeft);
 
             // start timer before we fade in the attract mode clear logo
             attractModeLogoFadeInDelay.Start();
@@ -122,14 +118,14 @@ namespace Eclipse.State
 
         private void AttractModeLogoFadeInDelay_Elapsed(object sender, ElapsedEventArgs e)
         {
-            mainWindowView.AttractModeFadeInLogo();
+            MainWindowView.AttractModeFadeInLogo();
         }
 
         // when the AttractModeChangeDelay elapses, change games and continue attract mode
         private void AttractModeChangeDelay_Elapsed(object sender, ElapsedEventArgs e)
         {
             // fade out this image 
-            mainWindowView.AttractModeFadeOutBackgroundAndLogo();
+            MainWindowView.AttractModeFadeOutBackgroundAndLogo();
 
             // start timer to delay until the next image will fade in
             attractModeImageFadeInDelay.Start();
@@ -142,7 +138,7 @@ namespace Eclipse.State
             attractModeLogoFadeInDelay?.Stop();
 
             attractModeService.RestartAttractMode();
-            eclipseStateContext.TransitionToState(previousState);
+            eclipseStateContext.TransitionToState(PreviousState);
         }
     }
 }

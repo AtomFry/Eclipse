@@ -9,10 +9,8 @@ namespace Eclipse.State
 
         public string ErrorMessage { get; set; }
 
-        public DisplayingErrorState(string errorMessage)
+        public DisplayingErrorState()
         {
-            ErrorMessage = errorMessage;
-
             attractModeService = AttractModeService.Instance;
         }
 
@@ -27,7 +25,7 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
             eclipseStateContext.MainWindowViewModel.IsDisplayingError = false;
-            eclipseStateContext.TransitionToState(new SelectingGameState());
+            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }
 
@@ -35,7 +33,7 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
             eclipseStateContext.MainWindowViewModel.IsDisplayingError = false;
-            eclipseStateContext.TransitionToState(new SelectingGameState());
+            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }
 
@@ -43,7 +41,7 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
             eclipseStateContext.MainWindowViewModel.IsDisplayingError = false;
-            eclipseStateContext.TransitionToState(new SelectingGameState());
+            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }
 
@@ -51,7 +49,7 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
             eclipseStateContext.MainWindowViewModel.IsDisplayingError = false;
-            eclipseStateContext.TransitionToState(new SelectingGameState());
+            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }
 
@@ -59,7 +57,7 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
             eclipseStateContext.MainWindowViewModel.IsDisplayingError = false;
-            eclipseStateContext.TransitionToState(new SelectingGameState());
+            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }
 
@@ -67,7 +65,7 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
             eclipseStateContext.MainWindowViewModel.IsDisplayingError = false;
-            eclipseStateContext.TransitionToState(new SelectingGameState());
+            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }
 
@@ -75,7 +73,7 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
             eclipseStateContext.MainWindowViewModel.IsDisplayingError = false;
-            eclipseStateContext.TransitionToState(new SelectingGameState());
+            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }
 
@@ -83,7 +81,7 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
             eclipseStateContext.MainWindowViewModel.IsDisplayingError = false;
-            eclipseStateContext.TransitionToState(new SelectingGameState());
+            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }
     }
