@@ -33,4 +33,22 @@ namespace Eclipse.Models
         PlayGame,
         MoreInfo
     }
+
+    public enum FilterFieldOperator
+    {
+        Equal,
+        NotEqual,
+        GreaterThan,
+        GreaterThanOrEqual,
+        LessThan,
+        LessThanOrEqual,
+        IsNull,
+        IsNotNull
+    }
+
+    public enum SortDirection
+    {
+        Ascending,
+        Descending
+    }
 }

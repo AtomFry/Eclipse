@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Eclipse.Service;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -54,8 +55,8 @@ namespace Eclipse.Models
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
         private ListCycle<GameMatch> gameCycle;
 
-        public bool IsFavorites { get; set; }
-        public bool IsHistory { get; set; }
+        public int SortOrder { get; set; }
+
         private List<GameMatch> matchingGames;
         public List<GameMatch> MatchingGames
         {
@@ -108,12 +109,16 @@ namespace Eclipse.Models
         {
         }
 
-        public GameList(string _listDescription, List<GameMatch> _matchingGames, bool isFavorites = false, bool isHistory = false)
+        public GameList(string _listDescription, List<GameMatch> _matchingGames, int sortOrder = 9999)
         {
             ListDescription = _listDescription;
             MatchingGames = _matchingGames;
-            IsFavorites = isFavorites;
-            IsHistory = isHistory;
+            SortOrder = sortOrder;
+
+            if (EclipseSettingsDataProvider.Instance.EclipseSettings.ShowGameCountInList)
+            {
+                ListDescription = $"{ListDescription} ({MatchCount})";
+            }
         }
 
         public void CycleForward()

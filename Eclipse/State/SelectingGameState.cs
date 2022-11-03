@@ -1,6 +1,7 @@
 ﻿using Eclipse.Models;
 using Eclipse.Service;
 using System;
+using Unbroken.LaunchBox.Plugins.Data;
 
 namespace Eclipse.State
 {
@@ -70,7 +71,22 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
 
-            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(VoiceRecognitionState)));
+            // todo: testing page to next letter - this works better on page down or after being held so many times
+            int currentIndex = eclipseStateContext.MainWindowViewModel.CurrentGameList.ListSetStartIndex +
+                eclipseStateContext.MainWindowViewModel.CurrentGameList.CurrentGameIndex;
+
+            int nextIndex = currentIndex + 7;
+
+            if (nextIndex > eclipseStateContext.MainWindowViewModel.CurrentGameList.ListSetEndIndex)
+            {
+                nextIndex = eclipseStateContext.MainWindowViewModel.CurrentGameList.ListSetStartIndex;
+            }
+
+            eclipseStateContext.MainWindowViewModel.DoRandomGame(nextIndex);
+
+            // todo: testing replacing voice search with page down
+            // eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(VoiceRecognitionState)));
+
             return true;
         }
 
@@ -78,7 +94,20 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
 
-            eclipseStateContext.MainWindowViewModel.DoRandomGame();
+            int currentIndex = eclipseStateContext.MainWindowViewModel.CurrentGameList.ListSetStartIndex +
+                eclipseStateContext.MainWindowViewModel.CurrentGameList.CurrentGameIndex;
+
+            int nextIndex = currentIndex - 7;
+
+            if (nextIndex < eclipseStateContext.MainWindowViewModel.CurrentGameList.ListSetStartIndex)
+            {
+                nextIndex = eclipseStateContext.MainWindowViewModel.CurrentGameList.ListSetEndIndex;
+            }
+
+            eclipseStateContext.MainWindowViewModel.DoRandomGame(nextIndex);
+
+            // todo: testing replacing random game with page up
+            // eclipseStateContext.MainWindowViewModel.DoRandomGame();
             return true;
         }
 
@@ -87,6 +116,7 @@ namespace Eclipse.State
             attractModeService.RestartAttractMode();
 
             eclipseStateContext.MainWindowViewModel.CurrentGameList.CycleForward();
+
             eclipseStateContext.MainWindowViewModel.CallGameChangeFunction();
             return true;
         }

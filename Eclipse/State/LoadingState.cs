@@ -81,35 +81,6 @@ namespace Eclipse.State
                 EclipseStateContext.MainWindowViewModel.gameBag = GameBagService.Instance.GameBag;
                 EclipseStateContext.MainWindowViewModel.gameFilesBag = GameBagService.Instance.GameFilesBag;
 
-
-                // todo - delete test code start 
-                /*
-                var queryFavorites = from gameMatch in EclipseStateContext.MainWindowViewModel.gameBag
-                            where gameMatch.CategoryType == ListCategoryType.Favorites
-                            && gameMatch.Game.Genres.Contains("Action")
-                            select gameMatch;
-
-                // last 20 games played 
-                var queryHistory = (from gameMatch in EclipseStateContext.MainWindowViewModel.gameBag
-                            where gameMatch.CategoryType == ListCategoryType.History
-                            orderby gameMatch.Game.LastPlayedDate descending
-                            select gameMatch).Take(20);
-
-                // top 20 rated games 
-                var queryTopRatedUser = (from gameMatch in EclipseStateContext.MainWindowViewModel.gameBag
-                                        where gameMatch.CategoryType == ListCategoryType.Platform
-                                        orderby gameMatch.UserRating descending
-                                        select gameMatch).Take(20);
-
-                // top 20 community rated games 
-                var queryTopRatedCommunity = (from gameMatch in EclipseStateContext.MainWindowViewModel.gameBag
-                                              where gameMatch.CategoryType == ListCategoryType.Platform
-                                              orderby gameMatch.Game.CommunityStarRating descending
-                                              select gameMatch).Take(20);
-                */
-                // todo - delete test code end 
-
-
                 BackgroundWorker worker = new BackgroundWorker();
                 worker.DoWork += EclipseStateContext.MainWindowViewModel.SetupFiles;
                 worker.RunWorkerAsync();
@@ -123,8 +94,21 @@ namespace Eclipse.State
                 // populate the lists 
                 EclipseStateContext.MainWindowViewModel.CreateGameLists();
 
-                // default to display games by platform
-                EclipseStateContext.MainWindowViewModel.ResetGameLists(ListCategoryType.Platform);
+                // get settings and setup default list category type
+                EclipseSettings eclipseSettings = EclipseSettingsDataProvider.Instance.EclipseSettings;
+
+                EclipseStateContext.MainWindowViewModel.ResetGameLists(eclipseSettings.DefaultListCategoryType);
+
+                // sync up the option list with the default list category
+                int x = 0;
+                while(eclipseSettings.DefaultListCategoryType != EclipseStateContext.MainWindowViewModel.OptionList.Option0.EnumOption)
+                {
+                    if(x++ > 20)
+                    {
+                        break;
+                    }
+                    EclipseStateContext.MainWindowViewModel.OptionList.CycleForward();
+                }   
 
                 e.Result = EclipseStateContext;
             }

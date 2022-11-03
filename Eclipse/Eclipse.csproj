@@ -12,6 +12,7 @@
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
   </PropertyGroup>
@@ -33,6 +34,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="Prism, Version=8.1.97.5141, Culture=neutral, PublicKeyToken=40ee6c3a2184dc59, processorArchitecture=MSIL">
@@ -94,6 +98,7 @@
     <Compile Include="Helpers\DisplayInfoHelper.cs" />
     <Compile Include="Helpers\EventAggregatorHelper.cs" />
     <Compile Include="Helpers\LogHelper.cs" />
+    <Compile Include="Helpers\MessageDialogHelper.cs" />
     <Compile Include="Helpers\OpacityBrushHelper.cs" />
     <Compile Include="Helpers\RetroarchHelper.cs" />
     <Compile Include="Models\EclipseSettings.cs" />
@@ -107,10 +112,12 @@
     <Compile Include="Models\ListCycle.cs" />
     <Compile Include="Models\Enums.cs" />
     <Compile Include="Models\GameList.cs" />
+    <Compile Include="Plugins\EclipseSettingsMenuItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Service\AttractModeService.cs" />
     <Compile Include="Service\BezelService.cs" />
     <Compile Include="Service\DataService.cs" />
+    <Compile Include="Service\CustomListDefinitionDataProvider.cs" />
     <Compile Include="Service\GameBagService.cs" />
     <Compile Include="Service\ImageScaler.cs" />
     <Compile Include="Service\OptionListService.cs" />
@@ -130,10 +137,19 @@
     <Compile Include="State\SelectingGameState.cs" />
     <Compile Include="State\SelectingOptionsState.cs" />
     <Compile Include="State\VoiceRecognitionState.cs" />
+    <Compile Include="View\EclipseSettings\CustomListDefinitionEditView.xaml.cs">
+      <DependentUpon>CustomListDefinitionEditView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\EclipseSettings\CustomListDefinitionEditViewModel.cs" />
+    <Compile Include="View\EclipseSettings\EclipseSettingsView.xaml.cs">
+      <DependentUpon>EclipseSettingsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\EclipseSettings\EclipseSettingsViewModel.cs" />
     <Compile Include="View\MainWindowView.xaml.cs">
       <DependentUpon>MainWindowView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\MainWindowViewModel.cs" />
+    <Compile Include="View\ViewModelBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="Eclipse\LaunchBox\StartupThemes\Eclipse\Default Shutdown.xaml">
@@ -148,6 +164,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </AdditionalFiles>
+    <Page Include="View\EclipseSettings\CustomListDefinitionEditView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\EclipseSettings\EclipseSettingsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\MainWindowView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -263,6 +287,7 @@
     <Content Include="Eclipse\README.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Resources\EclipseSettingsIcon1.png" />
     <Content Include="Unbroken.LaunchBox.Plugins.dll" />
     <Resource Include="Resources\MoreInfo_Selected.png" />
     <Resource Include="Resources\MoreInfo_Unselected.png" />

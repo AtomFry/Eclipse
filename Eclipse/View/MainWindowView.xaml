@@ -631,7 +631,7 @@
                                     TextAlignment="Center"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Bottom"/>
-
+                        
                         <TextBlock Name="TextBlock_ReleaseYear"
                                    IsHitTestVisible="False"
                                    Margin="15,0,0,0"
@@ -648,20 +648,20 @@
                         <!-- grid for star rating so we can overlay the user's rating on top of the community rating - for this to work the images need to be the same size and user rating needs to be colored differently -->
                         <Grid IsHitTestVisible="False"
                               Margin="15,0,0,0" 
-                                Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
+                                Height="{Binding ActualHeight,ElementName=TextBlock_ReleaseYear}"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Bottom">
                             <Image Name="Image_CommunityStarRating"
                                IsHitTestVisible="False"
                                 RenderOptions.BitmapScalingMode="HighQuality" 
-                                Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
+                                Height="{Binding ActualHeight,ElementName=TextBlock_ReleaseYear}"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Bottom"
                                 Stretch="Uniform"/>
                             <Image Name="Image_UserStarRating"
                                IsHitTestVisible="False"
                                 RenderOptions.BitmapScalingMode="HighQuality" 
-                                Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
+                                Height="{Binding ActualHeight,ElementName=TextBlock_ReleaseYear}"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Bottom"
                                 Stretch="Uniform"/>
@@ -670,7 +670,7 @@
                         <Image  Name="Image_Playmode"  
                                 IsHitTestVisible="False"
                                 Margin="15,0,0,0" 
-                                Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
+                                Height="{Binding ActualHeight,ElementName=TextBlock_ReleaseYear}"
                                 RenderOptions.BitmapScalingMode="HighQuality" 
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Bottom"
@@ -679,7 +679,7 @@
                         <Image Name="Image_PlatformLogo"
                                IsHitTestVisible="False"
                                 Margin="15,0,0,0"                               
-                                Height="{Binding ActualHeight,ElementName=TextBlock_MatchPercentage}"
+                                Height="{Binding ActualHeight,ElementName=TextBlock_ReleaseYear}"
                                 HorizontalAlignment="Center" 
                                 VerticalAlignment="Bottom"
                                 RenderOptions.BitmapScalingMode="HighQuality" 
@@ -1424,13 +1424,8 @@
                                 TextWrapping="Wrap"
                                 TextAlignment="Left"
                                 HorizontalAlignment="Stretch"
-                                VerticalAlignment="Bottom">
-                        <TextBlock.Text>
-                            <MultiBinding StringFormat=" {0} ({1})">
-                                <Binding Path="CurrentGameList.ListDescription"/>
-                                <Binding Path="CurrentGameList.MatchCount"/>
-                            </MultiBinding>
-                        </TextBlock.Text>
+                                VerticalAlignment="Bottom"
+                                Text="{Binding CurrentGameList.ListDescription}">
                     </TextBlock>
                     <StackPanel Name="GameImages" 
                                 IsHitTestVisible="False"
@@ -1607,13 +1602,8 @@
                         TextWrapping="Wrap"
                         TextAlignment="Left"
                         HorizontalAlignment="Stretch"
-                        VerticalAlignment="Bottom">
-                        <TextBlock.Text>
-                            <MultiBinding StringFormat=" {0} ({1})">
-                                <Binding Path="NextGameList.ListDescription"/>
-                                <Binding Path="NextGameList.MatchCount"/>
-                            </MultiBinding>
-                        </TextBlock.Text>
+                        VerticalAlignment="Bottom"
+                        Text="{Binding NextGameList.ListDescription}">
                     </TextBlock>
                     <StackPanel Name="NextListGameImages" 
                                 IsHitTestVisible="False"

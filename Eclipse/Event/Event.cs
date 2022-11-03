@@ -2,6 +2,7 @@
 
 namespace Eclipse.Event
 {
+    public class EclipseSettingsListClose : PubSubEvent { }
     public class InitializedEvent : PubSubEvent { }
     public class UpEvent : PubSubEvent { }
     public class DownEvent : PubSubEvent { }
@@ -15,4 +16,10 @@ namespace Eclipse.Event
     public class VideoEndedEvent : PubSubEvent { }
     public class GameStartedEvent : PubSubEvent { }
     public class GameEndedEvent : PubSubEvent { }
+
+    // events for eclipse settings views
+    public class EclipseSettingsClose : PubSubEvent { }
+    public class CustomListDefinitionSaved : PubSubEvent<string> { }
+    public class CustomListDefinitionEditClosing : PubSubEvent { }
+    public class CustomListDefinitionEditClose : PubSubEvent { }
 }

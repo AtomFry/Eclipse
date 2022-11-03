@@ -1,5 +1,4 @@
-﻿using Eclipse.Service;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -12,7 +11,11 @@ using System.Collections.Concurrent;
 using Eclipse.Helpers;
 using System.Threading;
 using Eclipse.State;
-using System.Windows.Media;
+using System.Linq.Expressions;
+using System.CodeDom;
+using System.Windows.Documents;
+using System.Reflection;
+using Eclipse.Service;
 
 namespace Eclipse.View
 {
@@ -36,6 +39,7 @@ namespace Eclipse.View
         private bool isDisplayingResults;
         private bool isDisplayingMoreInfo;
         private bool isDisplayingError;
+        private bool isDisplayingSearch;
         private bool isRatingGame;
 
         private GameDetailOption gameDetailOption;
@@ -143,6 +147,19 @@ namespace Eclipse.View
             }
         }
 
+        public bool IsDisplayingSearch
+        {
+            get => isDisplayingSearch;
+            set
+            {
+                if (isDisplayingSearch != value)
+                {
+                    isDisplayingSearch = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("IsDisplayingSearch"));
+                }
+            }
+        }
+
         public bool IsDisplayingMoreInfo
         {
             get => isDisplayingMoreInfo;
@@ -226,30 +243,77 @@ namespace Eclipse.View
             }
         }
 
-        private void GetGamesByListCategoryType(ListCategoryType listCategoryType, bool includeFavorites = false, bool includeHistory = false)
+        private void GetGamesByListCategoryType(ListCategoryType listCategoryType)
         {
             List<GameList> listOfGameList = new List<GameList>();
 
             // remove any prior set of this type and then add these results to the set list category
             GameListSets.RemoveAll(set => set.ListCategoryType == listCategoryType);
 
-            if (includeFavorites)
-            {
-                var favoriteGames = from gameMatch in gameBag
-                                    where gameMatch.CategoryType == ListCategoryType.Platform
-                                    && gameMatch.Game.Favorite == true
-                                    select gameMatch;
+            IEnumerable<CustomListDefinition> customListDefinitions = new CustomListDefinitionDataProvider().GetAllCustomListDefinitions();
+            IEnumerable<CustomListDefinition> filteredCustomListDefinitions = from customListDefinition in customListDefinitions
+                                                                              where customListDefinition.ListCategoryTypes.Contains(listCategoryType)
+                                                                              select customListDefinition;
 
-                listOfGameList.Add(new GameList("Favorites", favoriteGames.OrderBy(game => game.Game.SortTitleOrTitle).ToList(), true));
-            }
 
-            if (includeHistory)
+            int sortOrder = 0;
+            foreach (CustomListDefinition customListDefinition in filteredCustomListDefinitions)
             {
-                var historyGames = from gameMatch in gameBag
-                                   where gameMatch.CategoryType == ListCategoryType.Platform
-                                   && gameMatch.Game.LastPlayedDate != null
-                                   select gameMatch;
-                listOfGameList.Add(new GameList("History", historyGames.OrderByDescending(game => game.Game.LastPlayedDate).ToList(), false, true));
+                IQueryable<GameMatch> baseQuery = gameBag.Where(g => g.CategoryType == ListCategoryType.Platform).AsQueryable();
+
+                if (customListDefinition.FilterExpressions.Any())
+                {
+                    foreach (FilterExpression filterExpression in customListDefinition.FilterExpressions)
+                    {
+                        baseQuery = baseQuery.ApplyDynamicFilter(filterExpression.GameFieldEnum.ToFieldName(), filterExpression.FilterFieldOperator, filterExpression.FilterFieldValue);
+                    }
+                }
+
+                var orderedQuery = baseQuery.OrderBy(g => g.Game.SortTitleOrTitle);
+
+                if (customListDefinition.SortExpressions.Any())
+                {
+                    bool first = true;
+                    foreach (var sortExpression in customListDefinition.SortExpressions)
+                    {
+                        if (first)
+                        {
+                            first = false;
+                            switch (sortExpression.SortDirection)
+                            {
+                                case SortDirection.Ascending:
+                                    orderedQuery = baseQuery.OrderBy(sortExpression.GameFieldEnum.ToFieldName());
+                                    break;
+                                case SortDirection.Descending:
+                                    orderedQuery = baseQuery.OrderByDescending(sortExpression.GameFieldEnum.ToFieldName());
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            switch (sortExpression.SortDirection)
+                            {
+                                case SortDirection.Ascending:
+                                    orderedQuery = orderedQuery.ThenBy(sortExpression.GameFieldEnum.ToFieldName());
+                                    break;
+                                case SortDirection.Descending:
+                                    orderedQuery = orderedQuery.ThenByDescending(sortExpression.GameFieldEnum.ToFieldName());
+                                    break;
+                            }
+                        }
+                    }
+                }
+
+                baseQuery = orderedQuery;
+                if (customListDefinition.MaxGamesInList > 0)
+                {
+                    baseQuery = orderedQuery.Take(customListDefinition.MaxGamesInList).AsQueryable();
+                }
+
+                if (baseQuery.Any())
+                {
+                    listOfGameList.Add(new GameList(customListDefinition.Description, baseQuery.ToList(), sortOrder++));
+                }
             }
 
             var gameQuery = from gameMatch in gameBag
@@ -264,8 +328,7 @@ namespace Eclipse.View
 
             GameListSets.Add(new GameListSet
             {
-                GameLists = listOfGameList.OrderByDescending(list => list.IsHistory)
-                                            .ThenByDescending(list => list.IsFavorites)
+                GameLists = listOfGameList.OrderBy(list => list.SortOrder)
                                             .ThenBy(list => list.ListDescription).ToList(),
                 ListCategoryType = listCategoryType
             });
@@ -364,14 +427,14 @@ namespace Eclipse.View
 
         public void CreateGameLists()
         {
-            GetGamesByListCategoryType(ListCategoryType.Platform, true, true);
+            GetGamesByListCategoryType(ListCategoryType.Platform);
             GetGamesByListCategoryType(ListCategoryType.ReleaseYear);
             GetGamesByListCategoryType(ListCategoryType.Genre);
             GetGamesByListCategoryType(ListCategoryType.Publisher);
             GetGamesByListCategoryType(ListCategoryType.Developer);
             GetGamesByListCategoryType(ListCategoryType.Series);
             GetGamesByListCategoryType(ListCategoryType.PlayMode);
-            GetGamesByListCategoryType(ListCategoryType.Playlist, true, true);
+            GetGamesByListCategoryType(ListCategoryType.Playlist);
         }
 
         public void DoMoreLikeCurrentGame()
@@ -1000,5 +1063,258 @@ namespace Eclipse.View
         public float StarOffset10 => 1.0f;
 
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
+    }
+
+    public static class GameFieldEnumConverter
+    {
+        public static GameFieldType ToGameFieldType(this GameFieldEnum gameFieldEnum)
+        {
+            switch (gameFieldEnum)
+            {
+                // bool
+                case GameFieldEnum.Broken:
+                case GameFieldEnum.Favorite:
+                case GameFieldEnum.Hide:
+                    return GameFieldType.Bool;
+
+                // string 
+                case GameFieldEnum.GenreString:
+                case GameFieldEnum.Platform:
+                case GameFieldEnum.DeveloperString:
+                case GameFieldEnum.PlayModeString:
+                case GameFieldEnum.Publisher:
+                case GameFieldEnum.Rating:
+                case GameFieldEnum.Region:
+                case GameFieldEnum.SeriesString:
+                case GameFieldEnum.SortTitle:
+                case GameFieldEnum.SortTitleOrTitle:
+                case GameFieldEnum.Title:
+                case GameFieldEnum.Source:
+                case GameFieldEnum.Status:
+                case GameFieldEnum.Version:
+                    return GameFieldType.String;
+
+                case GameFieldEnum.Developers:
+                case GameFieldEnum.PlayModes:
+                case GameFieldEnum.Publishers:
+                case GameFieldEnum.Series:
+                    return GameFieldType.StringArray;
+
+                case GameFieldEnum.Genres:
+                    return GameFieldType.StringBlockingCollection;
+
+                case GameFieldEnum.CommunityOrLocalStarRating:
+                case GameFieldEnum.CommunityStarRating:
+                case GameFieldEnum.StarRating:
+                    return GameFieldType.Float;
+
+                case GameFieldEnum.CommunityStarRatingTotalVotes:
+                case GameFieldEnum.PlayCount:
+                    return GameFieldType.Int;
+
+                case GameFieldEnum.ReleaseYear:
+                    return GameFieldType.IntNullable;
+
+                case GameFieldEnum.DateAdded:
+                case GameFieldEnum.DateModified:
+                case GameFieldEnum.LastPlayedDate:
+                    return GameFieldType.DateTime;
+
+                case GameFieldEnum.ReleaseDate:
+                    return GameFieldType.DateTimeNullable;
+
+                default:
+                    return GameFieldType.String;
+        }
+    }
+
+    public static string ToFieldName(this GameFieldEnum gameFieldEnum)
+        {
+            switch(gameFieldEnum)
+            {
+                case GameFieldEnum.Broken: return "Game.Broken";
+                case GameFieldEnum.CommunityOrLocalStarRating: return "Game.CommunityOrLocalStarRating";
+                case GameFieldEnum.CommunityStarRating: return "Game.CommunityStarRating";
+                case GameFieldEnum.CommunityStarRatingTotalVotes: return "Game.CommunityStarRatingTotalVotes";
+                case GameFieldEnum.DateAdded: return "Game.DateAdded";
+                case GameFieldEnum.DateModified: return "Game.DateModified";
+                case GameFieldEnum.Developers: return "Game.Developers";
+                case GameFieldEnum.DeveloperString: return "Game.Developer";
+                case GameFieldEnum.Favorite: return "Game.Favorite";
+                case GameFieldEnum.Genres: return "Game.Genres";
+                case GameFieldEnum.GenreString: return "Game.GenresString";
+                case GameFieldEnum.Hide: return "Game.Hide";
+                case GameFieldEnum.LastPlayedDate: return "Game.LastPlayedDate";
+                case GameFieldEnum.Platform: return "Game.Platform";
+                case GameFieldEnum.PlayCount: return "Game.PlayCount";
+                case GameFieldEnum.PlayModes: return "Game.PlayModes";
+                case GameFieldEnum.PlayModeString: return "Game.PlayMode";
+                case GameFieldEnum.Publisher: return "Game.Publisher";
+                case GameFieldEnum.Publishers: return "Game.Publishers";
+                case GameFieldEnum.Rating: return "Game.Rating";
+                case GameFieldEnum.Region: return "Game.Region";
+                case GameFieldEnum.ReleaseDate: return "Game.ReleaseDate";
+                case GameFieldEnum.ReleaseYear: return "Game.ReleaseYear";
+                case GameFieldEnum.Series: return "Game.SeriesValues";
+                case GameFieldEnum.SeriesString: return "Game.Series";
+                case GameFieldEnum.SortTitle: return "Game.SortTitle";
+                case GameFieldEnum.SortTitleOrTitle: return "Game.SortTitleOrTitle";
+                case GameFieldEnum.Source: return "Game.Source";
+                case GameFieldEnum.StarRating: return "Game.StarRatingFloat";
+                case GameFieldEnum.Status: return "Game.Status";
+                case GameFieldEnum.Title: return "Game.Title";
+                case GameFieldEnum.Version: return "Game.Version";
+                default: return string.Empty;
+            }
+        }
+    }
+
+    public static class GenericValueConverter
+    {
+        public static bool TryParse<T>(this string input, out T result)
+        {
+            bool isConversionSuccessful = false;
+            result = default(T);
+
+            var converter = TypeDescriptor.GetConverter(typeof(T));
+            if (converter != null)
+            {
+                try
+                {
+                    result = (T)converter.ConvertFromString(input);
+                    isConversionSuccessful = true;
+                }
+                catch { }
+            }
+
+            return isConversionSuccessful;
+        }
+    }
+
+    public static class CustomGameListServiceExtensionMethods
+    {
+        public static IOrderedQueryable<T> OrderBy<T>(
+            this IQueryable<T> source,
+            string property)
+        {
+            return ApplyOrder<T>(source, property, "OrderBy");
+        }
+
+        public static IOrderedQueryable<T> OrderByDescending<T>(
+            this IQueryable<T> source,
+            string property)
+        {
+            return ApplyOrder<T>(source, property, "OrderByDescending");
+        }
+
+        public static IOrderedQueryable<T> ThenBy<T>(
+            this IOrderedQueryable<T> source,
+            string property)
+        {
+            return ApplyOrder<T>(source, property, "ThenBy");
+        }
+
+        public static IOrderedQueryable<T> ThenByDescending<T>(
+            this IOrderedQueryable<T> source,
+            string property)
+        {
+            return ApplyOrder<T>(source, property, "ThenByDescending");
+        }
+
+        static IOrderedQueryable<T> ApplyOrder<T>(
+            IQueryable<T> source,
+            string property,
+            string methodName)
+        {
+            string[] props = property.Split('.');
+            Type type = typeof(T);
+            ParameterExpression arg = Expression.Parameter(type, "x");
+            Expression expr = arg;
+            foreach (string prop in props)
+            {
+                PropertyInfo pi = type.GetProperty(prop);
+                expr = Expression.Property(expr, pi);
+                type = pi.PropertyType;
+            }
+            Type delegateType = typeof(Func<,>).MakeGenericType(typeof(T), type);
+            LambdaExpression lambda = Expression.Lambda(delegateType, expr, arg);
+
+            object result = typeof(Queryable).GetMethods().Single(
+                    method => method.Name == methodName
+                            && method.IsGenericMethodDefinition
+                            && method.GetGenericArguments().Length == 2
+                            && method.GetParameters().Length == 2)
+                    .MakeGenericMethod(typeof(T), type)
+                    .Invoke(null, new object[] { source, lambda });
+            return (IOrderedQueryable<T>)result;
+        }
+
+        public static IQueryable<T> ApplyDynamicFilter<T>(this IQueryable<T> source, string property, FilterFieldOperator filterFieldOperator, object value)
+        {
+            string[] props = property.Split('.');
+            Type type = typeof(T);
+            ParameterExpression arg = Expression.Parameter(type, "x");
+            Expression expr = arg;
+            foreach (string prop in props)
+            {
+                PropertyInfo pi = type.GetProperty(prop);
+                expr = Expression.Property(expr, pi);
+                type = pi.PropertyType;
+            }
+            Expression left = expr;
+            Expression constant = Expression.Constant(value);
+            Expression right = Expression.Convert(constant, type);
+
+            Expression whereExpression;
+            switch (filterFieldOperator)
+            {
+                case FilterFieldOperator.Equal:
+                    whereExpression = Expression.Equal(left, right);
+                    break;
+
+                case FilterFieldOperator.NotEqual:
+                    whereExpression = Expression.NotEqual(left, right);
+                    break;
+
+                case FilterFieldOperator.GreaterThan:
+                    whereExpression = Expression.GreaterThan(left, right);
+                    break;
+
+                case FilterFieldOperator.GreaterThanOrEqual:
+                    whereExpression = Expression.GreaterThanOrEqual(left, right);
+                    break;
+
+                case FilterFieldOperator.LessThan:
+                    whereExpression = Expression.LessThan(left, right);
+                    break;
+
+                case FilterFieldOperator.LessThanOrEqual:
+                    whereExpression = Expression.LessThanOrEqual(left, right);
+                    break;
+
+                case FilterFieldOperator.IsNull:
+                    right = Expression.Constant(null);
+                    whereExpression = Expression.Equal(left, right);
+                    break;
+
+                case FilterFieldOperator.IsNotNull:
+                    right = Expression.Constant(null);
+                    whereExpression = Expression.NotEqual(left, right);
+                    break;
+
+                default:
+                    whereExpression = null;
+                    break;
+            }
+
+            if (whereExpression == null)
+            {
+                return source;
+            }
+
+            var lambda = Expression.Lambda<Func<T, bool>>(whereExpression, arg).Compile();
+
+            return source.Where(lambda).AsQueryable();
+        }
     }
 }

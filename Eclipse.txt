@@ -231,3 +231,18 @@ Log Entry : 8:07:21 PM Saturday, September 24, 2022
    at Eclipse.Service.GameBagService.get_GameBag() in C:\Users\Adam\source\repos\Eclipse\Eclipse\Service\GameBagService.cs:line 24
    at Eclipse.State.LoadingState.Initialization_LoadData(Object sender, DoWorkEventArgs e) in C:\Users\Adam\source\repos\Eclipse\Eclipse\State\LoadingState.cs:line 81
 -------------------------------
+
+Log Entry : 7:26:27 AM Sunday, October 9, 2022
+  :An exception occurred while attempting to Initializion_loadData
+-------------------------------
+
+Log Entry : 7:26:27 AM Sunday, October 9, 2022
+  :Exception message: Object reference not set to an instance of an object.
+-------------------------------
+
+Log Entry : 7:26:27 AM Sunday, October 9, 2022
+  :Exception stack:    at Eclipse.Service.DataService.GetGames() in C:\Users\Adam\source\repos\Eclipse\Eclipse\Service\DataService.cs:line 11
+   at Eclipse.Service.GameBagService.Setup() in C:\Users\Adam\source\repos\Eclipse\Eclipse\Service\GameBagService.cs:line 44
+   at Eclipse.Service.GameBagService.get_GameBag() in C:\Users\Adam\source\repos\Eclipse\Eclipse\Service\GameBagService.cs:line 24
+   at Eclipse.State.LoadingState.Initialization_LoadData(Object sender, DoWorkEventArgs e) in C:\Users\Adam\source\repos\Eclipse\Eclipse\State\LoadingState.cs:line 81
+-------------------------------

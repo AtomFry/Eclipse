@@ -267,9 +267,6 @@ namespace Eclipse.View
         // animates change in opacity to specified opacity value and given duration
         private void FadeFrameworkElementOpacity(FrameworkElement element, double newOpacityValue, double durationInMilliseconds)
         {
-            // todo: delete log code
-            LogHelper.Log($"Fading {element.Name} from {element.Opacity} to {newOpacityValue} at {DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff tt")}");
-
             if (element.Opacity != newOpacityValue)
             {
                 DoubleAnimation dimElement = new DoubleAnimation(element.Opacity, newOpacityValue, TimeSpan.FromMilliseconds(durationInMilliseconds));
@@ -412,7 +409,9 @@ namespace Eclipse.View
                     Image_CommunityStarRating.Source = activeCommunityStarRatingImage;
                     Image_UserStarRating.Source = activeUserStarRatingImage;
                     Image_Playmode.Source = activePlayModeImage;
+                    
                     TextBlock_MatchPercentage.Text = activeMatchPercentageText;
+
                     TextBlock_ReleaseYear.Text = activeReleaseYearText;
                     Image_PlatformLogo.Source = activePlatformLogoImage;
                     Image_Bezel.Source = activeGameBezelImage;

@@ -3,6 +3,29 @@ using System.ComponentModel;
 
 namespace Eclipse.Models
 {
+    public static class ListCategoryTypeExtensionMethods
+    {
+        public static bool IsValidForCustomList(this ListCategoryType listCategoryType)
+        {
+            bool isValid;
+
+            switch(listCategoryType)
+            {
+                case ListCategoryType.MoreLikeThis:
+                case ListCategoryType.RandomGame:
+                case ListCategoryType.VoiceSearch:
+                    isValid = false;
+                    break;
+
+                default:
+                    isValid = true;
+                    break;
+            }
+
+            return isValid;
+        }
+    }
+
     public enum ListCategoryType
     {
         VoiceSearch,
@@ -44,7 +67,7 @@ namespace Eclipse.Models
         public OptionList(List<Option<ListCategoryType>> _optionList)
         {
             Options = _optionList;
-            optionCycle = new ListCycle<Option<ListCategoryType>>(Options, 10);
+            optionCycle = new ListCycle<Option<ListCategoryType>>(Options, 11);
             RefreshOptions();
         }
 
@@ -213,8 +236,8 @@ namespace Eclipse.Models
                 }
             }
         }
-        public event PropertyChangedEventHandler PropertyChanged = delegate { };
 
+        public event PropertyChangedEventHandler PropertyChanged = delegate { };
     }
 
     public class Option

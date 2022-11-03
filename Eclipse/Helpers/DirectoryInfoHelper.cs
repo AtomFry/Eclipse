@@ -79,6 +79,58 @@ namespace Eclipse.Helpers
             }
         }
 
+        private string settingsFolder;
+        public string SettingsFolder
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(settingsFolder))
+                {
+                    settingsFolder = $"{EclipseFolder}\\Settings";
+                }
+                return settingsFolder;
+            }
+        }
+
+        private string eclipseSettingsFile;
+        public string EclipseSettingsFile
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(eclipseSettingsFile))
+                {
+                    eclipseSettingsFile = $"{SettingsFolder}\\EclipseSettings.json";
+                }
+                return eclipseSettingsFile;
+            }
+        }
+
+        private string customListsFile;
+        public string CustomListsFile
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(customListsFile))
+                {
+                    customListsFile = $"{SettingsFolder}\\CustomLists.json";
+                }
+                return customListsFile;
+            }
+        }
+
+        private string settingsBackupPath;
+        public string SettingsBackupPath
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(settingsBackupPath))
+                {
+                    settingsBackupPath = $"{SettingsFolder}\\DataBackup";
+                }
+                return settingsBackupPath;
+            }
+        }
+
         private string mediaFolder;
         public string MediaFolder
         {
@@ -225,10 +277,11 @@ namespace Eclipse.Helpers
 
         public static void CreateFolders()
         {
-            CreateFolder(DirectoryInfoHelper.Instance.EclipseFolder);
-            CreateFolder(DirectoryInfoHelper.Instance.MediaFolder);
-            CreateFolder(DirectoryInfoHelper.Instance.MediaResolutionSpecificFolder);
-            CreateFolder(DirectoryInfoHelper.Instance.PluginImagesPath);
+            CreateFolder(Instance.SettingsFolder);
+            CreateFolder(Instance.EclipseFolder);
+            CreateFolder(Instance.MediaFolder);
+            CreateFolder(Instance.MediaResolutionSpecificFolder);
+            CreateFolder(Instance.PluginImagesPath);
         }
 
         public static void CreateFolder(string path)
@@ -236,6 +289,16 @@ namespace Eclipse.Helpers
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
+            }
+        }
+
+        public static void CreateDirectoryIfNotExists(string filePath)
+        {
+            string folderPath = Path.GetDirectoryName(filePath);
+
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
             }
         }
 

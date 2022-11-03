@@ -4,63 +4,104 @@ namespace Eclipse.Models
 {
     public class EclipseSettings
     {
-        // turn random game function on/off
-        public bool EnableRandomGame { get; set; }     
+        public ListCategoryType DefaultListCategoryType { get; set; }
+        public bool ShowGameCountInList { get; set; }
 
-        // turn voice search on/off
-        public bool EnableVoiceSearch { get; set; }    
-
-        // delay in seconds until attract mode starts
-        public int AttractModeDelayInSeconds { get; set; }       
-        
-        // configure maximum number of games for the history list - leave null for no maximum
-        // configure how far back in time to get games from - leave null for no filter
-        public DateBasedListSettings HistorySettings { get; set; }
-
-        // configure maximum number of games for the recently added list - leave null for no maximum
-        // configure how far back in time to get games from - leave null for no filter
-        public DateBasedListSettings RecentlyAddedSettings { get; set; }
-        
-        // configure maximum number of games for the never played list - leave null for no maximum
-        public AdditionalListSettings NeverPlayedSettings { get; set; }
-
-        // configure maximum number of games for the top rated by user list - leave null for no maximum (all games)
-        // configure minimum rating to include a game in the list - leave null for no minimum (all games)
-        public RatingBasedListSettings TopRatedByUserSettings { get; set; }
-
-        // configure maximum number of games for the top rated by community list - leave null for no maximum (all games)
-        // configure minimum rating to include a game in the list - leave null for no minimum (all games)
-        // configure minimum number of votes to include a gam in the list - leave null for no minimum (all games)
-        public RatingBasedListSettings TopRatedByCommunitySettings { get; set; }
-
-        // list of list settings - specify for each list if you want to include favorites, history, recently added, etc...
-        public List<ListSetSettings> SetOfListSetSettings { get; set; }
+        // todo: add system settings
+        // enable/disable voice search
+        // page up behavior
+        // page down behavior
     }
 
-    public class ListSetSettings
+
+    public class CustomListDefinition
     {
-        public ListCategoryType CategoryType { get; set; }
-        public bool IncludeFavorites { get; set; }
-        public bool IncludeHistory { get; set; }
-        public bool IncludeRecentlyAdded { get; set; }
-        public bool IncludeNeverPlayed { get; set; }
-        public bool IncludeTopRatedByUser { get; set; }
-        public bool IncludeTopRatedByCommunity { get; set; }
+        public string Id { get; set; }
+        public string Description { get; set; }
+        public List<FilterExpression> FilterExpressions { get; set; }
+        public List<SortExpression> SortExpressions { get; set; }
+        public int MaxGamesInList { get; set; }
+        public List<ListCategoryType> ListCategoryTypes { get; set; }
+
+        public CustomListDefinition()
+        {
+            SortExpressions = new List<SortExpression>();
+            FilterExpressions = new List<FilterExpression>();
+            ListCategoryTypes = new List<ListCategoryType>();
+        }
     }
 
-    public class AdditionalListSettings
+    public class FilterExpression
     {
-        public int? MaxGamesInList { get; set; }
+        public GameFieldEnum GameFieldEnum { get; set; }
+        public FilterFieldOperator FilterFieldOperator { get; set; }
+        public object FilterFieldValue { get; set; }
     }
 
-    public class DateBasedListSettings : AdditionalListSettings
+    public class SortExpression
     {
-        public int? NumberOfDays { get; set; }
+        public GameFieldEnum GameFieldEnum { get; set; }
+        public SortDirection SortDirection { get; set; }
     }
 
-    public class RatingBasedListSettings : AdditionalListSettings
+    public enum GameFieldType
     {
-        public float? MinimumRating { get; set; }
-        public int? MinimumNumberOfVotes { get; set; }
+        Bool,
+        String,
+        StringArray,
+        StringBlockingCollection,
+        Float,
+        Int,
+        IntNullable,
+        DateTime,
+        DateTimeNullable
+    }
+
+    public enum GameFieldEnum
+    {
+        Broken,         // Game.Broken - bool
+
+        CommunityOrLocalStarRating,     // Game.CommunityOrLocalStarRating - float
+        CommunityStarRating,            // Game.CommunityStarRating - float
+        CommunityStarRatingTotalVotes,  // Game.CommunityStarRatingTotalVotes - int
+
+        DateAdded,              // Game.DateAdded - DateTime
+        DateModified,           // Game.DateModified - DateTime
+        Developers,         // Game.Developers - string array
+        DeveloperString,    // Game.Developer - string
+
+        Favorite,       // Game.Favorite - bool
+
+        Genres,             // Game.Genres - string blocking collection
+        GenreString,    // Game.GenresString - string
+
+        Hide,           // Game.Hide - bool
+
+        LastPlayedDate,         // Game.LastplayedDate - DateTime
+
+        Platform,       // Game.Platform - string
+        PlayCount,                      // Game.PlayCount - int
+        PlayModes,          // Game.PlayModes - string array
+        PlayModeString,     // Game.PlayMode - string
+        Publisher,          // Game.Publisher - string
+        Publishers,         // Game.Publishers - string array
+
+        Rating,             // Game.Rating - string
+        Region,             // Game.Region - string
+        ReleaseDate,             // Game.ReleaseDate - Nullable date time
+        ReleaseYear,                // Game.ReleaseYear - nullable int
+
+        SeriesString,       // Game.Series - string
+        SortTitle,          // Game.SortTitle - string
+        SortTitleOrTitle,   // Game.SortTitleOrTitle - string
+
+        Title,              // Game.Title - string
+
+        Series,             // Game.SeriesValues - string array
+        Source,             // Game.Source - string
+        StarRating,                     // Game.StarRatingFloat - float
+        Status,             // Game.Status - string
+
+        Version            // Game.Version - string
     }
 }
