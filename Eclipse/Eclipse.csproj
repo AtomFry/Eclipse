@@ -114,6 +114,11 @@
     <Compile Include="Models\GameList.cs" />
     <Compile Include="Plugins\EclipseSettingsMenuItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Service\AttractModeService.cs" />
     <Compile Include="Service\BezelService.cs" />
     <Compile Include="Service\DataService.cs" />
@@ -288,6 +293,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Resource Include="Resources\EclipseSettingsIcon1.png" />
+    <None Include="Resources\EclipseSettingsIcon.bmp" />
     <Content Include="Unbroken.LaunchBox.Plugins.dll" />
     <Resource Include="Resources\MoreInfo_Selected.png" />
     <Resource Include="Resources\MoreInfo_Unselected.png" />
@@ -308,6 +314,12 @@
     <Folder Include="Eclipse\LaunchBox\StartupThemes\Eclipse\Media\" />
     <Folder Include="Eclipse\LaunchBox\Themes\Eclipse\Plugins\" />
     <Folder Include="Eclipse\LaunchBox\Themes\Eclipse\References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

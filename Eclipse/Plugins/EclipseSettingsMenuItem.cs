@@ -13,10 +13,7 @@ namespace Eclipse.Plugins
     class EclipseSettingsMenuItem : ISystemMenuItemPlugin
     {
         public string Caption => "Manage eclipse settings";
-
-        // todo: point to an icon image
-        public Image IconImage => null;
-        // public Image IconImage => Properties.Resources.EclipseSettingsIcon;
+        public Image IconImage => Properties.Resources.EclipseSettingsIcon1;
 
         public bool ShowInLaunchBox => true;
 
@@ -26,7 +23,6 @@ namespace Eclipse.Plugins
 
         public void OnSelected()
         {
-            // todo: show eclipse settings window 
             EclipseSettingsView eclipseSettingsView = new EclipseSettingsView();
             eclipseSettingsView.Show();
         }
