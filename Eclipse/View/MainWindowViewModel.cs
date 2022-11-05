@@ -1078,14 +1078,14 @@ namespace Eclipse.View
                     return GameFieldType.Bool;
 
                 // string 
-                case GameFieldEnum.GenreString:
+                case GameFieldEnum.Genres:
                 case GameFieldEnum.Platform:
-                case GameFieldEnum.DeveloperString:
-                case GameFieldEnum.PlayModeString:
-                case GameFieldEnum.Publisher:
+                case GameFieldEnum.Developers:
+                case GameFieldEnum.PlayModes:
+                case GameFieldEnum.Publishers:
                 case GameFieldEnum.Rating:
                 case GameFieldEnum.Region:
-                case GameFieldEnum.SeriesString:
+                case GameFieldEnum.Series:
                 case GameFieldEnum.SortTitle:
                 case GameFieldEnum.SortTitleOrTitle:
                 case GameFieldEnum.Title:
@@ -1093,15 +1093,6 @@ namespace Eclipse.View
                 case GameFieldEnum.Status:
                 case GameFieldEnum.Version:
                     return GameFieldType.String;
-
-                case GameFieldEnum.Developers:
-                case GameFieldEnum.PlayModes:
-                case GameFieldEnum.Publishers:
-                case GameFieldEnum.Series:
-                    return GameFieldType.StringArray;
-
-                case GameFieldEnum.Genres:
-                    return GameFieldType.StringBlockingCollection;
 
                 case GameFieldEnum.CommunityOrLocalStarRating:
                 case GameFieldEnum.CommunityStarRating:
@@ -1125,12 +1116,32 @@ namespace Eclipse.View
 
                 default:
                     return GameFieldType.String;
+            }
         }
-    }
 
-    public static string ToFieldName(this GameFieldEnum gameFieldEnum)
+        public static bool IsFilterFieldOperatorValidForField(this GameFieldEnum gameFieldEnum, FilterFieldOperator filterFieldOperator)
         {
-            switch(gameFieldEnum)
+            bool isValidOperatorForField = true;
+
+            switch (filterFieldOperator)
+            {
+                case FilterFieldOperator.Contains:
+                    if (gameFieldEnum.ToGameFieldType() != GameFieldType.String)
+                    {
+                        isValidOperatorForField = false;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+
+            return isValidOperatorForField;
+        }
+
+        public static string ToFieldName(this GameFieldEnum gameFieldEnum)
+        {
+            switch (gameFieldEnum)
             {
                 case GameFieldEnum.Broken: return "Game.Broken";
                 case GameFieldEnum.CommunityOrLocalStarRating: return "Game.CommunityOrLocalStarRating";
@@ -1138,25 +1149,20 @@ namespace Eclipse.View
                 case GameFieldEnum.CommunityStarRatingTotalVotes: return "Game.CommunityStarRatingTotalVotes";
                 case GameFieldEnum.DateAdded: return "Game.DateAdded";
                 case GameFieldEnum.DateModified: return "Game.DateModified";
-                case GameFieldEnum.Developers: return "Game.Developers";
-                case GameFieldEnum.DeveloperString: return "Game.Developer";
+                case GameFieldEnum.Developers: return "Game.Developer";
                 case GameFieldEnum.Favorite: return "Game.Favorite";
-                case GameFieldEnum.Genres: return "Game.Genres";
-                case GameFieldEnum.GenreString: return "Game.GenresString";
+                case GameFieldEnum.Genres: return "Game.GenresString";
                 case GameFieldEnum.Hide: return "Game.Hide";
                 case GameFieldEnum.LastPlayedDate: return "Game.LastPlayedDate";
                 case GameFieldEnum.Platform: return "Game.Platform";
                 case GameFieldEnum.PlayCount: return "Game.PlayCount";
-                case GameFieldEnum.PlayModes: return "Game.PlayModes";
-                case GameFieldEnum.PlayModeString: return "Game.PlayMode";
-                case GameFieldEnum.Publisher: return "Game.Publisher";
-                case GameFieldEnum.Publishers: return "Game.Publishers";
+                case GameFieldEnum.PlayModes: return "Game.PlayMode";
+                case GameFieldEnum.Publishers: return "Game.Publisher";
                 case GameFieldEnum.Rating: return "Game.Rating";
                 case GameFieldEnum.Region: return "Game.Region";
                 case GameFieldEnum.ReleaseDate: return "Game.ReleaseDate";
                 case GameFieldEnum.ReleaseYear: return "Game.ReleaseYear";
-                case GameFieldEnum.Series: return "Game.SeriesValues";
-                case GameFieldEnum.SeriesString: return "Game.Series";
+                case GameFieldEnum.Series: return "Game.Series";
                 case GameFieldEnum.SortTitle: return "Game.SortTitle";
                 case GameFieldEnum.SortTitleOrTitle: return "Game.SortTitleOrTitle";
                 case GameFieldEnum.Source: return "Game.Source";
@@ -1166,28 +1172,6 @@ namespace Eclipse.View
                 case GameFieldEnum.Version: return "Game.Version";
                 default: return string.Empty;
             }
-        }
-    }
-
-    public static class GenericValueConverter
-    {
-        public static bool TryParse<T>(this string input, out T result)
-        {
-            bool isConversionSuccessful = false;
-            result = default(T);
-
-            var converter = TypeDescriptor.GetConverter(typeof(T));
-            if (converter != null)
-            {
-                try
-                {
-                    result = (T)converter.ConvertFromString(input);
-                    isConversionSuccessful = true;
-                }
-                catch { }
-            }
-
-            return isConversionSuccessful;
         }
     }
 
@@ -1253,6 +1237,7 @@ namespace Eclipse.View
         {
             string[] props = property.Split('.');
             Type type = typeof(T);
+
             ParameterExpression arg = Expression.Parameter(type, "x");
             Expression expr = arg;
             foreach (string prop in props)
@@ -1300,6 +1285,11 @@ namespace Eclipse.View
                 case FilterFieldOperator.IsNotNull:
                     right = Expression.Constant(null);
                     whereExpression = Expression.NotEqual(left, right);
+                    break;
+
+                case FilterFieldOperator.Contains:
+                    MethodInfo method = typeof(string).GetMethod("Contains", new[] { typeof(string) });
+                    whereExpression = Expression.Call(left, method, right);
                     break;
 
                 default:

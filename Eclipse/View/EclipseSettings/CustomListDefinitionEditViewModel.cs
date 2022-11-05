@@ -114,7 +114,6 @@ namespace Eclipse.View.EclipseSettings
             stringBuilder.AppendLine();
 
             // convert selected field values to their native type
-            // todo: may want to add validation on the modification of the field prior to this to ensure they are valid before pressing save?
             foreach (FilterExpression filterExpression in FilterExpressions)
             {
                 // is null and is not null operators don't need/have a value to convert 
@@ -125,6 +124,12 @@ namespace Eclipse.View.EclipseSettings
                 }
 
                 string val = filterExpression.FilterFieldValue.ToString();
+
+                if (!filterExpression.GameFieldEnum.IsFilterFieldOperatorValidForField(filterExpression.FilterFieldOperator))
+                {
+                    isValid = false;
+                    stringBuilder.AppendLine($"{filterExpression.GameFieldEnum} {filterExpression.FilterFieldOperator} {filterExpression.FilterFieldValue}, the operator is not valid for the field");
+                }
 
                 switch (filterExpression.GameFieldEnum.ToGameFieldType())
                 {
@@ -173,12 +178,6 @@ namespace Eclipse.View.EclipseSettings
                             isValid = false;
                             stringBuilder.AppendLine($"{filterExpression.GameFieldEnum} {filterExpression.FilterFieldOperator} {filterExpression.FilterFieldValue}, the value must be blank or a date with format YYYY-MM-DD");
                         }
-                        break;
-
-                    case GameFieldType.StringBlockingCollection:
-                    case GameFieldType.StringArray:
-                    case GameFieldType.String:
-                        filterExpression.FilterFieldValue = val;
                         break;
 
                     case GameFieldType.Float:

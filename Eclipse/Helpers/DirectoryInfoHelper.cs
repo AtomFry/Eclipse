@@ -274,7 +274,6 @@ namespace Eclipse.Helpers
             }
         }
 
-
         public static void CreateFolders()
         {
             CreateFolder(Instance.SettingsFolder);

@@ -43,7 +43,8 @@ namespace Eclipse.Models
         LessThan,
         LessThanOrEqual,
         IsNull,
-        IsNotNull
+        IsNotNull,
+        Contains
     }
 
     public enum SortDirection
