@@ -52,4 +52,12 @@ namespace Eclipse.Models
         Ascending,
         Descending
     }
+
+    public enum PageFunction
+    {
+        PageUp,
+        PageDown,
+        VoiceSearch,
+        RandomGame
+    }
 }

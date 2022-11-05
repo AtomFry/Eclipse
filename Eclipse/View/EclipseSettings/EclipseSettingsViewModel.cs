@@ -175,6 +175,26 @@ namespace Eclipse.View.EclipseSettings
             }
         }
 
+        public PageFunction PageUpFunction
+        {
+            get { return eclipseSettings.PageUpFunction; }
+            set
+            {
+                eclipseSettings.PageUpFunction = value;
+                OnPropertyChanged("PageUpFunction");
+            }
+        }
+
+        public PageFunction PageDownFunction
+        {
+            get { return eclipseSettings.PageDownFunction; }
+            set
+            {
+                eclipseSettings.PageDownFunction = value;
+                OnPropertyChanged("PageDownFunction");
+            }
+        }
+
         private void UpdateTabVisibility()
         {
             SettingsVisibility = Visibility.Collapsed;
@@ -324,6 +344,8 @@ namespace Eclipse.View.EclipseSettings
             eclipseSettings = await EclipseSettingsDataProvider.Instance.GetEclipseSettingsAsync();
             DefaultListCategoryType = eclipseSettings.DefaultListCategoryType;
             ShowGameCountInList = eclipseSettings.ShowGameCountInList;
+            PageUpFunction = eclipseSettings.PageUpFunction;
+            PageDownFunction = eclipseSettings.PageDownFunction;
         }
 
         private void InvalidateCommands()

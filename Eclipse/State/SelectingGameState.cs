@@ -71,7 +71,13 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
 
-            // todo: testing page to next letter - this works better on page down or after being held so many times
+            DoPageFunction(eclipseStateContext, EclipseSettingsDataProvider.Instance.EclipseSettings.PageDownFunction);
+
+            return true;
+        }
+
+        public void DoPageDown(EclipseStateContext eclipseStateContext)
+        {
             int currentIndex = eclipseStateContext.MainWindowViewModel.CurrentGameList.ListSetStartIndex +
                 eclipseStateContext.MainWindowViewModel.CurrentGameList.CurrentGameIndex;
 
@@ -83,19 +89,12 @@ namespace Eclipse.State
             }
 
             eclipseStateContext.MainWindowViewModel.DoRandomGame(nextIndex);
-
-            // todo: testing replacing voice search with page down
-            // eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(VoiceRecognitionState)));
-
-            return true;
         }
 
-        public bool OnPageUp(EclipseStateContext eclipseStateContext)
+        public void DoPageUp(EclipseStateContext eclipseStateContext)
         {
-            attractModeService.RestartAttractMode();
-
             int currentIndex = eclipseStateContext.MainWindowViewModel.CurrentGameList.ListSetStartIndex +
-                eclipseStateContext.MainWindowViewModel.CurrentGameList.CurrentGameIndex;
+                                eclipseStateContext.MainWindowViewModel.CurrentGameList.CurrentGameIndex;
 
             int nextIndex = currentIndex - 7;
 
@@ -105,9 +104,36 @@ namespace Eclipse.State
             }
 
             eclipseStateContext.MainWindowViewModel.DoRandomGame(nextIndex);
+        }
 
-            // todo: testing replacing random game with page up
-            // eclipseStateContext.MainWindowViewModel.DoRandomGame();
+        public void DoPageFunction(EclipseStateContext eclipseStateContext, PageFunction pageFunction)
+        {
+            switch (pageFunction)
+            {
+                case PageFunction.PageDown:
+                    DoPageDown(eclipseStateContext);
+                    break;
+
+                case PageFunction.PageUp:
+                    DoPageUp(eclipseStateContext);
+                    break;
+
+                case PageFunction.RandomGame:
+                    eclipseStateContext.MainWindowViewModel.DoRandomGame();
+                    break;
+
+                case PageFunction.VoiceSearch:
+                    eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(VoiceRecognitionState)));
+                    break;
+            }
+        }
+
+        public bool OnPageUp(EclipseStateContext eclipseStateContext)
+        {
+            attractModeService.RestartAttractMode();
+
+            DoPageFunction(eclipseStateContext, EclipseSettingsDataProvider.Instance.EclipseSettings.PageUpFunction);
+
             return true;
         }
 

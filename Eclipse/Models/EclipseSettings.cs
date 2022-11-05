@@ -7,10 +7,11 @@ namespace Eclipse.Models
         public ListCategoryType DefaultListCategoryType { get; set; }
         public bool ShowGameCountInList { get; set; }
 
+        public PageFunction PageUpFunction { get; set; }
+        public PageFunction PageDownFunction { get; set; }
+
         // todo: add system settings
         // enable/disable voice search
-        // page up behavior
-        // page down behavior
     }
 
 

@@ -375,6 +375,8 @@ namespace Eclipse.Service
 
             eclipseSettings.DefaultListCategoryType = ListCategoryType.Platform;
             eclipseSettings.ShowGameCountInList = true;
+            eclipseSettings.PageDownFunction = PageFunction.VoiceSearch;
+            eclipseSettings.PageUpFunction = PageFunction.RandomGame;
 
             return eclipseSettings;
         }
