@@ -144,7 +144,12 @@
                           SelectedItem="{Binding PageDownFunction, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                           ItemsSource="{Binding Source={StaticResource PageFunctionEnum}}"/>
 
-
+                <Label Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Content="Screensaver delay (seconds)" Foreground="#D3D3D5" 
+                       HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,2"/>
+                <TextBox Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="1" Margin="10,2" 
+                         Text="{Binding ScreensaverDelayInSeconds, Mode=TwoWay}"
+                         Background="#343542" Foreground="#D3D3D5"
+                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
             </Grid>
         </Grid>
 

@@ -195,6 +195,16 @@ namespace Eclipse.View.EclipseSettings
             }
         }
 
+        public int ScreensaverDelayInSeconds
+        {
+            get { return eclipseSettings.ScreensaverDelayInSeconds; }
+            set
+            {
+                eclipseSettings.ScreensaverDelayInSeconds = value;
+                OnPropertyChanged("ScreensaverDelayInSeconds");
+            }
+        }
+
         private void UpdateTabVisibility()
         {
             SettingsVisibility = Visibility.Collapsed;
@@ -346,6 +356,7 @@ namespace Eclipse.View.EclipseSettings
             ShowGameCountInList = eclipseSettings.ShowGameCountInList;
             PageUpFunction = eclipseSettings.PageUpFunction;
             PageDownFunction = eclipseSettings.PageDownFunction;
+            ScreensaverDelayInSeconds = eclipseSettings.ScreensaverDelayInSeconds;
         }
 
         private void InvalidateCommands()

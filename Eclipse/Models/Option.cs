@@ -67,7 +67,7 @@ namespace Eclipse.Models
         public OptionList(List<Option<ListCategoryType>> _optionList)
         {
             Options = _optionList;
-            optionCycle = new ListCycle<Option<ListCategoryType>>(Options, 11);
+            optionCycle = new ListCycle<Option<ListCategoryType>>(Options, _optionList.Count);
             RefreshOptions();
         }
 

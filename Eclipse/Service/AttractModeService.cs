@@ -29,8 +29,8 @@ namespace Eclipse.Service
 
         private AttractModeService()
         {
-            // create a timer to delay for attract mode (60 seconds)
-            attractModeDelay = new Timer(60 * 1000);
+            // create a timer to delay for attract mode
+            attractModeDelay = new Timer(EclipseSettingsDataProvider.Instance.EclipseSettings.ScreensaverDelayInSeconds * 1000);
             attractModeDelay.Elapsed += AttractModeDelay_Elapsed;
             attractModeDelay.AutoReset = false;
         }
