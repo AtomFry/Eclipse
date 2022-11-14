@@ -750,9 +750,6 @@ namespace Eclipse.View
         // start the current game
         public void PlayCurrentGame()
         {
-            // todo: how can we make sure to update the images and game details for the selected game? - these can get out of sync if you select and start a game while the image is still fading in
-
-
             // get a handle on the current game 
             IGame currentGame = CurrentGameList?.Game1?.Game;
             if (currentGame != null)

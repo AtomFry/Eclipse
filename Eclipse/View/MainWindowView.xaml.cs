@@ -628,7 +628,6 @@ namespace Eclipse.View
             // reset everything to the active game 
             Dispatcher.Invoke(() =>
             {
-                // todo: we need to reorganize all the events to reduce dependencies - at least find a way so the video doesn't start when the game is starting
                 FadeInCurrentGame();
 
                 SwapActiveToDisplayedBackgroundImage();
