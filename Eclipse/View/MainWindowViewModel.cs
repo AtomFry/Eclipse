@@ -12,8 +12,6 @@ using Eclipse.Helpers;
 using System.Threading;
 using Eclipse.State;
 using System.Linq.Expressions;
-using System.CodeDom;
-using System.Windows.Documents;
 using System.Reflection;
 using Eclipse.Service;
 
@@ -254,7 +252,6 @@ namespace Eclipse.View
             IEnumerable<CustomListDefinition> filteredCustomListDefinitions = from customListDefinition in customListDefinitions
                                                                               where customListDefinition.ListCategoryTypes.Contains(listCategoryType)
                                                                               select customListDefinition;
-
 
             int sortOrder = 0;
             foreach (CustomListDefinition customListDefinition in filteredCustomListDefinitions)
@@ -753,6 +750,9 @@ namespace Eclipse.View
         // start the current game
         public void PlayCurrentGame()
         {
+            // todo: how can we make sure to update the images and game details for the selected game? - these can get out of sync if you select and start a game while the image is still fading in
+
+
             // get a handle on the current game 
             IGame currentGame = CurrentGameList?.Game1?.Game;
             if (currentGame != null)
@@ -1065,150 +1065,30 @@ namespace Eclipse.View
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
     }
 
-    public static class GameFieldEnumConverter
-    {
-        public static GameFieldType ToGameFieldType(this GameFieldEnum gameFieldEnum)
-        {
-            switch (gameFieldEnum)
-            {
-                // bool
-                case GameFieldEnum.Broken:
-                case GameFieldEnum.Favorite:
-                case GameFieldEnum.Hide:
-                    return GameFieldType.Bool;
-
-                // string 
-                case GameFieldEnum.Genres:
-                case GameFieldEnum.Platform:
-                case GameFieldEnum.Developers:
-                case GameFieldEnum.PlayModes:
-                case GameFieldEnum.Publishers:
-                case GameFieldEnum.Rating:
-                case GameFieldEnum.Region:
-                case GameFieldEnum.Series:
-                case GameFieldEnum.SortTitle:
-                case GameFieldEnum.SortTitleOrTitle:
-                case GameFieldEnum.Title:
-                case GameFieldEnum.Source:
-                case GameFieldEnum.Status:
-                case GameFieldEnum.Version:
-                    return GameFieldType.String;
-
-                case GameFieldEnum.CommunityOrLocalStarRating:
-                case GameFieldEnum.CommunityStarRating:
-                case GameFieldEnum.StarRating:
-                    return GameFieldType.Float;
-
-                case GameFieldEnum.CommunityStarRatingTotalVotes:
-                case GameFieldEnum.PlayCount:
-                    return GameFieldType.Int;
-
-                case GameFieldEnum.ReleaseYear:
-                    return GameFieldType.IntNullable;
-
-                case GameFieldEnum.DateAdded:
-                case GameFieldEnum.DateModified:
-                case GameFieldEnum.LastPlayedDate:
-                    return GameFieldType.DateTime;
-
-                case GameFieldEnum.ReleaseDate:
-                    return GameFieldType.DateTimeNullable;
-
-                default:
-                    return GameFieldType.String;
-            }
-        }
-
-        public static bool IsFilterFieldOperatorValidForField(this GameFieldEnum gameFieldEnum, FilterFieldOperator filterFieldOperator)
-        {
-            bool isValidOperatorForField = true;
-
-            switch (filterFieldOperator)
-            {
-                case FilterFieldOperator.Contains:
-                    if (gameFieldEnum.ToGameFieldType() != GameFieldType.String)
-                    {
-                        isValidOperatorForField = false;
-                    }
-                    break;
-
-                default:
-                    break;
-            }
-
-            return isValidOperatorForField;
-        }
-
-        public static string ToFieldName(this GameFieldEnum gameFieldEnum)
-        {
-            switch (gameFieldEnum)
-            {
-                case GameFieldEnum.Broken: return "Game.Broken";
-                case GameFieldEnum.CommunityOrLocalStarRating: return "Game.CommunityOrLocalStarRating";
-                case GameFieldEnum.CommunityStarRating: return "Game.CommunityStarRating";
-                case GameFieldEnum.CommunityStarRatingTotalVotes: return "Game.CommunityStarRatingTotalVotes";
-                case GameFieldEnum.DateAdded: return "Game.DateAdded";
-                case GameFieldEnum.DateModified: return "Game.DateModified";
-                case GameFieldEnum.Developers: return "Game.Developer";
-                case GameFieldEnum.Favorite: return "Game.Favorite";
-                case GameFieldEnum.Genres: return "Game.GenresString";
-                case GameFieldEnum.Hide: return "Game.Hide";
-                case GameFieldEnum.LastPlayedDate: return "Game.LastPlayedDate";
-                case GameFieldEnum.Platform: return "Game.Platform";
-                case GameFieldEnum.PlayCount: return "Game.PlayCount";
-                case GameFieldEnum.PlayModes: return "Game.PlayMode";
-                case GameFieldEnum.Publishers: return "Game.Publisher";
-                case GameFieldEnum.Rating: return "Game.Rating";
-                case GameFieldEnum.Region: return "Game.Region";
-                case GameFieldEnum.ReleaseDate: return "Game.ReleaseDate";
-                case GameFieldEnum.ReleaseYear: return "Game.ReleaseYear";
-                case GameFieldEnum.Series: return "Game.Series";
-                case GameFieldEnum.SortTitle: return "Game.SortTitle";
-                case GameFieldEnum.SortTitleOrTitle: return "Game.SortTitleOrTitle";
-                case GameFieldEnum.Source: return "Game.Source";
-                case GameFieldEnum.StarRating: return "Game.StarRatingFloat";
-                case GameFieldEnum.Status: return "Game.Status";
-                case GameFieldEnum.Title: return "Game.Title";
-                case GameFieldEnum.Version: return "Game.Version";
-                default: return string.Empty;
-            }
-        }
-    }
 
     public static class CustomGameListServiceExtensionMethods
     {
-        public static IOrderedQueryable<T> OrderBy<T>(
-            this IQueryable<T> source,
-            string property)
+        public static IOrderedQueryable<T> OrderBy<T>(this IQueryable<T> source, string property)
         {
-            return ApplyOrder<T>(source, property, "OrderBy");
+            return ApplyOrder(source, property, "OrderBy");
         }
 
-        public static IOrderedQueryable<T> OrderByDescending<T>(
-            this IQueryable<T> source,
-            string property)
+        public static IOrderedQueryable<T> OrderByDescending<T>(this IQueryable<T> source, string property)
         {
-            return ApplyOrder<T>(source, property, "OrderByDescending");
+            return ApplyOrder(source, property, "OrderByDescending");
         }
 
-        public static IOrderedQueryable<T> ThenBy<T>(
-            this IOrderedQueryable<T> source,
-            string property)
+        public static IOrderedQueryable<T> ThenBy<T>(this IOrderedQueryable<T> source, string property)
         {
-            return ApplyOrder<T>(source, property, "ThenBy");
+            return ApplyOrder(source, property, "ThenBy");
         }
 
-        public static IOrderedQueryable<T> ThenByDescending<T>(
-            this IOrderedQueryable<T> source,
-            string property)
+        public static IOrderedQueryable<T> ThenByDescending<T>(this IOrderedQueryable<T> source, string property)
         {
-            return ApplyOrder<T>(source, property, "ThenByDescending");
+            return ApplyOrder(source, property, "ThenByDescending");
         }
 
-        static IOrderedQueryable<T> ApplyOrder<T>(
-            IQueryable<T> source,
-            string property,
-            string methodName)
+        static IOrderedQueryable<T> ApplyOrder<T>(IQueryable<T> source, string property, string methodName)
         {
             string[] props = property.Split('.');
             Type type = typeof(T);
@@ -1223,13 +1103,14 @@ namespace Eclipse.View
             Type delegateType = typeof(Func<,>).MakeGenericType(typeof(T), type);
             LambdaExpression lambda = Expression.Lambda(delegateType, expr, arg);
 
-            object result = typeof(Queryable).GetMethods().Single(
-                    method => method.Name == methodName
+            object result = typeof(Queryable)
+                .GetMethods()
+                .Single(method => method.Name == methodName
                             && method.IsGenericMethodDefinition
                             && method.GetGenericArguments().Length == 2
                             && method.GetParameters().Length == 2)
-                    .MakeGenericMethod(typeof(T), type)
-                    .Invoke(null, new object[] { source, lambda });
+                .MakeGenericMethod(typeof(T), type)
+                .Invoke(null, new object[] { source, lambda });
             return (IOrderedQueryable<T>)result;
         }
 

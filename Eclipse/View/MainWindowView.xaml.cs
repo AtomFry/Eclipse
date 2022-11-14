@@ -384,6 +384,17 @@ namespace Eclipse.View
         // delay for an interval when selecting games and then fade in the current selected game
         private void BackgroundImageChangeDelay_Elapsed(object sender, ElapsedEventArgs e)
         {
+             Dispatcher.Invoke(() =>
+             {
+                FadeInCurrentGame();
+
+                // fade in the active background image 
+                BackgroundImageFadeInSlowStoryBoard.Begin(Image_Active_BackgroundImage);
+             });
+        }
+
+        public void FadeInCurrentGame()
+        {
             Dispatcher.Invoke(() =>
             {
                 try
@@ -393,9 +404,6 @@ namespace Eclipse.View
                         Image_Active_BackgroundImage.Opacity = 0;
                         Image_Active_BackgroundImage.Source = activeBackgroundImage;
                     }
-
-                    // fade in the active background image 
-                    BackgroundImageFadeInSlowStoryBoard.Begin(Image_Active_BackgroundImage);
 
                     // fade in the active clear logo
                     Image_Displayed_GameClearLogo.Source = activeClearLogo;
@@ -409,7 +417,7 @@ namespace Eclipse.View
                     Image_CommunityStarRating.Source = activeCommunityStarRatingImage;
                     Image_UserStarRating.Source = activeUserStarRatingImage;
                     Image_Playmode.Source = activePlayModeImage;
-                    
+
                     TextBlock_MatchPercentage.Text = activeMatchPercentageText;
 
                     TextBlock_ReleaseYear.Text = activeReleaseYearText;
@@ -428,6 +436,20 @@ namespace Eclipse.View
         {
             Dispatcher.Invoke(() =>
             {
+                SwapActiveToDisplayedBackgroundImage();
+
+                // start timer to delay to fade out image and play video if there is a video
+                if (Video_SelectedGame?.Source != null)
+                {
+                    fadeOutForMovieDelay.Start();
+                }
+            });
+        }
+
+        private void SwapActiveToDisplayedBackgroundImage()
+        {
+            Dispatcher.Invoke(() =>
+            {
                 try
                 {
                     // swap displayed image to current active image
@@ -435,12 +457,6 @@ namespace Eclipse.View
 
                     // hide the active image
                     Image_Active_BackgroundImage.Opacity = 0;
-
-                    // start timer to delay to fade out image and play video if there is a video
-                    if (Video_SelectedGame?.Source != null)
-                    {
-                        fadeOutForMovieDelay.Start();
-                    }
                 }
                 catch (Exception ex)
                 {
@@ -482,9 +498,7 @@ namespace Eclipse.View
                 {
                     Video_SelectedGame.Stop();
 
-                    // fade in background image
-                    FadeFrameworkElementOpacity(Image_Selected_Background_Black, 1, 500);
-                    FadeFrameworkElementOpacity(Image_Displayed_BackgroundImage, 1, 500);
+                    FadeInBackgroundImages();
 
                     attractModeService.RestartAttractMode();
                 });
@@ -492,6 +506,23 @@ namespace Eclipse.View
             catch(Exception ex)
             {
                 LogHelper.LogException(ex, "Video_SelectedGame_MediaEnded");
+            }
+        }
+
+        private void FadeInBackgroundImages()
+        {
+            try
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    // fade in background image
+                    FadeFrameworkElementOpacity(Image_Selected_Background_Black, 1, 500);
+                    FadeFrameworkElementOpacity(Image_Displayed_BackgroundImage, 1, 500);
+                });
+            }
+            catch (Exception ex)
+            {
+                LogHelper.LogException(ex, "FadeInBackgroundImages");
             }
         }
 
@@ -564,10 +595,6 @@ namespace Eclipse.View
             }
         }
 
-
-
-
-
         private void SetupStopVideoAndAnimationWorker()
         {
             stopVideoAndAnimationWorker = new BackgroundWorker();
@@ -581,8 +608,8 @@ namespace Eclipse.View
 
         private void StopVideoAndAnimationHandler(object sender, DoWorkEventArgs e)
         {
-            // every 10th of a second for 1 seconds, try to stop everything
-            for (int i = 0; i < 10; i++)
+            // every 10th of a second for half a second, try to stop everything
+            for (int i = 0; i < 5; i++)
             {
                 Dispatcher.Invoke(() =>
                 {
@@ -597,6 +624,17 @@ namespace Eclipse.View
                 });
                 System.Threading.Thread.Sleep(100);
             }
+
+            // reset everything to the active game 
+            Dispatcher.Invoke(() =>
+            {
+                // todo: we need to reorganize all the events to reduce dependencies - at least find a way so the video doesn't start when the game is starting
+                FadeInCurrentGame();
+
+                SwapActiveToDisplayedBackgroundImage();
+
+                FadeInBackgroundImages();
+            });
         }
 
         // maybe only in certain cases like launching into a game or escaping to settings menu

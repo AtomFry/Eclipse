@@ -99,7 +99,9 @@ namespace Eclipse.State
 
                 EclipseStateContext.MainWindowViewModel.ResetGameLists(eclipseSettings.DefaultListCategoryType);
 
+                // todo: delete after cleaning up
                 // sync up the option list with the default list category
+                /*
                 int x = 0;
                 while(eclipseSettings.DefaultListCategoryType != EclipseStateContext.MainWindowViewModel.OptionList.Option0.EnumOption)
                 {
@@ -108,7 +110,8 @@ namespace Eclipse.State
                         break;
                     }
                     EclipseStateContext.MainWindowViewModel.OptionList.CycleForward();
-                }   
+                }
+                */
 
                 e.Result = EclipseStateContext;
             }

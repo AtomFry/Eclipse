@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 
 namespace Eclipse.Models
 {
@@ -43,7 +45,11 @@ namespace Eclipse.Models
 
     public class OptionList : INotifyPropertyChanged
     {
-        private ListCycle<Option<ListCategoryType>> optionCycle;
+        public ObservableCollection<Option<ListCategoryType>> DisplayedListCategoryTypes { get; set; }
+
+        public int SelectedIndex { get; set; }
+
+        public Option<ListCategoryType> SelectedOption => Options[SelectedIndex];
 
         private List<Option<ListCategoryType>> options;
         public List<Option<ListCategoryType>> Options
@@ -61,179 +67,58 @@ namespace Eclipse.Models
 
         public OptionList()
         {
-
         }
 
         public OptionList(List<Option<ListCategoryType>> _optionList)
         {
+            DisplayedListCategoryTypes = new ObservableCollection<Option<ListCategoryType>>();
+
             Options = _optionList;
-            optionCycle = new ListCycle<Option<ListCategoryType>>(Options, _optionList.Count);
+
+            SelectedIndex = 0;
+            Options[SelectedIndex].Selected = true;
+
             RefreshOptions();
         }
 
         public void CycleForward()
         {
-            optionCycle.CycleForward();
+            Options[SelectedIndex].Selected = false;
+            if (SelectedIndex + 1 >= Options.Count)
+            {
+                SelectedIndex = 0;
+            }
+            else
+            {
+                SelectedIndex++;
+            }
+            Options[SelectedIndex].Selected = true;
+
             RefreshOptions();
         }
 
         public void CycleBackward()
         {
-            optionCycle.CycleBackward();
+            Options[SelectedIndex].Selected = false;
+            if (SelectedIndex - 1 < 0)
+            {
+                SelectedIndex = Options.Count - 1;
+            }
+            else
+            {
+                SelectedIndex--;
+            }
+            Options[SelectedIndex].Selected = true;
+
             RefreshOptions();
         }
 
         private void RefreshOptions()
         {
-            Option0 = optionCycle.GetItem(0);
-            Option1 = optionCycle.GetItem(1);
-            Option2 = optionCycle.GetItem(2);
-            Option3 = optionCycle.GetItem(3);
-            Option4 = optionCycle.GetItem(4);
-            Option5 = optionCycle.GetItem(5);
-            Option6 = optionCycle.GetItem(6);
-            Option7 = optionCycle.GetItem(7);
-            Option8 = optionCycle.GetItem(8);
-            Option9 = optionCycle.GetItem(9);
-        }
-
-        private Option<ListCategoryType> option0;
-        public Option<ListCategoryType> Option0
-        {
-            get { return option0; }
-            set
+            DisplayedListCategoryTypes.Clear();
+            foreach (Option<ListCategoryType> option in Options)
             {
-                if (option0 != value)
-                {
-                    option0 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Option0"));
-                }
-            }
-        }
-
-        private Option<ListCategoryType> option1;
-        public Option<ListCategoryType> Option1
-        {
-            get { return option1; }
-            set
-            {
-                if (option1 != value)
-                {
-                    option1 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Option1"));
-                }
-            }
-        }
-
-        private Option<ListCategoryType> option2;
-        public Option<ListCategoryType> Option2
-        {
-            get { return option2; }
-            set
-            {
-                if (option2 != value)
-                {
-                    option2 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Option2"));
-                }
-            }
-        }
-
-        private Option<ListCategoryType> option3;
-        public Option<ListCategoryType> Option3
-        {
-            get { return option3; }
-            set
-            {
-                if (option3 != value)
-                {
-                    option3 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Option3"));
-                }
-            }
-        }
-
-        private Option<ListCategoryType> option4;
-        public Option<ListCategoryType> Option4
-        {
-            get { return option4; }
-            set
-            {
-                if (option4 != value)
-                {
-                    option4 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Option4"));
-                }
-            }
-        }
-
-        private Option<ListCategoryType> option5;
-        public Option<ListCategoryType> Option5
-        {
-            get { return option5; }
-            set
-            {
-                if (option5 != value)
-                {
-                    option5 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Option5"));
-                }
-            }
-        }
-
-        private Option<ListCategoryType> option6;
-        public Option<ListCategoryType> Option6
-        {
-            get { return option6; }
-            set
-            {
-                if (option6 != value)
-                {
-                    option6 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Option6"));
-                }
-            }
-        }
-
-        private Option<ListCategoryType> option7;
-        public Option<ListCategoryType> Option7
-        {
-            get { return option7; }
-            set
-            {
-                if (option7 != value)
-                {
-                    option7 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Option7"));
-                }
-            }
-        }
-
-        private Option<ListCategoryType> option8;
-        public Option<ListCategoryType> Option8
-        {
-            get { return option8; }
-            set
-            {
-                if (option8 != value)
-                {
-                    option8 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Option8"));
-                }
-            }
-        }
-
-        private Option<ListCategoryType> option9;
-        public Option<ListCategoryType> Option9
-        {
-            get { return option9; }
-            set
-            {
-                if (option9 != value)
-                {
-                    option9 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Option9"));
-                }
+                DisplayedListCategoryTypes.Add(option);
             }
         }
 

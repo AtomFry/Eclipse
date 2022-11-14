@@ -88,4 +88,115 @@ namespace Eclipse.Models
         Status,                         // Game.Status - string
         Version                         // Game.Version - string
     }
+
+    public static class GameFieldEnumConverter
+    {
+        public static GameFieldType ToGameFieldType(this GameFieldEnum gameFieldEnum)
+        {
+            switch (gameFieldEnum)
+            {
+                // bool
+                case GameFieldEnum.Broken:
+                case GameFieldEnum.Favorite:
+                case GameFieldEnum.Hide:
+                    return GameFieldType.Bool;
+
+                // string 
+                case GameFieldEnum.Genres:
+                case GameFieldEnum.Platform:
+                case GameFieldEnum.Developers:
+                case GameFieldEnum.PlayModes:
+                case GameFieldEnum.Publishers:
+                case GameFieldEnum.Rating:
+                case GameFieldEnum.Region:
+                case GameFieldEnum.Series:
+                case GameFieldEnum.SortTitle:
+                case GameFieldEnum.SortTitleOrTitle:
+                case GameFieldEnum.Title:
+                case GameFieldEnum.Source:
+                case GameFieldEnum.Status:
+                case GameFieldEnum.Version:
+                    return GameFieldType.String;
+
+                case GameFieldEnum.CommunityOrLocalStarRating:
+                case GameFieldEnum.CommunityStarRating:
+                case GameFieldEnum.StarRating:
+                    return GameFieldType.Float;
+
+                case GameFieldEnum.CommunityStarRatingTotalVotes:
+                case GameFieldEnum.PlayCount:
+                    return GameFieldType.Int;
+
+                case GameFieldEnum.ReleaseYear:
+                    return GameFieldType.IntNullable;
+
+                case GameFieldEnum.DateAdded:
+                case GameFieldEnum.DateModified:
+                case GameFieldEnum.LastPlayedDate:
+                    return GameFieldType.DateTime;
+
+                case GameFieldEnum.ReleaseDate:
+                    return GameFieldType.DateTimeNullable;
+
+                default:
+                    return GameFieldType.String;
+            }
+        }
+
+        public static bool IsFilterFieldOperatorValidForField(this GameFieldEnum gameFieldEnum, FilterFieldOperator filterFieldOperator)
+        {
+            bool isValidOperatorForField = true;
+
+            switch (filterFieldOperator)
+            {
+                case FilterFieldOperator.Contains:
+                    if (gameFieldEnum.ToGameFieldType() != GameFieldType.String)
+                    {
+                        isValidOperatorForField = false;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+
+            return isValidOperatorForField;
+        }
+
+        public static string ToFieldName(this GameFieldEnum gameFieldEnum)
+        {
+            switch (gameFieldEnum)
+            {
+                case GameFieldEnum.Broken: return "Game.Broken";
+                case GameFieldEnum.CommunityOrLocalStarRating: return "Game.CommunityOrLocalStarRating";
+                case GameFieldEnum.CommunityStarRating: return "Game.CommunityStarRating";
+                case GameFieldEnum.CommunityStarRatingTotalVotes: return "Game.CommunityStarRatingTotalVotes";
+                case GameFieldEnum.DateAdded: return "Game.DateAdded";
+                case GameFieldEnum.DateModified: return "Game.DateModified";
+                case GameFieldEnum.Developers: return "Game.Developer";
+                case GameFieldEnum.Favorite: return "Game.Favorite";
+                case GameFieldEnum.Genres: return "Game.GenresString";
+                case GameFieldEnum.Hide: return "Game.Hide";
+                case GameFieldEnum.LastPlayedDate: return "Game.LastPlayedDate";
+                case GameFieldEnum.Platform: return "Game.Platform";
+                case GameFieldEnum.PlayCount: return "Game.PlayCount";
+                case GameFieldEnum.PlayModes: return "Game.PlayMode";
+                case GameFieldEnum.Publishers: return "Game.Publisher";
+                case GameFieldEnum.Rating: return "Game.Rating";
+                case GameFieldEnum.Region: return "Game.Region";
+                case GameFieldEnum.ReleaseDate: return "Game.ReleaseDate";
+                case GameFieldEnum.ReleaseYear: return "Game.ReleaseYear";
+                case GameFieldEnum.Series: return "Game.Series";
+                case GameFieldEnum.SortTitle: return "Game.SortTitle";
+                case GameFieldEnum.SortTitleOrTitle: return "Game.SortTitleOrTitle";
+                case GameFieldEnum.Source: return "Game.Source";
+                case GameFieldEnum.StarRating: return "Game.StarRatingFloat";
+                case GameFieldEnum.Status: return "Game.Status";
+                case GameFieldEnum.Title: return "Game.Title";
+                case GameFieldEnum.Version: return "Game.Version";
+                default: return string.Empty;
+            }
+        }
+    }
+
 }

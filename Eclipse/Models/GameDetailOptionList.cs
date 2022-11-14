@@ -23,6 +23,8 @@ namespace Eclipse.Models
         public string ShortDescription { get; set; }
         public string LongDescription { get; set; }
         public T EnumOption{ get; set; }
+        public bool Selected { get; set; }
+        public bool Default { get; set; }
     }
 
     public class GameDetailOptionList : INotifyPropertyChanged

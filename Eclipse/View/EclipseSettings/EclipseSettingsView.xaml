@@ -107,30 +107,25 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="100"/>
-                    <ColumnDefinition Width="3*"/>
-                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <Label Grid.Row="0" Grid.Column="0" Content="Default type" Foreground="#D3D3D5" 
+                
+                <Label Grid.Row="0" Grid.Column="0" Content="Default group" Foreground="#D3D3D5" 
                        HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,2"/>
                 <ComboBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="1" Margin="10,2" 
+                          ToolTip="Specify which list category group to load by default on startup"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
                           Background="#343542" Foreground="#D3D3D5"
                           SelectedItem="{Binding DefaultListCategoryType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                           ItemsSource="{Binding Source={StaticResource ListCategoryTypeEnum}}"/>
                 
-                <CheckBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="10,2"
-                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                          Background="#343542" Foreground="#D3D3D5"
-                          IsChecked="{Binding ShowGameCountInList, Mode=TwoWay}"
-                          Content="Show game count in list description"/>
-
                 <Label Grid.Row="2" Grid.Column="0" Content="Page up" Foreground="#D3D3D5" 
                        HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,2"/>
                 <ComboBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="1" Margin="10,2" 
+                          ToolTip="Specify the functionality of the page up button"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
                           Background="#343542" Foreground="#D3D3D5"
                           SelectedItem="{Binding PageUpFunction, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -139,17 +134,28 @@
                 <Label Grid.Row="3" Grid.Column="0" Content="Page down" Foreground="#D3D3D5" 
                        HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,2"/>
                 <ComboBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="1" Margin="10,2" 
+                          ToolTip="Specify the functionality of the page down button"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
                           Background="#343542" Foreground="#D3D3D5"
                           SelectedItem="{Binding PageDownFunction, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                           ItemsSource="{Binding Source={StaticResource PageFunctionEnum}}"/>
 
-                <Label Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Content="Screensaver delay (seconds)" Foreground="#D3D3D5" 
-                       HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,2"/>
-                <TextBox Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="1" Margin="10,2" 
+                <Label Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Content="Screensaver delay"  
+                       ToolTip="The period of inactivity in seconds to wait until the screen saver starts"
+                       Foreground="#D3D3D5" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,2"/>
+                <TextBox Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="1" Margin="10,2" 
                          Text="{Binding ScreensaverDelayInSeconds, Mode=TwoWay}"
+                         ToolTip="The period of inactivity in seconds to wait until the screen saver starts"
                          Background="#343542" Foreground="#D3D3D5"
                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+
+                <CheckBox Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Margin="10,2"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          Background="#343542" Foreground="#D3D3D5"
+                          IsChecked="{Binding ShowGameCountInList, Mode=TwoWay}"
+                          ToolTip="Check this box to show the count of games after the list descriptions"
+                          Content="Show game count in list description"/>
+
             </Grid>
         </Grid>
 

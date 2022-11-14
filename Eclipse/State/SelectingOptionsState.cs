@@ -30,7 +30,7 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
 
-            Option<ListCategoryType> option = eclipseStateContext.MainWindowViewModel.OptionList.Option0;
+            Option<ListCategoryType> option = eclipseStateContext.MainWindowViewModel.OptionList.SelectedOption;
             switch (option.EnumOption)
             {
                 case ListCategoryType.VoiceSearch:

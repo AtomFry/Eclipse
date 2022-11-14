@@ -27,6 +27,8 @@
         <myconverters:IsFeatureToColumnStartConverter x:Key="FeatureToColumnStartConverter"/>
         <myconverters:BooleanToVisibilityConverter x:Key="InvertBooleanToVisibilityConverter" True="Collapsed" False="Visible"/>
         <myconverters:BooleanToStringConverter x:Key="FavoriteToFavoriteOptionConverter" True="Remove from favorites" False="Add to favorites"/>
+        <myconverters:BooleanToFontWeightConverter x:Key="SelectedToOptionFontWeightConverter" True="UltraBlack" False="Light"/>
+        <myconverters:BooleanToBrushConverter x:Key="SelectedToOptionBrushConverter" True="GhostWhite" False="DimGray"/>
         <myconverters:FeatureOptionToDoubleConverter x:Key="PlayGameOpacityConverter" PlayGameValue="1.0" MoreInfoValue="0.5"/>
         <myconverters:FeatureOptionToDoubleConverter x:Key="MoreInfoOpacityConverter" PlayGameValue="0.5" MoreInfoValue="1.0"/>
         <myconverters:StringLengthToVisibilityConverter x:Key="StringLengthVisibilityConverter" Empty="Collapsed" NonEmpty="Visible"/>
@@ -434,7 +436,31 @@
                         </LinearGradientBrush>
                     </Rectangle.OpacityMask>
                 </Rectangle>
-               
+
+
+
+                <ItemsControl ItemsSource="{Binding OptionList.DisplayedListCategoryTypes}" 
+                              Grid.Row="1" Grid.RowSpan="10"
+                              Grid.Column="1" Grid.ColumnSpan="3"
+                              HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                              IsHitTestVisible="False">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding LongDescription}"
+                                       IsHitTestVisible="False"
+                                       Margin="0,5"
+                                       FontFamily="Calibri" 
+                                       FontWeight="{Binding Selected, Converter={StaticResource SelectedToOptionFontWeightConverter}}"                                       
+                                       FontSize="26" 
+                                       Foreground="{Binding Selected, Converter={StaticResource SelectedToOptionBrushConverter}}"
+                                       TextAlignment="Left"
+                                       HorizontalAlignment="Left"
+                                       VerticalAlignment="Center"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+<!-- 
                 <TextBlock Text="{Binding OptionList.Option6.LongDescription}"
                            IsHitTestVisible="False"
                            Grid.Row="1"
@@ -545,6 +571,9 @@
                            TextAlignment="Left"
                            HorizontalAlignment="Left"
                            VerticalAlignment="Center"/>
+-->                
+                
+                
             </Grid>
 
             <!-- Darken the background when displaying feature and more info (helps with text visibility) -->
