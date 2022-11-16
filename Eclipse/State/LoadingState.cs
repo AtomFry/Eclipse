@@ -86,7 +86,10 @@ namespace Eclipse.State
                 worker.RunWorkerAsync();
 
                 // create the voice recognition
-                _ = SpeechRecognizerService.Instance.GetRecognizer();
+                if (EclipseSettingsDataProvider.Instance.EclipseSettings.EnableVoiceSearch)
+                {
+                    _ = SpeechRecognizerService.Instance.GetRecognizer();
+                }
 
                 // prepare lists of games by different categories
                 EclipseStateContext.MainWindowViewModel.GameListSets = new List<GameListSet>();

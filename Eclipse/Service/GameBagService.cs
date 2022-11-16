@@ -136,33 +136,36 @@ namespace Eclipse.Service
                 }
 
                 // create voice recognition grammar library for the game
-                GameTitleGrammarBuilder gameTitleGrammarBuilder = new GameTitleGrammarBuilder(game);
-                foreach (GameTitleGrammar gameTitleGrammar in gameTitleGrammarBuilder.gameTitleGrammars)
+                if (EclipseSettingsDataProvider.Instance.EclipseSettings.EnableVoiceSearch)
                 {
-                    if (!string.IsNullOrWhiteSpace(gameTitleGrammar.Title))
+                    GameTitleGrammarBuilder gameTitleGrammarBuilder = new GameTitleGrammarBuilder(game);
+                    foreach (GameTitleGrammar gameTitleGrammar in gameTitleGrammarBuilder.gameTitleGrammars)
                     {
-                        gameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammar.Title, TitleMatchType.FullTitleMatch, gameTitleGrammar.Title));
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(gameTitleGrammar.MainTitle))
-                    {
-                        gameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammar.MainTitle, TitleMatchType.MainTitleMatch, gameTitleGrammar.Title));
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(gameTitleGrammar.Subtitle))
-                    {
-                        gameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammar.Subtitle, TitleMatchType.SubtitleMatch, gameTitleGrammar.Title));
-                    }
-
-                    for (int i = 0; i < gameTitleGrammar.TitleWords.Count; i++)
-                    {
-                        StringBuilder sb = new StringBuilder();
-                        for (int j = i; j < gameTitleGrammar.TitleWords.Count; j++)
+                        if (!string.IsNullOrWhiteSpace(gameTitleGrammar.Title))
                         {
-                            sb.Append($"{gameTitleGrammar.TitleWords[j]} ");
-                            if (!GameTitleGrammar.IsNoiseWord(sb.ToString().Trim()))
+                            gameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammar.Title, TitleMatchType.FullTitleMatch, gameTitleGrammar.Title));
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(gameTitleGrammar.MainTitle))
+                        {
+                            gameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammar.MainTitle, TitleMatchType.MainTitleMatch, gameTitleGrammar.Title));
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(gameTitleGrammar.Subtitle))
+                        {
+                            gameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, gameTitleGrammar.Subtitle, TitleMatchType.SubtitleMatch, gameTitleGrammar.Title));
+                        }
+
+                        for (int i = 0; i < gameTitleGrammar.TitleWords.Count; i++)
+                        {
+                            StringBuilder sb = new StringBuilder();
+                            for (int j = i; j < gameTitleGrammar.TitleWords.Count; j++)
                             {
-                                gameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, sb.ToString().Trim(), TitleMatchType.FullTitleContains, gameTitleGrammar.Title));
+                                sb.Append($"{gameTitleGrammar.TitleWords[j]} ");
+                                if (!GameTitleGrammar.IsNoiseWord(sb.ToString().Trim()))
+                                {
+                                    gameBag.Add(GameMatch.CloneGameMatch(gameMatch, ListCategoryType.VoiceSearch, sb.ToString().Trim(), TitleMatchType.FullTitleContains, gameTitleGrammar.Title));
+                                }
                             }
                         }
                     }

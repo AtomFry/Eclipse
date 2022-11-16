@@ -55,12 +55,11 @@ namespace Eclipse.State
             eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(FeatureOptionPlayState)));
             return true;
         }
-            
+
         public bool OnPageDown(EclipseStateContext eclipseStateContext)
         {
             attractModeService.RestartAttractMode();
-
-            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(VoiceRecognitionState)));
+            eclipseStateContext.DoVoiceSearch();
             return true;
         }
 

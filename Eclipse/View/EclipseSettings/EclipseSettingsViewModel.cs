@@ -205,6 +205,16 @@ namespace Eclipse.View.EclipseSettings
             }
         }
 
+        public bool EnableVoiceSearch
+        {
+            get { return eclipseSettings.EnableVoiceSearch; }
+            set
+            {
+                eclipseSettings.EnableVoiceSearch = value;
+                OnPropertyChanged("EnableVoiceSearch");
+            }
+        }
+
         private void UpdateTabVisibility()
         {
             SettingsVisibility = Visibility.Collapsed;
@@ -357,6 +367,7 @@ namespace Eclipse.View.EclipseSettings
             PageUpFunction = eclipseSettings.PageUpFunction;
             PageDownFunction = eclipseSettings.PageDownFunction;
             ScreensaverDelayInSeconds = eclipseSettings.ScreensaverDelayInSeconds;
+            EnableVoiceSearch = eclipseSettings.EnableVoiceSearch;
         }
 
         private void InvalidateCommands()

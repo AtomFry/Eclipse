@@ -61,7 +61,7 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
             eclipseStateContext.MainWindowViewModel.IsRatingGame = false;
-            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(VoiceRecognitionState)));
+            eclipseStateContext.DoVoiceSearch();
             return true;
         }
 

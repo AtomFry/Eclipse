@@ -123,7 +123,7 @@ namespace Eclipse.State
                     break;
 
                 case PageFunction.VoiceSearch:
-                    eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(VoiceRecognitionState)));
+                    eclipseStateContext.DoVoiceSearch();
                     break;
             }
         }

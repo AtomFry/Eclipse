@@ -1,4 +1,5 @@
-﻿using Eclipse.View;
+﻿using Eclipse.Service;
+using Eclipse.View;
 using System;
 using System.Collections.Generic;
 
@@ -57,7 +58,7 @@ namespace Eclipse.State
 
         public bool OnPageUp()
         {
-            return CurrentState.OnPageUp(this);    
+            return CurrentState.OnPageUp(this);
         }
 
         public bool OnPageDown()
@@ -73,6 +74,14 @@ namespace Eclipse.State
         public bool OnEscape()
         {
             return CurrentState.OnEscape(this);
+        }
+
+        public void DoVoiceSearch()
+        {
+            if (EclipseSettingsDataProvider.Instance.EclipseSettings.EnableVoiceSearch)
+            {
+                TransitionToState(GetState(typeof(VoiceRecognitionState)));
+            }
         }
     }
 }

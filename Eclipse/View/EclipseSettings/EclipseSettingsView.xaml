@@ -156,6 +156,13 @@
                           ToolTip="Check this box to show the count of games after the list descriptions"
                           Content="Show game count in list description"/>
 
+                <CheckBox Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Margin="10,2"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          Background="#343542" Foreground="#D3D3D5"
+                          IsChecked="{Binding EnableVoiceSearch, Mode=TwoWay}"
+                          ToolTip="Check this box to enable voice search functionality"
+                          Content="Enable voice search"/>
+
             </Grid>
         </Grid>
 

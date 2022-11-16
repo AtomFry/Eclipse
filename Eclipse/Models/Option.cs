@@ -93,8 +93,6 @@ namespace Eclipse.Models
                 SelectedIndex++;
             }
             Options[SelectedIndex].Selected = true;
-
-            RefreshOptions();
         }
 
         public void CycleBackward()
@@ -109,8 +107,6 @@ namespace Eclipse.Models
                 SelectedIndex--;
             }
             Options[SelectedIndex].Selected = true;
-
-            RefreshOptions();
         }
 
         private void RefreshOptions()

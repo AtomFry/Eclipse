@@ -34,7 +34,7 @@ namespace Eclipse.State
             switch (option.EnumOption)
             {
                 case ListCategoryType.VoiceSearch:
-                    eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(VoiceRecognitionState)));
+                    eclipseStateContext.DoVoiceSearch();
                     break;
 
                 case ListCategoryType.RandomGame:
@@ -110,7 +110,7 @@ namespace Eclipse.State
             attractModeService.RestartAttractMode();
 
             eclipseStateContext.MainWindowViewModel.IsPickingCategory = false;
-            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(VoiceRecognitionState)));
+            eclipseStateContext.DoVoiceSearch();
             return true;
         }
 

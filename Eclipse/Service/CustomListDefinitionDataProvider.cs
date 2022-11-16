@@ -378,6 +378,7 @@ namespace Eclipse.Service
             eclipseSettings.PageDownFunction = PageFunction.VoiceSearch;
             eclipseSettings.PageUpFunction = PageFunction.RandomGame;
             eclipseSettings.ScreensaverDelayInSeconds = 90;
+            eclipseSettings.EnableVoiceSearch = true;
 
             return eclipseSettings;
         }

@@ -12,6 +12,8 @@ namespace Eclipse.Models
 
         public int ScreensaverDelayInSeconds { get; set; }
 
+        public bool EnableVoiceSearch { get; set; }
+
         // todo: add system settings
         // enable/disable voice search
     }
