@@ -452,7 +452,7 @@ namespace Eclipse.View
                     foreach (string series in currentGame?.Game?.SeriesValues)
                     {
                         var seriesGameListQuery = from seriesGameList in seriesGameListSet.GameLists
-                                                  where seriesGameList.ListDescription.Equals(series, StringComparison.InvariantCultureIgnoreCase)
+                                                  where seriesGameList.ListTypeValue.Equals(series, StringComparison.InvariantCultureIgnoreCase)
                                                   select seriesGameList;
 
                         foreach (GameList gameList in seriesGameListQuery)
@@ -474,7 +474,7 @@ namespace Eclipse.View
                     foreach (string genre in currentGame?.Game?.Genres)
                     {
                         var genreGameListQuery = from genreGameList in genreGameListSet.GameLists
-                                                 where genreGameList.ListDescription.Equals(genre, StringComparison.InvariantCultureIgnoreCase)
+                                                 where genreGameList.ListTypeValue.Equals(genre, StringComparison.InvariantCultureIgnoreCase)
                                                  select genreGameList;
 
                         foreach (GameList gameList in genreGameListQuery)
@@ -497,7 +497,7 @@ namespace Eclipse.View
                     if (platform != null)
                     {
                         var platformGameListQuery = from platformGameList in platformGameListSet.GameLists
-                                                    where platformGameList.ListDescription.Equals(platform, StringComparison.InvariantCultureIgnoreCase)
+                                                    where platformGameList.ListTypeValue.Equals(platform, StringComparison.InvariantCultureIgnoreCase)
                                                     select platformGameList;
 
                         foreach (GameList gameList in platformGameListQuery)
@@ -518,7 +518,7 @@ namespace Eclipse.View
                     foreach (string developer in currentGame?.Game?.Developers)
                     {
                         IEnumerable<GameList> developerGameListQuery = from developerGameList in developerGameListSet.GameLists
-                                                                       where developerGameList.ListDescription.Equals(developer, StringComparison.InvariantCultureIgnoreCase)
+                                                                       where developerGameList.ListTypeValue.Equals(developer, StringComparison.InvariantCultureIgnoreCase)
                                                                        select developerGameList;
 
                         foreach (GameList gameList in developerGameListQuery)
@@ -539,7 +539,7 @@ namespace Eclipse.View
                     foreach (string publisher in currentGame?.Game?.Publishers)
                     {
                         IEnumerable<GameList> publisherGameListQuery = from publisherGameList in publisherGameListSet.GameLists
-                                                                       where publisherGameList.ListDescription.Equals(publisher, StringComparison.InvariantCultureIgnoreCase)
+                                                                       where publisherGameList.ListTypeValue.Equals(publisher, StringComparison.InvariantCultureIgnoreCase)
                                                                        select publisherGameList;
 
                         foreach (GameList gameList in publisherGameListQuery)
@@ -560,7 +560,7 @@ namespace Eclipse.View
                     foreach (string playMode in currentGame?.Game?.PlayModes)
                     {
                         IEnumerable<GameList> playModeGameListQuery = from playModeGameList in playModeGameListSet.GameLists
-                                                                      where playModeGameList.ListDescription.Equals(playMode, StringComparison.InvariantCultureIgnoreCase)
+                                                                      where playModeGameList.ListTypeValue.Equals(playMode, StringComparison.InvariantCultureIgnoreCase)
                                                                       select playModeGameList;
 
                         foreach (GameList gameList in playModeGameListQuery)
@@ -582,7 +582,7 @@ namespace Eclipse.View
                     if (releaseYear != null)
                     {
                         IEnumerable<GameList> releaseYearGameListQuery = from releaseYearGameList in releaseYearGameListSet.GameLists
-                                                                         where releaseYearGameList.ListDescription.Equals(releaseYear.ToString(), StringComparison.InvariantCultureIgnoreCase)
+                                                                         where releaseYearGameList.ListTypeValue.Equals(releaseYear.ToString(), StringComparison.InvariantCultureIgnoreCase)
                                                                          select releaseYearGameList;
 
                         foreach (GameList gameList in releaseYearGameListQuery)
@@ -632,8 +632,9 @@ namespace Eclipse.View
         {
             if (listCycle?.GenericList?.Count == 0)
             {
-                IsDisplayingError = true;
-                ErrorMessage = "A problem occurred trying to refresh the list of games";
+                DisplayingErrorState displayingErrorState = EclipseStateContext.GetState(typeof(DisplayingErrorState)) as DisplayingErrorState;
+                displayingErrorState.ErrorMessage = "A problem occurred trying to refresh the list of games";
+                EclipseStateContext.TransitionToState(displayingErrorState);
                 return;
             }
 

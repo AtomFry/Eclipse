@@ -140,29 +140,47 @@
                           SelectedItem="{Binding PageDownFunction, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                           ItemsSource="{Binding Source={StaticResource PageFunctionEnum}}"/>
 
-                <Label Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Content="Screensaver delay"  
-                       ToolTip="The period of inactivity in seconds to wait until the screen saver starts"
-                       Foreground="#D3D3D5" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,2"/>
-                <TextBox Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="1" Margin="10,2" 
-                         Text="{Binding ScreensaverDelayInSeconds, Mode=TwoWay}"
-                         ToolTip="The period of inactivity in seconds to wait until the screen saver starts"
-                         Background="#343542" Foreground="#D3D3D5"
-                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-
-                <CheckBox Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Margin="10,2"
+                <CheckBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Margin="10,2"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                           Background="#343542" Foreground="#D3D3D5"
                           IsChecked="{Binding ShowGameCountInList, Mode=TwoWay}"
                           ToolTip="Check this box to show the count of games after the list descriptions"
                           Content="Show game count in list description"/>
 
-                <CheckBox Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Margin="10,2"
+                <CheckBox Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Margin="10,2"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                           Background="#343542" Foreground="#D3D3D5"
                           IsChecked="{Binding EnableVoiceSearch, Mode=TwoWay}"
                           ToolTip="Check this box to enable voice search functionality"
                           Content="Enable voice search"/>
 
+                <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"                             
+                            HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
+                    <Label Content="Video delay: " Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                    <Label Content="{Binding VideoDelayInMilliseconds}" ContentStringFormat="N1" Margin="2,0" 
+                           Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                    <Label Content=" ms" Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                </StackPanel>
+                <Slider Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2" Margin="10,2"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        Background="#343542" Foreground="#D3D3D5"
+                        Value="{Binding VideoDelayInMilliseconds, Mode=TwoWay}"
+                        Minimum="0" Maximum="10000" TickFrequency="1" SmallChange="250" LargeChange="1000" TickPlacement="BottomRight"
+                        ToolTip="Amount of time to delay after selecting a game (in milliseconds) before playing the video"/>
+
+                <StackPanel Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"                             
+                            HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
+                    <Label Content="Screensaver delay: " Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                    <Label Content="{Binding ScreensaverDelayInSeconds}" ContentStringFormat="N1" Margin="2,0" 
+                           Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                    <Label Content=" s" Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                </StackPanel>
+                <Slider Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2" Margin="10,2"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        Background="#343542" Foreground="#D3D3D5"
+                        Value="{Binding ScreensaverDelayInSeconds, Mode=TwoWay}"
+                        Minimum="1" Maximum="600" TickFrequency="1" SmallChange="1" LargeChange="10" TickPlacement="BottomRight"
+                        ToolTip="Amount of inactivity time (in seconds) to delay before starting the screen saver"/>
             </Grid>
         </Grid>
 

@@ -195,6 +195,16 @@ namespace Eclipse.View.EclipseSettings
             }
         }
 
+        public int VideoDelayInMilliseconds
+        {
+            get { return eclipseSettings.VideoDelayInMilliseconds; }
+            set
+            {
+                eclipseSettings.VideoDelayInMilliseconds = value;
+                OnPropertyChanged("VideoDelayInMilliseconds");
+            }
+        }
+
         public int ScreensaverDelayInSeconds
         {
             get { return eclipseSettings.ScreensaverDelayInSeconds; }
@@ -366,8 +376,9 @@ namespace Eclipse.View.EclipseSettings
             ShowGameCountInList = eclipseSettings.ShowGameCountInList;
             PageUpFunction = eclipseSettings.PageUpFunction;
             PageDownFunction = eclipseSettings.PageDownFunction;
-            ScreensaverDelayInSeconds = eclipseSettings.ScreensaverDelayInSeconds;
             EnableVoiceSearch = eclipseSettings.EnableVoiceSearch;
+            ScreensaverDelayInSeconds = eclipseSettings.ScreensaverDelayInSeconds;
+            VideoDelayInMilliseconds = eclipseSettings.VideoDelayInMilliseconds;
         }
 
         private void InvalidateCommands()

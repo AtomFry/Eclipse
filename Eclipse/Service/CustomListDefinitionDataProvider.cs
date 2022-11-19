@@ -379,6 +379,7 @@ namespace Eclipse.Service
             eclipseSettings.PageUpFunction = PageFunction.RandomGame;
             eclipseSettings.ScreensaverDelayInSeconds = 90;
             eclipseSettings.EnableVoiceSearch = true;
+            eclipseSettings.VideoDelayInMilliseconds = 2000;
 
             return eclipseSettings;
         }

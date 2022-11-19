@@ -111,10 +111,11 @@ namespace Eclipse.Models
 
         public GameList(string _listDescription, List<GameMatch> _matchingGames, int sortOrder = 9999)
         {
-            ListDescription = _listDescription;
+            ListTypeValue = _listDescription;
             MatchingGames = _matchingGames;
             SortOrder = sortOrder;
 
+            ListDescription = ListTypeValue;
             if (EclipseSettingsDataProvider.Instance.EclipseSettings.ShowGameCountInList)
             {
                 ListDescription = $"{ListDescription} ({MatchCount})";
@@ -157,6 +158,20 @@ namespace Eclipse.Models
             Game10 = gameCycle.GetItem(10);
             Game11 = gameCycle.GetItem(11);
             Game12 = gameCycle.GetItem(12);
+        }
+
+        private string listTypeValue;
+        public string ListTypeValue
+        {
+            get { return listTypeValue; }
+            set
+            {
+                if (listTypeValue != value)
+                {
+                    listTypeValue = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("ListTypeValue"));
+                }
+            }
         }
 
         private string listDescription;

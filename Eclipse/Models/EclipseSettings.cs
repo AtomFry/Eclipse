@@ -10,12 +10,11 @@ namespace Eclipse.Models
         public PageFunction PageUpFunction { get; set; }
         public PageFunction PageDownFunction { get; set; }
 
-        public int ScreensaverDelayInSeconds { get; set; }
-
         public bool EnableVoiceSearch { get; set; }
 
-        // todo: add system settings
-        // enable/disable voice search
+        public int ScreensaverDelayInSeconds { get; set; }
+        public int VideoDelayInMilliseconds { get; set; }
+
     }
 
 

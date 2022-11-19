@@ -55,8 +55,8 @@ namespace Eclipse.View
             backgroundImageChangeDelay.Elapsed += BackgroundImageChangeDelay_Elapsed;
             backgroundImageChangeDelay.AutoReset = false;
 
-            // create a timer to delay playing movie and fading out background images
-            fadeOutForMovieDelay = new Timer(2000);
+            // create a timer to delay playing movie and fading out background images 
+            fadeOutForMovieDelay = new Timer(EclipseSettingsDataProvider.Instance.EclipseSettings.VideoDelayInMilliseconds);
             fadeOutForMovieDelay.Elapsed += FadeOutForMovieDelay_Elapsed;
             fadeOutForMovieDelay.AutoReset = false;
 
