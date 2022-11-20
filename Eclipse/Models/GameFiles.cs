@@ -18,6 +18,7 @@ namespace Eclipse.Models
             IsSetup = false;
             Game = game;
             FrontImage = ResourceImages.GameFrontDummy;
+            BackImage = ResourceImages.GameFrontDummy;
         }
 
         private IGame game;
@@ -30,6 +31,20 @@ namespace Eclipse.Models
                 {
                     game = value;
                     PropertyChanged(this, new PropertyChangedEventArgs("Game"));
+                }
+            }
+        }
+
+        private Uri backImage;
+        public Uri BackImage
+        {
+            get { return backImage; }
+            set
+            {
+                if (backImage != value)
+                {
+                    backImage = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("BackImage"));
                 }
             }
         }
@@ -47,6 +62,35 @@ namespace Eclipse.Models
                 }
             }
         }
+
+        private Uri bigFrontImage;
+        public Uri BigFrontImage
+        {
+            get { return bigFrontImage; }
+            set
+            {
+                if (bigFrontImage != value)
+                {
+                    bigFrontImage = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("BigFrontImage"));
+                }
+            }
+        }
+
+        private Uri bigBackImage;
+        public Uri BigBackImage
+        {
+            get { return bigBackImage; }
+            set
+            {
+                if (bigBackImage != value)
+                {
+                    bigBackImage = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("BigBackImage"));
+                }
+            }
+        }
+
 
         private Uri clearLogo;
         public Uri ClearLogo
@@ -184,7 +228,15 @@ namespace Eclipse.Models
                 if (IsSetup == false)
                 {
                     IsSetup = true;
-                    FrontImage = ResolveGameFrontImage(game);
+
+                    lbFrontImagePath = game?.FrontImagePath;
+                    lbBackImagePath = game?.BackImagePath;
+
+                    BigFrontImage = ResolveBigFrontImage();
+                    BigBackImage = ResolveBigBackImage();
+                    FrontImage = ResolveGameFrontImage();
+                    BackImage = ResolveGameBackImage();
+
                     ClearLogo = ResolveClearLogoPath(game);
                     CommunityStarRatingImage = ResolveStarRatingPath(game);
                     UserStarRatingImage = ResolveUserStarRatingPath(game);
@@ -198,6 +250,29 @@ namespace Eclipse.Models
             });
         }
 
+        private Uri ResolveBigBackImage()
+        {
+            if (!string.IsNullOrWhiteSpace(lbBackImagePath))
+            {
+                return new Uri(lbBackImagePath);
+            }
+
+            return ResourceImages.DefaultFrontImage;
+        }
+
+        private Uri ResolveBigFrontImage()
+        {
+            if (!string.IsNullOrWhiteSpace(lbFrontImagePath))
+            {
+                return new Uri(lbFrontImagePath);
+            }
+
+            return ResourceImages.DefaultFrontImage;
+        }
+
+        private string lbFrontImagePath;
+        private string lbBackImagePath;
+
         public void ResetStarRatingImage()
         {
             CommunityStarRatingImage = ResolveStarRatingPath(game);
@@ -206,9 +281,11 @@ namespace Eclipse.Models
 
         public static char[] InvalidFileNameChars = Path.GetInvalidFileNameChars();
 
-        public static Uri ResolveGameFrontImage(IGame Game)
+       
+
+        public Uri ResolveGameFrontImage()
         {
-            string frontImagePath = Game?.FrontImagePath;
+            string frontImagePath = lbFrontImagePath;
             if (!string.IsNullOrWhiteSpace(frontImagePath))
             {
                 string customPath = frontImagePath.Replace(DirectoryInfoHelper.Instance.ApplicationPath, DirectoryInfoHelper.Instance.MediaResolutionSpecificFolder);
@@ -224,6 +301,27 @@ namespace Eclipse.Models
             }
 
             return ResourceImages.DefaultFrontImage;
+        }
+
+        public Uri ResolveGameBackImage()
+        {
+            string backImagePath = lbBackImagePath;
+            if (!string.IsNullOrWhiteSpace(backImagePath))
+            {
+                string customPath = backImagePath.Replace(DirectoryInfoHelper.Instance.ApplicationPath, DirectoryInfoHelper.Instance.MediaResolutionSpecificFolder);
+                if (!string.IsNullOrWhiteSpace(customPath))
+                {
+                    if (!File.Exists(customPath))
+                    {
+                        // scale the image and cache it
+                        ImageScaler.ScaleImage(backImagePath, customPath);
+                    }
+                    return new Uri(customPath);
+                }
+            }
+
+            return ResourceImages.DefaultFrontImage;
+
         }
 
         public static Uri ResolveClearLogoPath(IGame Game)

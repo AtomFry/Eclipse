@@ -1282,6 +1282,32 @@
                 </Grid.RenderTransform>
             </Grid>
 
+
+            <!-- Zoomed Box -->
+            <!-- Darken the background when displaying the zoomed box -->
+            <Rectangle Grid.Row="0" Grid.RowSpan="18"
+                       Grid.Column="0" Grid.ColumnSpan="32"
+                       IsHitTestVisible="False"
+                       Fill="Black"  Opacity="0.75"
+                       Panel.ZIndex="701"
+                       Visibility="{Binding IsZoomingBox, Converter={StaticResource BoolToVis}}">
+            </Rectangle>
+
+            <Image Name="Image_ZoomedBox"
+                   Panel.ZIndex="702"
+                   Grid.Row="0" Grid.RowSpan="18"
+                   Grid.Column="0" Grid.ColumnSpan="32"
+                    IsHitTestVisible="False"
+                    Source="{Binding CurrentGameList.Game1.GameFiles.BigFrontImage}"
+                    HorizontalAlignment="Center" 
+                    VerticalAlignment="Stretch"
+                    RenderOptions.BitmapScalingMode="HighQuality" 
+                    Margin="2,2,2,2"
+                    Visibility="{Binding IsZoomingBox, Converter={StaticResource BoolToVis}}"
+                    Stretch="Uniform"/>
+
+
+
             <Grid Name="GameListGrid"
                   IsHitTestVisible="False"
                   Grid.Row="8"
@@ -1343,20 +1369,20 @@
                     </TextBlock>
                     <StackPanel Name="GameImages" 
                                 IsHitTestVisible="False"
-                        Grid.Row="1"
-                        Grid.RowSpan="1"
-                        Orientation="Horizontal"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch">
+                                Grid.Row="1"
+                                Grid.RowSpan="1"
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch">
                         <Border BorderThickness="2" BorderBrush="AntiqueWhite" IsHitTestVisible="False">
                             <Image Name="Image_Game1"
                                    IsHitTestVisible="False"
-                               Source="{Binding CurrentGameList.Game1.GameFiles.FrontImage}"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Stretch"
-                               RenderOptions.BitmapScalingMode="HighQuality" 
-                               Margin="2,2,2,2"
-                               Stretch="Uniform"/>
+                                   Source="{Binding CurrentGameList.Game1.GameFiles.FrontImage}"
+                                   HorizontalAlignment="Center" 
+                                   VerticalAlignment="Stretch"
+                                   RenderOptions.BitmapScalingMode="HighQuality" 
+                                   Margin="2,2,2,2"
+                                   Stretch="Uniform"/>
                         </Border>
 
                         <Image Name="Image_Game2"

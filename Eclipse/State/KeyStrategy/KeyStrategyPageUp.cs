@@ -1,5 +1,6 @@
 ﻿namespace Eclipse.State.KeyStrategy
 {
+
     public class KeyStrategyPageUp : IKeyStrategy
     {
         public void DoKeyFunction(EclipseStateContext eclipseStateContext, EclipseState eclipseState)

@@ -58,6 +58,8 @@ namespace Eclipse.Models
         PageUp,
         PageDown,
         VoiceSearch,
-        RandomGame
+        RandomGame,
+        FlipBox,
+        ZoomBox
     }
 }

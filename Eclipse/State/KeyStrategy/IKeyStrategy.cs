@@ -58,6 +58,14 @@ namespace Eclipse.State.KeyStrategy
                 case PageFunction.VoiceSearch:
                     keyStrategy = new KeyStrategyVoiceSearch();
                     break;
+
+                case PageFunction.FlipBox:
+                    keyStrategy = new KeyStrategyFlipBox();
+                    break;
+
+                case PageFunction.ZoomBox:
+                    keyStrategy = new KeyStrategyZoomBox();
+                    break;
             }
             return keyStrategy;
         }

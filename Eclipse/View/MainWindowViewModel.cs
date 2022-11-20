@@ -39,6 +39,7 @@ namespace Eclipse.View
         private bool isDisplayingError;
         private bool isDisplayingSearch;
         private bool isRatingGame;
+        private bool isZoomingBox;
 
         private GameDetailOption gameDetailOption;
         private string errorMessage;
@@ -63,6 +64,19 @@ namespace Eclipse.View
                 {
                     isInitializing = value;
                     PropertyChanged(this, new PropertyChangedEventArgs("IsInitializing"));
+                }
+            }
+        }
+
+        public bool IsZoomingBox 
+        {
+            get => isZoomingBox;
+            set
+            {
+                if (isZoomingBox != value)
+                {
+                    isZoomingBox = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("IsZoomingBox"));
                 }
             }
         }
