@@ -18,6 +18,8 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
 
+            eclipseStateContext.MainWindowViewModel.IsDisplayingFeature = false;
+            eclipseStateContext.MainWindowViewModel.IsDisplayingMoreInfo = false;
             eclipseStateContext.MainWindowViewModel.IsDisplayingResults = true;
             eclipseStateContext.MainWindowViewModel.CallGameChangeFunction();
         }

@@ -462,7 +462,6 @@ namespace Eclipse.View
                     }
                 }
 
-
                 // get lists for matching genres
                 var genreGameListSetQuery = from gameListSet in GameListSets
                                             where gameListSet.ListCategoryType == ListCategoryType.Genre
@@ -483,7 +482,6 @@ namespace Eclipse.View
                         }
                     }
                 }
-
 
                 // get platform list 
                 IEnumerable<GameListSet> platformGameListSetQuery = from gameListSet in GameListSets
