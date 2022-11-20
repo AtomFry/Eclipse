@@ -1,5 +1,6 @@
 ﻿using Eclipse.Models;
 using Eclipse.Service;
+using Eclipse.State.KeyStrategy;
 using System;
 
 namespace Eclipse.State
@@ -90,7 +91,6 @@ namespace Eclipse.State
         public bool OnEscape(EclipseStateContext eclipseStateContext)
         {
             attractModeService.RestartAttractMode();
-
             // go to big box options
             return false;
         }
@@ -108,26 +108,20 @@ namespace Eclipse.State
         public bool OnPageDown(EclipseStateContext eclipseStateContext)
         {
             attractModeService.RestartAttractMode();
-
-            eclipseStateContext.MainWindowViewModel.IsPickingCategory = false;
-            eclipseStateContext.DoVoiceSearch();
+            KeyStrategyCache.Instance.PageDownStrategy.DoKeyFunction(eclipseStateContext, this);
             return true;
         }
 
         public bool OnPageUp(EclipseStateContext eclipseStateContext)
         {
             attractModeService.RestartAttractMode();
-
-            eclipseStateContext.MainWindowViewModel.IsPickingCategory = false;
-            eclipseStateContext.MainWindowViewModel.DoRandomGame();
-            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
+            KeyStrategyCache.Instance.PageUpStrategy.DoKeyFunction(eclipseStateContext, this);
             return true;
         }
 
         public bool OnRight(EclipseStateContext eclipseStateContext, bool held)
         {
             attractModeService.RestartAttractMode();
-
             eclipseStateContext.MainWindowViewModel.IsPickingCategory = false;
             eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
@@ -136,7 +130,6 @@ namespace Eclipse.State
         public bool OnUp(EclipseStateContext eclipseStateContext, bool held)
         {
             attractModeService.RestartAttractMode();
-
             eclipseStateContext.MainWindowViewModel.OptionList.CycleBackward();
             return true;
         }

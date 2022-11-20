@@ -1,5 +1,6 @@
 ﻿using Eclipse.Models;
 using Eclipse.Service;
+using Eclipse.State.KeyStrategy;
 using System;
 using Unbroken.LaunchBox.Plugins.Data;
 
@@ -18,6 +19,7 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
 
+            eclipseStateContext.MainWindowViewModel.IsPickingCategory = false;
             eclipseStateContext.MainWindowViewModel.IsDisplayingFeature = false;
             eclipseStateContext.MainWindowViewModel.IsDisplayingMoreInfo = false;
             eclipseStateContext.MainWindowViewModel.IsDisplayingResults = true;
@@ -72,70 +74,14 @@ namespace Eclipse.State
         public bool OnPageDown(EclipseStateContext eclipseStateContext)
         {
             attractModeService.RestartAttractMode();
-
-            DoPageFunction(eclipseStateContext, EclipseSettingsDataProvider.Instance.EclipseSettings.PageDownFunction);
-
+            KeyStrategyCache.Instance.PageDownStrategy.DoKeyFunction(eclipseStateContext, this);
             return true;
-        }
-
-        public void DoPageDown(EclipseStateContext eclipseStateContext)
-        {
-            int currentIndex = eclipseStateContext.MainWindowViewModel.CurrentGameList.ListSetStartIndex +
-                eclipseStateContext.MainWindowViewModel.CurrentGameList.CurrentGameIndex;
-
-            int nextIndex = currentIndex + 7;
-
-            if (nextIndex > eclipseStateContext.MainWindowViewModel.CurrentGameList.ListSetEndIndex)
-            {
-                nextIndex = eclipseStateContext.MainWindowViewModel.CurrentGameList.ListSetStartIndex;
-            }
-
-            eclipseStateContext.MainWindowViewModel.DoRandomGame(nextIndex);
-        }
-
-        public void DoPageUp(EclipseStateContext eclipseStateContext)
-        {
-            int currentIndex = eclipseStateContext.MainWindowViewModel.CurrentGameList.ListSetStartIndex +
-                                eclipseStateContext.MainWindowViewModel.CurrentGameList.CurrentGameIndex;
-
-            int nextIndex = currentIndex - 7;
-
-            if (nextIndex < eclipseStateContext.MainWindowViewModel.CurrentGameList.ListSetStartIndex)
-            {
-                nextIndex = eclipseStateContext.MainWindowViewModel.CurrentGameList.ListSetEndIndex;
-            }
-
-            eclipseStateContext.MainWindowViewModel.DoRandomGame(nextIndex);
-        }
-
-        public void DoPageFunction(EclipseStateContext eclipseStateContext, PageFunction pageFunction)
-        {
-            switch (pageFunction)
-            {
-                case PageFunction.PageDown:
-                    DoPageDown(eclipseStateContext);
-                    break;
-
-                case PageFunction.PageUp:
-                    DoPageUp(eclipseStateContext);
-                    break;
-
-                case PageFunction.RandomGame:
-                    eclipseStateContext.MainWindowViewModel.DoRandomGame();
-                    break;
-
-                case PageFunction.VoiceSearch:
-                    eclipseStateContext.DoVoiceSearch();
-                    break;
-            }
         }
 
         public bool OnPageUp(EclipseStateContext eclipseStateContext)
         {
             attractModeService.RestartAttractMode();
-
-            DoPageFunction(eclipseStateContext, EclipseSettingsDataProvider.Instance.EclipseSettings.PageUpFunction);
-
+            KeyStrategyCache.Instance.PageUpStrategy.DoKeyFunction(eclipseStateContext, this);
             return true;
         }
 

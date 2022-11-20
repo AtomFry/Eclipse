@@ -1,5 +1,6 @@
 ﻿using Eclipse.Models;
 using Eclipse.Service;
+using Eclipse.State.KeyStrategy;
 using System;
 
 namespace Eclipse.State
@@ -44,6 +45,7 @@ namespace Eclipse.State
 
             eclipseStateContext.MainWindowViewModel.CheckResetGameLists();
 
+            eclipseStateContext.MainWindowViewModel.IsRatingGame = false;
             eclipseStateContext.MainWindowViewModel.IsDisplayingFeature = false;
             eclipseStateContext.MainWindowViewModel.IsDisplayingMoreInfo = false;
             eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
@@ -60,17 +62,18 @@ namespace Eclipse.State
         public bool OnPageDown(EclipseStateContext eclipseStateContext)
         {
             attractModeService.RestartAttractMode();
-            eclipseStateContext.MainWindowViewModel.IsRatingGame = false;
-            eclipseStateContext.DoVoiceSearch();
+
+            // do not perform page up/down while rating game - it's not clear whether it should save or cancel the rating change
+
             return true;
         }
 
         public bool OnPageUp(EclipseStateContext eclipseStateContext)
         {
             attractModeService.RestartAttractMode();
-            eclipseStateContext.MainWindowViewModel.IsRatingGame = false;
-            eclipseStateContext.MainWindowViewModel.SaveRatingCurrentGame();
-            eclipseStateContext.MainWindowViewModel.DoRandomGame();
+
+            // do not perform page up/down while rating game - it's not clear whether it should save or cancel the rating change
+
             return true;
         }
 

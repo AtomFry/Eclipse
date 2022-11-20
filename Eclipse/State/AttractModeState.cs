@@ -8,7 +8,6 @@ namespace Eclipse.State
     public class AttractModeState : EclipseState
     {
         private readonly AttractModeService attractModeService;
-        
         public MainWindowViewModel MainWindowViewModel { get; set; }
         public  MainWindowView MainWindowView { get; set; }
         public EclipseState PreviousState { get; set; }

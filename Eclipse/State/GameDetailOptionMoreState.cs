@@ -1,5 +1,6 @@
 ﻿using Eclipse.Models;
 using Eclipse.Service;
+using Eclipse.State.KeyStrategy;
 using System;
 
 namespace Eclipse.State
@@ -58,14 +59,14 @@ namespace Eclipse.State
         public bool OnPageDown(EclipseStateContext eclipseStateContext)
         {
             attractModeService.RestartAttractMode();
-            eclipseStateContext.DoVoiceSearch();
+            KeyStrategyCache.Instance.PageDownStrategy.DoKeyFunction(eclipseStateContext, this);
             return true;
         }
 
         public bool OnPageUp(EclipseStateContext eclipseStateContext)
         {
             attractModeService.RestartAttractMode();
-            eclipseStateContext.MainWindowViewModel.DoRandomGame();
+            KeyStrategyCache.Instance.PageUpStrategy.DoKeyFunction(eclipseStateContext, this);
             return true;
         }
 
