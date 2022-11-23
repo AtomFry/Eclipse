@@ -50,13 +50,17 @@ namespace Eclipse.View
 
             // create a timer to delay swapping background images
             backgroundImageChangeDelay = new Timer(1000);
-            backgroundImageChangeDelay.Elapsed += BackgroundImageChangeDelay_Elapsed;
+            backgroundImageChangeDelay.Elapsed += FadeInCurrentGame;
             backgroundImageChangeDelay.AutoReset = false;
 
             // create a timer to delay playing movie and fading out background images 
-            fadeOutForMovieDelay = new Timer(EclipseSettingsDataProvider.Instance.EclipseSettings.VideoDelayInMilliseconds);
-            fadeOutForMovieDelay.Elapsed += FadeOutForMovieDelay_Elapsed;
-            fadeOutForMovieDelay.AutoReset = false;
+            if (EclipseSettingsDataProvider.Instance?.EclipseSettings?.VideoDelayInMilliseconds > 0)
+            {
+                fadeOutForMovieDelay = new Timer(EclipseSettingsDataProvider.Instance.EclipseSettings.VideoDelayInMilliseconds);
+                fadeOutForMovieDelay.Elapsed += FadeOutForMovieDelay_Elapsed;
+                fadeOutForMovieDelay.AutoReset = false;
+            }
+
             // get handle on the view model 
             mainWindowViewModel = DataContext as MainWindowViewModel;
 
@@ -74,6 +78,7 @@ namespace Eclipse.View
             attractModeService.MainWindowView = this;
         }
 
+        #region attract mode - screen saver stuff
         public void AttractModeTurnOff()
         {
             Dispatcher.Invoke(() =>
@@ -186,8 +191,8 @@ namespace Eclipse.View
                 FadeFrameworkElementOpacity(Image_AttractModeBackgroundImage, 0, 3000);
                 FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 0, 500);
             });
-
         }
+        #endregion
 
         public bool OnDown(bool held)
         {
@@ -372,6 +377,9 @@ namespace Eclipse.View
                         }
 
                         // start the timer - when it goes off, fade in the new background image
+                        // this delay waits until inputs are idle for 1 second before fading in the current selected game
+                        // so that the game details and images do not update immediately when you hold down left or right
+                        // when a new game is selected the timer is restarted so you have to be idle for a full second to trigger the game change
                         backgroundImageChangeDelay.Start();
                     }
                 }
@@ -382,19 +390,8 @@ namespace Eclipse.View
             });
         }
 
-        // delay for an interval when selecting games and then fade in the current selected game
-        private void BackgroundImageChangeDelay_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                FadeInCurrentGame();
-
-                // fade in the active background image 
-                FadeFrameworkElementOpacity(Image_Active_BackgroundImage, 1, 500, BackgroundImageFadeIn_Completed);
-            });
-        }
-
-        public void FadeInCurrentGame()
+        // when the above timer completes we swap to the current selected game 
+        public void FadeInCurrentGame(object sender, ElapsedEventArgs e)
         {
             Dispatcher.Invoke(() =>
             {
@@ -423,7 +420,20 @@ namespace Eclipse.View
                     Image_PlatformLogo.Source = activePlatformLogoImage;
                     Image_Bezel.Source = activeGameBezelImage;
 
+                    // fade in the game details 
                     FadeFrameworkElementOpacity(Grid_SelectedGameDetails, 1, 500);
+
+                    // todo: if video delay timer is 0, switch the order - play video and do not fade in background? 
+                    if ((Video_SelectedGame?.Source != null) && (fadeOutForMovieDelay == null))
+                    {
+                        // straight to playing video 
+                        FadeOutForMovieDelay_Elapsed(this, null);
+                    }
+                    else
+                    {
+                        // fade in the active background image 
+                        FadeFrameworkElementOpacity(Image_Active_BackgroundImage, 1, 500, BackgroundImageFadeIn_Completed);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -436,31 +446,19 @@ namespace Eclipse.View
         {
             Dispatcher.Invoke(() =>
             {
-                SwapActiveToDisplayedBackgroundImage();
+                // set displayed background image control to the current active image
+                Image_Displayed_BackgroundImage.Source = Image_Active_BackgroundImage.Source;
+
+                // hide the active image control
+                Image_Active_BackgroundImage.Opacity = 0;
 
                 // start timer to delay to fade out image and play video if there is a video
                 if (Video_SelectedGame?.Source != null)
                 {
-                   fadeOutForMovieDelay.Start();
-                }
-            });
-        }
-
-        private void SwapActiveToDisplayedBackgroundImage()
-        {
-            Dispatcher.Invoke(() =>
-            {
-                try
-                {
-                    // swap displayed image to current active image
-                    Image_Displayed_BackgroundImage.Source = Image_Active_BackgroundImage.Source;
-
-                    // hide the active image
-                    Image_Active_BackgroundImage.Opacity = 0;
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.LogException(ex, "BackgroundImageFadeInSlow_Completed");
+                    if (fadeOutForMovieDelay != null)
+                    {
+                        fadeOutForMovieDelay.Start();
+                    }
                 }
             });
         }
@@ -478,7 +476,7 @@ namespace Eclipse.View
                         PlayVideo(Video_SelectedGame);
 
                         // fade background images while the video plays
-                        FadeFrameworkElementOpacity(Image_Displayed_BackgroundImage, 0, 1000);
+                        FadeFrameworkElementOpacity(Image_Displayed_BackgroundImage, 0, 1000, SwapBackgroundImages);
                         FadeFrameworkElementOpacity(Image_Active_BackgroundImage, 0, 1000);
                         FadeFrameworkElementOpacity(Image_Selected_Background_Black, 0, 1000);
                     }
@@ -488,6 +486,15 @@ namespace Eclipse.View
             {
                 LogHelper.LogException(ex, "FadeOutForMovieDelay_Elapsed");
             }
+        }
+
+        private void SwapBackgroundImages(object sender, EventArgs e)
+        {
+            // set displayed background image control to the current active image
+            Image_Displayed_BackgroundImage.Source = Image_Active_BackgroundImage.Source;
+
+            // hide the active image control
+            Image_Active_BackgroundImage.Opacity = 0;
         }
 
         private void Video_SelectedGame_MediaEnded(object sender, RoutedEventArgs e)
@@ -515,6 +522,13 @@ namespace Eclipse.View
             {
                 Dispatcher.Invoke(() =>
                 {
+                    // make sure the displayed background image source is set to the active image before fading in
+                    // set displayed background image control to the current active image
+                    Image_Displayed_BackgroundImage.Source = Image_Active_BackgroundImage.Source;
+
+                    // hide the active image control
+                    Image_Active_BackgroundImage.Opacity = 0;
+
                     // fade in background image
                     FadeFrameworkElementOpacity(Image_Selected_Background_Black, 1, 500);
                     FadeFrameworkElementOpacity(Image_Displayed_BackgroundImage, 1, 500);
@@ -628,9 +642,7 @@ namespace Eclipse.View
             // reset everything to the active game 
             Dispatcher.Invoke(() =>
             {
-                FadeInCurrentGame();
-
-                SwapActiveToDisplayedBackgroundImage();
+                FadeInCurrentGame(this, null);
 
                 FadeInBackgroundImages();
             });
