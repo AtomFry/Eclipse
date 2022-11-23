@@ -45,7 +45,7 @@ namespace Eclipse.View
             InitializeComponent();
 
             SetupStopVideoAndAnimationWorker();
-            
+
             monitorWidth = ImageScaler.GetMonitorWidth();
 
             // create a timer to delay swapping background images
