@@ -38,8 +38,6 @@ namespace Eclipse.View
         private string activeReleaseYearText;
         private string activeGameTitleText;
 
-        private readonly Storyboard BackgroundImageFadeInSlowStoryBoard;
-
         private readonly int monitorWidth;
 
         public MainWindowView()
@@ -59,9 +57,6 @@ namespace Eclipse.View
             fadeOutForMovieDelay = new Timer(EclipseSettingsDataProvider.Instance.EclipseSettings.VideoDelayInMilliseconds);
             fadeOutForMovieDelay.Elapsed += FadeOutForMovieDelay_Elapsed;
             fadeOutForMovieDelay.AutoReset = false;
-
-            BackgroundImageFadeInSlowStoryBoard = FindResource("BackgroundImageFadeInSlow") as Storyboard;
-
             // get handle on the view model 
             mainWindowViewModel = DataContext as MainWindowViewModel;
 
@@ -265,11 +260,17 @@ namespace Eclipse.View
         }
 
         // animates change in opacity to specified opacity value and given duration
-        private void FadeFrameworkElementOpacity(FrameworkElement element, double newOpacityValue, double durationInMilliseconds)
+        private void FadeFrameworkElementOpacity(FrameworkElement element, double newOpacityValue, double durationInMilliseconds, EventHandler completedEventHandler = null)
         {
             if (element.Opacity != newOpacityValue)
             {
                 DoubleAnimation dimElement = new DoubleAnimation(element.Opacity, newOpacityValue, TimeSpan.FromMilliseconds(durationInMilliseconds));
+
+                if (completedEventHandler != null)
+                {
+                    dimElement.Completed += completedEventHandler;
+                }
+
                 element.BeginAnimation(OpacityProperty, dimElement);
             }
         }
@@ -384,13 +385,13 @@ namespace Eclipse.View
         // delay for an interval when selecting games and then fade in the current selected game
         private void BackgroundImageChangeDelay_Elapsed(object sender, ElapsedEventArgs e)
         {
-             Dispatcher.Invoke(() =>
-             {
+            Dispatcher.Invoke(() =>
+            {
                 FadeInCurrentGame();
 
                 // fade in the active background image 
-                BackgroundImageFadeInSlowStoryBoard.Begin(Image_Active_BackgroundImage);
-             });
+                FadeFrameworkElementOpacity(Image_Active_BackgroundImage, 1, 500, BackgroundImageFadeIn_Completed);
+            });
         }
 
         public void FadeInCurrentGame()
@@ -417,12 +418,11 @@ namespace Eclipse.View
                     Image_CommunityStarRating.Source = activeCommunityStarRatingImage;
                     Image_UserStarRating.Source = activeUserStarRatingImage;
                     Image_Playmode.Source = activePlayModeImage;
-
                     TextBlock_MatchPercentage.Text = activeMatchPercentageText;
-
                     TextBlock_ReleaseYear.Text = activeReleaseYearText;
                     Image_PlatformLogo.Source = activePlatformLogoImage;
                     Image_Bezel.Source = activeGameBezelImage;
+
                     FadeFrameworkElementOpacity(Grid_SelectedGameDetails, 1, 500);
                 }
                 catch (Exception ex)
@@ -432,7 +432,7 @@ namespace Eclipse.View
             });
         }
 
-        private void BackgroundImageFadeInSlow_Completed(object sender, EventArgs e)
+        private void BackgroundImageFadeIn_Completed(object sender, EventArgs e)
         {
             Dispatcher.Invoke(() =>
             {
@@ -441,7 +441,7 @@ namespace Eclipse.View
                 // start timer to delay to fade out image and play video if there is a video
                 if (Video_SelectedGame?.Source != null)
                 {
-                    fadeOutForMovieDelay.Start();
+                   fadeOutForMovieDelay.Start();
                 }
             });
         }
@@ -643,9 +643,15 @@ namespace Eclipse.View
             PauseVideo(Video_SelectedGame);
 
             // stop timers
-            fadeOutForMovieDelay.Stop();
-            backgroundImageChangeDelay.Stop();
-            BackgroundImageFadeInSlowStoryBoard.Stop();
+            if (backgroundImageChangeDelay != null)
+            {
+                backgroundImageChangeDelay.Stop();
+            }
+
+            if (fadeOutForMovieDelay != null)
+            {
+                fadeOutForMovieDelay.Stop();
+            }
         }
     }
 }

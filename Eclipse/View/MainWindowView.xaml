@@ -111,15 +111,6 @@
                                                         False="20,0 30,0 30,20 50,20 50,30 30,30 30,50 20,50 20,30 0,30 0,20 20,20"
                                                         True="0,20 30,20 30,25 0,25"/>
         <myconverters:BackgroundImageOversizeConverter x:Key="OversizeImageConverter"/>
-
-        <!-- 1-second image fade in - call when game changes -->
-        <Storyboard x:Key="BackgroundImageFadeInSlow">
-            <DoubleAnimation BeginTime="0:0:0" 
-                             Storyboard.TargetProperty="Opacity" 
-                             From="0" To="1" 
-                             Duration="0:0:0.5"
-                             Completed="BackgroundImageFadeInSlow_Completed"/>
-        </Storyboard>
     </UserControl.Resources>
     <Canvas Background="Black" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
             IsHitTestVisible="False"
