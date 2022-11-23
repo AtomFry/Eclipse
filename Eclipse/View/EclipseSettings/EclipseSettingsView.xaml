@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:Eclipse.View.EclipseSettings"
         xmlns:models="clr-namespace:Eclipse.Models"
         mc:Ignorable="d"
-        Title="Eclipse settings" 
+        Title="Manage eclipse" 
         Height="700" 
         Width="1100" 
         WindowStartupLocation="CenterScreen"
@@ -58,7 +58,7 @@
 
             <Label Grid.Column="1" Margin="5,0,0,0"
                    Foreground="#F0F0F0" HorizontalAlignment="Left" VerticalAlignment="Center"
-                   FontStyle="Normal" FontWeight="Bold" Content="Settings" />
+                   FontStyle="Normal" FontWeight="Bold" Content="Manage eclipse" />
         </Grid>
 
         <StackPanel Grid.Row="0" Grid.Column="3" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
@@ -87,7 +87,7 @@
 
             <Border Grid.Row="0" Height="35" Background="#2A2B34" 
                     HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="5,5,5,10">
-                <TextBlock Text="Settings" 
+                <TextBlock Text="General settings" 
                            HorizontalAlignment="Center" TextAlignment="Center" VerticalAlignment="Center" 
                            Background="#2A2B34" Foreground="#D3D3D5" />
             </Border>
@@ -179,7 +179,7 @@
                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                         Background="#343542" Foreground="#D3D3D5"
                         Value="{Binding ScreensaverDelayInSeconds, Mode=TwoWay}"
-                        Minimum="1" Maximum="600" TickFrequency="1" SmallChange="1" LargeChange="10" TickPlacement="BottomRight"
+                        Minimum="10" Maximum="600" TickFrequency="1" SmallChange="1" LargeChange="10" TickPlacement="BottomRight"
                         ToolTip="Amount of inactivity time (in seconds) to delay before starting the screen saver"/>
             </Grid>
         </Grid>

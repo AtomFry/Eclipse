@@ -50,7 +50,11 @@ namespace Eclipse.Service
         public void StopAttractMode()
         {
             attractModeDelay?.Stop();
-            MainWindowView.AttractModeTurnOff();
+
+            if (MainWindowView != null)
+            {
+                MainWindowView.AttractModeTurnOff();
+            }
         }
 
         public void RestartAttractMode()

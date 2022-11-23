@@ -134,9 +134,9 @@ namespace Eclipse.View.EclipseSettings
 
         private void InitializeTabPages()
         {
-            SelectedTabPage = "Settings";
+            SelectedTabPage = "General settings";
 
-            TabPages.Add("Settings");
+            TabPages.Add("General settings");
             TabPages.Add("Custom lists");
         }
 
@@ -232,7 +232,7 @@ namespace Eclipse.View.EclipseSettings
 
             switch (SelectedTabPage)
             {
-                case "Settings":
+                case "General settings":
                     SettingsVisibility = Visibility.Visible;
                     break;
 
