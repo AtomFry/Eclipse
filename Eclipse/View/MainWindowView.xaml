@@ -1279,26 +1279,24 @@
             <Rectangle Grid.Row="0" Grid.RowSpan="18"
                        Grid.Column="0" Grid.ColumnSpan="32"
                        IsHitTestVisible="False"
-                       Fill="Black"  Opacity="0.75"
+                       Fill="Black"  Opacity="0.85"
                        Panel.ZIndex="701"
                        Visibility="{Binding IsZoomingBox, Converter={StaticResource BoolToVis}}">
             </Rectangle>
 
             <Image Name="Image_ZoomedBox"
-                   Panel.ZIndex="702"
-                   Grid.Row="0" Grid.RowSpan="18"
-                   Grid.Column="0" Grid.ColumnSpan="32"
-                    IsHitTestVisible="False"
-                    Source="{Binding CurrentGameList.Game1.GameFiles.BigFrontImage}"
-                    HorizontalAlignment="Center" 
-                    VerticalAlignment="Stretch"
-                    RenderOptions.BitmapScalingMode="HighQuality" 
-                    Margin="2,2,2,2"
-                    Visibility="{Binding IsZoomingBox, Converter={StaticResource BoolToVis}}"
-                    Stretch="Uniform"/>
-
-
-
+                Panel.ZIndex="702"
+                Grid.Row="0" Grid.RowSpan="18"
+                Grid.Column="0" Grid.ColumnSpan="32"
+                IsHitTestVisible="False"
+                Source="{Binding CurrentGameList.Game1.GameFiles.BigFrontImage}"
+                HorizontalAlignment="Center" 
+                VerticalAlignment="Stretch"
+                RenderOptions.BitmapScalingMode="HighQuality" 
+                Margin="2,2,2,2"
+                Visibility="{Binding IsZoomingBox, Converter={StaticResource BoolToVis}}"
+                Stretch="Uniform"/>
+            
             <Grid Name="GameListGrid"
                   IsHitTestVisible="False"
                   Grid.Row="8"
