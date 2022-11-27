@@ -12,5 +12,7 @@ namespace Eclipse.Helpers
         public static int BackgroundColumnStartNormal = 16;
         public static int BackgroundColumnSpanFeature = 32;
         public static int BackgroundColumnSpanNormal = 16;
+
+        public static int GamesToPage = 7;
     }
 }

@@ -140,6 +140,8 @@
     <Compile Include="State\KeyStrategy\KeyStrategyPageUp.cs" />
     <Compile Include="State\KeyStrategy\KeyStrategyRandomGame.cs" />
     <Compile Include="State\KeyStrategy\KeyStrategyVoiceSearch.cs" />
+    <Compile Include="State\KeyStrategy\KeyStrategyVolumeDown.cs" />
+    <Compile Include="State\KeyStrategy\KeyStrategyVolumeUp.cs" />
     <Compile Include="State\KeyStrategy\KeyStrategyZoomBox.cs" />
     <Compile Include="State\LoadingState.cs" />
     <Compile Include="State\GameDetailOptionRatingState.cs" />

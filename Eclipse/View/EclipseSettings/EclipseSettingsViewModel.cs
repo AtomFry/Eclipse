@@ -134,10 +134,10 @@ namespace Eclipse.View.EclipseSettings
 
         private void InitializeTabPages()
         {
-            SelectedTabPage = "General settings";
+            SelectedTabPage = EclipseSettingsTabs.GeneralSettings;
 
-            TabPages.Add("General settings");
-            TabPages.Add("Custom lists");
+            TabPages.Add(EclipseSettingsTabs.GeneralSettings);
+            TabPages.Add(EclipseSettingsTabs.CustomLists);
         }
 
         private string selectedTabPage;
@@ -165,9 +165,49 @@ namespace Eclipse.View.EclipseSettings
             }
         }
 
+        public bool EnableScreenSaver
+        {
+            get => eclipseSettings.EnableScreenSaver;
+            set
+            {
+                eclipseSettings.EnableScreenSaver = value;
+                OnPropertyChanged("EnableScreenSaver");
+            }
+        }
+
+        public bool OpenSettingsPaneOnLeft
+        {
+            get => eclipseSettings.OpenSettingsPaneOnLeft;
+            set
+            {
+                eclipseSettings.OpenSettingsPaneOnLeft = value;
+                OnPropertyChanged("OpenSettingsPaneOnLeft");
+            }
+        }
+
+        public bool IncludeHiddenGames
+        {
+            get => eclipseSettings.IncludeHiddenGames;
+            set
+            {
+                eclipseSettings.IncludeHiddenGames = value;
+                OnPropertyChanged("IncludeHiddenGames");
+            }
+        }
+
+        public bool IncludeBrokenGames
+        {
+            get => eclipseSettings.IncludeBrokenGames;
+            set
+            {
+                eclipseSettings.IncludeBrokenGames = value;
+                OnPropertyChanged("IncludeBrokenGames");
+            }
+        }
+
         public bool ShowGameCountInList
         {
-            get { return eclipseSettings.ShowGameCountInList; }
+            get => eclipseSettings.ShowGameCountInList;
             set
             {
                 eclipseSettings.ShowGameCountInList = value;
@@ -177,7 +217,7 @@ namespace Eclipse.View.EclipseSettings
 
         public PageFunction PageUpFunction
         {
-            get { return eclipseSettings.PageUpFunction; }
+            get => eclipseSettings.PageUpFunction;
             set
             {
                 eclipseSettings.PageUpFunction = value;
@@ -232,11 +272,11 @@ namespace Eclipse.View.EclipseSettings
 
             switch (SelectedTabPage)
             {
-                case "General settings":
+                case EclipseSettingsTabs.GeneralSettings:
                     SettingsVisibility = Visibility.Visible;
                     break;
 
-                case "Custom lists":
+                case EclipseSettingsTabs.CustomLists:
                     CustomListsVisibility = Visibility.Visible;
                     break;
             }
@@ -245,7 +285,7 @@ namespace Eclipse.View.EclipseSettings
         private Visibility settingsVisibility;
         public Visibility SettingsVisibility
         {
-            get { return settingsVisibility; }
+            get => settingsVisibility;
             set
             {
                 settingsVisibility = value;
@@ -256,7 +296,7 @@ namespace Eclipse.View.EclipseSettings
         private Visibility customListsVisibility;
         public Visibility CustomListsVisibility
         {
-            get { return customListsVisibility; }
+            get => customListsVisibility;
             set
             {
                 customListsVisibility = value;
@@ -372,11 +412,19 @@ namespace Eclipse.View.EclipseSettings
         public async Task InitializeEclipseSettingsAsync()
         {
             eclipseSettings = await EclipseSettingsDataProvider.Instance.GetEclipseSettingsAsync();
+            
             DefaultListCategoryType = eclipseSettings.DefaultListCategoryType;
+
+            EnableVoiceSearch = eclipseSettings.EnableVoiceSearch;
+            EnableScreenSaver = eclipseSettings.EnableScreenSaver;
             ShowGameCountInList = eclipseSettings.ShowGameCountInList;
+            IncludeBrokenGames = eclipseSettings.IncludeBrokenGames;
+            IncludeHiddenGames = eclipseSettings.IncludeHiddenGames;
+            OpenSettingsPaneOnLeft = eclipseSettings.OpenSettingsPaneOnLeft;
+
             PageUpFunction = eclipseSettings.PageUpFunction;
             PageDownFunction = eclipseSettings.PageDownFunction;
-            EnableVoiceSearch = eclipseSettings.EnableVoiceSearch;
+
             ScreensaverDelayInSeconds = eclipseSettings.ScreensaverDelayInSeconds;
             VideoDelayInMilliseconds = eclipseSettings.VideoDelayInMilliseconds;
         }
@@ -392,5 +440,11 @@ namespace Eclipse.View.EclipseSettings
         public Uri IconUri { get; } = ResourceImages.EclipseSettingsIcon1;
 
         public ObservableCollection<string> TabPages { get; }
+    }
+
+    public static class EclipseSettingsTabs
+    {
+        public const string GeneralSettings = "General settings";
+        public const string CustomLists = "Custom lists";
     }
 }

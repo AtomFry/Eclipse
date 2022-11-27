@@ -60,6 +60,8 @@ namespace Eclipse.Models
         VoiceSearch,
         RandomGame,
         FlipBox,
-        ZoomBox
+        ZoomBox,
+        VolumeUp,
+        VolumeDown
     }
 }

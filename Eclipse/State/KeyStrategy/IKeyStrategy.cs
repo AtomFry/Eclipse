@@ -66,6 +66,14 @@ namespace Eclipse.State.KeyStrategy
                 case PageFunction.ZoomBox:
                     keyStrategy = new KeyStrategyZoomBox();
                     break;
+
+                case PageFunction.VolumeUp:
+                    keyStrategy = new KeyStrategyVolumeUp();
+                    break;
+
+                case PageFunction.VolumeDown:
+                    keyStrategy = new KeyStrategyVolumeDown();
+                    break;
             }
             return keyStrategy;
         }

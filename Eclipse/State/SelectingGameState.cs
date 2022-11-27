@@ -54,14 +54,17 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
 
-            if (eclipseStateContext.MainWindowViewModel.CurrentGameList.CurrentGameIndex == 0 && !held)
+            if (EclipseSettingsDataProvider.Instance.EclipseSettings.OpenSettingsPaneOnLeft
+                && eclipseStateContext.MainWindowViewModel.CurrentGameList.CurrentGameIndex == 0
+                && !held)
             {
                 // first game and going left and not held down, open the options 
                 eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingOptionsState)));
                 return true;
             }
 
-            if (eclipseStateContext.MainWindowViewModel.CurrentGameList.CurrentGameIndex != 0)
+            if (!EclipseSettingsDataProvider.Instance.EclipseSettings.OpenSettingsPaneOnLeft
+                || eclipseStateContext.MainWindowViewModel.CurrentGameList.CurrentGameIndex != 0)
             {
                 eclipseStateContext.MainWindowViewModel.CurrentGameList.CycleBackward();
                 eclipseStateContext.MainWindowViewModel.CallGameChangeFunction();

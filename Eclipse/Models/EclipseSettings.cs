@@ -5,16 +5,19 @@ namespace Eclipse.Models
     public class EclipseSettings
     {
         public ListCategoryType DefaultListCategoryType { get; set; }
+
+        public bool EnableVoiceSearch { get; set; }
+        public bool EnableScreenSaver { get; set; }
         public bool ShowGameCountInList { get; set; }
+        public bool IncludeHiddenGames { get; set; }
+        public bool IncludeBrokenGames { get; set; }
+        public bool OpenSettingsPaneOnLeft { get; set; }
 
         public PageFunction PageUpFunction { get; set; }
         public PageFunction PageDownFunction { get; set; }
 
-        public bool EnableVoiceSearch { get; set; }
-
         public int ScreensaverDelayInSeconds { get; set; }
         public int VideoDelayInMilliseconds { get; set; }
-
     }
 
 

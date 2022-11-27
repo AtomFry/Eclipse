@@ -1,20 +1,40 @@
-﻿namespace Eclipse.State.KeyStrategy
-{
+﻿using Eclipse.Helpers;
 
+namespace Eclipse.State.KeyStrategy
+{
     public class KeyStrategyPageUp : IKeyStrategy
     {
         public void DoKeyFunction(EclipseStateContext eclipseStateContext, EclipseState eclipseState)
         {
             if (IsValidForState(eclipseState))
             {
-                int currentIndex = eclipseStateContext.MainWindowViewModel.CurrentGameList.ListSetStartIndex +
-                                    eclipseStateContext.MainWindowViewModel.CurrentGameList.CurrentGameIndex;
+                // get the index of the current game in the list 
+                int currentIndex =
+                    eclipseStateContext.MainWindowViewModel.CurrentGameList.ListSetStartIndex +
+                    eclipseStateContext.MainWindowViewModel.CurrentGameList.CurrentGameIndex;
 
-                int nextIndex = currentIndex - 7;
+                // get the number of games in the list 
+                int gamesInList =
+                    eclipseStateContext.MainWindowViewModel.CurrentGameList.ListSetEndIndex -
+                    eclipseStateContext.MainWindowViewModel.CurrentGameList.ListSetStartIndex + 1;
 
-                if (nextIndex < eclipseStateContext.MainWindowViewModel.CurrentGameList.ListSetStartIndex)
+                int pageAmount = EclipseConstants.GamesToPage;
+                if (gamesInList <= pageAmount)
                 {
-                    nextIndex = eclipseStateContext.MainWindowViewModel.CurrentGameList.ListSetEndIndex;
+                    // for lists shorter than the page jump, move half of the list length
+                    pageAmount = gamesInList / 2;
+                }
+
+                int nextIndex = currentIndex;
+
+                // for lists longer than the page jump, cycle forward 
+                for (int i = 0; i < pageAmount; i++)
+                {
+                    nextIndex--;
+                    if (nextIndex < eclipseStateContext.MainWindowViewModel.CurrentGameList.ListSetStartIndex)
+                    {
+                        nextIndex = eclipseStateContext.MainWindowViewModel.CurrentGameList.ListSetEndIndex;
+                    }
                 }
 
                 eclipseStateContext.MainWindowViewModel.DoRandomGame(nextIndex);

@@ -77,9 +77,17 @@ namespace Eclipse.Service
                 ImageScaler.CropImage(fileInfo);
             }
 
+            bool includeBroken = EclipseSettingsDataProvider.Instance.EclipseSettings.IncludeBrokenGames;
+            bool includeHidden = EclipseSettingsDataProvider.Instance.EclipseSettings.IncludeHiddenGames;
+
             Parallel.ForEach(allGames, (game) =>
             {
-                if (game.Broken || game.Hide)
+                if (game.Broken && !includeBroken)
+                {
+                    return;
+                }
+
+                if (game.Hide && !includeHidden)
                 {
                     return;
                 }

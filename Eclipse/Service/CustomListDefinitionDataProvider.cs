@@ -371,15 +371,23 @@ namespace Eclipse.Service
 
         private EclipseSettings GetDefaultSettings()
         {
-            EclipseSettings eclipseSettings = new EclipseSettings();
+            EclipseSettings eclipseSettings = new EclipseSettings
+            {
+                DefaultListCategoryType = ListCategoryType.Platform,
 
-            eclipseSettings.DefaultListCategoryType = ListCategoryType.Platform;
-            eclipseSettings.ShowGameCountInList = true;
-            eclipseSettings.PageDownFunction = PageFunction.VoiceSearch;
-            eclipseSettings.PageUpFunction = PageFunction.RandomGame;
-            eclipseSettings.ScreensaverDelayInSeconds = 90;
-            eclipseSettings.EnableVoiceSearch = true;
-            eclipseSettings.VideoDelayInMilliseconds = 2000;
+                EnableScreenSaver = true,
+                EnableVoiceSearch = true,
+                ShowGameCountInList = true,
+                IncludeBrokenGames = false,
+                IncludeHiddenGames = false,
+                OpenSettingsPaneOnLeft = true,
+
+                PageDownFunction = PageFunction.VoiceSearch,
+                PageUpFunction = PageFunction.RandomGame,
+
+                ScreensaverDelayInSeconds = 90,
+                VideoDelayInMilliseconds = 2000
+            };
 
             return eclipseSettings;
         }

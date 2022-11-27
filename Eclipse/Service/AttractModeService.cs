@@ -29,10 +29,13 @@ namespace Eclipse.Service
 
         private AttractModeService()
         {
-            // create a timer to delay for attract mode
-            attractModeDelay = new Timer(EclipseSettingsDataProvider.Instance.EclipseSettings.ScreensaverDelayInSeconds * 1000);
-            attractModeDelay.Elapsed += AttractModeDelay_Elapsed;
-            attractModeDelay.AutoReset = false;
+            if (EclipseSettingsDataProvider.Instance.EclipseSettings.EnableScreenSaver)
+            {
+                // create a timer to delay for attract mode
+                attractModeDelay = new Timer(EclipseSettingsDataProvider.Instance.EclipseSettings.ScreensaverDelayInSeconds * 1000);
+                attractModeDelay.Elapsed += AttractModeDelay_Elapsed;
+                attractModeDelay.AutoReset = false;
+            }
         }
 
         // when the AttractModeDelay elapses, start into attract mode 
@@ -60,7 +63,7 @@ namespace Eclipse.Service
         public void RestartAttractMode()
         {
             StopAttractMode();
-            attractModeDelay.Start();
+            attractModeDelay?.Start();
         }
     }
 }

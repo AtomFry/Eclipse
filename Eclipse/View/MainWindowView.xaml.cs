@@ -73,6 +73,9 @@ namespace Eclipse.View
             // pass in a function that will update the rating image 
             mainWindowViewModel.UpdateRatingImageFunction = UpdateRatingImage;
 
+            // pass in a function that will adjust the video volume 
+            mainWindowViewModel.AdjustVideoVolumeFunction = AdjustVideoVolume;
+
             attractModeService = AttractModeService.Instance;
             attractModeService.MainWindowViewModel = mainWindowViewModel;
             attractModeService.MainWindowView = this;
@@ -537,6 +540,14 @@ namespace Eclipse.View
             catch (Exception ex)
             {
                 LogHelper.LogException(ex, "FadeInBackgroundImages");
+            }
+        }
+
+        public void AdjustVideoVolume(double increment)
+        {
+            if (Video_SelectedGame != null)
+            {
+                Video_SelectedGame.Volume += increment;
             }
         }
 

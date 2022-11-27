@@ -1246,12 +1246,12 @@
                   Panel.ZIndex="100">
                 <MediaElement Name="Video_SelectedGame"
                               IsHitTestVisible="False"
-                          Source="{Binding CurrentGameList.Game1.GameFiles.VideoPath}"
-                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Stretch="Uniform"
-                          LoadedBehavior="Manual"
-                          Panel.ZIndex="110"
-                          MediaOpened="Video_SelectedGame_MediaOpened"
-                          MediaEnded="Video_SelectedGame_MediaEnded">
+                              Source="{Binding CurrentGameList.Game1.GameFiles.VideoPath}"
+                              HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Stretch="Uniform"
+                              LoadedBehavior="Manual"
+                              Panel.ZIndex="110"
+                              MediaOpened="Video_SelectedGame_MediaOpened"
+                              MediaEnded="Video_SelectedGame_MediaEnded">
                 </MediaElement>
                 <Image  Name="Image_Bezel"
                         IsHitTestVisible="False"

@@ -21,6 +21,7 @@ namespace Eclipse.View
     public delegate void IncrementLoadingProgressFunction();
     public delegate void StopVideoAndAnimations();
     public delegate void UpdateRatingImage();
+    public delegate void AdjustVideoVolume(double increment);
 
     public class MainWindowViewModel : INotifyPropertyChanged
     {
@@ -226,6 +227,7 @@ namespace Eclipse.View
         public AnimateGameChangeFunction GameChangeFunction { get; set; }
         public StopVideoAndAnimations StopVideoAndAnimationsFunction { get; set; }
         public UpdateRatingImage UpdateRatingImageFunction { get; set; }
+        public AdjustVideoVolume AdjustVideoVolumeFunction { get; set; }
 
         private GameListSet currentGameListSet;
         public GameListSet CurrentGameListSet
@@ -668,6 +670,11 @@ namespace Eclipse.View
         private void CallUpdateRatingImageFunction()
         {
             UpdateRatingImageFunction?.Invoke();
+        }
+
+        public void CallAdjustVideoVolumeFunction(double increment)
+        {
+            AdjustVideoVolumeFunction?.Invoke(increment);
         }
 
         public void CycleListBackward()
