@@ -7,8 +7,11 @@ namespace Eclipse.Service
 {
     public sealed class PlaylistGameService
     {
+        private bool playlistsSet = false;
         private bool playlistGamesSet = false;
         private List<PlaylistGame> playlistGames;
+        private Dictionary<string, bool> playlists;
+
         public List<PlaylistGame> PlaylistGames
         {
             get
@@ -16,12 +19,15 @@ namespace Eclipse.Service
                 if (!playlistGamesSet)
                 {
                     playlistGames = new List<PlaylistGame>();
+                    playlists = new Dictionary<string, bool>();
 
                     IPlaylist[] allPlaylists = PluginHelper.DataManager.GetAllPlaylists();
                     foreach (IPlaylist playlist in allPlaylists)
                     {
                         if (playlist.HasGames(false, false))
                         {
+                            playlists.Add(playlist.SortTitleOrTitle, playlist.IncludeWithPlatforms);
+
                             IGame[] games = playlist.GetAllGames(true);
                             foreach (IGame game in games)
                             {
@@ -30,9 +36,34 @@ namespace Eclipse.Service
                         }
                     }
 
+                    playlistsSet = true;
                     playlistGamesSet = true;
                 }
                 return playlistGames;
+            }
+        }
+
+        public Dictionary<string, bool> Playlists
+        {
+            get
+            {
+                if (playlistsSet)
+                {
+                    playlists = new Dictionary<string, bool>();
+
+                    IPlaylist[] allPlaylists = PluginHelper.DataManager.GetAllPlaylists();
+                    foreach (IPlaylist playlist in allPlaylists)
+                    {
+                        if (playlist.HasGames(false, false))
+                        {
+                            playlists.Add(playlist.SortTitleOrTitle, playlist.IncludeWithPlatforms);
+                        }
+                    }
+
+                    playlistsSet = true;
+                }
+
+                return playlists;
             }
         }
 

@@ -339,6 +339,29 @@ namespace Eclipse.View
                 listOfGameList.Add(new GameList(gameGroup.Key, gameGroup.OrderBy(game => game.Game.SortTitleOrTitle).ToList()));
             }
 
+            // include playlists in platforms if they are set to be included 
+            if (listCategoryType == ListCategoryType.Platform)
+            {
+                Dictionary<string, bool> playlists = PlaylistGameService.Instance.Playlists;
+
+                var playListQuery = from gameMatch in gameBag
+                                    where gameMatch.CategoryType == ListCategoryType.Playlist
+                                    group gameMatch by gameMatch.CategoryValue into gameGroup
+                                    select gameGroup;
+
+                foreach (var gameGroup in playListQuery)
+                {
+                    bool includeInPlaylists = false;
+                    if (playlists.TryGetValue(gameGroup.Key, out includeInPlaylists))
+                    {
+                        if (includeInPlaylists)
+                        {
+                            listOfGameList.Add(new GameList(gameGroup.Key, gameGroup.OrderBy(game => game.Game.SortTitleOrTitle).ToList()));
+                        }
+                    }
+                }
+            }
+
             GameListSets.Add(new GameListSet
             {
                 GameLists = listOfGameList.OrderBy(list => list.SortOrder)
