@@ -795,6 +795,8 @@ namespace Eclipse.View
         {
             // get a handle on the current game 
             IGame currentGame = CurrentGameList?.Game1?.Game;
+            IAdditionalApplication additionalApplication = CurrentGameList?.Game1?.GameFiles?.GameVersionList?.SelectedGameVersion?.AdditionalApplication;
+
             if (currentGame != null)
             {
                 currentGame.LastPlayedDate = DateTime.Now;
@@ -807,7 +809,7 @@ namespace Eclipse.View
                 CallStopVideoAndAnimationsFunction();
 
                 // launch the game 
-                PluginHelper.BigBoxMainViewModel.PlayGame(currentGame, null, null, null);
+                PluginHelper.BigBoxMainViewModel.PlayGame(currentGame, additionalApplication, null, null);
             }
             return;
         }

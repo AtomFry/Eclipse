@@ -1,17 +1,192 @@
 ﻿using Eclipse.Helpers;
 using Eclipse.Service;
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Unbroken.LaunchBox.Plugins;
 using Unbroken.LaunchBox.Plugins.Data;
 
 namespace Eclipse.Models
 {
+    public class GameVersion : INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler PropertyChanged = delegate { };
+
+        public IGame Game { get; set; }
+
+        public IAdditionalApplication AdditionalApplication { get; set; }
+
+        public GameVersion(IGame _game, IAdditionalApplication _additionalApplication)
+        {
+            Game = _game;
+            AdditionalApplication = _additionalApplication;
+
+            if (AdditionalApplication != null)
+            {
+                Description = string.IsNullOrWhiteSpace(AdditionalApplication.Version) ?
+                    string.IsNullOrWhiteSpace(AdditionalApplication.Region) ?
+                    AdditionalApplication.Name :
+                    AdditionalApplication.Region :
+                    AdditionalApplication.Version;
+            }
+            else
+            {
+                Description = string.IsNullOrWhiteSpace(Game.Version) ?
+                    string.IsNullOrWhiteSpace(Game.Region) ?
+                    Game.Title :
+                    Game.Region :
+                    Game.Version;
+            }
+        }
+
+        private string description;
+        public string Description
+        {
+            get => description;
+            set
+            {
+                description = value;
+                PropertyChanged(this, new PropertyChangedEventArgs("Description"));
+            }
+        }
+
+        private bool selected;
+        public bool Selected
+        {
+            get => selected;
+            set
+            {
+                selected = value;
+                PropertyChanged(this, new PropertyChangedEventArgs("Selected"));
+            }
+        }
+    }
+
+    public class GameVersionList : INotifyPropertyChanged
+    {
+        public ObservableCollection<GameVersion> DisplayedGameVersions { get; set; }
+
+        public int SelectedIndex { get; set; }
+
+        private GameVersion selectedGameVersion;
+        public GameVersion SelectedGameVersion
+        {
+            get => selectedGameVersion;
+            set
+            {
+                selectedGameVersion = value;
+                PropertyChanged(this, new PropertyChangedEventArgs("SelectedGameVersion"));
+            }
+        }
+
+        private List<GameVersion> gameVersions;
+        public List<GameVersion> GameVersions
+        {
+            get => gameVersions;
+            set
+            {
+                gameVersions = value;
+                PropertyChanged(this, new PropertyChangedEventArgs("GameVersions"));
+            }
+        }
+
+        public GameVersionList(List<GameVersion> _gameVersions)
+        {
+            DisplayedGameVersions = new ObservableCollection<GameVersion>();
+
+            GameVersions = _gameVersions;
+
+            SelectedIndex = 0;
+
+            if (GameVersions.Count > 0)
+            {
+                GameVersions[SelectedIndex].Selected = true;
+            }
+
+            RefreshOptions();
+        }
+
+        public void CycleForward()
+        {
+            GameVersions[SelectedIndex].Selected = false;
+            if (SelectedIndex + 1 >= GameVersions.Count)
+            {
+                SelectedIndex = 0;
+            }
+            else
+            {
+                SelectedIndex++;
+            }
+            GameVersions[SelectedIndex].Selected = true;
+
+            SelectedGameVersion = GameVersions[SelectedIndex];
+        }
+
+        public void CycleBackward()
+        {
+            GameVersions[SelectedIndex].Selected = false;
+            if (SelectedIndex - 1 < 0)
+            {
+                SelectedIndex = GameVersions.Count - 1;
+            }
+            else
+            {
+                SelectedIndex--;
+            }
+            GameVersions[SelectedIndex].Selected = true;
+
+            SelectedGameVersion = GameVersions[SelectedIndex];
+        }
+
+        private void RefreshOptions()
+        {
+            DisplayedGameVersions.Clear();
+
+            if (GameVersions != null)
+            {
+                foreach (GameVersion option in GameVersions)
+                {
+                    DisplayedGameVersions.Add(option);
+                }
+            }
+
+            SelectedGameVersion = GameVersions[SelectedIndex];
+
+            HasAdditionalVersions = DisplayedGameVersions?.Count() > 1;
+        }
+
+        private bool hasAdditionalVersions;
+        public bool HasAdditionalVersions
+        {
+            get => hasAdditionalVersions;
+            set
+            {
+                hasAdditionalVersions = value;
+                PropertyChanged(this, new PropertyChangedEventArgs("HasAdditionalVersions"));
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged = delegate { };
+    }
+
     public class GameFiles : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
+
+        private GameVersionList gameVersionList;
+        public GameVersionList GameVersionList
+        {
+            get => gameVersionList;
+            set
+            {
+                gameVersionList = value;
+                PropertyChanged(this, new PropertyChangedEventArgs("GameVersionList"));
+            }
+        }
 
         public GameFiles(IGame game)
         {
@@ -246,8 +421,39 @@ namespace Eclipse.Models
                     VideoPath = ResolveVideoPath(game);
                     TitleToFileName = ResolveGameTitleFileName(game);
                     GameBezelImage = ResolveBezelPath(game, TitleToFileName);
+
+                    GameVersionList = ResolveAdditionalGameVersionList(game);
                 }
             });
+        }
+
+        private GameVersionList ResolveAdditionalGameVersionList(IGame game)
+        {
+            IAdditionalApplication[] allAdditionalAppsArray = game.GetAllAdditionalApplications();
+
+            List<GameVersion> additionalGameVersions = new List<GameVersion>();
+
+            // add the game 
+            additionalGameVersions.Add(new GameVersion(game, null));
+
+            // add any additional apps
+            if (allAdditionalAppsArray != null)
+            {
+                foreach (IAdditionalApplication additionalApplication in allAdditionalAppsArray)
+                {
+                    // do not include any auto-run additional apps
+                    // do not include an additional app if it's the same path as the main game
+                    if (!additionalApplication.AutoRunBefore
+                        && !additionalApplication.AutoRunAfter
+                        && additionalApplication.ApplicationPath != game.ApplicationPath)
+                    {
+                        additionalGameVersions.Add(new GameVersion(game, additionalApplication));
+                    }
+                }
+            }
+
+            GameVersionList gameVersionList = new GameVersionList(additionalGameVersions);
+            return gameVersionList;
         }
 
         private Uri ResolveBigBackImage()

@@ -52,6 +52,9 @@ namespace Eclipse.State
         public bool OnLeft(EclipseStateContext eclipseStateContext, bool held)
         {
             attractModeService.RestartAttractMode();
+
+            eclipseStateContext.MainWindowViewModel.CurrentGameList.Game1.GameFiles.GameVersionList.CycleBackward();
+
             return true;
         }
 
@@ -72,6 +75,9 @@ namespace Eclipse.State
         public bool OnRight(EclipseStateContext eclipseStateContext, bool held)
         {
             attractModeService.RestartAttractMode();
+
+            eclipseStateContext.MainWindowViewModel.CurrentGameList.Game1.GameFiles.GameVersionList.CycleForward();
+
             return true;
         }
 
