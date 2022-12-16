@@ -745,7 +745,8 @@
                                        Foreground="{Binding GameDetailOption, Converter={StaticResource GameDetailPlayGameColorConverter}}"
                                        Visibility="{Binding CurrentGameList.Game1.GameFiles.GameVersionList.HasAdditionalVersions, Converter={StaticResource BoolToVis}}"
                                        Grid.Column="2" Grid.ColumnSpan="1"
-                                       Margin="25,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Stretch" TextAlignment="Left" 
+                                       TextTrimming="CharacterEllipsis"
+                                       Margin="10,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Stretch" TextAlignment="Left" 
                                        FontFamily="Arial" FontSize="24"/>
                         </Grid>
                     </Border>
