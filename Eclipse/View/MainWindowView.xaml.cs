@@ -400,49 +400,58 @@ namespace Eclipse.View
             {
                 try
                 {
-                    if (Image_Active_BackgroundImage != null)
-                    {
-                        Image_Active_BackgroundImage.Opacity = 0;
-                        Image_Active_BackgroundImage.Source = activeBackgroundImage;
-                    }
-
-                    // fade in the active clear logo
-                    Image_Displayed_GameClearLogo.Source = activeClearLogo;
-                    FadeFrameworkElementOpacity(Image_Displayed_GameClearLogo, 1, 500);
-
-                    // fade in the game title 
-                    TextBlock_Displayed_GameTitle.Text = activeGameTitleText;
-                    FadeFrameworkElementOpacity(TextBlock_Displayed_GameTitle, 1, 500);
-
-                    // fade in the active game details 
-                    Image_CommunityStarRating.Source = activeCommunityStarRatingImage;
-                    Image_UserStarRating.Source = activeUserStarRatingImage;
-                    Image_Playmode.Source = activePlayModeImage;
-                    TextBlock_MatchPercentage.Text = activeMatchPercentageText;
-                    TextBlock_ReleaseYear.Text = activeReleaseYearText;
-                    Image_PlatformLogo.Source = activePlatformLogoImage;
-                    Image_Bezel.Source = activeGameBezelImage;
-
-                    // fade in the game details 
-                    FadeFrameworkElementOpacity(Grid_SelectedGameDetails, 1, 500);
-
-                    // todo: if video delay timer is 0, switch the order - play video and do not fade in background? 
-                    if ((Video_SelectedGame?.Source != null) && (fadeOutForMovieDelay == null))
-                    {
-                        // straight to playing video 
-                        FadeOutForMovieDelay_Elapsed(this, null);
-                    }
-                    else
-                    {
-                        // fade in the active background image 
-                        FadeFrameworkElementOpacity(Image_Active_BackgroundImage, 1, 500, BackgroundImageFadeIn_Completed);
-                    }
+                    FadeInCurrentGameDetails();
+                    FadeForMovie();
                 }
                 catch (Exception ex)
                 {
                     LogHelper.LogException(ex, "BackgroundImageChangeDelay_Elapsed");
                 }
             });
+        }
+
+        private void FadeInCurrentGameDetails()
+        {
+            if (Image_Active_BackgroundImage != null)
+            {
+                Image_Active_BackgroundImage.Opacity = 0;
+                Image_Active_BackgroundImage.Source = activeBackgroundImage;
+            }
+
+            // fade in the active clear logo
+            Image_Displayed_GameClearLogo.Source = activeClearLogo;
+            FadeFrameworkElementOpacity(Image_Displayed_GameClearLogo, 1, 500);
+
+            // fade in the game title 
+            TextBlock_Displayed_GameTitle.Text = activeGameTitleText;
+            FadeFrameworkElementOpacity(TextBlock_Displayed_GameTitle, 1, 500);
+
+            // fade in the active game details 
+            Image_CommunityStarRating.Source = activeCommunityStarRatingImage;
+            Image_UserStarRating.Source = activeUserStarRatingImage;
+            Image_Playmode.Source = activePlayModeImage;
+            TextBlock_MatchPercentage.Text = activeMatchPercentageText;
+            TextBlock_ReleaseYear.Text = activeReleaseYearText;
+            Image_PlatformLogo.Source = activePlatformLogoImage;
+            Image_Bezel.Source = activeGameBezelImage;
+
+            // fade in the game details 
+            FadeFrameworkElementOpacity(Grid_SelectedGameDetails, 1, 500);
+        }
+
+        private void FadeForMovie()
+        {
+            // todo: if video delay timer is 0, switch the order - play video and do not fade in background? 
+            if ((Video_SelectedGame?.Source != null) && (fadeOutForMovieDelay == null))
+            {
+                // straight to playing video 
+                FadeOutForMovieDelay_Elapsed(this, null);
+            }
+            else
+            {
+                // fade in the active background image 
+                FadeFrameworkElementOpacity(Image_Active_BackgroundImage, 1, 500, BackgroundImageFadeIn_Completed);
+            }
         }
 
         private void BackgroundImageFadeIn_Completed(object sender, EventArgs e)
@@ -653,8 +662,8 @@ namespace Eclipse.View
             // reset everything to the active game 
             Dispatcher.Invoke(() =>
             {
-                FadeInCurrentGame(this, null);
-
+                // FadeInCurrentGame(this, null);
+                FadeInCurrentGameDetails();
                 FadeInBackgroundImages();
             });
         }
