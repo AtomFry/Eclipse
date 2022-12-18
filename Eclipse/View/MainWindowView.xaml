@@ -110,6 +110,7 @@
         <myconverters:BooleanToPointCollectionConverter x:Key="FavoriteDetailIconConverter" 
                                                         False="20,0 30,0 30,20 50,20 50,30 30,30 30,50 20,50 20,30 0,30 0,20 20,20"
                                                         True="0,20 30,20 30,25 0,25"/>
+
         <myconverters:BackgroundImageOversizeConverter x:Key="OversizeImageConverter"/>
     </UserControl.Resources>
     <Canvas Background="Black" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
@@ -721,33 +722,36 @@
                         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="15,0,0,0" IsHitTestVisible="False">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="3*"/>
-                                <ColumnDefinition Width="13*"/>
+                                <ColumnDefinition Width="16*"/>
                             </Grid.ColumnDefinitions>
+                            
                             <Polygon Points="10,10 10,70 70,40" 
                                      IsHitTestVisible="False"
                                      Fill="{Binding GameDetailOption, Converter={StaticResource GameDetailPlayGameColorConverter}}"
-                                     Grid.Column="0" Grid.ColumnSpan="1"
+                                     Grid.Column="0"
                                      HorizontalAlignment="Stretch" VerticalAlignment="Center" Stretch="Uniform"
                                      RenderOptions.BitmapScalingMode="HighQuality"/>
                             
                             <TextBlock Name="TextBlock_DetailPlayButton"
                                        IsHitTestVisible="False"
                                        Text="Play"
+                                       Visibility="{Binding CurrentGameList.Game1.GameFiles.GameVersionList.HasAdditionalVersions, Converter={StaticResource InvertBooleanToVisibilityConverter}}"
                                        Foreground="{Binding GameDetailOption, Converter={StaticResource GameDetailPlayGameColorConverter}}"
-                                       Grid.Column="1" Grid.ColumnSpan="1"
+                                       Grid.Column="1"
                                        Margin="25,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Stretch" TextAlignment="Left" 
                                        FontFamily="Arial" FontSize="24"/>
 
                             <TextBlock Name="TextBlock_VersionText"
                                        IsHitTestVisible="False"
-                                       Text="{Binding CurrentGameList.Game1.GameFiles.GameVersionList.SelectedGameVersion.Description}"
-                                       Foreground="{Binding GameDetailOption, Converter={StaticResource GameDetailPlayGameColorConverter}}"
+                                       Foreground="{Binding GameDetailOption, Converter={StaticResource GameDetailPlayGameColorConverter}}"                                       
                                        Visibility="{Binding CurrentGameList.Game1.GameFiles.GameVersionList.HasAdditionalVersions, Converter={StaticResource BoolToVis}}"
-                                       Grid.Column="2" Grid.ColumnSpan="1"
+                                       Grid.Column="1"
                                        TextTrimming="CharacterEllipsis"
-                                       Margin="10,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Stretch" TextAlignment="Left" 
-                                       FontFamily="Arial" FontSize="24"/>
+                                       Margin="25,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Stretch" TextAlignment="Left" 
+                                       FontFamily="Arial" FontSize="24">
+                                <Run Text="Play "/>
+                                <Run Text="{Binding CurrentGameList.Game1.GameFiles.GameVersionList.SelectedGameVersion.Description}"/>
+                            </TextBlock>
                         </Grid>
                     </Border>
                 </Grid>
@@ -1179,6 +1183,14 @@
                         </Grid>
                     </Border>
                 </Grid>
+
+
+
+
+
+
+
+
             </Grid>
 
             <!-- Selected game background image -->

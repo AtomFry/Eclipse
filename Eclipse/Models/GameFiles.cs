@@ -445,6 +445,7 @@ namespace Eclipse.Models
                     // do not include an additional app if it's the same path as the main game
                     if (!additionalApplication.AutoRunBefore
                         && !additionalApplication.AutoRunAfter
+                        && additionalApplication.UseEmulator
                         && additionalApplication.ApplicationPath != game.ApplicationPath)
                     {
                         additionalGameVersions.Add(new GameVersion(game, additionalApplication));
