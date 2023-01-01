@@ -27,19 +27,51 @@ namespace Eclipse.Models
 
             if (AdditionalApplication != null)
             {
-                Description = string.IsNullOrWhiteSpace(AdditionalApplication.Version) ?
-                    string.IsNullOrWhiteSpace(AdditionalApplication.Region) ?
-                    AdditionalApplication.Name :
-                    AdditionalApplication.Region :
-                    AdditionalApplication.Version;
+                switch (EclipseSettingsDataProvider.Instance.EclipseSettings.AdditionalApplicationDisplayField)
+                {
+                    case AdditionalApplicationDisplayField.Name:
+                        Description = AdditionalApplication.Name;
+
+                        if (EclipseSettingsDataProvider.Instance.EclipseSettings.AdditionalVersionsRemovePlayPrefix)
+                        {
+                            if (AdditionalApplication?.Name?.StartsWith("Play ") == true)
+                            {
+                                Description = Description.Substring(5);
+                            }
+                        }
+
+                        if (EclipseSettingsDataProvider.Instance.EclipseSettings.AdditionalVersionsRemoveVersionPostfix)
+                        {
+                            if (AdditionalApplication?.Name?.EndsWith("Version...") == true)
+                            {
+                                Description = Description.Substring(0, Description.IndexOf("Version..."));
+                            }
+                        }
+
+                        break;
+
+                    case AdditionalApplicationDisplayField.Region:
+                        Description = AdditionalApplication.Region;
+                        break;
+
+                    case AdditionalApplicationDisplayField.Version:
+                        Description = AdditionalApplication.Version;
+                        break;
+
+                    default:
+                        break;
+                }
             }
             else
             {
+                /*
                 Description = string.IsNullOrWhiteSpace(Game.Version) ?
                     string.IsNullOrWhiteSpace(Game.Region) ?
                     Game.Title :
                     Game.Region :
                     Game.Version;
+                */
+                Description = Game.Title;
             }
         }
 
@@ -433,25 +465,56 @@ namespace Eclipse.Models
 
             List<GameVersion> additionalGameVersions = new List<GameVersion>();
 
-            // add the game 
-            additionalGameVersions.Add(new GameVersion(game, null));
-
-            // add any additional apps
-            if (allAdditionalAppsArray != null)
+            if (EclipseSettingsDataProvider.Instance.EclipseSettings.AdditionalVersionsEnable)
             {
-                foreach (IAdditionalApplication additionalApplication in allAdditionalAppsArray)
+                bool includeMainGame = true;
+
+                // add any additional apps
+                if (allAdditionalAppsArray != null)
                 {
-                    // do not include any auto-run additional apps
-                    // do not include an additional app if it's the same path as the main game
-                    if (!additionalApplication.AutoRunBefore
-                        && !additionalApplication.AutoRunAfter
-                        && additionalApplication.UseEmulator
-                        && additionalApplication.ApplicationPath != game.ApplicationPath)
+                    foreach (IAdditionalApplication additionalApplication in allAdditionalAppsArray)
                     {
+                        // if an additional app is the same path as the game, flag it so we don't add it
+                        if (additionalApplication.ApplicationPath == game.ApplicationPath)
+                        {
+                            includeMainGame = false;
+                        }
+
+                        // exclude if additional apps that are set to run before launching are set to be excluded
+                        if (additionalApplication.AutoRunBefore
+                            && EclipseSettingsDataProvider.Instance.EclipseSettings.AdditionalVersionsExcludeRunBefore)
+                        {
+                            continue;
+                        }
+
+                        // exclude if additional apps that are set to run after launching are set to be excluded
+                        if (additionalApplication.AutoRunAfter
+                            && EclipseSettingsDataProvider.Instance.EclipseSettings.AdditionalVersionsExcludeRunAfter)
+                        {
+                            continue;
+                        }
+
+                        // exclude if not using emulator/dosbox and set to only include emulator/dosbox 
+                        if (!additionalApplication.UseEmulator
+                            && !additionalApplication.UseDosBox
+                            && EclipseSettingsDataProvider.Instance.EclipseSettings.AdditionalVersionsOnlyEmulatorOrDosBox)
+                        {
+                            continue;
+                        }
+
                         additionalGameVersions.Add(new GameVersion(game, additionalApplication));
                     }
                 }
+
+                // only include the main game if it wasn't already included as an additional app
+                if (includeMainGame)
+                {
+                    // add the game 
+                    additionalGameVersions.Add(new GameVersion(game, null));
+                }
             }
+
+
 
             GameVersionList gameVersionList = new GameVersionList(additionalGameVersions);
             return gameVersionList;

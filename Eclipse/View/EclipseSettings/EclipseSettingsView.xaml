@@ -28,6 +28,12 @@
                 <x:Type TypeName="models:PageFunction"/>
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
+        <ObjectDataProvider x:Key="AdditionalVersionDisplayFieldEnum" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="models:AdditionalApplicationDisplayField"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+
     </Window.Resources>
     <Grid Background="#2A2B34">
         <Grid.RowDefinitions>
@@ -78,7 +84,7 @@
         <Rectangle Grid.Row="1" Grid.Column="3" Fill="#4D4F61" Stretch="Fill" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
         <Rectangle Grid.Row="1" Grid.Column="3" Fill="#3F404E" Stretch="Fill" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="1"/>
 
-        <Grid Name="SettingsGrid" Grid.Row="1" Grid.Column="3"  Visibility="{Binding SettingsVisibility}"
+        <Grid Name="ListSettingsGrid" Grid.Row="1" Grid.Column="3"  Visibility="{Binding ListSettingsTabVisibility}"
               HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Grid.RowDefinitions>
                 <RowDefinition Height="50"/>
@@ -87,7 +93,7 @@
 
             <Border Grid.Row="0" Height="35" Background="#2A2B34" 
                     HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="5,5,5,10">
-                <TextBlock Text="General settings" 
+                <TextBlock Text="List settings" 
                            HorizontalAlignment="Center" TextAlignment="Center" VerticalAlignment="Center" 
                            Background="#2A2B34" Foreground="#D3D3D5" />
             </Border>
@@ -122,85 +128,298 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
+
                 <Label Grid.Row="0" Grid.Column="0" Content="Default group" Foreground="#D3D3D5" 
-                       HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,2"/>
-                <ComboBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="1" Margin="10,2" 
+                       HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,2" />
+                <ComboBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Margin="10,2"
                           ToolTip="Specify which list category group to load by default on startup"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
                           Background="#343542" Foreground="#D3D3D5"
                           SelectedItem="{Binding DefaultListCategoryType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                           ItemsSource="{Binding Source={StaticResource ListCategoryTypeEnum}}"/>
 
-                <Label Grid.Row="2" Grid.Column="0" Content="Page up" Foreground="#D3D3D5" 
-                       HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,2"/>
-                <ComboBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="1" Margin="10,2" 
-                          ToolTip="Specify the functionality of the page up button"
-                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
-                          Background="#343542" Foreground="#D3D3D5"
-                          SelectedItem="{Binding PageUpFunction, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                          ItemsSource="{Binding Source={StaticResource PageFunctionEnum}}"/>
-
-                <Label Grid.Row="3" Grid.Column="0" Content="Page down" Foreground="#D3D3D5" 
-                       HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,2"/>
-                <ComboBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="1" Margin="10,2" 
-                          ToolTip="Specify the functionality of the page down button"
-                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
-                          Background="#343542" Foreground="#D3D3D5"
-                          SelectedItem="{Binding PageDownFunction, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                          ItemsSource="{Binding Source={StaticResource PageFunctionEnum}}"/>
-
-                <CheckBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Margin="10,2"
+                <CheckBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                           Background="#343542" Foreground="#D3D3D5"
                           IsChecked="{Binding ShowGameCountInList, Mode=TwoWay}"
                           ToolTip="Check this box to show the count of games after the list descriptions"
                           Content="Show game count in list description"/>
 
-                <CheckBox Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="2" Margin="10,2"
+                <CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                           Background="#343542" Foreground="#D3D3D5"
                           IsChecked="{Binding IncludeBrokenGames, Mode=TwoWay}"
                           ToolTip="Check this box to include games marked broken in lists"
                           Content="Include broken games"/>
 
-                <CheckBox Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Margin="10,2"
+                <CheckBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          Background="#343542" Foreground="#D3D3D5"
+                          IsChecked="{Binding IncludeHiddenGames, Mode=TwoWay}"
+                          ToolTip="Check this box to include games marked hidden in lists"
+                          Content="Include hidden games"/>
+            </Grid>
+        </Grid>
+
+        <Grid Name="InputSettingsGrid" Grid.Row="1" Grid.Column="3"  Visibility="{Binding InputTabVisibility}"
+              HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Height="35" Background="#2A2B34" 
+                    HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="5,5,5,10">
+                <TextBlock Text="Input settings" 
+                           HorizontalAlignment="Center" TextAlignment="Center" VerticalAlignment="Center" 
+                           Background="#2A2B34" Foreground="#D3D3D5" />
+            </Border>
+            <Grid Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Grid.Row="0" Grid.Column="0" Content="Page up" Foreground="#D3D3D5" 
+                       HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,2"/>
+                <ComboBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Margin="10,2" 
+                          ToolTip="Specify the functionality of the page up button"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+                          Background="#343542" Foreground="#D3D3D5"
+                          SelectedItem="{Binding PageUpFunction, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                          ItemsSource="{Binding Source={StaticResource PageFunctionEnum}}"/>
+
+                <Label Grid.Row="1" Grid.Column="0" Content="Page down" Foreground="#D3D3D5" 
+                       HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,2"/>
+                <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="10,2" 
+                          ToolTip="Specify the functionality of the page down button"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+                          Background="#343542" Foreground="#D3D3D5"
+                          SelectedItem="{Binding PageDownFunction, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                          ItemsSource="{Binding Source={StaticResource PageFunctionEnum}}"/>
+
+                <CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                           Background="#343542" Foreground="#D3D3D5"
                           IsChecked="{Binding EnableVoiceSearch, Mode=TwoWay}"
                           ToolTip="Check this box to enable voice search functionality"
                           Content="Enable voice search"/>
 
-                <CheckBox Grid.Row="5" Grid.Column="2" Grid.ColumnSpan="2" Margin="10,2"
+                <CheckBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                           Background="#343542" Foreground="#D3D3D5"
-                          IsChecked="{Binding IncludeHiddenGames, Mode=TwoWay}"
-                          ToolTip="Check this box to include games marked hidden in lists"
-                          Content="Include hidden games"/>
+                          IsChecked="{Binding OpenSettingsPaneOnLeft, Mode=TwoWay}"
+                          ToolTip="Check this box to allow the settings pane to open when you are on the first game in a list and you press left.  Note - escape also opens the settings pane."
+                          Content="Open settings pane on left press"/>
+            </Grid>
+        </Grid>
 
-                <CheckBox Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Margin="10,2"
+        <Grid Name="VersionSettingsGrid" Grid.Row="1" Grid.Column="3"  Visibility="{Binding VersionsTabVisibility}"
+              HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Height="35" Background="#2A2B34" 
+                    HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="5,5,5,10">
+                <TextBlock Text="Game version settings" 
+                           HorizontalAlignment="Center" TextAlignment="Center" VerticalAlignment="Center" 
+                           Background="#2A2B34" Foreground="#D3D3D5" />
+            </Border>
+            <Grid Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <CheckBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          Background="#343542" Foreground="#D3D3D5"
+                          IsChecked="{Binding AdditionalVersionsEnable, Mode=TwoWay}"
+                          ToolTip="Check this box to enable playing additional game versions that are combined with a game as additional applications from the game details screen"
+                          Content="Enable additional versions"/>
+
+                <Label Grid.Row="1" Grid.Column="0" Content="Display field" Foreground="#D3D3D5" 
+                       HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,2"/>
+                <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="10,2" 
+                          ToolTip="Specify the additional application field to display for versions"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+                          Background="#343542" Foreground="#D3D3D5"
+                          SelectedItem="{Binding AdditionalApplicationDisplayField, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                          ItemsSource="{Binding Source={StaticResource AdditionalVersionDisplayFieldEnum}}"/>
+
+                <CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          Background="#343542" Foreground="#D3D3D5"
+                          IsChecked="{Binding AdditionalVersionsRemovePlayPrefix, Mode=TwoWay}"
+                          ToolTip="Check this to remove &quot;Play&quot; from the start of the version description so that it does not repeat."
+                          Content="Suppress &quot;Play&quot; from version description"/>
+
+                <CheckBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          Background="#343542" Foreground="#D3D3D5"
+                          IsChecked="{Binding AdditionalVersionsRemoveVersionPostfix, Mode=TwoWay}"
+                          ToolTip="Check this to remove &quot;Version...&quot; from the end of the version description."
+                          Content="Suppress &quot;Version...&quot; from version description"/>
+
+
+                <CheckBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          Background="#343542" Foreground="#D3D3D5"
+                          IsChecked="{Binding AdditionalVersionsOnlyEmulatorOrDosBox, Mode=TwoWay}"
+                          ToolTip="Check this box to exclude additional apps that do not have an emulator or dos box path."
+                          Content="Only additional versions with emulators"/>
+
+                <CheckBox Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          Background="#343542" Foreground="#D3D3D5"
+                          IsChecked="{Binding AdditionalVersionsExcludeRunBefore, Mode=TwoWay}"
+                          ToolTip="Check this box to exclude additional apps that are set to run before games launch."
+                          Content="Exclude run before"/>
+
+                <CheckBox Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          Background="#343542" Foreground="#D3D3D5"
+                          IsChecked="{Binding AdditionalVersionsExcludeRunAfter, Mode=TwoWay}"
+                          ToolTip="Check this box to exclude additional apps that are set to run after games launch."
+                          Content="Exclude run after"/>
+            </Grid>
+        </Grid>
+
+        <Grid Name="OtherSettingsGrid" Grid.Row="1" Grid.Column="3"  Visibility="{Binding OtherTabVisibility}"
+              HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Height="35" Background="#2A2B34" 
+                    HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="5,5,5,10">
+                <TextBlock Text="Other settings" 
+                           HorizontalAlignment="Center" TextAlignment="Center" VerticalAlignment="Center" 
+                           Background="#2A2B34" Foreground="#D3D3D5" />
+            </Border>
+            <Grid Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <CheckBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                           Background="#343542" Foreground="#D3D3D5"
                           IsChecked="{Binding EnableScreenSaver, Mode=TwoWay}"
                           ToolTip="Check this box to enable the screen saver"
                           Content="Enable screen saver"/>
 
-                <CheckBox Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="2" Margin="10,2"
-                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                          Background="#343542" Foreground="#D3D3D5"
-                          IsChecked="{Binding OpenSettingsPaneOnLeft, Mode=TwoWay}"
-                          ToolTip="Check this box to allow the settings pane to open when you are on the first game in a list and you press left.  Note - escape also opens the settings pane."
-                          Content="Open settings pane on left press"/>
-
-                <StackPanel Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"                             
+                <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"                             
                             HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
                     <Label Content="Screensaver delay: " Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
                     <Label Content="{Binding ScreensaverDelayInSeconds}" ContentStringFormat="N1" Margin="2,0" 
                            Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
                     <Label Content=" second(s)" Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
                 </StackPanel>
-                <Slider Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" Margin="10,2"
+                <Slider Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                         Background="#343542" Foreground="#D3D3D5"
                         Value="{Binding ScreensaverDelayInSeconds, Mode=TwoWay}"
@@ -208,25 +427,24 @@
                         Minimum="10" Maximum="600" TickFrequency="1" SmallChange="1" LargeChange="10" TickPlacement="BottomRight"
                         ToolTip="Amount of inactivity time (in seconds) to delay before starting the screen saver"/>
 
-                <StackPanel Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"                             
+
+                <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"                             
                             HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
                     <Label Content="Video delay: " Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
                     <Label Content="{Binding VideoDelayInMilliseconds}" ContentStringFormat="N1" Margin="2,0" 
                            Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
                     <Label Content=" millisecond(s)" Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
                 </StackPanel>
-                <Slider Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="2" Margin="10,2"
+                <Slider Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                         Background="#343542" Foreground="#D3D3D5"
                         Value="{Binding VideoDelayInMilliseconds, Mode=TwoWay}"
                         Minimum="0" Maximum="10000" TickFrequency="1" SmallChange="250" LargeChange="1000" TickPlacement="BottomRight"
                         ToolTip="Amount of time to delay after selecting a game (in milliseconds) before playing the video"/>
-
-
             </Grid>
         </Grid>
 
-        <Grid Name="CustomListsGrid" Grid.Row="1" Grid.Column="3"  Visibility="{Binding CustomListsVisibility}"
+        <Grid Name="CustomListsGrid" Grid.Row="1" Grid.Column="3"  Visibility="{Binding CustomListsTabVisibility}"
               HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Grid.RowDefinitions>
                 <RowDefinition Height="50"/>

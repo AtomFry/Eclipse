@@ -134,9 +134,12 @@ namespace Eclipse.View.EclipseSettings
 
         private void InitializeTabPages()
         {
-            SelectedTabPage = EclipseSettingsTabs.GeneralSettings;
+            SelectedTabPage = EclipseSettingsTabs.Lists;
 
-            TabPages.Add(EclipseSettingsTabs.GeneralSettings);
+            TabPages.Add(EclipseSettingsTabs.Lists);
+            TabPages.Add(EclipseSettingsTabs.Inputs);
+            TabPages.Add(EclipseSettingsTabs.Versions);
+            TabPages.Add(EclipseSettingsTabs.Other);
             TabPages.Add(EclipseSettingsTabs.CustomLists);
         }
 
@@ -215,6 +218,76 @@ namespace Eclipse.View.EclipseSettings
             }
         }
 
+        public bool AdditionalVersionsEnable
+        {
+            get => eclipseSettings.AdditionalVersionsEnable;
+            set
+            {
+                eclipseSettings.AdditionalVersionsEnable = value;
+                OnPropertyChanged("AdditionalVersionsEnable");
+            }
+        }
+
+        public bool AdditionalVersionsExcludeRunBefore
+        {
+            get => eclipseSettings.AdditionalVersionsExcludeRunBefore;
+            set
+            {
+                eclipseSettings.AdditionalVersionsExcludeRunBefore = value;
+                OnPropertyChanged("AdditionalVersionsExcludeRunBefore");
+            }
+        }
+
+        public bool AdditionalVersionsExcludeRunAfter
+        {
+            get => eclipseSettings.AdditionalVersionsExcludeRunAfter;
+            set
+            {
+                eclipseSettings.AdditionalVersionsExcludeRunAfter = value;
+                OnPropertyChanged("AdditionalVersionsExcludeRunAfter");
+            }
+        }
+
+        public bool AdditionalVersionsOnlyEmulatorOrDosBox
+        {
+            get => eclipseSettings.AdditionalVersionsOnlyEmulatorOrDosBox;
+            set
+            {
+                eclipseSettings.AdditionalVersionsOnlyEmulatorOrDosBox = value;
+                OnPropertyChanged("AdditionalVersionsOnlyEmulatorOrDosBox");
+            }
+        }
+
+        public AdditionalApplicationDisplayField AdditionalApplicationDisplayField
+        {
+            get => eclipseSettings.AdditionalApplicationDisplayField;
+            set
+            {
+                eclipseSettings.AdditionalApplicationDisplayField = value;
+                OnPropertyChanged("AdditionalApplicationDisplayField");
+            }
+        }
+
+        public bool AdditionalVersionsRemovePlayPrefix
+        {
+            get => eclipseSettings.AdditionalVersionsRemovePlayPrefix;
+            set
+            {
+                eclipseSettings.AdditionalVersionsRemovePlayPrefix = value;
+                OnPropertyChanged("AdditionalVersionsRemovePlayPrefix");
+            }
+        }
+
+        public bool AdditionalVersionsRemoveVersionPostfix
+        {
+            get => eclipseSettings.AdditionalVersionsRemoveVersionPostfix;
+            set
+            {
+                eclipseSettings.AdditionalVersionsRemoveVersionPostfix = value;
+                OnPropertyChanged("AdditionalVersionsRemoveVersionPostfix");
+            }
+        }
+
         public PageFunction PageUpFunction
         {
             get => eclipseSettings.PageUpFunction;
@@ -267,40 +340,88 @@ namespace Eclipse.View.EclipseSettings
 
         private void UpdateTabVisibility()
         {
-            SettingsVisibility = Visibility.Collapsed;
-            CustomListsVisibility = Visibility.Collapsed;
+            ListSettingsTabVisibility = Visibility.Collapsed;
+            InputTabVisibility = Visibility.Collapsed;
+            VersionsTabVisibility = Visibility.Collapsed;
+            OtherTabVisibility = Visibility.Collapsed;
+            CustomListsTabVisibility = Visibility.Collapsed;
 
             switch (SelectedTabPage)
             {
-                case EclipseSettingsTabs.GeneralSettings:
-                    SettingsVisibility = Visibility.Visible;
+                case EclipseSettingsTabs.Lists:
+                    ListSettingsTabVisibility = Visibility.Visible;
+                    break;
+
+                case EclipseSettingsTabs.Inputs:
+                    InputTabVisibility = Visibility.Visible;
+                    break;
+
+                case EclipseSettingsTabs.Other:
+                    OtherTabVisibility = Visibility.Visible;
+                    break;
+
+                case EclipseSettingsTabs.Versions:
+                    VersionsTabVisibility = Visibility.Visible;
                     break;
 
                 case EclipseSettingsTabs.CustomLists:
-                    CustomListsVisibility = Visibility.Visible;
+                    CustomListsTabVisibility = Visibility.Visible;
                     break;
             }
         }
 
-        private Visibility settingsVisibility;
-        public Visibility SettingsVisibility
+        private Visibility inputTabVisibility;
+        public Visibility InputTabVisibility
         {
-            get => settingsVisibility;
+            get => inputTabVisibility;
             set
             {
-                settingsVisibility = value;
-                OnPropertyChanged("SettingsVisibility");
+                inputTabVisibility = value;
+                OnPropertyChanged("InputTabVisibility");
             }
         }
 
-        private Visibility customListsVisibility;
-        public Visibility CustomListsVisibility
+        private Visibility versionsTabVisibility;
+        public Visibility VersionsTabVisibility
         {
-            get => customListsVisibility;
+            get => versionsTabVisibility;
             set
             {
-                customListsVisibility = value;
-                OnPropertyChanged("CustomListsVisibility");
+                versionsTabVisibility = value;
+                OnPropertyChanged("VersionsTabVisibility");
+            }
+        }
+
+        private Visibility otherTabVisibility;
+        public Visibility OtherTabVisibility
+        {
+            get => otherTabVisibility;
+            set
+            {
+                otherTabVisibility = value;
+                OnPropertyChanged("OtherTabVisibility");
+            }
+        }
+
+        private Visibility listSettingsTabVisibility;
+        public Visibility ListSettingsTabVisibility
+        {
+            get => listSettingsTabVisibility;
+            set
+            {
+                listSettingsTabVisibility = value;
+                OnPropertyChanged("ListSettingsTabVisibility");
+            }
+        }
+
+        private Visibility customListsTabVisibility;
+        public Visibility CustomListsTabVisibility
+        {
+            get => customListsTabVisibility;
+            set
+            {
+                customListsTabVisibility = value;
+                OnPropertyChanged("CustomListsTabVisibility");
             }
         }
 
@@ -412,7 +533,7 @@ namespace Eclipse.View.EclipseSettings
         public async Task InitializeEclipseSettingsAsync()
         {
             eclipseSettings = await EclipseSettingsDataProvider.Instance.GetEclipseSettingsAsync();
-            
+
             DefaultListCategoryType = eclipseSettings.DefaultListCategoryType;
 
             EnableVoiceSearch = eclipseSettings.EnableVoiceSearch;
@@ -421,6 +542,14 @@ namespace Eclipse.View.EclipseSettings
             IncludeBrokenGames = eclipseSettings.IncludeBrokenGames;
             IncludeHiddenGames = eclipseSettings.IncludeHiddenGames;
             OpenSettingsPaneOnLeft = eclipseSettings.OpenSettingsPaneOnLeft;
+
+            AdditionalVersionsEnable = eclipseSettings.AdditionalVersionsEnable;
+            AdditionalVersionsExcludeRunBefore = eclipseSettings.AdditionalVersionsExcludeRunBefore;
+            AdditionalVersionsExcludeRunAfter = eclipseSettings.AdditionalVersionsExcludeRunAfter;
+            AdditionalVersionsOnlyEmulatorOrDosBox = eclipseSettings.AdditionalVersionsOnlyEmulatorOrDosBox;
+            AdditionalApplicationDisplayField = eclipseSettings.AdditionalApplicationDisplayField;
+            AdditionalVersionsRemovePlayPrefix = eclipseSettings.AdditionalVersionsRemovePlayPrefix;
+            AdditionalVersionsRemoveVersionPostfix = eclipseSettings.AdditionalVersionsRemoveVersionPostfix;
 
             PageUpFunction = eclipseSettings.PageUpFunction;
             PageDownFunction = eclipseSettings.PageDownFunction;
@@ -444,7 +573,10 @@ namespace Eclipse.View.EclipseSettings
 
     public static class EclipseSettingsTabs
     {
-        public const string GeneralSettings = "General settings";
+        public const string Lists = "Lists";
+        public const string Inputs = "Inputs";
+        public const string Versions = "Versions";
         public const string CustomLists = "Custom lists";
+        public const string Other = "Other";
     }
 }

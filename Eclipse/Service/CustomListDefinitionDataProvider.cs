@@ -381,6 +381,13 @@ namespace Eclipse.Service
                 IncludeBrokenGames = false,
                 IncludeHiddenGames = false,
                 OpenSettingsPaneOnLeft = true,
+                AdditionalVersionsEnable = true,
+                AdditionalVersionsExcludeRunBefore = true,
+                AdditionalVersionsExcludeRunAfter = true,
+                AdditionalVersionsOnlyEmulatorOrDosBox = true,
+                AdditionalApplicationDisplayField = AdditionalApplicationDisplayField.Name,
+                AdditionalVersionsRemovePlayPrefix = true,
+                AdditionalVersionsRemoveVersionPostfix = true,
 
                 PageDownFunction = PageFunction.VoiceSearch,
                 PageUpFunction = PageFunction.RandomGame,

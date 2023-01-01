@@ -6,6 +6,14 @@ namespace Eclipse.Models
     {
         public ListCategoryType DefaultListCategoryType { get; set; }
 
+        public bool AdditionalVersionsEnable { get; set; }
+        public bool AdditionalVersionsExcludeRunBefore { get; set; }
+        public bool AdditionalVersionsExcludeRunAfter { get; set; }
+        public bool AdditionalVersionsOnlyEmulatorOrDosBox { get; set; }
+        public AdditionalApplicationDisplayField AdditionalApplicationDisplayField { get; set; }
+        public bool AdditionalVersionsRemovePlayPrefix { get; set; }
+        public bool AdditionalVersionsRemoveVersionPostfix { get; set; }
+
         public bool EnableVoiceSearch { get; set; }
         public bool EnableScreenSaver { get; set; }
         public bool ShowGameCountInList { get; set; }
@@ -49,6 +57,13 @@ namespace Eclipse.Models
     {
         public GameFieldEnum GameFieldEnum { get; set; }
         public SortDirection SortDirection { get; set; }
+    }
+
+    public enum AdditionalApplicationDisplayField
+    {
+        Name,
+        Version,
+        Region
     }
 
     public enum GameFieldType
