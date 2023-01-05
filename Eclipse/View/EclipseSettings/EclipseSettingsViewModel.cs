@@ -433,7 +433,7 @@ namespace Eclipse.View.EclipseSettings
 
         private async void OnCustomListDefinitionSavedSavedAsync(string id)
         {
-            await LoadAsync();
+            await InitializeCustomListsAsync();
 
             CustomListDefinition customListDefinition = CustomListDefinitions.SingleOrDefault(l => l.Id == id);
             if (customListDefinition != null)
@@ -453,11 +453,12 @@ namespace Eclipse.View.EclipseSettings
 
             string customListName = string.IsNullOrWhiteSpace(SelectedCustomListDefinition?.Description) ? "list" : SelectedCustomListDefinition.Description;
 
-            MessageDialogResult messageDialogResult = MessageDialogHelper.ShowOKCancelDialog($"Delete {customListName}?", "Delete patcher");
+            MessageDialogResult messageDialogResult = MessageDialogHelper.ShowOKCancelDialog($"Delete {customListName}?", "Delete custom list");
             if (messageDialogResult == MessageDialogResult.OK)
             {
                 await customListDefinitionDataProvider.DeleteCustomListDefinition(SelectedCustomListDefinition.Id);
-                await LoadAsync();
+
+                await InitializeCustomListsAsync();
             }
 
             SelectedCustomListDefinition = null;
@@ -518,6 +519,11 @@ namespace Eclipse.View.EclipseSettings
         {
             await InitializeEclipseSettingsAsync();
 
+            await InitializeCustomListsAsync();
+        }
+
+        public async Task InitializeCustomListsAsync()
+        {
             CustomListDefinitions.Clear();
 
             IEnumerable<CustomListDefinition> customListDefinitions = await customListDefinitionDataProvider.GetAllCustomListDefinitionsAsync();
