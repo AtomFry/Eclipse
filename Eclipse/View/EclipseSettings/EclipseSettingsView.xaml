@@ -18,11 +18,6 @@
         MouseDown="Window_MouseDown">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
-        <ObjectDataProvider x:Key="ListCategoryTypeEnum" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
-            <ObjectDataProvider.MethodParameters>
-                <x:Type TypeName="models:ListCategoryType"/>
-            </ObjectDataProvider.MethodParameters>
-        </ObjectDataProvider>
         <ObjectDataProvider x:Key="PageFunctionEnum" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
             <ObjectDataProvider.MethodParameters>
                 <x:Type TypeName="models:PageFunction"/>
@@ -142,7 +137,7 @@
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
                           Background="#343542" Foreground="#D3D3D5"
                           SelectedItem="{Binding DefaultListCategoryType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                          ItemsSource="{Binding Source={StaticResource ListCategoryTypeEnum}}"/>
+                          ItemsSource="{Binding DefaultListTypes}"/>
 
                 <CheckBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch"

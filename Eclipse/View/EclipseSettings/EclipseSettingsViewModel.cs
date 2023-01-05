@@ -48,6 +48,7 @@ namespace Eclipse.View.EclipseSettings
         {
             TabPages = new ObservableCollection<string>();
             InitializeTabPages();
+            InitializeListTypes();
 
             CustomListDefinitions = new ObservableCollection<CustomListDefinition>();
 
@@ -65,6 +66,8 @@ namespace Eclipse.View.EclipseSettings
 
             eventAggregator.GetEvent<CustomListDefinitionSaved>().Subscribe(OnCustomListDefinitionSavedSavedAsync);
             eventAggregator.GetEvent<CustomListDefinitionEditClosing>().Subscribe(OnCustomListDefinitionEditClosed);
+
+
         }
 
         private void OnCancelExecute()
@@ -130,6 +133,19 @@ namespace Eclipse.View.EclipseSettings
             SelectedCustomListDefinition = currentCustomListDefinition;
 
             listOrderChanged = true;
+        }
+
+        private void InitializeListTypes()
+        {
+            string[] listTypes = Enum.GetNames(typeof(ListCategoryType));
+
+            IEnumerable<object> listOfTypes = from listType in listTypes
+                                              where listType != ListCategoryType.VoiceSearch.ToString()
+                                              && listType != ListCategoryType.RandomGame.ToString()
+                                              && listType != ListCategoryType.MoreLikeThis.ToString()
+                                              select Enum.Parse(typeof(ListCategoryType), listType);
+
+            DefaultListTypes = listOfTypes;
         }
 
         private void InitializeTabPages()
@@ -335,6 +351,17 @@ namespace Eclipse.View.EclipseSettings
             {
                 eclipseSettings.EnableVoiceSearch = value;
                 OnPropertyChanged("EnableVoiceSearch");
+            }
+        }
+
+        private IEnumerable<object> defaultListTypes;
+        public IEnumerable<object> DefaultListTypes
+        {
+            get { return defaultListTypes; }
+            set
+            {
+                defaultListTypes = value;
+                OnPropertyChanged("DefaultListTypes");
             }
         }
 
