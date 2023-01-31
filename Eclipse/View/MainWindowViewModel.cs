@@ -21,7 +21,6 @@ namespace Eclipse.View
     public delegate void IncrementLoadingProgressFunction();
     public delegate void StopVideoAndAnimations();
     public delegate void UpdateRatingImage();
-    public delegate void AdjustVideoVolume(double increment);
 
     public class MainWindowViewModel : INotifyPropertyChanged
     {
@@ -42,6 +41,8 @@ namespace Eclipse.View
         private bool isRatingGame;
         private bool isZoomingBox;
 
+        private double videoVolume;
+
         private GameDetailOption gameDetailOption;
         private string errorMessage;
 
@@ -53,7 +54,22 @@ namespace Eclipse.View
 
             FeatureOption = FeatureGameOption.PlayGame;
 
+            VideoVolume = EclipseSettingsDataProvider.Instance?.EclipseSettings?.DefaultVideoVolume ?? 0.5;
+
             EclipseStateContext = new EclipseStateContext(this);
+        }
+
+        public double VideoVolume
+        {
+            get => videoVolume;
+            set
+            {
+                if (videoVolume != value)
+                {
+                    videoVolume = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("VideoVolume"));
+                }
+            }
         }
 
         public bool IsInitializing
@@ -227,7 +243,6 @@ namespace Eclipse.View
         public AnimateGameChangeFunction GameChangeFunction { get; set; }
         public StopVideoAndAnimations StopVideoAndAnimationsFunction { get; set; }
         public UpdateRatingImage UpdateRatingImageFunction { get; set; }
-        public AdjustVideoVolume AdjustVideoVolumeFunction { get; set; }
 
         private GameListSet currentGameListSet;
         public GameListSet CurrentGameListSet
@@ -695,9 +710,20 @@ namespace Eclipse.View
             UpdateRatingImageFunction?.Invoke();
         }
 
-        public void CallAdjustVideoVolumeFunction(double increment)
+        public void AdjustVideoVolume(double increment)
         {
-            AdjustVideoVolumeFunction?.Invoke(increment);
+            if (VideoVolume + increment > 1)
+            {
+                VideoVolume = 1;
+            }
+            else if (VideoVolume + increment < 0)
+            {
+                VideoVolume = 0;
+            }
+            else
+            {
+                VideoVolume += increment;
+            }
         }
 
         public void CycleListBackward()

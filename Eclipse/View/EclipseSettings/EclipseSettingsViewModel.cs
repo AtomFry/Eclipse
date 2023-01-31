@@ -224,6 +224,26 @@ namespace Eclipse.View.EclipseSettings
             }
         }
 
+        public bool DisableVideos
+        {
+            get => eclipseSettings.DisableVideos;
+            set
+            {
+                eclipseSettings.DisableVideos = value;
+                OnPropertyChanged("DisableVideos");
+            }
+        }
+
+        public double DefaultVideoVolume
+        {
+            get => eclipseSettings.DefaultVideoVolume;
+            set
+            {
+                eclipseSettings.DefaultVideoVolume = value;
+                OnPropertyChanged("DefaultVideoVolume");
+            }
+        }
+
         public bool ShowGameCountInList
         {
             get => eclipseSettings.ShowGameCountInList;
@@ -568,6 +588,9 @@ namespace Eclipse.View.EclipseSettings
             eclipseSettings = await EclipseSettingsDataProvider.Instance.GetEclipseSettingsAsync();
 
             DefaultListCategoryType = eclipseSettings.DefaultListCategoryType;
+
+            DisableVideos = eclipseSettings.DisableVideos;
+            DefaultVideoVolume = eclipseSettings.DefaultVideoVolume;
 
             EnableVoiceSearch = eclipseSettings.EnableVoiceSearch;
             EnableScreenSaver = eclipseSettings.EnableScreenSaver;

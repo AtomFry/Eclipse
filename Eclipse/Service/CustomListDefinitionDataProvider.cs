@@ -358,6 +358,7 @@ namespace Eclipse.Service
 
             // read and deserialize the file
             string json = File.ReadAllText(EclipseSettingsFile);
+
             return JsonConvert.DeserializeObject<EclipseSettings>(json);
         }
 
@@ -375,6 +376,7 @@ namespace Eclipse.Service
             {
                 DefaultListCategoryType = ListCategoryType.Platform,
 
+                DisableVideos = false,
                 EnableScreenSaver = true,
                 EnableVoiceSearch = true,
                 ShowGameCountInList = true,
@@ -393,7 +395,8 @@ namespace Eclipse.Service
                 PageUpFunction = PageFunction.RandomGame,
 
                 ScreensaverDelayInSeconds = 90,
-                VideoDelayInMilliseconds = 2000
+                VideoDelayInMilliseconds = 2000,
+                DefaultVideoVolume = 0.5
             };
 
             return eclipseSettings;

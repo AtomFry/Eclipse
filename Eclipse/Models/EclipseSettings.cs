@@ -1,30 +1,89 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace Eclipse.Models
 {
     public class EclipseSettings
     {
+        [DefaultValue(ListCategoryType.Platform)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public ListCategoryType DefaultListCategoryType { get; set; }
 
+        [DefaultValue(true)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public bool AdditionalVersionsEnable { get; set; }
+
+        [DefaultValue(true)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public bool AdditionalVersionsExcludeRunBefore { get; set; }
+
+        [DefaultValue(true)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public bool AdditionalVersionsExcludeRunAfter { get; set; }
+
+        [DefaultValue(true)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public bool AdditionalVersionsOnlyEmulatorOrDosBox { get; set; }
+
+        [DefaultValue(AdditionalApplicationDisplayField.Name)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public AdditionalApplicationDisplayField AdditionalApplicationDisplayField { get; set; }
+
+        [DefaultValue(true)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public bool AdditionalVersionsRemovePlayPrefix { get; set; }
+
+        [DefaultValue(true)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public bool AdditionalVersionsRemoveVersionPostfix { get; set; }
 
+        [DefaultValue(true)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public bool EnableVoiceSearch { get; set; }
+
+        [DefaultValue(true)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public bool EnableScreenSaver { get; set; }
+
+        [DefaultValue(true)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public bool ShowGameCountInList { get; set; }
+
+        [DefaultValue(false)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public bool IncludeHiddenGames { get; set; }
+
+        [DefaultValue(false)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public bool IncludeBrokenGames { get; set; }
+
+        [DefaultValue(true)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public bool OpenSettingsPaneOnLeft { get; set; }
 
+        [DefaultValue(false)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public bool DisableVideos{ get; set; }
+
+        [DefaultValue(0.5)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public double DefaultVideoVolume { get; set; }
+
+        [DefaultValue(PageFunction.RandomGame)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public PageFunction PageUpFunction { get; set; }
+
+        [DefaultValue(PageFunction.VoiceSearch)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public PageFunction PageDownFunction { get; set; }
 
+        [DefaultValue(90)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public int ScreensaverDelayInSeconds { get; set; }
+
+        [DefaultValue(2000)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public int VideoDelayInMilliseconds { get; set; }
     }
 

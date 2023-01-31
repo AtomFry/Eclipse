@@ -1271,6 +1271,7 @@
                 <MediaElement Name="Video_SelectedGame"
                               IsHitTestVisible="False"
                               Source="{Binding CurrentGameList.Game1.GameFiles.VideoPath}"
+                              Volume="{Binding VideoVolume}"                              
                               HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Stretch="Uniform"
                               LoadedBehavior="Manual"
                               Panel.ZIndex="110"

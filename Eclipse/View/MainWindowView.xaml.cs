@@ -40,6 +40,8 @@ namespace Eclipse.View
 
         private readonly int monitorWidth;
 
+        private bool disableVideos;
+
         public MainWindowView()
         {
             InitializeComponent();
@@ -61,6 +63,9 @@ namespace Eclipse.View
                 fadeOutForMovieDelay.AutoReset = false;
             }
 
+            // get handle on settings
+            disableVideos = EclipseSettingsDataProvider.Instance?.EclipseSettings?.DisableVideos == true;
+
             // get handle on the view model 
             mainWindowViewModel = DataContext as MainWindowViewModel;
 
@@ -72,9 +77,6 @@ namespace Eclipse.View
 
             // pass in a function that will update the rating image 
             mainWindowViewModel.UpdateRatingImageFunction = UpdateRatingImage;
-
-            // pass in a function that will adjust the video volume 
-            mainWindowViewModel.AdjustVideoVolumeFunction = AdjustVideoVolume;
 
             attractModeService = AttractModeService.Instance;
             attractModeService.MainWindowViewModel = mainWindowViewModel;
@@ -250,11 +252,10 @@ namespace Eclipse.View
             }
         }
 
-        private void PlayVideo(MediaElement video, double volume = 0.5)
+        private void PlayVideo(MediaElement video)
         {
             if (video != null)
             {
-                video.Volume = volume;
                 video.Position = TimeSpan.FromMilliseconds(0);
                 video.Play();
             }
@@ -481,7 +482,7 @@ namespace Eclipse.View
             {
                 Dispatcher.Invoke(() =>
                 {
-                    if (Video_SelectedGame != null)
+                    if ((!disableVideos) && (Video_SelectedGame != null))
                     {
                         attractModeService.StopAttractMode();
 
@@ -549,14 +550,6 @@ namespace Eclipse.View
             catch (Exception ex)
             {
                 LogHelper.LogException(ex, "FadeInBackgroundImages");
-            }
-        }
-
-        public void AdjustVideoVolume(double increment)
-        {
-            if (Video_SelectedGame != null)
-            {
-                Video_SelectedGame.Volume += increment;
             }
         }
 

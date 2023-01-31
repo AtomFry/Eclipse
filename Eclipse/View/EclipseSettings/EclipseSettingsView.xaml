@@ -403,18 +403,38 @@
                 <CheckBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                           Background="#343542" Foreground="#D3D3D5"
+                          IsChecked="{Binding DisableVideos, Mode=TwoWay}"
+                          ToolTip="Check this box to disable game preview videos"
+                          Content="Disable videos"/>
+
+                <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"                             
+                            HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
+                    <Label Content="Default video volume: " Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                    <Label Content="{Binding DefaultVideoVolume}" ContentStringFormat="N1" Margin="2,0" 
+                           Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                </StackPanel>
+                <Slider Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        Background="#343542" Foreground="#D3D3D5"
+                        Value="{Binding DefaultVideoVolume, Mode=TwoWay}"
+                        Minimum="0" Maximum="1" TickFrequency="0.1" SmallChange="0.1" LargeChange="0.1" TickPlacement="BottomRight"
+                        ToolTip="Volume for videos (default 0.5)"/>
+
+                <CheckBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          Background="#343542" Foreground="#D3D3D5"
                           IsChecked="{Binding EnableScreenSaver, Mode=TwoWay}"
                           ToolTip="Check this box to enable the screen saver"
                           Content="Enable screen saver"/>
 
-                <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"                             
+                <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"                             
                             HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
                     <Label Content="Screensaver delay: " Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
                     <Label Content="{Binding ScreensaverDelayInSeconds}" ContentStringFormat="N1" Margin="2,0" 
                            Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
                     <Label Content=" second(s)" Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
                 </StackPanel>
-                <Slider Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                <Slider Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                         Background="#343542" Foreground="#D3D3D5"
                         Value="{Binding ScreensaverDelayInSeconds, Mode=TwoWay}"
@@ -423,14 +443,14 @@
                         ToolTip="Amount of inactivity time (in seconds) to delay before starting the screen saver"/>
 
 
-                <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"                             
+                <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"                             
                             HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
                     <Label Content="Video delay: " Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
                     <Label Content="{Binding VideoDelayInMilliseconds}" ContentStringFormat="N1" Margin="2,0" 
                            Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
                     <Label Content=" millisecond(s)" Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
                 </StackPanel>
-                <Slider Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                <Slider Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                         Background="#343542" Foreground="#D3D3D5"
                         Value="{Binding VideoDelayInMilliseconds, Mode=TwoWay}"
