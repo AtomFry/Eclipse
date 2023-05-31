@@ -354,6 +354,16 @@ namespace Eclipse.View.EclipseSettings
             }
         }
 
+        public bool BypassDetails
+        {
+            get { return eclipseSettings.BypassDetails; }
+            set
+            {
+                eclipseSettings.BypassDetails = value;
+                OnPropertyChanged("BypassDetails");
+            }
+        }
+
         public int ScreensaverDelayInSeconds
         {
             get { return eclipseSettings.ScreensaverDelayInSeconds; }
@@ -612,6 +622,7 @@ namespace Eclipse.View.EclipseSettings
 
             ScreensaverDelayInSeconds = eclipseSettings.ScreensaverDelayInSeconds;
             VideoDelayInMilliseconds = eclipseSettings.VideoDelayInMilliseconds;
+            BypassDetails = eclipseSettings.BypassDetails;
         }
 
         private void InvalidateCommands()

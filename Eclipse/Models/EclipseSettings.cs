@@ -85,6 +85,10 @@ namespace Eclipse.Models
         [DefaultValue(2000)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public int VideoDelayInMilliseconds { get; set; }
+
+        [DefaultValue(false)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public bool BypassDetails { get; set; }
     }
 
 

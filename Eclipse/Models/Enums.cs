@@ -62,6 +62,8 @@ namespace Eclipse.Models
         FlipBox,
         ZoomBox,
         VolumeUp,
-        VolumeDown
+        VolumeDown,
+        DisplayDetails,
+        PlayGame
     }
 }

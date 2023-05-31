@@ -135,9 +135,11 @@
     <Compile Include="State\FeatureOptionPlayState.cs" />
     <Compile Include="State\GameDetailOptionFavoriteState.cs" />
     <Compile Include="State\GameDetailOptionMoreState.cs" />
+    <Compile Include="State\KeyStrategy\KeyStrategyDisplayDetails.cs" />
     <Compile Include="State\KeyStrategy\KeyStrategyFlipBox.cs" />
     <Compile Include="State\KeyStrategy\KeyStrategyPageDown.cs" />
     <Compile Include="State\KeyStrategy\KeyStrategyPageUp.cs" />
+    <Compile Include="State\KeyStrategy\KeyStrategyPlayGame.cs" />
     <Compile Include="State\KeyStrategy\KeyStrategyRandomGame.cs" />
     <Compile Include="State\KeyStrategy\KeyStrategyVoiceSearch.cs" />
     <Compile Include="State\KeyStrategy\KeyStrategyVolumeDown.cs" />

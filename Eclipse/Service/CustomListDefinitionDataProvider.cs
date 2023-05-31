@@ -396,7 +396,8 @@ namespace Eclipse.Service
 
                 ScreensaverDelayInSeconds = 90,
                 VideoDelayInMilliseconds = 2000,
-                DefaultVideoVolume = 0.5
+                DefaultVideoVolume = 0.5,
+                BypassDetails = false
             };
 
             return eclipseSettings;

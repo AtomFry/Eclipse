@@ -664,6 +664,8 @@ namespace Eclipse.View
         // maybe only in certain cases like launching into a game or escaping to settings menu
         private void StopEverything()
         {
+            AttractModeService.Instance.StopAttractMode();
+
             // pause the video
             PauseVideo(Video_SelectedGame);
 

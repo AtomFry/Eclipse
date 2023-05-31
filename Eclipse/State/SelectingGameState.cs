@@ -1,8 +1,5 @@
-﻿using Eclipse.Models;
-using Eclipse.Service;
+﻿using Eclipse.Service;
 using Eclipse.State.KeyStrategy;
-using System;
-using Unbroken.LaunchBox.Plugins.Data;
 
 namespace Eclipse.State
 {
@@ -36,9 +33,17 @@ namespace Eclipse.State
 
         public bool OnEnter(EclipseStateContext eclipseStateContext)
         {
-            attractModeService.RestartAttractMode();
+            if (EclipseSettingsDataProvider.Instance.EclipseSettings.BypassDetails)
+            {
+                attractModeService.StopAttractMode();
+                eclipseStateContext.MainWindowViewModel.PlayCurrentGame();
+            }
+            else
+            {
+                attractModeService.RestartAttractMode();
+                eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(GameDetailOptionPlayState)));
+            }
 
-            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(GameDetailOptionPlayState)));
             return true;
         }
 

@@ -74,6 +74,14 @@ namespace Eclipse.State.KeyStrategy
                 case PageFunction.VolumeDown:
                     keyStrategy = new KeyStrategyVolumeDown();
                     break;
+
+                case PageFunction.DisplayDetails:
+                    keyStrategy = new KeyStrategyDisplayDetails();
+                    break;
+
+                case PageFunction.PlayGame:
+                    keyStrategy = new KeyStrategyPlayGame();
+                    break;
             }
             return keyStrategy;
         }
