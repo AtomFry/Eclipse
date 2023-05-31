@@ -159,13 +159,6 @@
                           IsChecked="{Binding IncludeHiddenGames, Mode=TwoWay}"
                           ToolTip="Check this box to include games marked hidden in lists"
                           Content="Include hidden games"/>
-                
-                <CheckBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
-                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                          Background="#343542" Foreground="#D3D3D5"
-                          IsChecked="{Binding BypassDetails, Mode=TwoWay}"
-                          ToolTip="Check this box to bypass game details and start a game when selecting a game with the enter button"
-                          Content="Bypass details"/>
             </Grid>
         </Grid>
 
@@ -250,6 +243,13 @@
                           IsChecked="{Binding OpenSettingsPaneOnLeft, Mode=TwoWay}"
                           ToolTip="Check this box to allow the settings pane to open when you are on the first game in a list and you press left.  Note - escape also opens the settings pane."
                           Content="Open settings pane on left press"/>
+
+                <CheckBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          Background="#343542" Foreground="#D3D3D5"
+                          IsChecked="{Binding BypassDetails, Mode=TwoWay}"
+                          ToolTip="Check this box to bypass game details and start a game when selecting a game with the enter button"
+                          Content="Bypass details"/>
             </Grid>
         </Grid>
 
