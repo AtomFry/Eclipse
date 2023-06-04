@@ -254,7 +254,7 @@ namespace Eclipse.View
 
         private void PlayVideo(MediaElement video)
         {
-            if (video != null)
+            if ((mainWindowViewModel.IsPlayingGame == false) && (video != null))
             {
                 video.Position = TimeSpan.FromMilliseconds(0);
                 video.Play();

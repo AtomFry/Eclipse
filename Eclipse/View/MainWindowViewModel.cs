@@ -40,6 +40,7 @@ namespace Eclipse.View
         private bool isDisplayingSearch;
         private bool isRatingGame;
         private bool isZoomingBox;
+        private bool isPlayingGame;
 
         private double videoVolume;
 
@@ -57,6 +58,16 @@ namespace Eclipse.View
             VideoVolume = EclipseSettingsDataProvider.Instance?.EclipseSettings?.DefaultVideoVolume ?? 0.5;
 
             EclipseStateContext = new EclipseStateContext(this);
+        }
+
+        public bool IsPlayingGame
+        {
+            get => isPlayingGame;
+            set
+            {
+                isPlayingGame = value;
+                PropertyChanged(this, new PropertyChangedEventArgs("IsPlayingGame"));
+            }
         }
 
         public double VideoVolume
@@ -740,31 +751,37 @@ namespace Eclipse.View
 
         public bool DoUp(bool held)
         {
+            IsPlayingGame = false;
             return EclipseStateContext.OnUp(held);
         }
 
         public bool DoDown(bool held)
         {
+            IsPlayingGame = false;
             return EclipseStateContext.OnDown(held);
         }
 
         public bool DoLeft(bool held)
         {
+            IsPlayingGame = false;
             return EclipseStateContext.OnLeft(held);
         }
 
         public bool DoRight(bool held)
         {
+            IsPlayingGame = false;
             return EclipseStateContext.OnRight(held);
         }
 
         public bool DoPageUp()
         {
+            IsPlayingGame = false;
             return EclipseStateContext.OnPageUp();
         }
 
         public bool DoPageDown()
         {
+            IsPlayingGame = false;
             return EclipseStateContext.OnPageDown();
         }
 
@@ -833,6 +850,8 @@ namespace Eclipse.View
 
                 // stop everything in the UI
                 CallStopVideoAndAnimationsFunction();
+
+                IsPlayingGame = true;
 
                 // launch the game 
                 PluginHelper.BigBoxMainViewModel.PlayGame(currentGame, additionalApplication, null, null);
@@ -1018,11 +1037,13 @@ namespace Eclipse.View
 
         public bool DoEnter()
         {
+            IsPlayingGame = false;
             return EclipseStateContext.OnEnter();
         }
 
         public bool DoEscape()
         {
+            IsPlayingGame = false;
             return EclipseStateContext.OnEscape();
         }
 
