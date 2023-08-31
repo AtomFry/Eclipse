@@ -2,11 +2,13 @@
 using Eclipse.Helpers;
 using Eclipse.Models;
 using Eclipse.Service;
+using Newtonsoft.Json;
 using Prism.Commands;
 using Prism.Events;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -66,8 +68,6 @@ namespace Eclipse.View.EclipseSettings
 
             eventAggregator.GetEvent<CustomListDefinitionSaved>().Subscribe(OnCustomListDefinitionSavedSavedAsync);
             eventAggregator.GetEvent<CustomListDefinitionEditClosing>().Subscribe(OnCustomListDefinitionEditClosed);
-
-
         }
 
         private void OnCancelExecute()
@@ -78,7 +78,9 @@ namespace Eclipse.View.EclipseSettings
         private async void OnSaveExecute()
         {
             SaveCustomListsIfChanged();
+
             await EclipseSettingsDataProvider.Instance.SaveEclipseSettingsAsync(eclipseSettings);
+
             OnCloseExecute();
         }
 
@@ -157,6 +159,7 @@ namespace Eclipse.View.EclipseSettings
             TabPages.Add(EclipseSettingsTabs.Versions);
             TabPages.Add(EclipseSettingsTabs.Other);
             TabPages.Add(EclipseSettingsTabs.CustomLists);
+            TabPages.Add(EclipseSettingsTabs.BoxMargin);
         }
 
         private string selectedTabPage;
@@ -364,6 +367,67 @@ namespace Eclipse.View.EclipseSettings
             }
         }
 
+        public bool RepeatGamesToFillScreen
+        {
+            get => eclipseSettings.RepeatGamesToFillScreen;
+            set
+            {
+                eclipseSettings.RepeatGamesToFillScreen = value;
+                OnPropertyChanged("RepeatGamesToFillScreen");
+            }
+        }
+
+        public bool ShowMatchPercent
+        {
+            get => eclipseSettings.ShowMatchPercent;
+            set
+            {
+                eclipseSettings.ShowMatchPercent = value;
+                OnPropertyChanged("ShowMatchPercent");
+            }
+        }
+
+        public bool ShowPlatformLogo
+        {
+            get => eclipseSettings.ShowPlatformLogo;
+            set
+            {
+                eclipseSettings.ShowPlatformLogo = value;
+                OnPropertyChanged("ShowPlatformLogo");
+            }
+        }
+
+        public bool ShowPlayMode
+        {
+            get => eclipseSettings.ShowPlayMode;
+            set
+            {
+                eclipseSettings.ShowPlayMode = value;
+                OnPropertyChanged("ShowPlayMode");
+            }
+        }
+
+        public bool ShowReleaseYear
+        {
+            get => eclipseSettings.ShowReleaseYear;
+            set
+            {
+                eclipseSettings.ShowReleaseYear = value;
+                OnPropertyChanged("ShowReleaseYear");
+            }
+        }
+
+        public bool ShowStarRating
+        {
+            get => eclipseSettings.ShowStarRating;
+            set
+            {
+                eclipseSettings.ShowStarRating = value;
+                OnPropertyChanged("ShowStarRating");
+            }
+        }
+
+
         public int ScreensaverDelayInSeconds
         {
             get { return eclipseSettings.ScreensaverDelayInSeconds; }
@@ -384,6 +448,97 @@ namespace Eclipse.View.EclipseSettings
             }
         }
 
+        public double BoxFrontMarginLeft
+        {
+            get { return eclipseSettings.BoxFrontMarginLeft; }
+            set
+            {
+                eclipseSettings.BoxFrontMarginLeft = value;
+                OnPropertyChanged("BoxFrontMarginLeft");
+                updateMarginSample();
+            }
+        }
+
+        public double BoxFrontMarginRight
+        {
+            get { return eclipseSettings.BoxFrontMarginRight; }
+            set
+            {
+                eclipseSettings.BoxFrontMarginRight = value;
+                OnPropertyChanged("BoxFrontMarginRight");
+                updateMarginSample();
+            }
+        }
+
+        public double BoxFrontMarginTop
+        {
+            get { return eclipseSettings.BoxFrontMarginTop; }
+            set
+            {
+                eclipseSettings.BoxFrontMarginTop = value;
+                OnPropertyChanged("BoxFrontMarginTop");
+                updateMarginSample();
+            }
+        }
+
+        public double BoxFrontMarginBottom
+        {
+            get { return eclipseSettings.BoxFrontMarginBottom; }
+            set
+            {
+                eclipseSettings.BoxFrontMarginBottom = value;
+                OnPropertyChanged("BoxFrontMarginBottom");
+                updateMarginSample();
+            }
+        }
+
+        private Thickness marginSample;
+        public Thickness MarginSample
+        {
+            get => marginSample;
+            set
+            {
+                marginSample = value;
+                OnPropertyChanged("MarginSample");
+            }
+        }
+
+        public bool DisplayFeaturedGame 
+        {
+            get => eclipseSettings.DisplayFeaturedGame;
+            set
+            {
+                eclipseSettings.DisplayFeaturedGame = value;
+                OnPropertyChanged("DisplayFeaturedGame");
+            }
+        }
+
+        public bool ShowOptionsIcon
+        {
+            get => eclipseSettings.ShowOptionsIcon;
+            set
+            {
+                eclipseSettings.ShowOptionsIcon = value;
+                OnPropertyChanged("ShowOptionsIcon");
+            }
+        }
+
+        public bool DisplayOptionsOnEscape 
+        {
+            get => eclipseSettings.DisplayOptionsOnEscape;
+            set
+            {
+                eclipseSettings.DisplayOptionsOnEscape = value;
+                OnPropertyChanged("DisplayOptionsOnEscape");
+            }
+        }
+
+
+        private void updateMarginSample()
+        {
+            MarginSample = new Thickness(BoxFrontMarginLeft, BoxFrontMarginTop, BoxFrontMarginRight, BoxFrontMarginBottom);
+        }
+
         private IEnumerable<object> defaultListTypes;
         public IEnumerable<object> DefaultListTypes
         {
@@ -402,6 +557,7 @@ namespace Eclipse.View.EclipseSettings
             VersionsTabVisibility = Visibility.Collapsed;
             OtherTabVisibility = Visibility.Collapsed;
             CustomListsTabVisibility = Visibility.Collapsed;
+            BoxMarginTabVisibility = Visibility.Collapsed;
 
             switch (SelectedTabPage)
             {
@@ -423,6 +579,10 @@ namespace Eclipse.View.EclipseSettings
 
                 case EclipseSettingsTabs.CustomLists:
                     CustomListsTabVisibility = Visibility.Visible;
+                    break;
+
+                case EclipseSettingsTabs.BoxMargin:
+                    BoxMarginTabVisibility = Visibility.Visible;
                     break;
             }
         }
@@ -481,6 +641,19 @@ namespace Eclipse.View.EclipseSettings
                 OnPropertyChanged("CustomListsTabVisibility");
             }
         }
+
+
+        private Visibility boxMarginTabVisibility;
+        public Visibility BoxMarginTabVisibility
+        {
+            get => boxMarginTabVisibility;
+            set
+            {
+                boxMarginTabVisibility = value;
+                OnPropertyChanged("BoxMarginTabVisibility");
+            }
+        }
+
 
         private void OnCustomListDefinitionEditClosed()
         {
@@ -623,6 +796,21 @@ namespace Eclipse.View.EclipseSettings
             ScreensaverDelayInSeconds = eclipseSettings.ScreensaverDelayInSeconds;
             VideoDelayInMilliseconds = eclipseSettings.VideoDelayInMilliseconds;
             BypassDetails = eclipseSettings.BypassDetails;
+            RepeatGamesToFillScreen = eclipseSettings.RepeatGamesToFillScreen;
+            ShowMatchPercent = eclipseSettings.ShowMatchPercent;
+            ShowReleaseYear = eclipseSettings.ShowReleaseYear;
+            ShowStarRating = eclipseSettings.ShowStarRating;
+            ShowPlayMode = eclipseSettings.ShowPlayMode;
+            ShowPlatformLogo = eclipseSettings.ShowPlatformLogo;
+            ShowOptionsIcon = eclipseSettings.ShowOptionsIcon;
+
+            BoxFrontMarginLeft = eclipseSettings.BoxFrontMarginLeft;
+            BoxFrontMarginRight = eclipseSettings.BoxFrontMarginRight;
+            BoxFrontMarginTop = eclipseSettings.BoxFrontMarginTop;
+            BoxFrontMarginBottom = eclipseSettings.BoxFrontMarginBottom;
+
+            DisplayFeaturedGame = eclipseSettings.DisplayFeaturedGame;
+            DisplayOptionsOnEscape = eclipseSettings.DisplayOptionsOnEscape;
         }
 
         private void InvalidateCommands()
@@ -645,5 +833,6 @@ namespace Eclipse.View.EclipseSettings
         public const string Versions = "Versions";
         public const string CustomLists = "Custom lists";
         public const string Other = "Other";
+        public const string BoxMargin = "Margin";
     }
 }

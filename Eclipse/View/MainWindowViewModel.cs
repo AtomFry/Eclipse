@@ -49,15 +49,95 @@ namespace Eclipse.View
 
         public EclipseStateContext EclipseStateContext { get; set; }
 
+        private Models.EclipseSettings eclipseSettings;
+
         public MainWindowViewModel()
         {
             IsInitializing = true;
 
             FeatureOption = FeatureGameOption.PlayGame;
 
-            VideoVolume = EclipseSettingsDataProvider.Instance?.EclipseSettings?.DefaultVideoVolume ?? 0.5;
+            InitializeEclipseSettings();
 
             EclipseStateContext = new EclipseStateContext(this);
+        }
+
+        public void InitializeEclipseSettings()
+        {
+            eclipseSettings = EclipseSettingsDataProvider.Instance?.EclipseSettings;
+            VideoVolume = eclipseSettings?.DefaultVideoVolume ?? 0.5;
+            ShowMatchPercent = eclipseSettings?.ShowMatchPercent ?? true;
+            ShowReleaseYear = eclipseSettings?.ShowReleaseYear ?? true;
+            ShowStarRating = eclipseSettings?.ShowStarRating ?? true;
+            ShowPlayMode = eclipseSettings?.ShowPlayMode ?? true;
+            ShowPlatformLogo = eclipseSettings?.ShowPlatformLogo ?? true;
+            ShowOptionsIcon = eclipseSettings?.ShowOptionsIcon ?? true;
+
+            double marginLeft = eclipseSettings?.BoxFrontMarginLeft ?? 2;
+            double marginRight = eclipseSettings?.BoxFrontMarginRight ?? 2;
+            double marginTop = eclipseSettings?.BoxFrontMarginTop ?? 2;
+            double marginBottom = eclipseSettings?.BoxFrontMarginBottom ?? 2;
+            FrontImageMargin = new System.Windows.Thickness(marginLeft, marginTop, marginRight, marginBottom);
+        }
+
+        public bool ShowMatchPercent
+        {
+            get => eclipseSettings.ShowMatchPercent;
+            set
+            {
+                eclipseSettings.ShowMatchPercent = value;
+                PropertyChanged(this, new PropertyChangedEventArgs("ShowMatchPercent"));
+            }
+        }
+
+        public bool ShowPlatformLogo
+        {
+            get => eclipseSettings.ShowPlatformLogo;
+            set
+            {
+                eclipseSettings.ShowPlatformLogo = value;
+                PropertyChanged(this, new PropertyChangedEventArgs("ShowPlatformLogo"));
+            }
+        }
+
+        public bool ShowPlayMode
+        {
+            get => eclipseSettings.ShowPlayMode;
+            set
+            {
+                eclipseSettings.ShowPlayMode = value;
+                PropertyChanged(this, new PropertyChangedEventArgs("ShowPlayMode"));
+            }
+        }
+
+        public bool ShowReleaseYear
+        {
+            get => eclipseSettings.ShowReleaseYear;
+            set
+            {
+                eclipseSettings.ShowReleaseYear = value;
+                PropertyChanged(this, new PropertyChangedEventArgs("ShowReleaseYear"));
+            }
+        }
+
+        public bool ShowStarRating
+        {
+            get => eclipseSettings.ShowStarRating;
+            set
+            {
+                eclipseSettings.ShowStarRating = value;
+                PropertyChanged(this, new PropertyChangedEventArgs("ShowStarRating"));
+            }
+        }
+
+        public bool ShowOptionsIcon
+        {
+            get => eclipseSettings.ShowOptionsIcon;
+            set
+            {
+                eclipseSettings.ShowOptionsIcon = value;
+                PropertyChanged(this, new PropertyChangedEventArgs("ShowOptionsIcon"));
+            }
         }
 
         public bool IsPlayingGame
@@ -1058,6 +1138,17 @@ namespace Eclipse.View
                     currentGameList = value;
                     PropertyChanged(this, new PropertyChangedEventArgs("CurrentGameList"));
                 }
+            }
+        }
+
+        private System.Windows.Thickness frontImageMargin;
+        public System.Windows.Thickness FrontImageMargin
+        {
+            get => frontImageMargin;
+            set
+            {
+                frontImageMargin = value;
+                PropertyChanged(this, new PropertyChangedEventArgs("FrontImageMargin"));
             }
         }
 

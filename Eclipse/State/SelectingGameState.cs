@@ -51,8 +51,13 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
 
-            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingOptionsState)));
-            return true;
+            if (EclipseSettingsDataProvider.Instance.EclipseSettings.DisplayOptionsOnEscape)
+            {
+                eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingOptionsState)));
+                return true;
+            }
+
+            return false;
         }
 
         public bool OnLeft(EclipseStateContext eclipseStateContext, bool held)
@@ -107,8 +112,9 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
 
-            // if displaying first list 
-            if (eclipseStateContext.MainWindowViewModel.listCycle.GetIndexValue(0) == 0)
+            // if displaying first list and featured game is selected, display featured game
+            if (EclipseSettingsDataProvider.Instance.EclipseSettings.DisplayFeaturedGame
+                && eclipseStateContext.MainWindowViewModel.listCycle.GetIndexValue(0) == 0)
             {
                 eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(FeatureOptionPlayState))); 
                 return true;

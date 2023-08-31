@@ -26,7 +26,10 @@ namespace Eclipse.Service
                     {
                         if (playlist.HasGames(false, false))
                         {
-                            playlists.Add(playlist.SortTitleOrTitle, playlist.IncludeWithPlatforms);
+                            if (!playlists.ContainsKey(playlist.SortTitleOrTitle))
+                            {
+                                playlists.Add(playlist.SortTitleOrTitle, playlist.IncludeWithPlatforms);
+                            }
 
                             IGame[] games = playlist.GetAllGames(true);
                             foreach (IGame game in games)
@@ -56,7 +59,10 @@ namespace Eclipse.Service
                     {
                         if (playlist.HasGames(false, false))
                         {
-                            playlists.Add(playlist.SortTitleOrTitle, playlist.IncludeWithPlatforms);
+                            if (!playlists.ContainsKey(playlist.SortTitleOrTitle))
+                            {
+                                playlists.Add(playlist.SortTitleOrTitle, playlist.IncludeWithPlatforms);
+                            }                            
                         }
                     }
 

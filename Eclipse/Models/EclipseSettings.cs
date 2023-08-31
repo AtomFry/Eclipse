@@ -89,8 +89,61 @@ namespace Eclipse.Models
         [DefaultValue(false)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public bool BypassDetails { get; set; }
-    }
 
+
+
+        [DefaultValue(true)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public bool ShowMatchPercent { get; set; }
+
+        [DefaultValue(true)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public bool ShowReleaseYear { get; set; }
+
+        [DefaultValue(true)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public bool ShowStarRating { get; set; }
+
+        [DefaultValue(true)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public bool ShowPlayMode { get; set; }
+
+        [DefaultValue(true)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public bool ShowPlatformLogo { get; set; }
+
+        [DefaultValue(true)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public bool RepeatGamesToFillScreen { get; set; }
+
+        [DefaultValue(2.0)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public double BoxFrontMarginLeft { get; set; }
+
+        [DefaultValue(2.0)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public double BoxFrontMarginRight { get; set; }
+
+        [DefaultValue(2.0)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public double BoxFrontMarginTop { get; set; }
+
+        [DefaultValue(2.0)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public double BoxFrontMarginBottom { get; set; }
+
+        [DefaultValue(false)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public bool DisplayFeaturedGame { get; set; }
+
+        [DefaultValue(true)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public bool ShowOptionsIcon { get; set; }
+
+        [DefaultValue(true)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public bool DisplayOptionsOnEscape { get; set; }
+    }
 
     public class CustomListDefinition
     {

@@ -49,8 +49,6 @@ namespace Eclipse.State
         public bool OnLeft(EclipseStateContext eclipseStateContext, bool held)
         {
             attractModeService.RestartAttractMode();
-            eclipseStateContext.MainWindowViewModel.IsDisplayingFeature = false;
-            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingOptionsState)));
             return true;
         }
 

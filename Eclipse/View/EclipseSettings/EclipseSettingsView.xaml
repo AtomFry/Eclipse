@@ -159,6 +159,13 @@
                           IsChecked="{Binding IncludeHiddenGames, Mode=TwoWay}"
                           ToolTip="Check this box to include games marked hidden in lists"
                           Content="Include hidden games"/>
+                
+                <CheckBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          Background="#343542" Foreground="#D3D3D5"
+                          IsChecked="{Binding RepeatGamesToFillScreen, Mode=TwoWay}"
+                          ToolTip="Check this box to make games repeat so that lists fill the screen"
+                          Content="Repeat games to fill screen"/>
             </Grid>
         </Grid>
 
@@ -463,6 +470,57 @@
                         Value="{Binding VideoDelayInMilliseconds, Mode=TwoWay}"
                         Minimum="0" Maximum="10000" TickFrequency="1" SmallChange="250" LargeChange="1000" TickPlacement="BottomRight"
                         ToolTip="Amount of time to delay after selecting a game (in milliseconds) before playing the video"/>
+                <CheckBox Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          Background="#343542" Foreground="#D3D3D5"
+                          IsChecked="{Binding ShowMatchPercent, Mode=TwoWay}"
+                          ToolTip="Check this box to display the game match percent"
+                          Content="Show match percent"/>
+                <CheckBox Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          Background="#343542" Foreground="#D3D3D5"
+                          IsChecked="{Binding ShowReleaseYear, Mode=TwoWay}"
+                          ToolTip="Check this box to display the game release year"
+                          Content="Show release year"/>
+                <CheckBox Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          Background="#343542" Foreground="#D3D3D5"
+                          IsChecked="{Binding ShowStarRating, Mode=TwoWay}"
+                          ToolTip="Check this box to display the game star rating"
+                          Content="Show star rating"/>
+                <CheckBox Grid.Row="11" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          Background="#343542" Foreground="#D3D3D5"
+                          IsChecked="{Binding ShowPlayMode, Mode=TwoWay}"
+                          ToolTip="Check this box to display the game play mode"
+                          Content="Show play mode"/>
+                <CheckBox Grid.Row="12" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          Background="#343542" Foreground="#D3D3D5"
+                          IsChecked="{Binding ShowPlatformLogo, Mode=TwoWay}"
+                          ToolTip="Check this box to display the game platform logo"
+                          Content="Show platform logo"/>
+
+                <CheckBox Grid.Row="13" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          Background="#343542" Foreground="#D3D3D5"
+                          IsChecked="{Binding ShowOptionsIcon, Mode=TwoWay}"
+                          ToolTip="Check this box to display the options icon"
+                          Content="Show options icon"/>
+
+                <CheckBox Grid.Row="14" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          Background="#343542" Foreground="#D3D3D5"
+                          IsChecked="{Binding DisplayFeaturedGame, Mode=TwoWay}"
+                          ToolTip="Check this box to display the featured game"
+                          Content="Display featured game"/>
+
+                <CheckBox Grid.Row="15" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          Background="#343542" Foreground="#D3D3D5"
+                          IsChecked="{Binding DisplayOptionsOnEscape, Mode=TwoWay}"
+                          ToolTip="Check this box to display eclipse options when you press escape"
+                          Content="Display eclipse options on escape"/>
             </Grid>
         </Grid>
 
@@ -513,6 +571,119 @@
                 </StackPanel>
             </Grid>
         </Grid>
+
+        <Grid Name="BoxMarginGrid" Grid.Row="1" Grid.Column="3"  Visibility="{Binding BoxMarginTabVisibility}"
+              HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Height="35" Background="#2A2B34" 
+                    HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="5,5,5,10">
+                <TextBlock Text="Box margins" 
+                           HorizontalAlignment="Center" TextAlignment="Center" VerticalAlignment="Center" 
+                           Background="#2A2B34" Foreground="#D3D3D5" />
+            </Border>
+            <Grid Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"                             
+                            HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
+                    <Label Content="Left margin: " Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                    <Label Content="{Binding BoxFrontMarginLeft}" ContentStringFormat="N1" Margin="2,0" 
+                           Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                </StackPanel>
+                <Slider Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        Background="#343542" Foreground="#D3D3D5"
+                        Value="{Binding BoxFrontMarginLeft, Mode=TwoWay}"
+                        Minimum="0" Maximum="100" TickFrequency="1" SmallChange="1" LargeChange="10" TickPlacement="BottomRight"
+                        ToolTip="Margin on left side of box front image"/>
+
+
+                <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"                             
+                            HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
+                    <Label Content="Top margin: " Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                    <Label Content="{Binding BoxFrontMarginTop}" ContentStringFormat="N1" Margin="2,0" 
+                           Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                </StackPanel>
+                <Slider Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        Background="#343542" Foreground="#D3D3D5"
+                        Value="{Binding BoxFrontMarginTop, Mode=TwoWay}"
+                        Minimum="0" Maximum="100" TickFrequency="1" SmallChange="1" LargeChange="10" TickPlacement="BottomRight"
+                        ToolTip="Margin on top side of box front image"/>
+
+                <StackPanel Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"                             
+                            HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
+                    <Label Content="Right margin: " Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                    <Label Content="{Binding BoxFrontMarginRight}" ContentStringFormat="N1" Margin="2,0" 
+                           Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                </StackPanel>
+                <Slider Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        Background="#343542" Foreground="#D3D3D5"
+                        Value="{Binding BoxFrontMarginRight, Mode=TwoWay}"
+                        Minimum="0" Maximum="100" TickFrequency="1" SmallChange="1" LargeChange="10" TickPlacement="BottomRight"
+                        ToolTip="Margin on right side of box front image"/>
+
+                <StackPanel Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"                             
+                            HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
+                    <Label Content="Bottom margin: " Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                    <Label Content="{Binding BoxFrontMarginBottom}" ContentStringFormat="N1" Margin="2,0" 
+                           Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                </StackPanel>
+                <Slider Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        Background="#343542" Foreground="#D3D3D5"
+                        Value="{Binding BoxFrontMarginBottom, Mode=TwoWay}"
+                        Minimum="0" Maximum="100" TickFrequency="1" SmallChange="1" LargeChange="10" TickPlacement="BottomRight"
+                        ToolTip="Margin on bottom side of box front image"/>
+
+                <StackPanel Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2" HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
+                    <Rectangle Height="200" Width="200" Fill="#2A2B34" Margin="{Binding MarginSample}"/>
+                    <Rectangle Height="200" Width="200" Fill="#2A2B34" Margin="{Binding MarginSample}"/>
+                    <Rectangle Height="200" Width="200" Fill="#2A2B34" Margin="{Binding MarginSample}"/>
+                    <Rectangle Height="200" Width="200" Fill="#2A2B34" Margin="{Binding MarginSample}"/>
+                </StackPanel>
+            </Grid>
+        </Grid>
+
 
         <StackPanel Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Orientation="Horizontal" VerticalAlignment="Stretch" HorizontalAlignment="Right">
             <Button Content="Save" Width="80" Height="30" Command="{Binding SaveCommand}"

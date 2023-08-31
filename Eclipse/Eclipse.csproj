@@ -69,6 +69,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Converters\AddThenDivideByNegative1Converter.cs" />
     <Compile Include="Converters\BackgroundImageOversizeConverter.cs" />
     <Compile Include="Converters\BooleanConverter.cs" />
     <Compile Include="Converters\BooleanToDoubleConverter.cs" />

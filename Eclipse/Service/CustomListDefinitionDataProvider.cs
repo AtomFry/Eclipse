@@ -397,7 +397,22 @@ namespace Eclipse.Service
                 ScreensaverDelayInSeconds = 90,
                 VideoDelayInMilliseconds = 2000,
                 DefaultVideoVolume = 0.5,
-                BypassDetails = false
+                BypassDetails = false,
+                RepeatGamesToFillScreen = true,
+                ShowMatchPercent = true,
+                ShowPlatformLogo = true,
+                ShowPlayMode = true,
+                ShowReleaseYear = true,
+                ShowStarRating = true,
+                ShowOptionsIcon = true, 
+
+                BoxFrontMarginBottom = 2.0,
+                BoxFrontMarginLeft = 2.0,
+                BoxFrontMarginRight = 2.0,
+                BoxFrontMarginTop = 2.0,
+
+                DisplayFeaturedGame = false,
+                DisplayOptionsOnEscape = true
             };
 
             return eclipseSettings;

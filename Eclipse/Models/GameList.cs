@@ -1,11 +1,8 @@
 ﻿using Eclipse.Service;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
-using Unbroken.LaunchBox.Plugins.RetroAchievements;
 
 namespace Eclipse.Models
 {
@@ -52,6 +49,8 @@ namespace Eclipse.Models
 
     public class GameList : INotifyPropertyChanged
     {
+        private EclipseSettings EclipseSettings = EclipseSettingsDataProvider.Instance.EclipseSettings;
+
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
         private ListCycle<GameMatch> gameCycle;
 
@@ -146,18 +145,18 @@ namespace Eclipse.Models
                 Game0 = gameCycle.GetItem(0);
             }
 
-            Game1 = gameCycle.GetItem(1);
-            Game2 = gameCycle.GetItem(2);
-            Game3 = gameCycle.GetItem(3);
-            Game4 = gameCycle.GetItem(4);
-            Game5 = gameCycle.GetItem(5);
-            Game6 = gameCycle.GetItem(6);
-            Game7 = gameCycle.GetItem(7);
-            Game8 = gameCycle.GetItem(8);
-            Game9 = gameCycle.GetItem(9);
-            Game10 = gameCycle.GetItem(10);
-            Game11 = gameCycle.GetItem(11);
-            Game12 = gameCycle.GetItem(12);
+            Game1 = (MatchCount > 0) || (EclipseSettings.RepeatGamesToFillScreen) ? gameCycle.GetItem(1) : null;
+            Game2 = (MatchCount > 1) || (EclipseSettings.RepeatGamesToFillScreen) ? gameCycle.GetItem(2) : null;
+            Game3 = (MatchCount > 2) || (EclipseSettings.RepeatGamesToFillScreen) ? gameCycle.GetItem(3) : null;
+            Game4 = (MatchCount > 3) || (EclipseSettings.RepeatGamesToFillScreen) ? gameCycle.GetItem(4) : null;
+            Game5 = (MatchCount > 4) || (EclipseSettings.RepeatGamesToFillScreen) ? gameCycle.GetItem(5) : null;
+            Game6 = (MatchCount > 5) || (EclipseSettings.RepeatGamesToFillScreen) ? gameCycle.GetItem(6) : null;
+            Game7 = (MatchCount > 6) || (EclipseSettings.RepeatGamesToFillScreen) ? gameCycle.GetItem(7) : null;
+            Game8 = (MatchCount > 7) || (EclipseSettings.RepeatGamesToFillScreen) ? gameCycle.GetItem(8) : null;
+            Game9 = (MatchCount > 8) || (EclipseSettings.RepeatGamesToFillScreen) ? gameCycle.GetItem(9) : null;
+            Game10 = (MatchCount > 9) || (EclipseSettings.RepeatGamesToFillScreen) ? gameCycle.GetItem(10) : null;
+            Game11 = (MatchCount > 10) || (EclipseSettings.RepeatGamesToFillScreen) ? gameCycle.GetItem(11) : null;
+            Game12 = (MatchCount > 11) || (EclipseSettings.RepeatGamesToFillScreen) ? gameCycle.GetItem(12) : null;
         }
 
         private string listTypeValue;
