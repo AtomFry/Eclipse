@@ -143,6 +143,10 @@ namespace Eclipse.Models
         [DefaultValue(true)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public bool DisplayOptionsOnEscape { get; set; }
+
+        [DefaultValue(0)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public double SelectedGameDetailsPadding { get; set; }
     }
 
     public class CustomListDefinition

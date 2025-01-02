@@ -503,6 +503,16 @@ namespace Eclipse.View.EclipseSettings
             }
         }
 
+        public double SelectedGameDetailsPadding
+        {
+            get { return eclipseSettings.SelectedGameDetailsPadding; }
+            set
+            {
+                eclipseSettings.SelectedGameDetailsPadding = value;
+                OnPropertyChanged("SelectedGameDetailsPadding");
+            }
+        }
+
         public bool DisplayFeaturedGame 
         {
             get => eclipseSettings.DisplayFeaturedGame;
@@ -532,7 +542,6 @@ namespace Eclipse.View.EclipseSettings
                 OnPropertyChanged("DisplayOptionsOnEscape");
             }
         }
-
 
         private void updateMarginSample()
         {
@@ -808,6 +817,8 @@ namespace Eclipse.View.EclipseSettings
             BoxFrontMarginRight = eclipseSettings.BoxFrontMarginRight;
             BoxFrontMarginTop = eclipseSettings.BoxFrontMarginTop;
             BoxFrontMarginBottom = eclipseSettings.BoxFrontMarginBottom;
+
+            SelectedGameDetailsPadding = eclipseSettings.SelectedGameDetailsPadding;
 
             DisplayFeaturedGame = eclipseSettings.DisplayFeaturedGame;
             DisplayOptionsOnEscape = eclipseSettings.DisplayOptionsOnEscape;

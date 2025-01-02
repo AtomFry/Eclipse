@@ -1,0 +1,15 @@
+
+Log Entry : 4:50:20 PM Wednesday, January 1, 2025
+  :An exception occurred while attempting to Initializion_loadData
+-------------------------------
+
+Log Entry : 4:50:20 PM Wednesday, January 1, 2025
+  :Exception message: Object reference not set to an instance of an object.
+-------------------------------
+
+Log Entry : 4:50:20 PM Wednesday, January 1, 2025
+  :Exception stack:    at Eclipse.Service.DataService.GetGames() in C:\Users\Adam\source\repos\Eclipse_New_Dev\Eclipse\Service\DataService.cs:line 11
+   at Eclipse.Service.GameBagService.Setup() in C:\Users\Adam\source\repos\Eclipse_New_Dev\Eclipse\Service\GameBagService.cs:line 44
+   at Eclipse.Service.GameBagService.get_GameBag() in C:\Users\Adam\source\repos\Eclipse_New_Dev\Eclipse\Service\GameBagService.cs:line 24
+   at Eclipse.State.LoadingState.Initialization_LoadData(Object sender, DoWorkEventArgs e) in C:\Users\Adam\source\repos\Eclipse_New_Dev\Eclipse\State\LoadingState.cs:line 81
+-------------------------------

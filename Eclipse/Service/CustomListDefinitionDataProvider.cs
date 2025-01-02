@@ -411,6 +411,8 @@ namespace Eclipse.Service
                 BoxFrontMarginRight = 2.0,
                 BoxFrontMarginTop = 2.0,
 
+                SelectedGameDetailsPadding = 0,
+
                 DisplayFeaturedGame = false,
                 DisplayOptionsOnEscape = true
             };

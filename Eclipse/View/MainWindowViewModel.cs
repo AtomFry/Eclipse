@@ -77,7 +77,11 @@ namespace Eclipse.View
             double marginRight = eclipseSettings?.BoxFrontMarginRight ?? 2;
             double marginTop = eclipseSettings?.BoxFrontMarginTop ?? 2;
             double marginBottom = eclipseSettings?.BoxFrontMarginBottom ?? 2;
+
+            double selectedGameDetailsPadding = eclipseSettings?.SelectedGameDetailsPadding ?? 0;
+
             FrontImageMargin = new System.Windows.Thickness(marginLeft, marginTop, marginRight, marginBottom);
+            SelectedGameDetailsPadding = new System.Windows.Thickness(selectedGameDetailsPadding);
         }
 
         public bool ShowMatchPercent
@@ -1149,6 +1153,17 @@ namespace Eclipse.View
             {
                 frontImageMargin = value;
                 PropertyChanged(this, new PropertyChangedEventArgs("FrontImageMargin"));
+            }
+        }
+
+        private System.Windows.Thickness selectedGameDetailsPadding;
+        public System.Windows.Thickness SelectedGameDetailsPadding
+        {
+            get => selectedGameDetailsPadding;
+            set
+            {
+                selectedGameDetailsPadding = value;
+                PropertyChanged(this, new PropertyChangedEventArgs("SelectedGameDetailsPadding"));
             }
         }
 
