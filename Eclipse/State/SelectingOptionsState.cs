@@ -17,7 +17,7 @@ namespace Eclipse.State
         public void EnterState(EclipseStateContext eclipseStateContext)
         {
             attractModeService.RestartAttractMode();
-            eclipseStateContext.MainWindowViewModel.IsPickingCategory = true;
+            eclipseStateContext.MainWindowViewModel.UIState.IsPickingCategory = true;
         }
 
         public bool OnDown(EclipseStateContext eclipseStateContext, bool held)
@@ -84,7 +84,7 @@ namespace Eclipse.State
                     eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
                     break;
             }
-            eclipseStateContext.MainWindowViewModel.IsPickingCategory = false;
+            eclipseStateContext.MainWindowViewModel.UIState.IsPickingCategory = false;
             return true;
         }
 
@@ -100,7 +100,7 @@ namespace Eclipse.State
             attractModeService.RestartAttractMode();
 
             eclipseStateContext.MainWindowViewModel.CurrentGameList.CycleBackward();
-            eclipseStateContext.MainWindowViewModel.IsPickingCategory = false;
+            eclipseStateContext.MainWindowViewModel.UIState.IsPickingCategory = false;
             eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }
@@ -122,7 +122,7 @@ namespace Eclipse.State
         public bool OnRight(EclipseStateContext eclipseStateContext, bool held)
         {
             attractModeService.RestartAttractMode();
-            eclipseStateContext.MainWindowViewModel.IsPickingCategory = false;
+            eclipseStateContext.MainWindowViewModel.UIState.IsPickingCategory = false;
             eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }

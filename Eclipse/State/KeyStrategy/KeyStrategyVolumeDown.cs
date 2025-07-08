@@ -4,7 +4,7 @@
     {
         public void DoKeyFunction(EclipseStateContext eclipseStateContext, EclipseState eclipseState)
         {
-            eclipseStateContext.MainWindowViewModel.AdjustVideoVolume(-0.05);
+            eclipseStateContext.MainWindowViewModel.VideoControl.AdjustVideoVolume(-0.05);
         }
 
         public bool IsValidForState(EclipseState eclipseState)

@@ -18,15 +18,15 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
             eclipseStateContext.MainWindowViewModel.FeatureOption = FeatureGameOption.MoreInfo;
-            eclipseStateContext.MainWindowViewModel.IsDisplayingMoreInfo = false;
-            eclipseStateContext.MainWindowViewModel.IsDisplayingFeature = true;
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingMoreInfo = false;
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingFeature = true;
         }
 
         public bool OnDown(EclipseStateContext eclipseStateContext, bool held)
         {
             attractModeService.RestartAttractMode();
 
-            eclipseStateContext.MainWindowViewModel.IsDisplayingFeature = false;
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingFeature = false;
             eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }
@@ -35,7 +35,7 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
 
-            eclipseStateContext.MainWindowViewModel.IsDisplayingFeature = false;
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingFeature = false;
             eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(GameDetailOptionPlayState)));
             return true;
         }
@@ -44,7 +44,7 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
 
-            eclipseStateContext.MainWindowViewModel.IsDisplayingFeature = false;
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingFeature = false;
             eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }
@@ -83,8 +83,8 @@ namespace Eclipse.State
 
             if (!held)
             {
-                eclipseStateContext.MainWindowViewModel.IsDisplayingFeature = false;
-                eclipseStateContext.MainWindowViewModel.CycleListBackward();
+                eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingFeature = false;
+                eclipseStateContext.MainWindowViewModel.GameListManagement.CycleListBackward();
                 eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             }
             return true;

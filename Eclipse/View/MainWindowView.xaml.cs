@@ -21,6 +21,7 @@ namespace Eclipse.View
 
         private BackgroundWorker stopVideoAndAnimationWorker;
 
+        private readonly Timer noteScrollDelay;
         private readonly Timer backgroundImageChangeDelay;
         private readonly Timer fadeOutForMovieDelay;
 
@@ -49,6 +50,11 @@ namespace Eclipse.View
             SetupStopVideoAndAnimationWorker();
 
             monitorWidth = ImageScaler.GetMonitorWidth();
+
+            // create a timer to delay scrolling notes
+            noteScrollDelay = new Timer(2000);
+            noteScrollDelay.Elapsed += NoteScrollDelay_Elapsed;
+            noteScrollDelay.AutoReset = false;
 
             // create a timer to delay swapping background images
             backgroundImageChangeDelay = new Timer(1000);
@@ -96,7 +102,7 @@ namespace Eclipse.View
                 Image_AttractModeClearLogo.Source = null;
 
                 FadeFrameworkElementOpacity(Grid_AttractMode, 0, 500);
-                mainWindowViewModel.IsDisplayingAttractMode = false;
+                mainWindowViewModel.UIState.IsDisplayingAttractMode = false;
             });
         }
 
@@ -116,7 +122,7 @@ namespace Eclipse.View
                 Grid_AttractMode.Opacity = 0;
 
                 // flag attract mode 
-                mainWindowViewModel.IsDisplayingAttractMode = true;
+                mainWindowViewModel.UIState.IsDisplayingAttractMode = true;
 
                 // fade the grid in if it isn't already
                 FadeFrameworkElementOpacity(Grid_AttractMode, 1, 1000);
@@ -170,7 +176,6 @@ namespace Eclipse.View
                 Canvas.SetLeft(Canvas_AttractModeInnerCanvas, attractCanvasLeftCoordinate);
                 ShiftFrameworkElement(Canvas_AttractModeInnerCanvas, shiftCanvasFrom, shiftCanvasTo, 17 * 1000);
             });
-
         }
 
         public void AttractModeFadeInLogo()
@@ -254,7 +259,7 @@ namespace Eclipse.View
 
         private void PlayVideo(MediaElement video)
         {
-            if ((mainWindowViewModel.IsPlayingGame == false) && (video != null))
+            if ((mainWindowViewModel.UIState.IsPlayingGame == false) && (video != null))
             {
                 video.Position = TimeSpan.FromMilliseconds(0);
                 video.Play();
@@ -297,13 +302,49 @@ namespace Eclipse.View
             });
         }
 
+        private void ScrollNotes()
+        {
+            // todo: reset and start it ovver once it's finished
+            if (NotesTextBlock.ActualWidth > 0)
+            {
+                // todo: compute duration
+                // slow     - 50 pixels per second
+                // medium   - 80 pixels per second
+                // fast     - 100 pixels per second
+                double scrollingRateInPixelsPerSecond = 80;
+                double scrollingDistance = NotesTextBlock.ActualWidth + 100;
+                double scrollingDurationInSeconds = scrollingDistance / scrollingRateInPixelsPerSecond;
+
+                ShiftFrameworkElement(NotesCanvas, 0, NotesTextBlock.ActualWidth * -1, 1000 * scrollingDurationInSeconds);
+            }
+        }
+
+        private void NoteScrollDelay_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            ScrollNotes();
+        }
+
+        private void ActivateNoteScroll()
+        {
+            // reset the notes canvas to starting position
+            ShiftFrameworkElement(NotesCanvas, 0, 0, 0);
+
+            // start the delay timer
+            noteScrollDelay.Stop();
+            noteScrollDelay.Start();
+        }
+
         private void DoAnimateGameChange()
         {
             Dispatcher.Invoke(() =>
             {
                 try
                 {
-                    if(mainWindowViewModel.IsDisplayingResults)
+                    // todo: invoke this from the right place
+                    // ScrollNotes();
+                    ActivateNoteScroll();
+
+                    if(mainWindowViewModel.UIState.IsDisplayingResults)
                     {
                         // stop animations
                         StopEverything();

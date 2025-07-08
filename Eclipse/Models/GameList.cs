@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Media;
+using System.Runtime.CompilerServices;
 
 namespace Eclipse.Models
 {
@@ -52,6 +53,11 @@ namespace Eclipse.Models
         private EclipseSettings EclipseSettings = EclipseSettingsDataProvider.Instance.EclipseSettings;
 
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
         private ListCycle<GameMatch> gameCycle;
 
         public int SortOrder { get; set; }
@@ -70,7 +76,7 @@ namespace Eclipse.Models
                     gameCycle.CycleBackward();
                     RefreshGames();
 
-                    PropertyChanged(this, new PropertyChangedEventArgs("MatchingGames"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -84,7 +90,7 @@ namespace Eclipse.Models
                 if (listCategoryType != value)
                 {
                     listCategoryType = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("ListCategoryType"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -168,7 +174,7 @@ namespace Eclipse.Models
                 if (listTypeValue != value)
                 {
                     listTypeValue = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("ListTypeValue"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -182,7 +188,7 @@ namespace Eclipse.Models
                 if (listDescription != value)
                 {
                     listDescription = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("ListDescription"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -196,7 +202,7 @@ namespace Eclipse.Models
                 if (confidence != value)
                 {
                     confidence = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Confidence"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -290,7 +296,7 @@ namespace Eclipse.Models
                 if (game0 != value)
                 {
                     game0 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game0"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -304,7 +310,7 @@ namespace Eclipse.Models
                 if (game1 != value)
                 {
                     game1 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game1"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -318,7 +324,7 @@ namespace Eclipse.Models
                 if (game2 != value)
                 {
                     game2 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game2"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -332,7 +338,7 @@ namespace Eclipse.Models
                 if (game3 != value)
                 {
                     game3 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game3"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -346,7 +352,7 @@ namespace Eclipse.Models
                 if (game4 != value)
                 {
                     game4 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game4"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -360,7 +366,7 @@ namespace Eclipse.Models
                 if (game5 != value)
                 {
                     game5 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game5"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -374,7 +380,7 @@ namespace Eclipse.Models
                 if (game6 != value)
                 {
                     game6 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game6"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -388,7 +394,7 @@ namespace Eclipse.Models
                 if (game7 != value)
                 {
                     game7 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game7"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -402,7 +408,7 @@ namespace Eclipse.Models
                 if (game8 != value)
                 {
                     game8 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game8"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -416,7 +422,7 @@ namespace Eclipse.Models
                 if (game9 != value)
                 {
                     game9 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game9"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -430,7 +436,7 @@ namespace Eclipse.Models
                 if (game10 != value)
                 {
                     game10 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game10"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -444,7 +450,7 @@ namespace Eclipse.Models
                 if (game11 != value)
                 {
                     game11 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game11"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -458,7 +464,7 @@ namespace Eclipse.Models
                 if (game12 != value)
                 {
                     game12 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game12"));
+                    OnPropertyChanged();
                 }
             }
         }

@@ -17,8 +17,8 @@ namespace Eclipse.State
         public void EnterState(EclipseStateContext eclipseStateContext)
         {
             attractModeService.RestartAttractMode();
-            eclipseStateContext.MainWindowViewModel.IsDisplayingFeature = true;
-            eclipseStateContext.MainWindowViewModel.IsDisplayingMoreInfo = true;
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingFeature = true;
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingMoreInfo = true;
             eclipseStateContext.MainWindowViewModel.GameDetailOption = GameDetailOption.MoreLikeThis;
         }
 
@@ -32,8 +32,8 @@ namespace Eclipse.State
         public bool OnEnter(EclipseStateContext eclipseStateContext)
         {
             attractModeService.RestartAttractMode();
-            eclipseStateContext.MainWindowViewModel.IsDisplayingMoreInfo = false;
-            eclipseStateContext.MainWindowViewModel.DoMoreLikeCurrentGame();
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingMoreInfo = false;
+            eclipseStateContext.MainWindowViewModel.GameListManagement.DoMoreLikeCurrentGame();
             eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }
@@ -42,10 +42,10 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
 
-            eclipseStateContext.MainWindowViewModel.CheckResetGameLists();
+            eclipseStateContext.MainWindowViewModel.GameListManagement.CheckResetGameLists();
 
-            eclipseStateContext.MainWindowViewModel.IsDisplayingFeature = false;
-            eclipseStateContext.MainWindowViewModel.IsDisplayingMoreInfo = false;
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingFeature = false;
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingMoreInfo = false;
             eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }

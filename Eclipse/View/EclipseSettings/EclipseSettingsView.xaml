@@ -500,22 +500,28 @@
                           IsChecked="{Binding ShowPlatformLogo, Mode=TwoWay}"
                           ToolTip="Check this box to display the game platform logo"
                           Content="Show platform logo"/>
-
                 <CheckBox Grid.Row="13" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          Background="#343542" Foreground="#D3D3D5"
+                          IsChecked="{Binding ShowNotes, Mode=TwoWay}"
+                          ToolTip="Check this box to display the notes on game details screen"
+                          Content="Show notes"/>
+
+                <CheckBox Grid.Row="14" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                           Background="#343542" Foreground="#D3D3D5"
                           IsChecked="{Binding ShowOptionsIcon, Mode=TwoWay}"
                           ToolTip="Check this box to display the options icon"
                           Content="Show options icon"/>
 
-                <CheckBox Grid.Row="14" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                <CheckBox Grid.Row="15" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                           Background="#343542" Foreground="#D3D3D5"
                           IsChecked="{Binding DisplayFeaturedGame, Mode=TwoWay}"
                           ToolTip="Check this box to display the featured game"
                           Content="Display featured game"/>
 
-                <CheckBox Grid.Row="15" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                <CheckBox Grid.Row="16" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                           Background="#343542" Foreground="#D3D3D5"
                           IsChecked="{Binding DisplayOptionsOnEscape, Mode=TwoWay}"

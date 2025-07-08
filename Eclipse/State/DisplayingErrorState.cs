@@ -18,13 +18,13 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
             eclipseStateContext.MainWindowViewModel.ErrorMessage = ErrorMessage;
-            eclipseStateContext.MainWindowViewModel.IsDisplayingError = true;
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingError = true;
         }
 
         public bool OnDown(EclipseStateContext eclipseStateContext, bool held)
         {
             attractModeService.RestartAttractMode();
-            eclipseStateContext.MainWindowViewModel.IsDisplayingError = false;
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingError = false;
             eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }
@@ -32,7 +32,7 @@ namespace Eclipse.State
         public bool OnEnter(EclipseStateContext eclipseStateContext)
         {
             attractModeService.RestartAttractMode();
-            eclipseStateContext.MainWindowViewModel.IsDisplayingError = false;
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingError = false;
             eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }
@@ -40,7 +40,7 @@ namespace Eclipse.State
         public bool OnEscape(EclipseStateContext eclipseStateContext)
         {
             attractModeService.RestartAttractMode();
-            eclipseStateContext.MainWindowViewModel.IsDisplayingError = false;
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingError = false;
             eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }
@@ -48,7 +48,7 @@ namespace Eclipse.State
         public bool OnLeft(EclipseStateContext eclipseStateContext, bool held)
         {
             attractModeService.RestartAttractMode();
-            eclipseStateContext.MainWindowViewModel.IsDisplayingError = false;
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingError = false;
             eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }
@@ -56,7 +56,7 @@ namespace Eclipse.State
         public bool OnPageDown(EclipseStateContext eclipseStateContext)
         {
             attractModeService.RestartAttractMode();
-            eclipseStateContext.MainWindowViewModel.IsDisplayingError = false;
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingError = false;
             eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }
@@ -64,7 +64,7 @@ namespace Eclipse.State
         public bool OnPageUp(EclipseStateContext eclipseStateContext)
         {
             attractModeService.RestartAttractMode();
-            eclipseStateContext.MainWindowViewModel.IsDisplayingError = false;
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingError = false;
             eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }
@@ -72,7 +72,7 @@ namespace Eclipse.State
         public bool OnRight(EclipseStateContext eclipseStateContext, bool held)
         {
             attractModeService.RestartAttractMode();
-            eclipseStateContext.MainWindowViewModel.IsDisplayingError = false;
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingError = false;
             eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }
@@ -80,7 +80,7 @@ namespace Eclipse.State
         public bool OnUp(EclipseStateContext eclipseStateContext, bool held)
         {
             attractModeService.RestartAttractMode();
-            eclipseStateContext.MainWindowViewModel.IsDisplayingError = false;
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingError = false;
             eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }

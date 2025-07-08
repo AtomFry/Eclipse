@@ -17,17 +17,17 @@ namespace Eclipse.State
         public void EnterState(EclipseStateContext eclipseStateContext)
         {
             attractModeService.RestartAttractMode();
-            eclipseStateContext.MainWindowViewModel.IsDisplayingFeature = true;
-            eclipseStateContext.MainWindowViewModel.IsDisplayingMoreInfo = true;
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingFeature = true;
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingMoreInfo = true;
             eclipseStateContext.MainWindowViewModel.GameDetailOption = GameDetailOption.Rating;
-            eclipseStateContext.MainWindowViewModel.IsRatingGame = true;
+            eclipseStateContext.MainWindowViewModel.UIState.IsRatingGame = true;
         }
 
         public bool OnDown(EclipseStateContext eclipseStateContext, bool held)
         {
             attractModeService.RestartAttractMode();
-            eclipseStateContext.MainWindowViewModel.IsRatingGame = false;
-            eclipseStateContext.MainWindowViewModel.SaveRatingCurrentGame();
+            eclipseStateContext.MainWindowViewModel.UIState.IsRatingGame = false;
+            eclipseStateContext.MainWindowViewModel.GameOperations.SaveRatingCurrentGame();
             eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(GameDetailOptionPlayState)));
             return true;
         }
@@ -35,7 +35,7 @@ namespace Eclipse.State
         public bool OnEnter(EclipseStateContext eclipseStateContext)
         {
             attractModeService.RestartAttractMode();
-            eclipseStateContext.MainWindowViewModel.SaveRatingCurrentGame();
+            eclipseStateContext.MainWindowViewModel.GameOperations.SaveRatingCurrentGame();
             return true;
         }
 
@@ -43,11 +43,11 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
 
-            eclipseStateContext.MainWindowViewModel.CheckResetGameLists();
+            eclipseStateContext.MainWindowViewModel.GameListManagement.CheckResetGameLists();
 
-            eclipseStateContext.MainWindowViewModel.IsRatingGame = false;
-            eclipseStateContext.MainWindowViewModel.IsDisplayingFeature = false;
-            eclipseStateContext.MainWindowViewModel.IsDisplayingMoreInfo = false;
+            eclipseStateContext.MainWindowViewModel.UIState.IsRatingGame = false;
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingFeature = false;
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingMoreInfo = false;
             eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }
@@ -55,7 +55,7 @@ namespace Eclipse.State
         public bool OnLeft(EclipseStateContext eclipseStateContext, bool held)
         {
             attractModeService.RestartAttractMode();
-            eclipseStateContext.MainWindowViewModel.RateCurrentGame(-0.5f);
+            eclipseStateContext.MainWindowViewModel.GameOperations.RateCurrentGame(-0.5f);
             return true;
         }
 
@@ -80,15 +80,15 @@ namespace Eclipse.State
         public bool OnRight(EclipseStateContext eclipseStateContext, bool held)
         {
             attractModeService.RestartAttractMode();
-            eclipseStateContext.MainWindowViewModel.RateCurrentGame(0.5f);
+            eclipseStateContext.MainWindowViewModel.GameOperations.RateCurrentGame(0.5f);
             return true;
         }
 
         public bool OnUp(EclipseStateContext eclipseStateContext, bool held)
         {
             attractModeService.RestartAttractMode();
-            eclipseStateContext.MainWindowViewModel.IsRatingGame = false;
-            eclipseStateContext.MainWindowViewModel.SaveRatingCurrentGame();
+            eclipseStateContext.MainWindowViewModel.UIState.IsRatingGame = false;
+            eclipseStateContext.MainWindowViewModel.GameOperations.SaveRatingCurrentGame();
             eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(GameDetailOptionMoreState)));
             return true;
         }

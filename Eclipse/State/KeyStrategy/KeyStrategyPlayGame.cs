@@ -6,7 +6,7 @@
         {
             if (IsValidForState(eclipseState))
             {
-                eclipseStateContext.MainWindowViewModel.PlayCurrentGame();
+                eclipseStateContext.MainWindowViewModel.GameOperations.PlayCurrentGame();
             }
         }
 

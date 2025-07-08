@@ -405,6 +405,7 @@ namespace Eclipse.Service
                 ShowReleaseYear = true,
                 ShowStarRating = true,
                 ShowOptionsIcon = true, 
+                ShowNotes = false,
 
                 BoxFrontMarginBottom = 2.0,
                 BoxFrontMarginLeft = 2.0,

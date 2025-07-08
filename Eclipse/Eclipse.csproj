@@ -45,8 +45,8 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Drawing.Common, Version=4.0.0.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Drawing.Common.5.0.2\lib\net461\System.Drawing.Common.dll</HintPath>
+    <Reference Include="System.Drawing.Common, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Drawing.Common.9.0.6\lib\net462\System.Drawing.Common.dll</HintPath>
     </Reference>
     <Reference Include="System.Speech, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -98,6 +98,7 @@
     <Compile Include="Helpers\DirectoryInfoHelper.cs" />
     <Compile Include="Helpers\DisplayInfoHelper.cs" />
     <Compile Include="Helpers\EventAggregatorHelper.cs" />
+    <Compile Include="Helpers\GameListExtensions.cs" />
     <Compile Include="Helpers\LogHelper.cs" />
     <Compile Include="Helpers\MessageDialogHelper.cs" />
     <Compile Include="Helpers\OpacityBrushHelper.cs" />
@@ -107,6 +108,8 @@
     <Compile Include="Models\GameMatch.cs" />
     <Compile Include="Models\GameTitleGrammarBuilder.cs" />
     <Compile Include="Models\GameDetailOptionList.cs" />
+    <Compile Include="Models\GameVersion.cs" />
+    <Compile Include="Models\GameVersionList.cs" />
     <Compile Include="Models\PlaylistGame.cs" />
     <Compile Include="Models\ResourceImages.cs" />
     <Compile Include="Models\Option.cs" />
@@ -125,9 +128,12 @@
     <Compile Include="Service\DataService.cs" />
     <Compile Include="Service\CustomListDefinitionDataProvider.cs" />
     <Compile Include="Service\GameBagService.cs" />
+    <Compile Include="Service\FileProcessingService.cs" />
+    <Compile Include="Service\GameListManagementService.cs" />
     <Compile Include="Service\ImageScaler.cs" />
     <Compile Include="Service\OptionListService.cs" />
     <Compile Include="Service\PlaylistGameService.cs" />
+    <Compile Include="Service\RandomGameSelectionService.cs" />
     <Compile Include="Service\SpeechRecognizer.cs" />
     <Compile Include="State\AttractModeState.cs" />
     <Compile Include="State\DisplayingErrorState.cs" />
@@ -161,11 +167,22 @@
     <Compile Include="View\EclipseSettings\EclipseSettingsView.xaml.cs">
       <DependentUpon>EclipseSettingsView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\EclipseSettings\CustomListDefinitionViewModel.cs" />
     <Compile Include="View\EclipseSettings\EclipseSettingsViewModel.cs" />
+    <Compile Include="View\EclipseSettings\EclipseSettingsViewModelRefactored.cs" />
+    <Compile Include="View\EclipseSettings\GameSelectionCriteriaViewModel.cs" />
+    <Compile Include="View\EclipseSettings\MediaSettingsViewModel.cs" />
+    <Compile Include="View\EclipseSettings\TabNavigationViewModel.cs" />
+    <Compile Include="View\EclipseSettings\UIPreferencesViewModel.cs" />
+    <Compile Include="View\EclipseSettings\ValidationAndSaveViewModel.cs" />
     <Compile Include="View\MainWindowView.xaml.cs">
       <DependentUpon>MainWindowView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\GameDetailsViewModel.cs" />
+    <Compile Include="View\GameOperationsViewModel.cs" />
     <Compile Include="View\MainWindowViewModel.cs" />
+    <Compile Include="View\UIStateViewModel.cs" />
+    <Compile Include="View\VideoControlViewModel.cs" />
     <Compile Include="View\ViewModelBase.cs" />
   </ItemGroup>
   <ItemGroup>

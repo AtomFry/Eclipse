@@ -20,7 +20,7 @@ namespace Eclipse.State
         {
             EclipseStateContext = eclipseStateContext;
 
-            eclipseStateContext.MainWindowViewModel.IsInitializing = true;
+            eclipseStateContext.MainWindowViewModel.UIState.IsInitializing = true;
 
             BackgroundWorker worker = new BackgroundWorker();
             worker.WorkerReportsProgress = true;
@@ -95,7 +95,7 @@ namespace Eclipse.State
                 EclipseStateContext.MainWindowViewModel.GameListSets = new List<GameListSet>();
 
                 // populate the lists 
-                EclipseStateContext.MainWindowViewModel.CreateGameLists();
+                EclipseStateContext.MainWindowViewModel.GameListManagement.CreateGameLists();
 
                 // get settings and setup default list category type
                 EclipseSettings eclipseSettings = EclipseSettingsDataProvider.Instance.EclipseSettings;
@@ -117,7 +117,7 @@ namespace Eclipse.State
 
         private void InitializationCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            EclipseStateContext.MainWindowViewModel.IsInitializing = false;
+            EclipseStateContext.MainWindowViewModel.UIState.IsInitializing = false;
             EclipseStateContext.TransitionToState(new SelectingGameState());
         }
     }

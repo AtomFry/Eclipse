@@ -108,6 +108,10 @@ namespace Eclipse.Models
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public bool ShowPlayMode { get; set; }
 
+        [DefaultValue(false)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public bool ShowNotes { get; set; }
+
         [DefaultValue(true)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public bool ShowPlatformLogo { get; set; }

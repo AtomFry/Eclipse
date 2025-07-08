@@ -14,6 +14,7 @@ using Eclipse.State;
 using System.Linq.Expressions;
 using System.Reflection;
 using Eclipse.Service;
+using System.Runtime.CompilerServices;
 
 namespace Eclipse.View
 {
@@ -25,24 +26,17 @@ namespace Eclipse.View
     public class MainWindowViewModel : INotifyPropertyChanged
     {
         public ListCycle<GameList> listCycle;
-        public List<GameListSet> GameListSets;
-        public ConcurrentBag<GameMatch> gameBag;
-        public ConcurrentBag<GameFiles> gameFilesBag;
+        internal List<GameListSet> GameListSets;
+        internal ConcurrentBag<GameMatch> gameBag;
+        internal ConcurrentBag<GameFiles> gameFilesBag;
 
-        private bool isInitializing;
-        private bool isPickingCategory;
-        private bool isDisplayingFeature;
-        private bool isDisplayingAttractMode;
-        private bool isRecognizing;
-        private bool isDisplayingResults;
-        private bool isDisplayingMoreInfo;
-        private bool isDisplayingError;
-        private bool isDisplayingSearch;
-        private bool isRatingGame;
-        private bool isZoomingBox;
-        private bool isPlayingGame;
-
-        private double videoVolume;
+        public VideoControlViewModel VideoControl { get; private set; }
+        public GameDetailsViewModel GameDetails { get; private set; }
+        public UIStateViewModel UIState { get; private set; }
+        public GameOperationsViewModel GameOperations { get; private set; }
+        public GameListManagementService GameListManagement { get; private set; }
+        public FileProcessingService FileProcessing { get; private set; }
+        public RandomGameSelectionService RandomGameSelection { get; private set; }
 
         private GameDetailOption gameDetailOption;
         private string errorMessage;
@@ -53,11 +47,22 @@ namespace Eclipse.View
 
         public MainWindowViewModel()
         {
-            IsInitializing = true;
+            UIState = new UIStateViewModel
+            {
+                IsInitializing = true
+            };
 
             FeatureOption = FeatureGameOption.PlayGame;
 
+            VideoControl = new VideoControlViewModel();
+
             InitializeEclipseSettings();
+
+            GameDetails = new GameDetailsViewModel(eclipseSettings);
+            GameOperations = new GameOperationsViewModel(this);
+            GameListManagement = new GameListManagementService(this);
+            FileProcessing = new FileProcessingService(this);
+            RandomGameSelection = new RandomGameSelectionService(this);
 
             EclipseStateContext = new EclipseStateContext(this);
         }
@@ -65,13 +70,7 @@ namespace Eclipse.View
         public void InitializeEclipseSettings()
         {
             eclipseSettings = EclipseSettingsDataProvider.Instance?.EclipseSettings;
-            VideoVolume = eclipseSettings?.DefaultVideoVolume ?? 0.5;
-            ShowMatchPercent = eclipseSettings?.ShowMatchPercent ?? true;
-            ShowReleaseYear = eclipseSettings?.ShowReleaseYear ?? true;
-            ShowStarRating = eclipseSettings?.ShowStarRating ?? true;
-            ShowPlayMode = eclipseSettings?.ShowPlayMode ?? true;
-            ShowPlatformLogo = eclipseSettings?.ShowPlatformLogo ?? true;
-            ShowOptionsIcon = eclipseSettings?.ShowOptionsIcon ?? true;
+            VideoControl.VideoVolume = eclipseSettings?.DefaultVideoVolume ?? 0.5;
 
             double marginLeft = eclipseSettings?.BoxFrontMarginLeft ?? 2;
             double marginRight = eclipseSettings?.BoxFrontMarginRight ?? 2;
@@ -84,231 +83,7 @@ namespace Eclipse.View
             SelectedGameDetailsPadding = new System.Windows.Thickness(selectedGameDetailsPadding);
         }
 
-        public bool ShowMatchPercent
-        {
-            get => eclipseSettings.ShowMatchPercent;
-            set
-            {
-                eclipseSettings.ShowMatchPercent = value;
-                PropertyChanged(this, new PropertyChangedEventArgs("ShowMatchPercent"));
-            }
-        }
 
-        public bool ShowPlatformLogo
-        {
-            get => eclipseSettings.ShowPlatformLogo;
-            set
-            {
-                eclipseSettings.ShowPlatformLogo = value;
-                PropertyChanged(this, new PropertyChangedEventArgs("ShowPlatformLogo"));
-            }
-        }
-
-        public bool ShowPlayMode
-        {
-            get => eclipseSettings.ShowPlayMode;
-            set
-            {
-                eclipseSettings.ShowPlayMode = value;
-                PropertyChanged(this, new PropertyChangedEventArgs("ShowPlayMode"));
-            }
-        }
-
-        public bool ShowReleaseYear
-        {
-            get => eclipseSettings.ShowReleaseYear;
-            set
-            {
-                eclipseSettings.ShowReleaseYear = value;
-                PropertyChanged(this, new PropertyChangedEventArgs("ShowReleaseYear"));
-            }
-        }
-
-        public bool ShowStarRating
-        {
-            get => eclipseSettings.ShowStarRating;
-            set
-            {
-                eclipseSettings.ShowStarRating = value;
-                PropertyChanged(this, new PropertyChangedEventArgs("ShowStarRating"));
-            }
-        }
-
-        public bool ShowOptionsIcon
-        {
-            get => eclipseSettings.ShowOptionsIcon;
-            set
-            {
-                eclipseSettings.ShowOptionsIcon = value;
-                PropertyChanged(this, new PropertyChangedEventArgs("ShowOptionsIcon"));
-            }
-        }
-
-        public bool IsPlayingGame
-        {
-            get => isPlayingGame;
-            set
-            {
-                isPlayingGame = value;
-                PropertyChanged(this, new PropertyChangedEventArgs("IsPlayingGame"));
-            }
-        }
-
-        public double VideoVolume
-        {
-            get => videoVolume;
-            set
-            {
-                if (videoVolume != value)
-                {
-                    videoVolume = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("VideoVolume"));
-                }
-            }
-        }
-
-        public bool IsInitializing
-        {
-            get => isInitializing;
-            set
-            {
-                if (isInitializing != value)
-                {
-                    isInitializing = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("IsInitializing"));
-                }
-            }
-        }
-
-        public bool IsZoomingBox 
-        {
-            get => isZoomingBox;
-            set
-            {
-                if (isZoomingBox != value)
-                {
-                    isZoomingBox = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("IsZoomingBox"));
-                }
-            }
-        }
-
-        public bool IsPickingCategory
-        {
-            get => isPickingCategory;
-            set
-            {
-                if (isPickingCategory != value)
-                {
-                    isPickingCategory = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("IsPickingCategory"));
-                }
-            }
-        }
-
-        public bool IsDisplayingFeature
-        {
-            get => isDisplayingFeature;
-            set
-            {
-                if (isDisplayingFeature != value)
-                {
-                    isDisplayingFeature = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("IsDisplayingFeature"));
-                }
-            }
-        }
-
-        public bool IsDisplayingAttractMode
-        {
-            get => isDisplayingAttractMode;
-            set
-            {
-                if (isDisplayingAttractMode != value)
-                {
-                    isDisplayingAttractMode = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("IsDisplayingAttractMode"));
-                }
-            }
-        }
-
-        public bool IsRecognizing
-        {
-            get => isRecognizing;
-            set
-            {
-                if (isRecognizing != value)
-                {
-                    isRecognizing = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("IsRecognizing"));
-                }
-            }
-        }
-
-        public bool IsDisplayingResults
-        {
-            get => isDisplayingResults;
-            set
-            {
-                if (isDisplayingResults != value)
-                {
-                    isDisplayingResults = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("IsDisplayingResults"));
-                }
-            }
-        }
-
-        public bool IsDisplayingError
-        {
-            get => isDisplayingError;
-            set
-            {
-                if (isDisplayingError != value)
-                {
-                    isDisplayingError = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("IsDisplayingError"));
-                }
-            }
-        }
-
-        public bool IsDisplayingSearch
-        {
-            get => isDisplayingSearch;
-            set
-            {
-                if (isDisplayingSearch != value)
-                {
-                    isDisplayingSearch = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("IsDisplayingSearch"));
-                }
-            }
-        }
-
-        public bool IsDisplayingMoreInfo
-        {
-            get => isDisplayingMoreInfo;
-            set
-            {
-                if (isDisplayingMoreInfo != value)
-                {
-                    isDisplayingMoreInfo = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("IsDisplayingMoreInfo"));
-                }
-            }
-        }
-
-        public bool IsRatingGame
-        {
-            get => isRatingGame;
-            set
-            {
-                if (isRatingGame != value)
-                {
-                    isRatingGame = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("IsRatingGame"));
-                }
-            }
-        }
 
         public GameDetailOption GameDetailOption
         {
@@ -317,7 +92,7 @@ namespace Eclipse.View
             {
                 {
                     gameDetailOption = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("GameDetailOption"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -330,7 +105,7 @@ namespace Eclipse.View
                 if (errorMessage != value)
                 {
                     errorMessage = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("ErrorMessage"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -348,7 +123,7 @@ namespace Eclipse.View
                 if (currentGameListSet != value)
                 {
                     currentGameListSet = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("CurrentGameListSet"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -362,433 +137,34 @@ namespace Eclipse.View
                 if (optionList != value)
                 {
                     optionList = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("OptionList"));
+                    OnPropertyChanged();
                 }
             }
         }
 
-        private void GetGamesByListCategoryType(ListCategoryType listCategoryType)
+
+        public void SetupFiles(object sender, DoWorkEventArgs e)
         {
-            List<GameList> listOfGameList = new List<GameList>();
-
-            // remove any prior set of this type and then add these results to the set list category
-            GameListSets.RemoveAll(set => set.ListCategoryType == listCategoryType);
-
-            IEnumerable<CustomListDefinition> customListDefinitions = new CustomListDefinitionDataProvider().GetAllCustomListDefinitions();
-            IEnumerable<CustomListDefinition> filteredCustomListDefinitions = from customListDefinition in customListDefinitions
-                                                                              where customListDefinition.ListCategoryTypes.Contains(listCategoryType)
-                                                                              select customListDefinition;
-
-            int sortOrder = 0;
-            foreach (CustomListDefinition customListDefinition in filteredCustomListDefinitions)
-            {
-                IQueryable<GameMatch> baseQuery = gameBag.Where(g => g.CategoryType == ListCategoryType.Platform).AsQueryable();
-
-                if (customListDefinition.FilterExpressions.Any())
-                {
-                    foreach (FilterExpression filterExpression in customListDefinition.FilterExpressions)
-                    {
-                        baseQuery = baseQuery.ApplyDynamicFilter(filterExpression.GameFieldEnum.ToFieldName(), filterExpression.FilterFieldOperator, filterExpression.FilterFieldValue);
-                    }
-                }
-
-                var orderedQuery = baseQuery.OrderBy(g => g.Game.SortTitleOrTitle);
-
-                if (customListDefinition.SortExpressions.Any())
-                {
-                    bool first = true;
-                    foreach (var sortExpression in customListDefinition.SortExpressions)
-                    {
-                        if (first)
-                        {
-                            first = false;
-                            switch (sortExpression.SortDirection)
-                            {
-                                case SortDirection.Ascending:
-                                    orderedQuery = baseQuery.OrderBy(sortExpression.GameFieldEnum.ToFieldName());
-                                    break;
-                                case SortDirection.Descending:
-                                    orderedQuery = baseQuery.OrderByDescending(sortExpression.GameFieldEnum.ToFieldName());
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            switch (sortExpression.SortDirection)
-                            {
-                                case SortDirection.Ascending:
-                                    orderedQuery = orderedQuery.ThenBy(sortExpression.GameFieldEnum.ToFieldName());
-                                    break;
-                                case SortDirection.Descending:
-                                    orderedQuery = orderedQuery.ThenByDescending(sortExpression.GameFieldEnum.ToFieldName());
-                                    break;
-                            }
-                        }
-                    }
-                }
-
-                baseQuery = orderedQuery;
-                if (customListDefinition.MaxGamesInList > 0)
-                {
-                    baseQuery = orderedQuery.Take(customListDefinition.MaxGamesInList).AsQueryable();
-                }
-
-                if (baseQuery.Any())
-                {
-                    listOfGameList.Add(new GameList(customListDefinition.Description, baseQuery.ToList(), sortOrder++));
-                }
-            }
-
-            var gameQuery = from gameMatch in gameBag
-                            where gameMatch.CategoryType == listCategoryType
-                            group gameMatch by gameMatch.CategoryValue into gameGroup
-                            select gameGroup;
-
-            foreach (var gameGroup in gameQuery)
-            {
-                listOfGameList.Add(new GameList(gameGroup.Key, gameGroup.OrderBy(game => game.Game.SortTitleOrTitle).ToList()));
-            }
-
-            // include playlists in platforms if they are set to be included 
-            if (listCategoryType == ListCategoryType.Platform)
-            {
-                Dictionary<string, bool> playlists = PlaylistGameService.Instance.Playlists;
-
-                var playListQuery = from gameMatch in gameBag
-                                    where gameMatch.CategoryType == ListCategoryType.Playlist
-                                    group gameMatch by gameMatch.CategoryValue into gameGroup
-                                    select gameGroup;
-
-                foreach (var gameGroup in playListQuery)
-                {
-                    bool includeInPlaylists = false;
-                    if (playlists.TryGetValue(gameGroup.Key, out includeInPlaylists))
-                    {
-                        if (includeInPlaylists)
-                        {
-                            listOfGameList.Add(new GameList(gameGroup.Key, gameGroup.OrderBy(game => game.Game.SortTitleOrTitle).ToList()));
-                        }
-                    }
-                }
-            }
-
-            GameListSets.Add(new GameListSet
-            {
-                GameLists = listOfGameList.OrderBy(list => list.SortOrder)
-                                            .ThenBy(list => list.ListDescription).ToList(),
-                ListCategoryType = listCategoryType
-            });
-        }
-
-        public async void SetupFiles(object sender, DoWorkEventArgs e)
-        {
-            int? GameFilesCount = gameFilesBag?.Count;
-            int processedCount = 0;
-
-            await Task.Run(async () =>
-            {
-                Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
-
-                while (await SetupNextGameFiles())
-                {
-                    // just to be safe and avoid an infinite loop
-                    // check how many times we've been through the loop and stop after we have
-                    // processed enough to go through all game files
-                    processedCount++;
-                    if (processedCount > GameFilesCount)
-                    {
-                        break;
-                    }
-                }
-            });
-        }
-
-        private async Task<bool> SetupNextGameFiles()
-        {
-            bool moreGameFiles = false;
-
-            try
-            {
-                await Task.Run(async () =>
-                {
-                    // setup a game in the current list 
-                    if (CurrentGameList != null && CurrentGameList.MatchingGames != null)
-                    {
-                        IEnumerable<GameMatch> currentListQuery = CurrentGameList.MatchingGames.Where(g => !g.GameFiles.IsSetup);
-                        if (currentListQuery.Any())
-                        {
-                            GameMatch gameMatchCurrentList = currentListQuery.FirstOrDefault();
-                            if (gameMatchCurrentList?.GameFiles != null)
-                            {
-                                moreGameFiles = true;
-                                await gameMatchCurrentList.GameFiles.SetupFiles();
-
-                                if (gameMatchCurrentList?.GameFiles?.Game?.Id == currentGameList?.Game1?.Game?.Id)
-                                {
-                                    CallGameChangeFunction();
-                                }
-                            }
-                        }
-                    }
-
-                    // setup a game in the next list
-                    if (NextGameList != null && NextGameList.MatchingGames != null)
-                    {
-                        IEnumerable<GameMatch> nextListQuery = NextGameList.MatchingGames.Where(g => !g.GameFiles.IsSetup);
-                        if (nextListQuery.Any())
-                        {
-                            GameMatch gameMatchNextList = nextListQuery.FirstOrDefault();
-                            if (gameMatchNextList?.GameFiles != null)
-                            {
-                                moreGameFiles = true;
-                                await gameMatchNextList.GameFiles.SetupFiles();
-                            }
-                        }
-                    }
-
-                    // setup any game that still needs to be setup
-                    if (gameFilesBag != null)
-                    {
-                        IEnumerable<GameFiles> anyGameQuery = gameFilesBag.Where(gf => !gf.IsSetup);
-                        if (anyGameQuery.Any())
-                        {
-                            GameFiles anyGameFiles = anyGameQuery.FirstOrDefault();
-                            if (anyGameFiles != null)
-                            {
-                                moreGameFiles = true;
-                                await anyGameFiles.SetupFiles();
-                            }
-                        }
-                    }
-                });
-
-            }
-            catch (Exception ex)
-            {
-                LogHelper.LogException(ex, "SetupNextGameFiles");
-            }
-
-            return moreGameFiles;
+            FileProcessing.SetupFiles(sender, e);
         }
 
         public void CreateGameLists()
         {
-            GetGamesByListCategoryType(ListCategoryType.Platform);
-            GetGamesByListCategoryType(ListCategoryType.ReleaseYear);
-            GetGamesByListCategoryType(ListCategoryType.Genre);
-            GetGamesByListCategoryType(ListCategoryType.Publisher);
-            GetGamesByListCategoryType(ListCategoryType.Developer);
-            GetGamesByListCategoryType(ListCategoryType.Series);
-            GetGamesByListCategoryType(ListCategoryType.PlayMode);
-            GetGamesByListCategoryType(ListCategoryType.Playlist);
+            GameListManagement.CreateGameLists();
         }
 
         public void DoMoreLikeCurrentGame()
         {
-            GameMatch currentGame = CurrentGameList?.Game1;
-            if (currentGame != null)
-            {
-                List<GameList> moreLikeThisResults = new List<GameList>();
-
-                // get lists for matching series
-                var seriesGameListSetQuery = from gameListSet in GameListSets
-                                             where gameListSet.ListCategoryType == ListCategoryType.Series
-                                             select gameListSet;
-
-                GameListSet seriesGameListSet = seriesGameListSetQuery?.FirstOrDefault();
-                if (seriesGameListSet != null)
-                {
-                    foreach (string series in currentGame?.Game?.SeriesValues)
-                    {
-                        var seriesGameListQuery = from seriesGameList in seriesGameListSet.GameLists
-                                                  where seriesGameList.ListTypeValue.Equals(series, StringComparison.InvariantCultureIgnoreCase)
-                                                  select seriesGameList;
-
-                        foreach (GameList gameList in seriesGameListQuery)
-                        {
-                            moreLikeThisResults.Add(gameList);
-                        }
-                    }
-                }
-
-                // get lists for matching genres
-                var genreGameListSetQuery = from gameListSet in GameListSets
-                                            where gameListSet.ListCategoryType == ListCategoryType.Genre
-                                            select gameListSet;
-
-                GameListSet genreGameListSet = genreGameListSetQuery?.FirstOrDefault();
-                if (genreGameListSet != null)
-                {
-                    foreach (string genre in currentGame?.Game?.Genres)
-                    {
-                        var genreGameListQuery = from genreGameList in genreGameListSet.GameLists
-                                                 where genreGameList.ListTypeValue.Equals(genre, StringComparison.InvariantCultureIgnoreCase)
-                                                 select genreGameList;
-
-                        foreach (GameList gameList in genreGameListQuery)
-                        {
-                            moreLikeThisResults.Add(gameList);
-                        }
-                    }
-                }
-
-                // get platform list 
-                IEnumerable<GameListSet> platformGameListSetQuery = from gameListSet in GameListSets
-                                                                    where gameListSet.ListCategoryType == ListCategoryType.Platform
-                                                                    select gameListSet;
-
-                GameListSet platformGameListSet = platformGameListSetQuery?.FirstOrDefault();
-                if (platformGameListSet != null)
-                {
-                    string platform = currentGame?.Game?.Platform;
-                    if (platform != null)
-                    {
-                        var platformGameListQuery = from platformGameList in platformGameListSet.GameLists
-                                                    where platformGameList.ListTypeValue.Equals(platform, StringComparison.InvariantCultureIgnoreCase)
-                                                    select platformGameList;
-
-                        foreach (GameList gameList in platformGameListQuery)
-                        {
-                            moreLikeThisResults.Add(gameList);
-                        }
-                    }
-                }
-
-                // get Developer list 
-                IEnumerable<GameListSet> developerGameListSetQuery = from gameListSet in GameListSets
-                                                                     where gameListSet.ListCategoryType == ListCategoryType.Developer
-                                                                     select gameListSet;
-
-                GameListSet developerGameListSet = developerGameListSetQuery?.FirstOrDefault();
-                if (developerGameListSet != null)
-                {
-                    foreach (string developer in currentGame?.Game?.Developers)
-                    {
-                        IEnumerable<GameList> developerGameListQuery = from developerGameList in developerGameListSet.GameLists
-                                                                       where developerGameList.ListTypeValue.Equals(developer, StringComparison.InvariantCultureIgnoreCase)
-                                                                       select developerGameList;
-
-                        foreach (GameList gameList in developerGameListQuery)
-                        {
-                            moreLikeThisResults.Add(gameList);
-                        }
-                    }
-                }
-
-                // get Publisher list
-                IEnumerable<GameListSet> publisherGameListSetQuery = from gameListSet in GameListSets
-                                                                     where gameListSet.ListCategoryType == ListCategoryType.Publisher
-                                                                     select gameListSet;
-
-                GameListSet publisherGameListSet = publisherGameListSetQuery?.FirstOrDefault();
-                if (publisherGameListSet != null)
-                {
-                    foreach (string publisher in currentGame?.Game?.Publishers)
-                    {
-                        IEnumerable<GameList> publisherGameListQuery = from publisherGameList in publisherGameListSet.GameLists
-                                                                       where publisherGameList.ListTypeValue.Equals(publisher, StringComparison.InvariantCultureIgnoreCase)
-                                                                       select publisherGameList;
-
-                        foreach (GameList gameList in publisherGameListQuery)
-                        {
-                            moreLikeThisResults.Add(gameList);
-                        }
-                    }
-                }
-
-                // get Play mode list
-                IEnumerable<GameListSet> playModeGameListSetQuery = from gameListSet in GameListSets
-                                                                    where gameListSet.ListCategoryType == ListCategoryType.PlayMode
-                                                                    select gameListSet;
-
-                GameListSet playModeGameListSet = playModeGameListSetQuery?.FirstOrDefault();
-                if (playModeGameListSet != null)
-                {
-                    foreach (string playMode in currentGame?.Game?.PlayModes)
-                    {
-                        IEnumerable<GameList> playModeGameListQuery = from playModeGameList in playModeGameListSet.GameLists
-                                                                      where playModeGameList.ListTypeValue.Equals(playMode, StringComparison.InvariantCultureIgnoreCase)
-                                                                      select playModeGameList;
-
-                        foreach (GameList gameList in playModeGameListQuery)
-                        {
-                            moreLikeThisResults.Add(gameList);
-                        }
-                    }
-                }
-
-                // get Release year list
-                IEnumerable<GameListSet> releaseYearGameListSetQuery = from gameListSet in GameListSets
-                                                                       where gameListSet.ListCategoryType == ListCategoryType.ReleaseYear
-                                                                       select gameListSet;
-
-                GameListSet releaseYearGameListSet = releaseYearGameListSetQuery?.FirstOrDefault();
-                if (releaseYearGameListSet != null)
-                {
-                    int? releaseYear = currentGame?.Game?.ReleaseDate?.Year;
-                    if (releaseYear != null)
-                    {
-                        IEnumerable<GameList> releaseYearGameListQuery = from releaseYearGameList in releaseYearGameListSet.GameLists
-                                                                         where releaseYearGameList.ListTypeValue.Equals(releaseYear.ToString(), StringComparison.InvariantCultureIgnoreCase)
-                                                                         select releaseYearGameList;
-
-                        foreach (GameList gameList in releaseYearGameListQuery)
-                        {
-                            moreLikeThisResults.Add(gameList);
-                        }
-                    }
-                }
-
-                // remove any prior "more like this" set and then add these results in the more like this category
-                GameListSets.RemoveAll(set => set.ListCategoryType == ListCategoryType.MoreLikeThis);
-                GameListSets.Add(new GameListSet
-                {
-                    ListCategoryType = ListCategoryType.MoreLikeThis,
-                    GameLists = moreLikeThisResults
-                });
-
-                ResetGameLists(ListCategoryType.MoreLikeThis);
-                IsDisplayingResults = true;
-                IsDisplayingFeature = false;
-                IsDisplayingMoreInfo = false;
-                CallGameChangeFunction();
-            }
+            GameListManagement.DoMoreLikeCurrentGame();
         }
 
-        private GameMatch attractModeGame;
-        public GameMatch AttractModeGame
-        {
-            get => attractModeGame;
-            set
-            {
-                if (attractModeGame != value)
-                {
-                    attractModeGame = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("AttractModeGame"));
-                }
-            }
-        }
+        public GameMatch AttractModeGame => RandomGameSelection.AttractModeGame;
 
         public void NextAttractModeGame()
         {
-            int randomIndex = random.Next(gameBag.Count);
-            AttractModeGame = gameBag.ElementAt(randomIndex);
+            RandomGameSelection.NextAttractModeGame();
         }
 
-        private void RefreshGameLists()
-        {
-            if (listCycle?.GenericList?.Count == 0)
-            {
-                DisplayingErrorState displayingErrorState = EclipseStateContext.GetState(typeof(DisplayingErrorState)) as DisplayingErrorState;
-                displayingErrorState.ErrorMessage = "A problem occurred trying to refresh the list of games";
-                EclipseStateContext.TransitionToState(displayingErrorState);
-                return;
-            }
-
-            CurrentGameList = listCycle.GetItem(0);
-            NextGameList = listCycle.GetItem(1);
-            CallGameChangeFunction();
-        }
 
         public void CallGameChangeFunction()
         {
@@ -800,72 +176,55 @@ namespace Eclipse.View
             StopVideoAndAnimationsFunction?.Invoke();
         }
 
-        private void CallUpdateRatingImageFunction()
+        internal void CallUpdateRatingImageFunction()
         {
             UpdateRatingImageFunction?.Invoke();
         }
 
-        public void AdjustVideoVolume(double increment)
-        {
-            if (VideoVolume + increment > 1)
-            {
-                VideoVolume = 1;
-            }
-            else if (VideoVolume + increment < 0)
-            {
-                VideoVolume = 0;
-            }
-            else
-            {
-                VideoVolume += increment;
-            }
-        }
 
         public void CycleListBackward()
         {
-            listCycle.CycleBackward();
-            RefreshGameLists();
+            GameListManagement.CycleListBackward();
         }
 
         public void CycleListForward()
         {
-            listCycle.CycleForward();
-            RefreshGameLists();
+            GameListManagement.CycleListForward();
         }
 
         public bool DoUp(bool held)
         {
-            IsPlayingGame = false;
+            UIState.IsPlayingGame = false;
             return EclipseStateContext.OnUp(held);
         }
 
         public bool DoDown(bool held)
         {
-            IsPlayingGame = false;
+            UIState.IsPlayingGame = false;
             return EclipseStateContext.OnDown(held);
         }
 
         public bool DoLeft(bool held)
         {
-            IsPlayingGame = false;
+            UIState.IsPlayingGame = false;
             return EclipseStateContext.OnLeft(held);
         }
 
         public bool DoRight(bool held)
         {
-            IsPlayingGame = false;
+            UIState.IsPlayingGame = false;
             return EclipseStateContext.OnRight(held);
         }
 
         public bool DoPageUp()
         {
-            IsPlayingGame = false;
+            UIState.IsPlayingGame = false;
             return EclipseStateContext.OnPageUp();
         }
 
         public bool DoPageDown()
         {
-            IsPlayingGame = false;
+            UIState.IsPlayingGame = false;
             return EclipseStateContext.OnPageDown();
         }
 
@@ -880,92 +239,25 @@ namespace Eclipse.View
             if (CurrentGameListSet != null)
             {
                 listCycle = new ListCycle<GameList>(CurrentGameListSet.GameLists, 2);
-                RefreshGameLists();
+                GameListManagement.RefreshGameLists();
             }
         }
 
-        private static readonly Random random = new Random();
         public void DoRandomGame(int randomIndex = -1)
         {
-            // get a game index from the current list set
-            if (randomIndex == -1)
-            {
-                randomIndex = random.Next(0, CurrentGameListSet.TotalGameCount);
-            }
-
-            // find the index of which list it's in 
-            for (int listIndex = 0; listIndex < CurrentGameListSet.GameLists.Count; listIndex++)
-            {
-                GameList gameList = CurrentGameListSet.GameLists[listIndex];
-
-                if (gameList.ListSetStartIndex <= randomIndex && gameList.ListSetEndIndex >= randomIndex)
-                {
-                    // once found, cycle to that list
-                    listCycle.SetCurrentIndex(listIndex);
-
-                    // refresh the game lists so we can get a handle on the current list
-                    CurrentGameList = listCycle.GetItem(0);
-                    NextGameList = listCycle.GetItem(1);
-
-                    // setup the game list to the random game index 
-                    CurrentGameList.SetGameIndex(randomIndex - gameList.ListSetStartIndex);
-                    break;
-                }
-            }
-
-            // call the game change function to refresh things
-            CallGameChangeFunction();
+            RandomGameSelection.DoRandomGame(randomIndex);
         }
 
         // start the current game
         public void PlayCurrentGame()
         {
-            // get a handle on the current game 
-            IGame currentGame = CurrentGameList?.Game1?.Game;
-            IAdditionalApplication additionalApplication = CurrentGameList?.Game1?.GameFiles?.GameVersionList?.SelectedGameVersion?.AdditionalApplication;
-
-            if (currentGame != null)
-            {
-                currentGame.LastPlayedDate = DateTime.Now;
-
-                // reset the lists so the updated history reflects - first save the current game details then reload the lists 
-                SaveStateForGameListChange();
-                ResetListsAfterChange();
-
-                // stop everything in the UI
-                CallStopVideoAndAnimationsFunction();
-
-                IsPlayingGame = true;
-
-                // launch the game 
-                PluginHelper.BigBoxMainViewModel.PlayGame(currentGame, additionalApplication, null, null);
-            }
-            return;
+            GameOperations.PlayCurrentGame();
         }
 
         // mark current game as a favorite
         public void FavoriteCurrentGame()
         {
-            GameMatch currentGame = CurrentGameList?.Game1;
-            if (currentGame != null)
-            {
-                currentGame.Favorite = !currentGame.Favorite;
-
-                PluginHelper.DataManager.Save(false);
-
-                IEnumerable<GameMatch> gameMatchQuery = from gameMatch in gameBag
-                                                        where gameMatch.Game.Id == currentGame.Game.Id
-                                                        select gameMatch;
-
-                // flag the game as a favorite wherever it appears
-                foreach (GameMatch gameMatch in gameMatchQuery)
-                {
-                    gameMatch.Favorite = currentGame.Favorite;
-                }
-
-                // save state so we can get back to the current game
-                SaveStateForGameListChange();
-            }
+            GameOperations.FavoriteCurrentGame();
         }
 
         // variables to track what list set, list, and game we were on when a game is favorited
@@ -975,7 +267,7 @@ namespace Eclipse.View
         // get the game id that we are on 
         // get the starting index for the list within the list set
         // get the index of the game within the list 
-        private bool gameListsChanged;
+        internal bool gameListsChanged;
         private ListCategoryType preChangeListSetCategoryType;
         private ListCategoryType preChangeListCategoryType;
         private string preChangeListDescription;
@@ -984,7 +276,7 @@ namespace Eclipse.View
 
         // call this when lists are about to change to save which list set, list, and game we were on so we can find our way back after rebuilding lists
         // this is needed when game lists are going to change (i.e. adding/removing favorites, adding/removing from history)
-        private void SaveStateForGameListChange()
+        internal void SaveStateForGameListChange()
         {
             // flag the favorites list has changed 
             gameListsChanged = true;
@@ -1008,15 +300,12 @@ namespace Eclipse.View
 
         public void CheckResetGameLists()
         {
-            if (gameListsChanged)
-            {
-                ResetListsAfterChange();
-            }
+            GameListManagement.CheckResetGameLists();
         }
 
         // call this when lists have changed (i.e. game added/removed from favorites history list)
         // will try to find the game in the same list - if it can't (i.e. in favorites and game removed from favorites) then jumps to the next game
-        private void ResetListsAfterChange()
+        internal void ResetListsAfterChange()
         {
             // clear the game list changed flag 
             gameListsChanged = false;
@@ -1048,7 +337,7 @@ namespace Eclipse.View
                     if (gameIndex >= 0)
                     {
                         // jump to the game
-                        DoRandomGame(gameList.ListSetStartIndex + gameIndex);
+                        RandomGameSelection.DoRandomGame(gameList.ListSetStartIndex + gameIndex);
                         return;
                     }
                 }
@@ -1056,78 +345,51 @@ namespace Eclipse.View
                 // the game was not in the list so try the next game in the list 
                 if (gameList?.MatchingGames?.Count() > preChangeGameIndex)
                 {
-                    DoRandomGame(gameList.ListSetStartIndex + preChangeGameIndex);
+                    RandomGameSelection.DoRandomGame(gameList.ListSetStartIndex + preChangeGameIndex);
                     return;
                 }
 
                 // there was no next game so try a previous game in the list 
                 if (gameList?.MatchingGames?.Count() > preChangeGameIndex - 1)
                 {
-                    DoRandomGame(gameList.ListSetStartIndex + preChangeGameIndex - 1);
+                    RandomGameSelection.DoRandomGame(gameList.ListSetStartIndex + preChangeGameIndex - 1);
                     return;
                 }
 
                 // there was no next or previous, try just the first game in the list 
                 if (gameList?.MatchingGames?.Count() > 0)
                 {
-                    DoRandomGame(gameList.ListSetStartIndex);
+                    RandomGameSelection.DoRandomGame(gameList.ListSetStartIndex);
                     return;
                 }
             }
             else
             {
                 // the list was not there so pick any random game
-                DoRandomGame();
+                RandomGameSelection.DoRandomGame();
                 return;
             }
         }
 
         public void RateCurrentGame(float changeAmount)
         {
-            GameMatch currentGame = CurrentGameList?.Game1;
-            if (currentGame != null)
-            {
-                float newRating = currentGame.UserRating + changeAmount;
-
-                if (newRating > 5)
-                {
-                    newRating = 5.0f;
-                }
-
-                if (newRating < 0)
-                {
-                    newRating = 0.0f;
-                }
-
-                currentGame.UserRating = newRating;
-            }
+            GameOperations.RateCurrentGame(changeAmount);
         }
 
         public void SaveRatingCurrentGame()
         {
-            GameMatch currentGame = CurrentGameList?.Game1;
-            if (currentGame != null)
-            {
-                // save the rating change to the launchbox data 
-                PluginHelper.DataManager.Save(false);
-
-                // reload the game's start rating image
-                currentGame.GameFiles.ResetStarRatingImage();
-
-                // trigger the view to update the image
-                CallUpdateRatingImageFunction();
-            }
+            GameOperations.SaveRatingCurrentGame();
         }
 
         public bool DoEnter()
         {
-            IsPlayingGame = false;
+            UIState.IsPlayingGame = false;
             return EclipseStateContext.OnEnter();
         }
 
         public bool DoEscape()
         {
-            IsPlayingGame = false;
+            UIState.IsPlayingGame = false;
             return EclipseStateContext.OnEscape();
         }
 
@@ -1140,7 +402,7 @@ namespace Eclipse.View
                 if (currentGameList != value)
                 {
                     currentGameList = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("CurrentGameList"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -1152,7 +414,7 @@ namespace Eclipse.View
             set
             {
                 frontImageMargin = value;
-                PropertyChanged(this, new PropertyChangedEventArgs("FrontImageMargin"));
+                OnPropertyChanged();
             }
         }
 
@@ -1163,7 +425,7 @@ namespace Eclipse.View
             set
             {
                 selectedGameDetailsPadding = value;
-                PropertyChanged(this, new PropertyChangedEventArgs("SelectedGameDetailsPadding"));
+                OnPropertyChanged();
             }
         }
 
@@ -1176,7 +438,7 @@ namespace Eclipse.View
                 if (nextGameList != value)
                 {
                     nextGameList = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("NextGameList"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -1198,7 +460,7 @@ namespace Eclipse.View
                 if (featureOption != value)
                 {
                     featureOption = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("FeatureOption"));
+                    OnPropertyChanged();
                 }
                 SetButtonImages();
             }
@@ -1227,7 +489,7 @@ namespace Eclipse.View
                 if (playButtonImage != value)
                 {
                     playButtonImage = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("PlayButtonImage"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -1241,7 +503,7 @@ namespace Eclipse.View
                 if (moreInfoImage != value)
                 {
                     moreInfoImage = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("MoreInfoImage"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -1258,129 +520,12 @@ namespace Eclipse.View
         public float StarOffset10 => 1.0f;
 
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
-    }
 
-
-    public static class CustomGameListServiceExtensionMethods
-    {
-        public static IOrderedQueryable<T> OrderBy<T>(this IQueryable<T> source, string property)
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
-            return ApplyOrder(source, property, "OrderBy");
-        }
-
-        public static IOrderedQueryable<T> OrderByDescending<T>(this IQueryable<T> source, string property)
-        {
-            return ApplyOrder(source, property, "OrderByDescending");
-        }
-
-        public static IOrderedQueryable<T> ThenBy<T>(this IOrderedQueryable<T> source, string property)
-        {
-            return ApplyOrder(source, property, "ThenBy");
-        }
-
-        public static IOrderedQueryable<T> ThenByDescending<T>(this IOrderedQueryable<T> source, string property)
-        {
-            return ApplyOrder(source, property, "ThenByDescending");
-        }
-
-        static IOrderedQueryable<T> ApplyOrder<T>(IQueryable<T> source, string property, string methodName)
-        {
-            string[] props = property.Split('.');
-            Type type = typeof(T);
-            ParameterExpression arg = Expression.Parameter(type, "x");
-            Expression expr = arg;
-            foreach (string prop in props)
-            {
-                PropertyInfo pi = type.GetProperty(prop);
-                expr = Expression.Property(expr, pi);
-                type = pi.PropertyType;
-            }
-            Type delegateType = typeof(Func<,>).MakeGenericType(typeof(T), type);
-            LambdaExpression lambda = Expression.Lambda(delegateType, expr, arg);
-
-            object result = typeof(Queryable)
-                .GetMethods()
-                .Single(method => method.Name == methodName
-                            && method.IsGenericMethodDefinition
-                            && method.GetGenericArguments().Length == 2
-                            && method.GetParameters().Length == 2)
-                .MakeGenericMethod(typeof(T), type)
-                .Invoke(null, new object[] { source, lambda });
-            return (IOrderedQueryable<T>)result;
-        }
-
-        public static IQueryable<T> ApplyDynamicFilter<T>(this IQueryable<T> source, string property, FilterFieldOperator filterFieldOperator, object value)
-        {
-            string[] props = property.Split('.');
-            Type type = typeof(T);
-
-            ParameterExpression arg = Expression.Parameter(type, "x");
-            Expression expr = arg;
-            foreach (string prop in props)
-            {
-                PropertyInfo pi = type.GetProperty(prop);
-                expr = Expression.Property(expr, pi);
-                type = pi.PropertyType;
-            }
-            Expression left = expr;
-            Expression constant = Expression.Constant(value);
-            Expression right = Expression.Convert(constant, type);
-
-            Expression whereExpression;
-            switch (filterFieldOperator)
-            {
-                case FilterFieldOperator.Equal:
-                    whereExpression = Expression.Equal(left, right);
-                    break;
-
-                case FilterFieldOperator.NotEqual:
-                    whereExpression = Expression.NotEqual(left, right);
-                    break;
-
-                case FilterFieldOperator.GreaterThan:
-                    whereExpression = Expression.GreaterThan(left, right);
-                    break;
-
-                case FilterFieldOperator.GreaterThanOrEqual:
-                    whereExpression = Expression.GreaterThanOrEqual(left, right);
-                    break;
-
-                case FilterFieldOperator.LessThan:
-                    whereExpression = Expression.LessThan(left, right);
-                    break;
-
-                case FilterFieldOperator.LessThanOrEqual:
-                    whereExpression = Expression.LessThanOrEqual(left, right);
-                    break;
-
-                case FilterFieldOperator.IsNull:
-                    right = Expression.Constant(null);
-                    whereExpression = Expression.Equal(left, right);
-                    break;
-
-                case FilterFieldOperator.IsNotNull:
-                    right = Expression.Constant(null);
-                    whereExpression = Expression.NotEqual(left, right);
-                    break;
-
-                case FilterFieldOperator.Contains:
-                    MethodInfo method = typeof(string).GetMethod("Contains", new[] { typeof(string) });
-                    whereExpression = Expression.Call(left, method, right);
-                    break;
-
-                default:
-                    whereExpression = null;
-                    break;
-            }
-
-            if (whereExpression == null)
-            {
-                return source;
-            }
-
-            var lambda = Expression.Lambda<Func<T, bool>>(whereExpression, arg).Compile();
-
-            return source.Where(lambda).AsQueryable();
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
+
+
 }

@@ -39,7 +39,7 @@ namespace Eclipse.State
         public bool OnEscape(EclipseStateContext eclipseStateContext)
         {
             speechRecognizer.TryCancelRecognition();
-            EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
+            EclipseStateContext.MainWindowViewModel.UIState.IsRecognizing = false;
             eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }
@@ -74,7 +74,7 @@ namespace Eclipse.State
             // bail out if the recognizer didn't get setup properly
             if (speechRecognizer == null)
             {
-                EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
+                EclipseStateContext.MainWindowViewModel.UIState.IsRecognizing = false;
                 EclipseStateContext.TransitionToState(EclipseStateContext.GetState(typeof(SelectingGameState)));
                 return;
             }
@@ -86,13 +86,13 @@ namespace Eclipse.State
                 // stop any video or animations
                 EclipseStateContext.MainWindowViewModel.CallStopVideoAndAnimationsFunction();
 
-                EclipseStateContext.MainWindowViewModel.IsRecognizing = true;
+                EclipseStateContext.MainWindowViewModel.UIState.IsRecognizing = true;
 
                 speechRecognizer.DoSpeechRecognition(RecognizeCompleted);
             }
             catch(Exception ex)
             {
-                EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
+                EclipseStateContext.MainWindowViewModel.UIState.IsRecognizing = false;
 
                 DisplayingErrorState displayingErrorState = EclipseStateContext.GetState(typeof(DisplayingErrorState)) as DisplayingErrorState;
                 displayingErrorState.ErrorMessage = ex.Message;
@@ -107,7 +107,7 @@ namespace Eclipse.State
 
             if (!string.IsNullOrWhiteSpace(speechRecognizerResult.ErrorMessage))
             {
-                EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
+                EclipseStateContext.MainWindowViewModel.UIState.IsRecognizing = false;
 
                 DisplayingErrorState displayingErrorState = EclipseStateContext.GetState(typeof(DisplayingErrorState)) as DisplayingErrorState;
                 displayingErrorState.ErrorMessage = speechRecognizerResult.ErrorMessage;
@@ -165,12 +165,12 @@ namespace Eclipse.State
 
                 // display voice search results
                 EclipseStateContext.MainWindowViewModel.ResetGameLists(ListCategoryType.VoiceSearch);
-                EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
+                EclipseStateContext.MainWindowViewModel.UIState.IsRecognizing = false;
                 EclipseStateContext.TransitionToState(EclipseStateContext.GetState(typeof(SelectingGameState)));
             }
             catch(Exception ex)
             {
-                EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
+                EclipseStateContext.MainWindowViewModel.UIState.IsRecognizing = false;
                 DisplayingErrorState displayingErrorState = EclipseStateContext.GetState(typeof(DisplayingErrorState)) as DisplayingErrorState;
                 displayingErrorState.ErrorMessage = ex.Message;
                 EclipseStateContext.TransitionToState(displayingErrorState);

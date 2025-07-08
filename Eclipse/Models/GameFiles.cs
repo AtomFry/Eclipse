@@ -2,212 +2,23 @@
 using Eclipse.Service;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Unbroken.LaunchBox.Plugins;
 using Unbroken.LaunchBox.Plugins.Data;
+using System.Runtime.CompilerServices;
 
 namespace Eclipse.Models
 {
-    public class GameVersion : INotifyPropertyChanged
-    {
-        public event PropertyChangedEventHandler PropertyChanged = delegate { };
-
-        public IGame Game { get; set; }
-
-        public IAdditionalApplication AdditionalApplication { get; set; }
-
-        public GameVersion(IGame _game, IAdditionalApplication _additionalApplication)
-        {
-            Game = _game;
-            AdditionalApplication = _additionalApplication;
-
-            if (AdditionalApplication != null)
-            {
-                switch (EclipseSettingsDataProvider.Instance.EclipseSettings.AdditionalApplicationDisplayField)
-                {
-                    case AdditionalApplicationDisplayField.Name:
-                        Description = AdditionalApplication.Name;
-
-                        if (EclipseSettingsDataProvider.Instance.EclipseSettings.AdditionalVersionsRemovePlayPrefix)
-                        {
-                            if (AdditionalApplication?.Name?.StartsWith("Play ") == true)
-                            {
-                                Description = Description.Substring(5);
-                            }
-                        }
-
-                        if (EclipseSettingsDataProvider.Instance.EclipseSettings.AdditionalVersionsRemoveVersionPostfix)
-                        {
-                            if (AdditionalApplication?.Name?.EndsWith("Version...") == true)
-                            {
-                                Description = Description.Substring(0, Description.IndexOf("Version..."));
-                            }
-                        }
-
-                        break;
-
-                    case AdditionalApplicationDisplayField.Region:
-                        Description = AdditionalApplication.Region;
-                        break;
-
-                    case AdditionalApplicationDisplayField.Version:
-                        Description = AdditionalApplication.Version;
-                        break;
-
-                    default:
-                        break;
-                }
-            }
-            else
-            {
-                /*
-                Description = string.IsNullOrWhiteSpace(Game.Version) ?
-                    string.IsNullOrWhiteSpace(Game.Region) ?
-                    Game.Title :
-                    Game.Region :
-                    Game.Version;
-                */
-                Description = Game.Title;
-            }
-        }
-
-        private string description;
-        public string Description
-        {
-            get => description;
-            set
-            {
-                description = value;
-                PropertyChanged(this, new PropertyChangedEventArgs("Description"));
-            }
-        }
-
-        private bool selected;
-        public bool Selected
-        {
-            get => selected;
-            set
-            {
-                selected = value;
-                PropertyChanged(this, new PropertyChangedEventArgs("Selected"));
-            }
-        }
-    }
-
-    public class GameVersionList : INotifyPropertyChanged
-    {
-        public ObservableCollection<GameVersion> DisplayedGameVersions { get; set; }
-
-        public int SelectedIndex { get; set; }
-
-        private GameVersion selectedGameVersion;
-        public GameVersion SelectedGameVersion
-        {
-            get => selectedGameVersion;
-            set
-            {
-                selectedGameVersion = value;
-                PropertyChanged(this, new PropertyChangedEventArgs("SelectedGameVersion"));
-            }
-        }
-
-        private List<GameVersion> gameVersions;
-        public List<GameVersion> GameVersions
-        {
-            get => gameVersions;
-            set
-            {
-                gameVersions = value;
-                PropertyChanged(this, new PropertyChangedEventArgs("GameVersions"));
-            }
-        }
-
-        public GameVersionList(List<GameVersion> _gameVersions)
-        {
-            DisplayedGameVersions = new ObservableCollection<GameVersion>();
-
-            GameVersions = _gameVersions;
-
-            SelectedIndex = 0;
-
-            if (GameVersions.Count > 0)
-            {
-                GameVersions[SelectedIndex].Selected = true;
-            }
-
-            RefreshOptions();
-        }
-
-        public void CycleForward()
-        {
-            GameVersions[SelectedIndex].Selected = false;
-            if (SelectedIndex + 1 >= GameVersions.Count)
-            {
-                SelectedIndex = 0;
-            }
-            else
-            {
-                SelectedIndex++;
-            }
-            GameVersions[SelectedIndex].Selected = true;
-
-            SelectedGameVersion = GameVersions[SelectedIndex];
-        }
-
-        public void CycleBackward()
-        {
-            GameVersions[SelectedIndex].Selected = false;
-            if (SelectedIndex - 1 < 0)
-            {
-                SelectedIndex = GameVersions.Count - 1;
-            }
-            else
-            {
-                SelectedIndex--;
-            }
-            GameVersions[SelectedIndex].Selected = true;
-
-            SelectedGameVersion = GameVersions[SelectedIndex];
-        }
-
-        private void RefreshOptions()
-        {
-            DisplayedGameVersions.Clear();
-
-            if (GameVersions != null)
-            {
-                foreach (GameVersion option in GameVersions)
-                {
-                    DisplayedGameVersions.Add(option);
-                }
-            }
-
-            SelectedGameVersion = GameVersions[SelectedIndex];
-
-            HasAdditionalVersions = DisplayedGameVersions?.Count() > 1;
-        }
-
-        private bool hasAdditionalVersions;
-        public bool HasAdditionalVersions
-        {
-            get => hasAdditionalVersions;
-            set
-            {
-                hasAdditionalVersions = value;
-                PropertyChanged(this, new PropertyChangedEventArgs("HasAdditionalVersions"));
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged = delegate { };
-    }
-
     public class GameFiles : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
         private GameVersionList gameVersionList;
         public GameVersionList GameVersionList
@@ -216,7 +27,7 @@ namespace Eclipse.Models
             set
             {
                 gameVersionList = value;
-                PropertyChanged(this, new PropertyChangedEventArgs("GameVersionList"));
+                OnPropertyChanged();
             }
         }
 
@@ -237,7 +48,7 @@ namespace Eclipse.Models
                 if (game != value)
                 {
                     game = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -251,7 +62,7 @@ namespace Eclipse.Models
                 if (backImage != value)
                 {
                     backImage = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("BackImage"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -265,7 +76,7 @@ namespace Eclipse.Models
                 if (frontImage != value)
                 {
                     frontImage = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("FrontImage"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -279,7 +90,7 @@ namespace Eclipse.Models
                 if (bigFrontImage != value)
                 {
                     bigFrontImage = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("BigFrontImage"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -293,7 +104,7 @@ namespace Eclipse.Models
                 if (bigBackImage != value)
                 {
                     bigBackImage = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("BigBackImage"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -308,7 +119,7 @@ namespace Eclipse.Models
                 if (clearLogo != value)
                 {
                     clearLogo = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("ClearLogo"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -322,7 +133,7 @@ namespace Eclipse.Models
                 if (communityStarRatingImage != value)
                 {
                     communityStarRatingImage = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("CommunityStarRatingImage"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -336,7 +147,7 @@ namespace Eclipse.Models
                 if (userStarRatingImage != value)
                 {
                     userStarRatingImage = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("UserStarRatingImage"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -351,7 +162,7 @@ namespace Eclipse.Models
                 if (playModeImage != value)
                 {
                     playModeImage = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("PlayModeImage"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -365,7 +176,7 @@ namespace Eclipse.Models
                 if (backgroundImage != value)
                 {
                     backgroundImage = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("BackgroundImage"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -379,7 +190,7 @@ namespace Eclipse.Models
                 if (platformClearLogoImage != value)
                 {
                     platformClearLogoImage = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("PlatformClearLogoImage"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -393,7 +204,7 @@ namespace Eclipse.Models
                 if (videoPath != value)
                 {
                     videoPath = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("VideoPath"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -407,7 +218,7 @@ namespace Eclipse.Models
                 if (gameBezelImage != value)
                 {
                     gameBezelImage = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("GameBezelImage"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -421,7 +232,7 @@ namespace Eclipse.Models
                 if (titleToFileName != value)
                 {
                     titleToFileName = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("TitleToFileName"));
+                    OnPropertyChanged();
                 }
             }
         }

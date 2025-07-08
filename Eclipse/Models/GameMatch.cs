@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Text;
 using Unbroken.LaunchBox.Plugins.Data;
+using System.Runtime.CompilerServices;
 
 namespace Eclipse.Models
 {
@@ -73,6 +74,11 @@ namespace Eclipse.Models
         #region Properties
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
 
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         public IGame Game { get; set; }
 
         private GameFiles gameFiles;
@@ -84,7 +90,7 @@ namespace Eclipse.Models
                 if(gameFiles != value)
                 {
                     gameFiles = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("GameFiles"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -103,7 +109,7 @@ namespace Eclipse.Models
                 if (Game.Favorite != value)
                 {
                     Game.Favorite = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Favorite"));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -117,7 +123,7 @@ namespace Eclipse.Models
                 if (Game.StarRatingFloat != value)
                 {
                     Game.StarRatingFloat = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("UserRating"));
+                    OnPropertyChanged();
                 }
             }
         }

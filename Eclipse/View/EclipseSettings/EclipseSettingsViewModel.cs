@@ -407,6 +407,16 @@ namespace Eclipse.View.EclipseSettings
             }
         }
 
+        public bool ShowNotes
+        {
+            get => eclipseSettings.ShowNotes;
+            set
+            {
+                eclipseSettings.ShowNotes = value;
+                OnPropertyChanged("ShowNotes");
+            }
+        }
+
         public bool ShowReleaseYear
         {
             get => eclipseSettings.ShowReleaseYear;
@@ -812,6 +822,7 @@ namespace Eclipse.View.EclipseSettings
             ShowPlayMode = eclipseSettings.ShowPlayMode;
             ShowPlatformLogo = eclipseSettings.ShowPlatformLogo;
             ShowOptionsIcon = eclipseSettings.ShowOptionsIcon;
+            ShowNotes = eclipseSettings.ShowNotes;
 
             BoxFrontMarginLeft = eclipseSettings.BoxFrontMarginLeft;
             BoxFrontMarginRight = eclipseSettings.BoxFrontMarginRight;

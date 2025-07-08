@@ -41,7 +41,7 @@ namespace Eclipse.Service
         // when the AttractModeDelay elapses, start into attract mode 
         private void AttractModeDelay_Elapsed(object sender, ElapsedEventArgs e)
         {
-            if (MainWindowViewModel.IsPlayingGame) return;
+            if (MainWindowViewModel.UIState.IsPlayingGame) return;
 
             AttractModeState attractModeState = MainWindowViewModel.EclipseStateContext.GetState(typeof(AttractModeState)) as AttractModeState;
 

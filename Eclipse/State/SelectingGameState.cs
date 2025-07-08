@@ -16,10 +16,10 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
 
-            eclipseStateContext.MainWindowViewModel.IsPickingCategory = false;
-            eclipseStateContext.MainWindowViewModel.IsDisplayingFeature = false;
-            eclipseStateContext.MainWindowViewModel.IsDisplayingMoreInfo = false;
-            eclipseStateContext.MainWindowViewModel.IsDisplayingResults = true;
+            eclipseStateContext.MainWindowViewModel.UIState.IsPickingCategory = false;
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingFeature = false;
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingMoreInfo = false;
+            eclipseStateContext.MainWindowViewModel.UIState.IsDisplayingResults = true;
             eclipseStateContext.MainWindowViewModel.CallGameChangeFunction();
         }
 
@@ -27,7 +27,7 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
 
-            eclipseStateContext.MainWindowViewModel.CycleListForward();
+            eclipseStateContext.MainWindowViewModel.GameListManagement.CycleListForward();
             return true;
         }
 
@@ -36,7 +36,7 @@ namespace Eclipse.State
             if (EclipseSettingsDataProvider.Instance.EclipseSettings.BypassDetails)
             {
                 attractModeService.StopAttractMode();
-                eclipseStateContext.MainWindowViewModel.PlayCurrentGame();
+                eclipseStateContext.MainWindowViewModel.GameOperations.PlayCurrentGame();
             }
             else
             {
@@ -120,7 +120,7 @@ namespace Eclipse.State
                 return true;
             }
 
-            eclipseStateContext.MainWindowViewModel.CycleListBackward();
+            eclipseStateContext.MainWindowViewModel.GameListManagement.CycleListBackward();
             return true;
         }
     }

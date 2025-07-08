@@ -6,7 +6,7 @@
         {
             if (IsValidForState(eclipseState))
             {
-                eclipseStateContext.MainWindowViewModel.IsZoomingBox = !eclipseStateContext.MainWindowViewModel.IsZoomingBox;
+                eclipseStateContext.MainWindowViewModel.UIState.IsZoomingBox = !eclipseStateContext.MainWindowViewModel.UIState.IsZoomingBox;
             }
         }
 
