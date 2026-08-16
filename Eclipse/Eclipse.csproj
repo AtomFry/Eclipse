@@ -65,7 +65,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Eclipse\README.txt">
+    <Content Include="Eclipse\LaunchBox\Plugins\Eclipse\README.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -102,8 +102,7 @@
     <ItemGroup>
       <EclipsePayload Include="$(MSBuildProjectDirectory)\Eclipse\**\*" />
     </ItemGroup>
-    <Copy SourceFiles="@(EclipsePayload)"
-          DestinationFiles="@(EclipsePayload->'$(EclipseStageDir)%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(EclipsePayload)" DestinationFiles="@(EclipsePayload->'$(EclipseStageDir)%(RecursiveDir)%(Filename)%(Extension)')" />
 
     <!-- LaunchBox 13+ discovers plugins in per-plugin folders. Plugins\Eclipse\ already holds
          Eclipse's Media and Settings data, so code and data share one folder and every path in
@@ -114,16 +113,13 @@
       <EclipseBinaries Include="$(TargetDir)*.dll" />
       <EclipseBinaries Include="$(TargetDir)Eclipse.deps.json" />
     </ItemGroup>
-    <Copy SourceFiles="@(EclipseBinaries)"
-          DestinationFolder="$(EclipseStageDir)LaunchBox\Plugins\Eclipse" />
+    <Copy SourceFiles="@(EclipseBinaries)" DestinationFolder="$(EclipseStageDir)LaunchBox\Plugins\Eclipse" />
 
     <!-- Deployment is opt-in. Empty LaunchBoxDeployRoot stages into bin only. -->
     <ItemGroup Condition="'$(LaunchBoxDeployRoot)' != '' And Exists('$(LaunchBoxDeployRoot)')">
       <StagedForDeploy Include="$(EclipseStageDir)LaunchBox\**\*" />
     </ItemGroup>
-    <Copy Condition="'$(LaunchBoxDeployRoot)' != '' And Exists('$(LaunchBoxDeployRoot)')"
-          SourceFiles="@(StagedForDeploy)"
-          DestinationFiles="@(StagedForDeploy->'$(LaunchBoxDeployRoot)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy Condition="'$(LaunchBoxDeployRoot)' != '' And Exists('$(LaunchBoxDeployRoot)')" SourceFiles="@(StagedForDeploy)" DestinationFiles="@(StagedForDeploy->'$(LaunchBoxDeployRoot)\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
 </Project>
