@@ -3,6 +3,15 @@
   <PropertyGroup>
     <TargetFramework>net10.0-windows</TargetFramework>
     <OutputType>Library</OutputType>
+    <!-- BigBox is x64. Without a RuntimeIdentifier, NuGet copies each package's RID-agnostic
+         lib\ asset to the output root and its RID-specific asset to runtimes\<rid>\, leaving the
+         host to pick between them via deps.json. LaunchBox has no AssemblyDependencyResolver and
+         never reads Eclipse.deps.json, so it would load whatever sits at the root - for
+         System.Speech that is a stub whose every member throws PlatformNotSupportedException.
+         Setting the RID flattens the correct Windows asset to the output root instead. -->
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <!-- Required: this is a plugin, not a standalone app. Never ship the .NET runtime with it. -->
+    <SelfContained>false</SelfContained>
     <!-- BigBox resolves the plugin and the theme XAML by this exact assembly name. Do not change. -->
     <AssemblyName>Eclipse</AssemblyName>
     <RootNamespace>Eclipse</RootNamespace>
