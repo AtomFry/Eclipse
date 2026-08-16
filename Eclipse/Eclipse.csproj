@@ -1,349 +1,129 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{C8452C46-F88C-42A1-B894-CD62DBC3E901}</ProjectGuid>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Eclipse</RootNamespace>
+    <!-- BigBox resolves the plugin and the theme XAML by this exact assembly name. Do not change. -->
     <AssemblyName>Eclipse</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+    <RootNamespace>Eclipse</RootNamespace>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <!-- Properties\AssemblyInfo.cs is checked in and remains the source of assembly attributes. -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <!-- Eclipse is a plugin, not a referenced library: BigBox will not resolve its dependencies
+         from Eclipse.deps.json, so package assemblies must land in the output to be deployed. -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <Deterministic>true</Deterministic>
-    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-    <!-- Path to the LaunchBox plugin contract assembly. Defaults to the historical
-         copy checked in beside the project; override locally to point at another copy. -->
-    <LaunchBoxPluginsDll Condition="'$(LaunchBoxPluginsDll)' == ''">$(MSBuildProjectDirectory)\Unbroken.LaunchBox.Plugins.dll</LaunchBoxPluginsDll>
+    <!-- The Eclipse\ payload folder contains LaunchBox theme XAML that must never be compiled as WPF pages. -->
+    <EnableDefaultPageItems>false</EnableDefaultPageItems>
+    <!-- CA1416: the WPF markup-compile pass builds through a generated temp project that loses the
+         windows platform annotation, so every Screen/GDI+/Speech call reports as cross-platform.
+         Eclipse only ever runs inside BigBox on Windows; the analysis is not meaningful here. -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+
+    <!-- Path to the LaunchBox plugin contract assembly. Defaults to the vendored LaunchBox 14
+         copy so the build is reproducible without a LaunchBox install; override locally to point
+         at another copy (e.g. a different LaunchBox version's Core directory).
+         The historical netstandard2.0 contract remains checked in beside the project as
+         Milestone 0 reference material and is deliberately no longer referenced. -->
+    <LaunchBoxPluginsDll Condition="'$(LaunchBoxPluginsDll)' == ''">$(MSBuildProjectDirectory)\lib\LaunchBox14\Unbroken.LaunchBox.Plugins.dll</LaunchBoxPluginsDll>
     <!-- Optional. Set to a LaunchBox root to deploy on build; empty = stage into bin only. -->
     <LaunchBoxDeployRoot Condition="'$(LaunchBoxDeployRoot)' == ''"></LaunchBoxDeployRoot>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>3</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
+  <!-- WPF pages, listed explicitly because default page globbing is disabled above. -->
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="Prism, Version=8.1.97.5141, Culture=neutral, PublicKeyToken=40ee6c3a2184dc59, processorArchitecture=MSIL">
-      <HintPath>..\packages\Prism.Core.8.1.97\lib\net47\Prism.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Drawing.Common, Version=4.0.0.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Drawing.Common.5.0.2\lib\net461\System.Drawing.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Speech, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xaml" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
-    <Reference Include="Unbroken.LaunchBox.Plugins">
-      <HintPath>$(LaunchBoxPluginsDll)</HintPath>
-    </Reference>
-    <Reference Include="WindowsBase" />
-    <Reference Include="WpfAnimatedGif, Version=2.0.0.0, Culture=neutral, PublicKeyToken=9e7cd3b544a090dc, processorArchitecture=MSIL">
-      <HintPath>..\packages\WpfAnimatedGif.2.0.0\lib\net40\WpfAnimatedGif.dll</HintPath>
-    </Reference>
+    <Page Include="View\MainWindowView.xaml" />
+    <Page Include="View\EclipseSettings\EclipseSettingsView.xaml" />
+    <Page Include="View\EclipseSettings\CustomListDefinitionEditView.xaml" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Converters\AddThenDivideByNegative1Converter.cs" />
-    <Compile Include="Converters\BackgroundImageOversizeConverter.cs" />
-    <Compile Include="Converters\BooleanConverter.cs" />
-    <Compile Include="Converters\BooleanToDoubleConverter.cs" />
-    <Compile Include="Converters\BooleanToPointCollectionConverter.cs" />
-    <Compile Include="Converters\BooleanToStringConverter.cs" />
-    <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
-    <Compile Include="Converters\DisplayingFeatureLogoOffsetConverter.cs" />
-    <Compile Include="Converters\DisplayingFeatureOffsetConverter.cs" />
-    <Compile Include="Converters\DisplayingFeatureVideoOffsetConverter.cs" />
-    <Compile Include="Converters\DivideByConverter.cs" />
-    <Compile Include="Converters\FeatureOptionConverter.cs" />
-    <Compile Include="Converters\FeatureOptionToDoubleConverter.cs" />
-    <Compile Include="Converters\FloatConverter.cs" />
-    <Compile Include="Converters\FloatToStringConverter.cs" />
-    <Compile Include="Converters\GameDetailOptionConverter.cs" />
-    <Compile Include="Converters\GameDetailOptionToBrushConverter.cs" />
-    <Compile Include="Converters\GameMatchToSettingsOpacityConverter.cs" />
-    <Compile Include="Converters\IsFeatureToColumnSpanConverter.cs" />
-    <Compile Include="Converters\IsFeatureToColumnStartConverter.cs" />
-    <Compile Include="Converters\IsFeatureToRowSpanConverter.cs" />
-    <Compile Include="Converters\StringLengthConverter.cs" />
-    <Compile Include="Converters\StringLengthToVisibilityConverter.cs" />
-    <Compile Include="Converters\UserRatingToBrushConverter.cs" />
-    <Compile Include="Event\Event.cs" />
-    <Compile Include="Helpers\EclipseConstants.cs" />
-    <Compile Include="Helpers\DirectoryInfoHelper.cs" />
-    <Compile Include="Helpers\DisplayInfoHelper.cs" />
-    <Compile Include="Helpers\EventAggregatorHelper.cs" />
-    <Compile Include="Helpers\LogHelper.cs" />
-    <Compile Include="Helpers\MessageDialogHelper.cs" />
-    <Compile Include="Helpers\OpacityBrushHelper.cs" />
-    <Compile Include="Helpers\RetroarchHelper.cs" />
-    <Compile Include="Models\EclipseSettings.cs" />
-    <Compile Include="Models\GameFiles.cs" />
-    <Compile Include="Models\GameMatch.cs" />
-    <Compile Include="Models\GameTitleGrammarBuilder.cs" />
-    <Compile Include="Models\GameDetailOptionList.cs" />
-    <Compile Include="Models\PlaylistGame.cs" />
-    <Compile Include="Models\ResourceImages.cs" />
-    <Compile Include="Models\Option.cs" />
-    <Compile Include="Models\ListCycle.cs" />
-    <Compile Include="Models\Enums.cs" />
-    <Compile Include="Models\GameList.cs" />
-    <Compile Include="Plugins\EclipseSettingsMenuItem.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Service\AttractModeService.cs" />
-    <Compile Include="Service\BezelService.cs" />
-    <Compile Include="Service\DataService.cs" />
-    <Compile Include="Service\CustomListDefinitionDataProvider.cs" />
-    <Compile Include="Service\GameBagService.cs" />
-    <Compile Include="Service\ImageScaler.cs" />
-    <Compile Include="Service\OptionListService.cs" />
-    <Compile Include="Service\PlaylistGameService.cs" />
-    <Compile Include="Service\SpeechRecognizer.cs" />
-    <Compile Include="State\AttractModeState.cs" />
-    <Compile Include="State\DisplayingErrorState.cs" />
-    <Compile Include="State\EclipseState.cs" />
-    <Compile Include="State\EclipseStateContext.cs" />
-    <Compile Include="State\FeatureOptionPlayState.cs" />
-    <Compile Include="State\GameDetailOptionFavoriteState.cs" />
-    <Compile Include="State\GameDetailOptionMoreState.cs" />
-    <Compile Include="State\KeyStrategy\KeyStrategyDisplayDetails.cs" />
-    <Compile Include="State\KeyStrategy\KeyStrategyFlipBox.cs" />
-    <Compile Include="State\KeyStrategy\KeyStrategyPageDown.cs" />
-    <Compile Include="State\KeyStrategy\KeyStrategyPageUp.cs" />
-    <Compile Include="State\KeyStrategy\KeyStrategyPlayGame.cs" />
-    <Compile Include="State\KeyStrategy\KeyStrategyRandomGame.cs" />
-    <Compile Include="State\KeyStrategy\KeyStrategyVoiceSearch.cs" />
-    <Compile Include="State\KeyStrategy\KeyStrategyVolumeDown.cs" />
-    <Compile Include="State\KeyStrategy\KeyStrategyVolumeUp.cs" />
-    <Compile Include="State\KeyStrategy\KeyStrategyZoomBox.cs" />
-    <Compile Include="State\LoadingState.cs" />
-    <Compile Include="State\GameDetailOptionRatingState.cs" />
-    <Compile Include="State\FeatureOptionMoreInfoState.cs" />
-    <Compile Include="State\GameDetailOptionPlayState.cs" />
-    <Compile Include="State\KeyStrategy\IKeyStrategy.cs" />
-    <Compile Include="State\SelectingGameState.cs" />
-    <Compile Include="State\SelectingOptionsState.cs" />
-    <Compile Include="State\VoiceRecognitionState.cs" />
-    <Compile Include="View\EclipseSettings\CustomListDefinitionEditView.xaml.cs">
-      <DependentUpon>CustomListDefinitionEditView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\EclipseSettings\CustomListDefinitionEditViewModel.cs" />
-    <Compile Include="View\EclipseSettings\EclipseSettingsView.xaml.cs">
-      <DependentUpon>EclipseSettingsView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\EclipseSettings\EclipseSettingsViewModel.cs" />
-    <Compile Include="View\MainWindowView.xaml.cs">
-      <DependentUpon>MainWindowView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\MainWindowViewModel.cs" />
-    <Compile Include="View\ViewModelBase.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <AdditionalFiles Include="Eclipse\LaunchBox\StartupThemes\Eclipse\Default Shutdown.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\StartupThemes\Eclipse\Default.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Views\PlatformWheel1FiltersView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </AdditionalFiles>
-    <Page Include="View\EclipseSettings\CustomListDefinitionEditView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\EclipseSettings\EclipseSettingsView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\MainWindowView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\ProgressBarImageBrush.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\BigBoxTheme.csproj" />
-    <None Include="app.config" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\VoiceRecognitionGif.gif" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\SettingsIcon_Grey.png" />
-    <Resource Include="Resources\SettingsIcon_White.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\NES_BoxFront_Template.png" />
-  </ItemGroup>
+
+  <!-- Images embedded into the assembly and addressed via pack://application:,,,/Eclipse;component/resources.
+       Listed individually: the Resources folder also holds unused files that were never embedded. -->
   <ItemGroup>
     <Resource Include="Resources\DefaultBezelHorizontal.png" />
     <Resource Include="Resources\DefaultBezelVertical.png" />
-    <Resource Include="Resources\LaunchBoxLogo.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Atari Jaguar\Horizontal.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Default\Horizontal.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Default\Vertical.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Nintendo Entertainment System\Horizontal.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Nintendo Game Boy Advance\Horizontal.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Nintendo Game Boy Color\Horizontal.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Nintendo GameCube\Horizontal.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Sega CD\Horizontal.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Sega Genesis\Horizontal.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Sony Playstation\Horizontal.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Super Nintendo Entertainment System\Horizontal.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\PlayMode\2-Player Alternating.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\PlayMode\2-Player Simultaneous.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\PlayMode\3-Player Simultaneous.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\PlayMode\4-Player Alternating.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\PlayMode\4-Player Simultaneous.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\PlayMode\8-Player Alternating.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\PlayMode\8-Player Simultaneous.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\PlayMode\Cooperative.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\PlayMode\Fallback.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\PlayMode\Multiplayer.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\PlayMode\Single Player.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\0.0.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\0.1.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\0.2.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\0.3.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\0.4.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\0.5.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\0.6.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\0.7.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\0.8.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\0.9.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\0.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\1.0.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\1.1.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\1.2.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\1.3.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\1.4.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\1.5.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\1.6.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\1.7.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\1.8.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\1.9.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\2.0.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\2.1.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\2.2.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\2.3.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\2.4.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\2.5.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\2.6.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\2.7.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\2.8.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\2.9.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\3.0.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\3.1.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\3.2.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\3.3.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\3.4.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\3.5.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\3.6.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\3.7.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\3.8.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\3.9.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\4.0.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\4.1.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\4.2.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\4.3.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\4.4.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\4.5.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\4.6.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\4.7.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\4.8.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\4.9.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\StarRating\5.0.png" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\System.Speech.dll" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\10.0.txt" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\9.4.5.txt" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\BigBoxTheme.sln" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Images\Platforms\Banner\ReadMe.txt" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Images\Platforms\Clear Logo\ReadMe.txt" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Images\Platforms\Device\ReadMe.txt" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Images\Platforms\Fanart\ReadMe.txt" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\ThemeSettings.xml" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Themes\Eclipse\Videos\Platforms\ReadMe.txt" />
-    <AdditionalFiles Include="Eclipse\LaunchBox\Plugins\Prism.dll" />
-    <Content Include="Eclipse\README.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Resource Include="Resources\EclipseSettingsIcon1.png" />
-    <None Include="Resources\EclipseSettingsIcon.bmp" />
-    <Content Include="Unbroken.LaunchBox.Plugins.dll" />
+    <Resource Include="Resources\LaunchBoxLogo.png" />
     <Resource Include="Resources\MoreInfo_Selected.png" />
     <Resource Include="Resources\MoreInfo_Unselected.png" />
+    <Resource Include="Resources\NES_BoxFront_Template.png" />
     <Resource Include="Resources\PlayButton_Selected.png" />
     <Resource Include="Resources\PlayButton_Unselected.png" />
+    <Resource Include="Resources\ProgressBarImageBrush.png" />
+    <Resource Include="Resources\SettingsIcon_Grey.png" />
+    <Resource Include="Resources\SettingsIcon_White.png" />
+    <Resource Include="Resources\VoiceRecognitionGif.gif" />
   </ItemGroup>
+
   <ItemGroup>
-    <Folder Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Arcade\" />
-    <Folder Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\NEC TurboGrafx-16\" />
-    <Folder Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\NEC TurboGrafx-CD\" />
-    <Folder Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Nintendo 64\" />
-    <Folder Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Nintendo Wii\" />
-    <Folder Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Sega Saturn\" />
-    <Folder Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Sony Playstation 3\" />
-    <Folder Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Sony PSP\" />
-    <Folder Include="Eclipse\LaunchBox\Plugins\Eclipse\Media\Bezels\Windows\" />
-    <Folder Include="Eclipse\LaunchBox\StartupThemes\Eclipse\Images\" />
-    <Folder Include="Eclipse\LaunchBox\StartupThemes\Eclipse\Media\" />
-    <Folder Include="Eclipse\LaunchBox\Themes\Eclipse\Plugins\" />
-    <Folder Include="Eclipse\LaunchBox\Themes\Eclipse\References\" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Properties\Resources.resx">
+    <EmbeddedResource Update="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>if exist "$(TargetDir)Eclipse\" RMDIR "$(TargetDir)Eclipse\" /Q /S
-xcopy "$(SolutionDir)Eclipse\Eclipse\" "$(TargetDir)Eclipse\"  /K /D /H /Y /E
-xcopy "$(TargetDir)Eclipse.dll" "$(TargetDir)Eclipse\LaunchBox\Plugins" /K /D /H /Y
-xcopy "$(TargetDir)WpfAnimatedGif.dll" "$(TargetDir)Eclipse\LaunchBox\Plugins" /K /D /H /Y
-if not "$(LaunchBoxDeployRoot)"=="" if exist "$(LaunchBoxDeployRoot)\" xcopy "$(TargetDir)Eclipse\LaunchBox\" "$(LaunchBoxDeployRoot)\" /K /D /H /Y /E</PostBuildEvent>
-  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Eclipse\README.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Prism.Core" Version="8.1.97" />
+    <!-- System.Drawing.Common is supplied by the Windows Desktop framework reference on
+         net10.0-windows (NU1510); no explicit PackageReference is needed or wanted. -->
+    <PackageReference Include="System.Speech" Version="10.0.11" />
+    <PackageReference Include="WpfAnimatedGif" Version="2.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Unbroken.LaunchBox.Plugins">
+      <HintPath>$(LaunchBoxPluginsDll)</HintPath>
+      <!-- The host loads its own contract assembly. Shipping a second copy would put two
+           Unbroken.LaunchBox.Plugins identities in one process and break the interface cast. -->
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Staging must run as a target, not a PostBuildEvent property: in an SDK-style project a
+       body PropertyGroup is evaluated before the SDK defines $(TargetDir), which would expand empty.
+       Uses MSBuild tasks rather than shell commands so the deploy step is guarded by a real
+       MSBuild condition instead of a cmd-level "if", which does not survive Exec reliably. -->
+  <Target Name="StageEclipsePayload" AfterTargets="Build">
+    <PropertyGroup>
+      <EclipseStageDir>$(TargetDir)Eclipse\</EclipseStageDir>
+    </PropertyGroup>
+
+    <RemoveDir Directories="$(EclipseStageDir)" />
+
+    <ItemGroup>
+      <EclipsePayload Include="$(MSBuildProjectDirectory)\Eclipse\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(EclipsePayload)"
+          DestinationFiles="@(EclipsePayload->'$(EclipseStageDir)%(RecursiveDir)%(Filename)%(Extension)')" />
+
+    <!-- LaunchBox 13+ discovers plugins in per-plugin folders. Plugins\Eclipse\ already holds
+         Eclipse's Media and Settings data, so code and data share one folder and every path in
+         DirectoryInfoHelper continues to resolve unchanged.
+         Eclipse.deps.json is included deliberately: if the host's load context consults it,
+         dependency resolution works with no extra machinery on our side. -->
+    <ItemGroup>
+      <EclipseBinaries Include="$(TargetDir)*.dll" />
+      <EclipseBinaries Include="$(TargetDir)Eclipse.deps.json" />
+    </ItemGroup>
+    <Copy SourceFiles="@(EclipseBinaries)"
+          DestinationFolder="$(EclipseStageDir)LaunchBox\Plugins\Eclipse" />
+
+    <!-- Deployment is opt-in. Empty LaunchBoxDeployRoot stages into bin only. -->
+    <ItemGroup Condition="'$(LaunchBoxDeployRoot)' != '' And Exists('$(LaunchBoxDeployRoot)')">
+      <StagedForDeploy Include="$(EclipseStageDir)LaunchBox\**\*" />
+    </ItemGroup>
+    <Copy Condition="'$(LaunchBoxDeployRoot)' != '' And Exists('$(LaunchBoxDeployRoot)')"
+          SourceFiles="@(StagedForDeploy)"
+          DestinationFiles="@(StagedForDeploy->'$(LaunchBoxDeployRoot)\%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
+
 </Project>

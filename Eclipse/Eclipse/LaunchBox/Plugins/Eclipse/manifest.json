@@ -1,0 +1,17 @@
+{
+  "PluginId": "3902a755-38d8-4c89-a2c4-13bb8e5208cf",
+  "UserId": 0,
+  "Name": "Eclipse",
+  "Developer": "AtomFry",
+  "Brief": "A Netflix-style theme for BigBox with random game and voice search.",
+  "Description": "Eclipse is a plug-in and theme for BigBox. The goals of this theme are to mimic the look and feel of Netflix, provide a random game feature, and provide a voice search feature.",
+  "Requirements": null,
+  "Credits": null,
+  "OperatingSystemFamily": "Windows",
+  "InstalledVersion": "1.0",
+  "SourceCodeUrl": "https://github.com/AtomFry/Eclipse",
+  "SupportUrl": null,
+  "HomePageUrl": null,
+  "TipJarUrl": null,
+  "Tags": []
+}
