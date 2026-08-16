@@ -15,6 +15,11 @@
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <!-- Path to the LaunchBox plugin contract assembly. Defaults to the historical
+         copy checked in beside the project; override locally to point at another copy. -->
+    <LaunchBoxPluginsDll Condition="'$(LaunchBoxPluginsDll)' == ''">$(MSBuildProjectDirectory)\Unbroken.LaunchBox.Plugins.dll</LaunchBoxPluginsDll>
+    <!-- Optional. Set to a LaunchBox root to deploy on build; empty = stage into bin only. -->
+    <LaunchBoxDeployRoot Condition="'$(LaunchBoxDeployRoot)' == ''"></LaunchBoxDeployRoot>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -61,7 +66,7 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="Unbroken.LaunchBox.Plugins">
-      <HintPath>..\..\..\..\Documents\LaunchBox\Metadata\Unbroken.LaunchBox.Plugins.dll</HintPath>
+      <HintPath>$(LaunchBoxPluginsDll)</HintPath>
     </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="WpfAnimatedGif, Version=2.0.0.0, Culture=neutral, PublicKeyToken=9e7cd3b544a090dc, processorArchitecture=MSIL">
@@ -335,10 +340,10 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>RMDIR "$(TargetDir)Eclipse\" /Q /S
+    <PostBuildEvent>if exist "$(TargetDir)Eclipse\" RMDIR "$(TargetDir)Eclipse\" /Q /S
 xcopy "$(SolutionDir)Eclipse\Eclipse\" "$(TargetDir)Eclipse\"  /K /D /H /Y /E
 xcopy "$(TargetDir)Eclipse.dll" "$(TargetDir)Eclipse\LaunchBox\Plugins" /K /D /H /Y
 xcopy "$(TargetDir)WpfAnimatedGif.dll" "$(TargetDir)Eclipse\LaunchBox\Plugins" /K /D /H /Y
-xcopy "$(TargetDir)Eclipse\LaunchBox\" "C:\Users\Adam\Documents\LaunchBox\" /K /D /H /Y /E</PostBuildEvent>
+if not "$(LaunchBoxDeployRoot)"=="" if exist "$(LaunchBoxDeployRoot)\" xcopy "$(TargetDir)Eclipse\LaunchBox\" "$(LaunchBoxDeployRoot)\" /K /D /H /Y /E</PostBuildEvent>
   </PropertyGroup>
 </Project>
