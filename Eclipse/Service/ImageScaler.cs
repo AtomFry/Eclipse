@@ -237,8 +237,10 @@ namespace Eclipse.Service
                             Directory.CreateDirectory(newFolder);
                         }
 
-                        Bitmap croppedBitmap = Crop(newBitmap);
-                        croppedBitmap.Save(newFileName);
+                        using (Bitmap croppedBitmap = Crop(newBitmap))
+                        {
+                            croppedBitmap.Save(newFileName);
+                        }
                     }
                 }
             }
@@ -268,8 +270,10 @@ namespace Eclipse.Service
                             Directory.CreateDirectory(newFolder);
                         }
 
-                        Bitmap croppedBitmap = Crop(newBitmap);
-                        croppedBitmap.Save(destinationFile);
+                        using (Bitmap croppedBitmap = Crop(newBitmap))
+                        {
+                            croppedBitmap.Save(destinationFile);
+                        }
                     }
                 }
             }
@@ -301,30 +305,35 @@ namespace Eclipse.Service
                 var originalBitmapImage = new System.Windows.Media.Imaging.BitmapImage(Models.ResourceImages.GameFrontDummy);
                 var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
                 encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(originalBitmapImage));
-                var stream = new MemoryStream();
-                encoder.Save(stream);
-                stream.Flush();
-
-                using (Image originalImage = new Bitmap(stream))                
+                // The stream must stay open for the whole lifetime of the Bitmap built from it -
+                // GDI+ reads from the stream lazily - so this using encloses the Bitmap's scope
+                // rather than being disposed straight after the encoder writes to it.
+                using (var stream = new MemoryStream())
                 {
-                    originalHeight = originalImage.Height;
-                    originalWidth = originalImage.Width;
+                    encoder.Save(stream);
+                    stream.Flush();
 
-                    scale = (double)((double)desiredHeight / (double)originalHeight);
-
-                    desiredWidth = (int)(originalWidth * scale);
-
-                    using (Bitmap newBitmap = ResizeImage(originalImage, desiredWidth, desiredHeight))
+                    using (Image originalImage = new Bitmap(stream))
                     {
-                        string newFileName = DirectoryInfoHelper.Instance.DefaultBoxFrontImageFileName;
-                        string newFolder = DirectoryInfoHelper.Instance.DefaultBoxFrontImageFilePath;
+                        originalHeight = originalImage.Height;
+                        originalWidth = originalImage.Width;
 
-                        if (!Directory.Exists(newFolder))
+                        scale = (double)((double)desiredHeight / (double)originalHeight);
+
+                        desiredWidth = (int)(originalWidth * scale);
+
+                        using (Bitmap newBitmap = ResizeImage(originalImage, desiredWidth, desiredHeight))
                         {
-                            Directory.CreateDirectory(newFolder);
-                        }
+                            string newFileName = DirectoryInfoHelper.Instance.DefaultBoxFrontImageFileName;
+                            string newFolder = DirectoryInfoHelper.Instance.DefaultBoxFrontImageFilePath;
 
-                        newBitmap.Save(DirectoryInfoHelper.Instance.DefaultBoxFrontImageFullPath);
+                            if (!Directory.Exists(newFolder))
+                            {
+                                Directory.CreateDirectory(newFolder);
+                            }
+
+                            newBitmap.Save(DirectoryInfoHelper.Instance.DefaultBoxFrontImageFullPath);
+                        }
                     }
                 }
             }
