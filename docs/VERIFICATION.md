@@ -1,0 +1,182 @@
+# Eclipse — Verification Model
+
+How we know Eclipse still works. This document defines behaviour-oriented verification
+scenarios for the capabilities in [FEATURES.md](FEATURES.md), states what is covered
+today, and identifies what must exist **before** the corresponding modernization work
+begins.
+
+---
+
+## Current coverage
+
+**There is no test project and no automated tests of any kind.** All verification to date
+has been manual play-testing. This is the single largest risk to the modernization
+programme: every planned change is behaviour-preserving, and the only mechanism for
+proving preservation is a human remembering what the product used to do.
+
+| Layer | Status |
+|---|---|
+| Unit tests | none |
+| Integration tests | none |
+| Host-dependent tests | none |
+| Manual regression script | none written down (the plugin README documents usage, not verification) |
+| Performance baseline | none |
+
+## What is testable, and when
+
+Most of Eclipse cannot be unit tested today because LaunchBox SDK types are the domain
+model — see `S-2` and backlog item `B-12`.
+
+| Testability | Applies to | Available |
+|---|---|---|
+| Testable **now** | Title decomposition, match scoring, list-window cycling, dynamic filter/sort expression building | Immediately |
+| Testable after `B-11`/`B-12` | List construction, custom-list membership, position restoration, alternate-version filtering, media path resolution | After the adapter and game model exist |
+| Testable after `B-18`/`B-19` | State machine transitions, attract-mode sequencing, presenter call ordering | After the view is behind an interface |
+| Host-dependent, manual only | Plugin registration, theme hosting, menu item, game launching, video playback, speech recognition | Always |
+
+---
+
+## Verification scenarios
+
+Each scenario is written so a developer can execute it without reading the code.
+
+### EPIC-BROWSE
+
+| ID | Scenario | Type | Covers |
+|---|---|---|---|
+| VER-BROWSE-001 | Select each browse category in turn. Every category produces at least one list; lists are ordered with custom lists first, then alphabetically; each list title shows a count when enabled. | Manual | RULE-BROWSE-002, 003, 012 |
+| VER-BROWSE-002 | Pick a game with three genres. Confirm it appears in all three genre lists. | Manual / unit after B-12 | RULE-BROWSE-001 |
+| VER-BROWSE-003 | Navigate right from the last game in a list; confirm wrap to the first. Repeat for left, up, down. | Manual | RULE-BROWSE-008 |
+| VER-BROWSE-004 | In a list of 100 games, press the page key; confirm the selection moves 7. In a list of 4, confirm it moves 2. | Manual / unit | RULE-BROWSE-009 |
+| VER-BROWSE-005 | **Position restoration.** Browse to a known game in the Favorites list. Un-favourite it. Confirm the user lands on the next game in that list, not at the top and not in a different list. Repeat for: game still present; list now empty; list gone entirely. | **Characterization — unit** | RULE-BROWSE-010 |
+| VER-BROWSE-006 | Define a custom list with a filter, two sort expressions and a max size. Confirm membership matches the filter, order matches both sorts, and the cap selects the top N *after* sorting. | **Characterization — unit** | RULE-BROWSE-005, 006, 007 |
+| VER-BROWSE-007 | Browse to a list with 3 games with repeat-to-fill on, then off. Confirm the row repeats in the first case and shows gaps in the second. | Manual | RULE-BROWSE-011, 016 |
+| VER-BROWSE-008 | Trigger random game 50 times from a set with one large and one small list; confirm selection is weighted by list size. | Exploratory | RULE-BROWSE-011 (`OQ-002`) |
+
+### EPIC-SEARCH
+
+| ID | Scenario | Type | Covers |
+|---|---|---|---|
+| VER-SEARCH-001 | Given the title `"Final Fantasy VII: Remake"`, assert the registered phrase set: main title, subtitle, all contiguous word runs, roman numeral converted to `7`, colon removed, noise words excluded. | **Characterization — unit** | RULE-SEARCH-001…007 |
+| VER-SEARCH-002 | Given `"Final Fantasy X"`, assert `X` is **not** converted to `10`. | **Characterization — unit** | RULE-SEARCH-004 |
+| VER-SEARCH-003 | Given a phrase, match type and confidence, assert the computed match percentage; assert it never reaches 100. | **Characterization — unit** | RULE-SEARCH-010…012 |
+| VER-SEARCH-004 | Speak a partial game name. Confirm results are grouped by phrase, ordered by best match, and that speaking a nonsense phrase yields a message rather than silence. | Manual | RULE-SEARCH-014…016, 006 |
+| VER-SEARCH-005 | With voice search disabled, confirm the category picker omits it and no grammar is built at startup. | Manual | RULE-SEARCH-020 |
+
+### EPIC-PRESENT
+
+| ID | Scenario | Type | Covers |
+|---|---|---|---|
+| VER-PRESENT-001 | Hold right through a list. Confirm the background and details do **not** change while moving, dim immediately, and fade in ~1s after stopping. | Manual | RULE-PRESENT-001, 002 |
+| VER-PRESENT-002 | Select a game with no clear logo. Confirm the title text is shown instead. | Manual | RULE-PRESENT-003 |
+| VER-PRESENT-003 | Open the detail overlay. Press Down four times and confirm the ring order Play → Favourite → More → Rating → Play. Repeat with Up. | Manual | RULE-PRESENT-005 |
+| VER-PRESENT-004 | Move to the first game in a list; confirm the slot to its left is empty rather than showing the last game. | Manual | RULE-PRESENT-004 |
+| VER-PRESENT-005 | Enable featured game. Press Up from the first list; confirm the featured view rather than wrapping. Disable it; confirm wrapping. | Manual | RULE-PRESENT-007, RULE-INPUT-006 |
+| VER-PRESENT-006 | Toggle each detail-visibility setting; confirm exactly the corresponding element disappears. | Manual | FEAT-PRESENT-009 |
+
+### EPIC-MEDIA
+
+| ID | Scenario | Type | Covers |
+|---|---|---|---|
+| VER-MEDIA-001 | **Bezel chain.** For each of the five levels in turn, arrange only that level's asset to exist and confirm it is chosen. Then confirm a 16:9 video gets no bezel. | **Characterization — unit + manual** | RULE-MEDIA-020…026 |
+| VER-MEDIA-002 | **Cache identity.** Given a source image path and a display resolution, assert the derived cache path. Delete the cache, restart, confirm regeneration and that the second start does not regenerate. | **Characterization — unit** | RULE-MEDIA-002, 003 |
+| VER-MEDIA-003 | **Crop equivalence.** Hash the cropped output of several hundred real clear logos before and after any cropping change. Hashes must be identical. | **Golden file** | RULE-MEDIA-010, backlog B-29 |
+| VER-MEDIA-004 | Select a game with a video. Confirm background fades in, then video starts after the configured delay, then background fades back when the video ends. | Manual | RULE-MEDIA-030, 034 |
+| VER-MEDIA-005 | Set the video delay to 0. Confirm playback starts immediately with no background fade-in step. | Manual | RULE-MEDIA-031 |
+| VER-MEDIA-006 | Disable videos. Confirm the background image remains and no video plays. | Manual | RULE-MEDIA-035 |
+| VER-MEDIA-007 | Select a game with no box art. Confirm the placeholder appears rather than a blank slot. | Manual | FEAT-MEDIA-001, 013 |
+| VER-MEDIA-008 | Start cold with an empty cache on a large library; record time to first interaction and peak memory. | **Performance baseline** | backlog B-28 |
+
+### EPIC-LAUNCH
+
+| ID | Scenario | Type | Covers |
+|---|---|---|---|
+| VER-LAUNCH-001 | Launch a game, exit it, confirm Eclipse returns with video and attract mode working and the same game selected. | Manual | RULE-LAUNCH-001, 007 |
+| VER-LAUNCH-002 | For a game with additional applications including a run-before, a run-after and a non-emulator app, toggle each exclusion setting and assert the resulting version list. | **Characterization — unit after B-12** | RULE-LAUNCH-003 |
+| VER-LAUNCH-003 | For a game whose additional application shares the game's application path, confirm the base game is not listed twice. | **Characterization — unit after B-12** | RULE-LAUNCH-004 |
+| VER-LAUNCH-004 | Enable bypass details. Confirm Enter launches directly from browsing. | Manual | FEAT-LAUNCH-003 |
+
+### EPIC-CURATE
+
+| ID | Scenario | Type | Covers |
+|---|---|---|---|
+| VER-CURATE-001 | Favourite a game from the Genre view. Switch to Platform view and confirm it appears in Favorites there too. | Manual | RULE-CURATE-004 |
+| VER-CURATE-002 | Enter rating mode, adjust several steps, confirm the displayed rating updates live. Exit with Escape and confirm the value persisted. | Manual | RULE-CURATE-002, 005 |
+| VER-CURATE-003 | Favourite a game while the overlay is open and confirm the row does **not** rebuild until the overlay closes. | Manual | RULE-CURATE-006 |
+| VER-CURATE-004 | Confirm Page Up/Down do nothing while in rating mode. | Manual | RULE-CURATE-007 |
+
+### EPIC-ATTRACT
+
+| ID | Scenario | Type | Covers |
+|---|---|---|---|
+| VER-ATTRACT-001 | **Sequence.** Idle until attract mode starts. Record the timing of: fade to black, image fade-in, logo fade-in, fade-out, next game. Compare to `RULE-ATTRACT-004`. | **Characterization — recording fake after B-18** | RULE-ATTRACT-004, 005 |
+| VER-ATTRACT-002 | Idle into attract mode from the detail overlay. Press a key. Confirm return to the overlay, not to browsing. | Manual | RULE-ATTRACT-008 |
+| VER-ATTRACT-003 | Launch a game and leave it running past the idle delay. Confirm attract mode does not start. | Manual | RULE-ATTRACT-006 |
+
+### EPIC-INPUT
+
+| ID | Scenario | Type | Covers |
+|---|---|---|---|
+| VER-INPUT-001 | **Exit path.** From browsing, press Escape and confirm you can reach Big Box's menu and exit the application. Repeat with "display options on escape" both on and off. | Manual — **critical** | RULE-INPUT-001, 004, 005 |
+| VER-INPUT-002 | At the first game in a list, tap Left (opens options) then hold Left (wraps). Confirm both. | Manual | RULE-INPUT-002 |
+| VER-INPUT-003 | Assign each of the ten functions to Page Up in turn and confirm each behaves as named, and is inert in states where it is not valid. | Manual | RULE-INPUT-007 |
+| VER-INPUT-004 | Press input during startup loading; confirm nothing happens and Big Box does not react either. | Manual | RULE-INPUT-010 |
+
+### EPIC-CONFIG
+
+| ID | Scenario | Type | Covers |
+|---|---|---|---|
+| VER-CONFIG-001 | Delete the settings file, start, confirm defaults are written and the product behaves per defaults. | Manual | RULE-CONFIG-001 |
+| VER-CONFIG-002 | Delete the custom lists file, start, confirm Favorites and History are created with the documented filters and sorts. | **Characterization — unit** | RULE-CONFIG-002 |
+| VER-CONFIG-003 | Load a settings file missing several properties and containing an unknown property. Confirm defaults populate and the unknown value does not break loading. | **Characterization — unit** | RULE-CONFIG-003 |
+| VER-CONFIG-004 | Save settings; confirm a timestamped backup was created and the live file is valid JSON. | Manual | RULE-CONFIG-005, 006 |
+| VER-CONFIG-005 | Reorder custom lists, then Cancel; confirm order is unchanged. Reorder, then Save; confirm it persists. Delete a list, then Cancel; observe whether the delete persisted. | Manual — **records `OQ-017`** | RULE-CONFIG-009, 010 |
+
+### EPIC-INTEGRATE
+
+| ID | Scenario | Type | Covers |
+|---|---|---|---|
+| VER-INTEGRATE-001 | **Deployment smoke check.** Assert the deployed plugin folder contains no `Unbroken.LaunchBox.Plugins.dll` and no `manifest.json`. | **Automated build check** | RULE-INTEGRATE-011, 012 |
+| VER-INTEGRATE-002 | Start desktop LaunchBox; confirm **Tools → Manage eclipse** appears and opens the settings window. | Manual | FEAT-INTEGRATE-002 |
+| VER-INTEGRATE-003 | Start Big Box with the Eclipse theme; confirm Eclipse renders and responds to input. | Manual | FEAT-INTEGRATE-001 |
+| VER-INTEGRATE-004 | Confirm the settings and cache folders are created under `<LaunchBox>/Plugins/Eclipse/` on a clean install. | Manual | RULE-INTEGRATE-002, 004 |
+| VER-INTEGRATE-005 | Induce a startup failure; confirm the error state appears and the log records it with context. | Manual | RULE-INTEGRATE-007, backlog B-02/B-04 |
+
+---
+
+## Characterization-test candidates, ranked
+
+A characterization test asserts *what the code currently does*, however awkward, so that
+a refactor cannot change it silently. These are ranked by (risk of silent breakage) ×
+(cost of not noticing).
+
+| Rank | Test | Why it matters | Blocked by |
+|---|---|---|---|
+| 1 | **Position restoration** (`VER-BROWSE-005`) | Four-deep fallback, entirely undocumented outside the code, user-visible every time they favourite something, and `B-14` rewrites it. Nearly pure logic. | `B-12` for a clean fixture; a crude version is possible sooner |
+| 2 | **Voice title decomposition** (`VER-SEARCH-001`, `002`) | Pure string functions with many special cases (colon, slash, roman numerals, noise words). The most testable code in the product and completely uncovered. `B-30` would rewrite it. | Nothing — **can be written today** |
+| 3 | **Match scoring** (`VER-SEARCH-003`) | Tuned heuristics the author described as endlessly tweakable. Any change silently reorders results. Pure arithmetic. | Nothing — **can be written today** |
+| 4 | **Custom list membership and ordering** (`VER-BROWSE-006`) | Filters and sorts are built by reflection over property-name strings; a rename silently breaks user-defined lists that live in the user's own file, not in the repo. | `B-12` |
+| 5 | **Bezel resolution** (`VER-MEDIA-001`) | Five-level chain across three files plus a video-aspect rule. `B-20` consolidates it. | Partially now; fully after `B-11` |
+| 6 | **Clear-logo crop equivalence** (`VER-MEDIA-003`) | `B-29` rewrites the crop algorithm; the only meaningful acceptance criterion is pixel-identical output. | Nothing — **golden files can be captured today** |
+| 7 | **Default custom lists** (`VER-CONFIG-002`) | Every new user sees these; they are constructed in code and easy to alter accidentally. | Nothing |
+| 8 | **Settings round-trip** (`VER-CONFIG-003`) | `B-27` changes serialization; missing-property defaulting is the only migration mechanism. | Nothing |
+| 9 | **Alternate-version filtering** (`VER-LAUNCH-002`, `003`) | Four independent settings interacting; wrong results are subtle. | `B-12` |
+| 10 | **Attract-mode sequence** (`VER-ATTRACT-001`) | Timing *is* the feature; `B-18` rewrites the seam. | `B-18` |
+
+**Three can be written before any refactoring begins** — 2, 3 and 6 — plus 7 and 8 with
+minimal setup. Those are the natural contents of the first test project (`B-01`).
+
+---
+
+## Verification gaps by risk
+
+| Risk | Area | Consequence if broken silently |
+|---|---|---|
+| **Critical** | Escape / handled-input contract (`VER-INPUT-001`) | The user cannot exit Big Box. No test would catch it. |
+| **Critical** | Deployment shape (`VER-INTEGRATE-001`) | Total plugin load failure or a silently missing menu item. Both happened during the LB14 migration. |
+| **High** | Position restoration | User lands in the wrong place after every favourite/rating/launch. |
+| **High** | Custom list membership | User-defined lists silently change or empty. |
+| **High** | Bezel resolution | Wrong or missing frame around every video. |
+| **Medium** | Voice scoring | Result ordering changes; hard to notice, easy to blame on recognition. |
+| **Medium** | Attract-mode timing | Feels wrong; no one can say precisely why. |
+| **Medium** | Image cache paths | Full re-scale of the library on every start. |
