@@ -74,7 +74,8 @@ Eclipse is currently being modernized. The documentation in `docs/` describes th
 
 ## Logs
 
-Errors are written to `Eclipse.txt` in your LaunchBox folder.
+Errors are written to `Eclipse.txt` in your `LaunchBox\Plugins\Eclipse` folder, alongside
+the plugin itself.
 
 ## Source
 

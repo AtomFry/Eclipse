@@ -17,6 +17,7 @@ behavioural reference for all modernization work.
 | [VERIFICATION.md](VERIFICATION.md) | How behaviour is verified; verification matrix; characterization-test candidates | Developers |
 | [TRACEABILITY.md](TRACEABILITY.md) | Bidirectional feature ↔ technical-debt ↔ backlog mapping | Maintainers |
 | [UNRESOLVED.md](UNRESOLVED.md) | Suspected dead code, uncertain behaviour, open questions | Maintainers |
+| [plans/](plans/) | Designed-but-deferred work, kept so the reasoning survives | Maintainers |
 
 ## The rule that keeps this useful
 

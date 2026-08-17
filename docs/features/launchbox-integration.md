@@ -50,7 +50,7 @@ process location, so Eclipse works wherever LaunchBox is installed.
 | RULE-INTEGRATE-007 | A failure during loading transitions to the error state rather than leaving a blank screen. | |
 | RULE-INTEGRATE-008 | Media hydration starts during loading and continues in the background afterwards. | Eclipse is usable before all media is resolved. |
 | RULE-INTEGRATE-009 | The desktop menu item is declared visible in LaunchBox and hidden in Big Box. | |
-| RULE-INTEGRATE-010 | The diagnostics log is written to a **relative** path, so it lands in whatever directory the host process was started from. | Currently `<LaunchBox>/Eclipse.txt`. This is incidental, not designed — see `M-7`. |
+| RULE-INTEGRATE-010 | The diagnostics log is written to `<LaunchBox>/Plugins/Eclipse/Eclipse.txt`, resolved absolutely and created if absent. If the plugin folder cannot be resolved, it falls back to a relative `Eclipse.txt`. | Previously a bare relative path that landed in the LaunchBox root only by luck. Destination is now deterministic; levels, rotation and thread-safety remain outstanding under `M-7`. |
 | RULE-INTEGRATE-011 | Eclipse must not ship a copy of the LaunchBox plugin contract assembly. | Two copies in one process breaks the interface cast and the plugin fails to load. |
 | RULE-INTEGRATE-012 | Eclipse must not ship a `manifest.json`. A manifest causes LaunchBox 14 to treat it as a managed plugin, and the Tools menu item does not appear. | Established empirically; see `OQ-018`. |
 

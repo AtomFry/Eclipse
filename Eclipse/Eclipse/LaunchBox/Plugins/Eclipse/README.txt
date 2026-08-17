@@ -27,7 +27,7 @@ Installation Instructions
 	- Hide Mouse Cursor on Startup Screens: On
 
 Logs
-If you get any errors, you can check the log file called Eclipse.txt in your LaunchBox folder and message me on the forums to let me know
+If you get any errors, you can check the log file called Eclipse.txt in your LaunchBox\Plugins\Eclipse folder and message me on the forums to let me know
 
 Settings
 As of version 0.0.10, there is a settings screen that can be accessed from LaunchBox via Tools > Manage Eclipse
