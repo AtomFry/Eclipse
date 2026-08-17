@@ -120,13 +120,4 @@ namespace Eclipse.Models
 
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
     }
-
-    public class Option
-    {
-        public string Name { get; set; }
-        public int SortOrder { get; set; }
-        public string ShortDescription { get; set; }
-        public string LongDescription { get; set; }
-        public ListCategoryType ListCategoryType{get; set;}
-    }
 }

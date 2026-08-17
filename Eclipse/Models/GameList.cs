@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Windows.Media;
 
 namespace Eclipse.Models
 {
@@ -233,29 +232,6 @@ namespace Eclipse.Models
                 // get max title length for games having the maximum match percentage
                 return matchingGames.Where(game => game.MatchPercentage == MaxMatchPercentage)
                                     .Max(game => game.Game.Title.Length);
-            }
-        }
-
-        public Brush Brush
-        {
-            get
-            {
-                if (Confidence <= 0.50)
-                    return new SolidColorBrush(Colors.Red);
-
-                if (Confidence <= 0.60)
-                    return new SolidColorBrush(Colors.Orange);
-
-                if (Confidence <= 0.70)
-                    return new SolidColorBrush(Colors.Yellow);
-
-                if (Confidence <= 0.80)
-                    return new SolidColorBrush(Colors.YellowGreen);
-
-                if (Confidence <= 0.90)
-                    return new SolidColorBrush(Colors.GreenYellow);
-
-                return new SolidColorBrush(Colors.Green);
             }
         }
 

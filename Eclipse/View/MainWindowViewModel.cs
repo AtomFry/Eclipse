@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Linq;
 using Unbroken.LaunchBox.Plugins;
 using Unbroken.LaunchBox.Plugins.Data;
-using System.Data;
 using Eclipse.Models;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
