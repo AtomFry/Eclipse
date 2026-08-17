@@ -12,7 +12,7 @@ namespace Eclipse.Converters
         public StringLengthConverter(T EmptyValue, T NonEmptyValue)
         {
             Empty = EmptyValue;
-            NonEmpty = NonEmpty;
+            NonEmpty = NonEmptyValue;
         }
 
         public virtual object Convert(object value, Type targetType, object parameter, CultureInfo culture)
