@@ -11,6 +11,7 @@ behavioural reference for all modernization work.
 
 | Document | Purpose | Audience |
 |---|---|---|
+| [DEVELOPMENT.md](DEVELOPMENT.md) | Build, deploy to your own LaunchBox, release process, gotchas | Start here if you are new |
 | [FEATURES.md](FEATURES.md) | Product map: epics, complete feature inventory, functional dependencies | Everyone |
 | [features/](features/) | One file per epic — features, behavioural rules, implementation, debt, verification | Developers |
 | [VERIFICATION.md](VERIFICATION.md) | How behaviour is verified; verification matrix; characterization-test candidates | Developers |

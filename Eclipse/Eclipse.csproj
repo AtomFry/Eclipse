@@ -1,27 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0-windows</TargetFramework>
     <OutputType>Library</OutputType>
-    <!-- BigBox is x64. Without a RuntimeIdentifier, NuGet copies each package's RID-agnostic
-         lib\ asset to the output root and its RID-specific asset to runtimes\<rid>\, leaving the
-         host to pick between them via deps.json. LaunchBox has no AssemblyDependencyResolver and
-         never reads Eclipse.deps.json, so it would load whatever sits at the root - for
-         System.Speech that is a stub whose every member throws PlatformNotSupportedException.
-         Setting the RID flattens the correct Windows asset to the output root instead. -->
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <!-- Required: this is a plugin, not a standalone app. Never ship the .NET runtime with it. -->
     <SelfContained>false</SelfContained>
-    <!-- BigBox resolves the plugin and the theme XAML by this exact assembly name. Do not change. -->
     <AssemblyName>Eclipse</AssemblyName>
     <RootNamespace>Eclipse</RootNamespace>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
-    <!-- Properties\AssemblyInfo.cs is checked in and remains the source of assembly attributes. -->
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <!-- Eclipse is a plugin, not a referenced library: BigBox will not resolve its dependencies
-         from Eclipse.deps.json, so package assemblies must land in the output to be deployed. -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <Deterministic>true</Deterministic>
     <!-- The Eclipse\ payload folder contains LaunchBox theme XAML that must never be compiled as WPF pages. -->
@@ -37,8 +26,6 @@
          The historical netstandard2.0 contract remains checked in beside the project as
          Milestone 0 reference material and is deliberately no longer referenced. -->
     <LaunchBoxPluginsDll Condition="'$(LaunchBoxPluginsDll)' == ''">$(MSBuildProjectDirectory)\lib\LaunchBox14\Unbroken.LaunchBox.Plugins.dll</LaunchBoxPluginsDll>
-    <!-- Optional. Set to a LaunchBox root to deploy on build; empty = stage into bin only. -->
-    <LaunchBoxDeployRoot Condition="'$(LaunchBoxDeployRoot)' == ''"></LaunchBoxDeployRoot>
   </PropertyGroup>
 
   <!-- WPF pages, listed explicitly because default page globbing is disabled above. -->
@@ -97,38 +84,52 @@
     </Reference>
   </ItemGroup>
 
-  <!-- Staging must run as a target, not a PostBuildEvent property: in an SDK-style project a
-       body PropertyGroup is evaluated before the SDK defines $(TargetDir), which would expand empty.
-       Uses MSBuild tasks rather than shell commands so the deploy step is guarded by a real
-       MSBuild condition instead of a cmd-level "if", which does not survive Exec reliably. -->
+  <!-- After building, stage the release and deploy locally if configured -->
   <Target Name="StageEclipsePayload" AfterTargets="Build">
+    <!-- Stage the release in the Eclipse folder inside the build folder -->
     <PropertyGroup>
       <EclipseStageDir>$(TargetDir)Eclipse\</EclipseStageDir>
     </PropertyGroup>
 
+	<!-- Remove the staging directory if an old one alraedy exists -->
     <RemoveDir Directories="$(EclipseStageDir)" />
 
+    <!-- The shape of the release payload is defined by the Eclipse (project) folder -->
     <ItemGroup>
       <EclipsePayload Include="$(MSBuildProjectDirectory)\Eclipse\**\*" />
     </ItemGroup>
+	
+	<!-- Copy the release payload shape to the staging folder -->
     <Copy SourceFiles="@(EclipsePayload)" DestinationFiles="@(EclipsePayload->'$(EclipseStageDir)%(RecursiveDir)%(Filename)%(Extension)')" />
 
-    <!-- LaunchBox 13+ discovers plugins in per-plugin folders. Plugins\Eclipse\ already holds
-         Eclipse's Media and Settings data, so code and data share one folder and every path in
-         DirectoryInfoHelper continues to resolve unchanged.
-         Eclipse.deps.json is included deliberately: if the host's load context consults it,
-         dependency resolution works with no extra machinery on our side. -->
-    <ItemGroup>
+    <!-- The built eclipse binary -->
+	<ItemGroup>
       <EclipseBinaries Include="$(TargetDir)*.dll" />
-      <EclipseBinaries Include="$(TargetDir)Eclipse.deps.json" />
     </ItemGroup>
+	
+	<!-- Copy the new built binary from the build folder to the staged plugin folder -->
     <Copy SourceFiles="@(EclipseBinaries)" DestinationFolder="$(EclipseStageDir)LaunchBox\Plugins\Eclipse" />
 
-    <!-- Deployment is opt-in. Empty LaunchBoxDeployRoot stages into bin only. -->
+    <!-- Developer deployment is optional -->
+	<!-- Add Eclipse.csproj.user and set Project - PropertyGroup - LaunchBoxDeployRoot to the path to your LaunchBox installation -->
+	<!-- Copies the staged release to the LaunchBox folder -->
     <ItemGroup Condition="'$(LaunchBoxDeployRoot)' != '' And Exists('$(LaunchBoxDeployRoot)')">
       <StagedForDeploy Include="$(EclipseStageDir)LaunchBox\**\*" />
     </ItemGroup>
     <Copy Condition="'$(LaunchBoxDeployRoot)' != '' And Exists('$(LaunchBoxDeployRoot)')" SourceFiles="@(StagedForDeploy)" DestinationFiles="@(StagedForDeploy->'$(LaunchBoxDeployRoot)\%(RecursiveDir)%(Filename)%(Extension)')" />
+
+    <!-- Message to tell that the deployment happened -->
+    <Message Importance="high"
+             Condition="'$(LaunchBoxDeployRoot)' != '' And Exists('$(LaunchBoxDeployRoot)')"
+             Text="Eclipse deployed to $(LaunchBoxDeployRoot)" />
+
+	  <!-- Message to tell that the deployment didn't happen and how to fix it -->
+	  <Message Importance="high"
+             Condition="'$(LaunchBoxDeployRoot)' == ''"
+             Text="Eclipse staged to $(EclipseStageDir) (not deployed). To deploy to LaunchBox on every build, copy Eclipse.csproj.user.template to Eclipse.csproj.user and set LaunchBoxDeployRoot - see docs/DEVELOPMENT.md" />
+
+    <Warning Condition="'$(LaunchBoxDeployRoot)' != '' And !Exists('$(LaunchBoxDeployRoot)')"
+             Text="LaunchBoxDeployRoot is set to '$(LaunchBoxDeployRoot)' but that folder does not exist. Eclipse was staged but not deployed." />
   </Target>
 
 </Project>

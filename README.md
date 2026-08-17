@@ -62,6 +62,7 @@ Full product and engineering documentation lives in [`docs/`](docs/):
 
 | Document | Purpose |
 |---|---|
+| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Building Eclipse, deploying to your LaunchBox, release process |
 | [docs/FEATURES.md](docs/FEATURES.md) | Product map — epics, complete feature inventory, dependencies |
 | [docs/features/](docs/features/) | Per-capability detail: behavioural rules, implementation, debt, verification |
 | [docs/VERIFICATION.md](docs/VERIFICATION.md) | How behaviour is verified; characterization-test candidates |

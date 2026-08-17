@@ -97,7 +97,6 @@ PluginHelper.BigBoxMainViewModel.PlayGame(game, additionalApp, null, null)
 |---|---|
 | S-2 | The six operations above are called from five files including the view model and the model layer. |
 | M-7 | The log path is relative and the writer is unsynchronised. |
-| C-6 | `Eclipse.deps.json` is deployed but never read by the host. |
 | C-7 | Prism does not resolve in the host load context. |
 | M-9 | The loading pipeline uses `async void` on a `BackgroundWorker`. |
 

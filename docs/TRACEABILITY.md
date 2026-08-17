@@ -56,7 +56,7 @@ feature-specific regression coverage.
 | C-3 duplicate converters | EPIC-PRESENT | No | Cleanup | **Yes** — with a binding-error sweep |
 | C-4 dead assets | none | No | Cleanup | **Yes** |
 | C-5 magic values | PRESENT, ATTRACT, MEDIA, INPUT | No | Cleanup | **Yes** |
-| C-6 unused deps.json | EPIC-INTEGRATE | No | Cleanup | **Yes** |
+| ~~C-6~~ unused deps.json | EPIC-INTEGRATE | No | Cleanup | **RESOLVED** — removed from the payload |
 | C-7 Prism load failure | EPIC-CONFIG, EPIC-INTEGRATE | No (latent) | Infrastructure | **Yes** |
 | C-8 four-class file | EPIC-CONFIG | No | Cleanup | **Yes** |
 
