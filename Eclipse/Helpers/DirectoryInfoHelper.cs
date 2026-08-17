@@ -248,19 +248,6 @@ namespace Eclipse.Helpers
             }
         }
 
-        private string bigBoxSettingsFile;
-        public string BigBoxSettingsFile
-        {
-            get
-            {
-                if(string.IsNullOrWhiteSpace(BigBoxSettingsFile))
-                {
-                    bigBoxSettingsFile = $"{ApplicationPath}\\Data\\BigBoxSettings.xml";
-                }
-                return bigBoxSettingsFile;
-            }
-        }
-
         private string launchBoxSettingsFile;
         public string LaunchBoxSettingsFile
         {
