@@ -1,6 +1,7 @@
 using Eclipse.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,8 +35,13 @@ namespace Eclipse.Service
     {
         private static readonly IReadOnlyList<VoiceMatch> NoMatches = new VoiceMatch[0];
 
-        private bool isSetup;
+        private readonly object setupLock = new object();
+        private volatile bool isSetup;
         private Dictionary<string, List<VoiceMatch>> matchesByPhrase;
+        private long buildMilliseconds;
+
+        // How long the index took to build. Zero until it has been built.
+        public long BuildMilliseconds => buildMilliseconds;
 
         // Every distinct phrase the recogniser should listen for.
         public IReadOnlyCollection<string> Phrases
@@ -61,27 +67,33 @@ namespace Eclipse.Service
             return NoMatches;
         }
 
-        // Build now rather than on first use.
-        public void Prepare()
-        {
-            EnsureSetup();
-        }
-
+        // Built on first access, which SpeechRecognizerService does from a background task.
+        // Safe to call from any thread - a caller that arrives while a build is in flight
+        // waits for it rather than starting a second one.
         private void EnsureSetup()
         {
-            if (!isSetup)
+            if (isSetup)
             {
-                Setup();
+                return;
+            }
+
+            lock (setupLock)
+            {
+                if (!isSetup)
+                {
+                    Setup();
+                }
             }
         }
 
         private void Setup()
         {
-            matchesByPhrase = new Dictionary<string, List<VoiceMatch>>(StringComparer.Ordinal);
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            Dictionary<string, List<VoiceMatch>> built = new Dictionary<string, List<VoiceMatch>>(StringComparer.Ordinal);
 
             if (!EclipseSettingsDataProvider.Instance.EclipseSettings.EnableVoiceSearch)
             {
-                isSetup = true;
+                Publish(built, stopwatch);
                 return;
             }
 
@@ -98,16 +110,27 @@ namespace Eclipse.Service
                 foreach (PhraseEntry entry in entriesPerGame[gameIndex])
                 {
                     List<VoiceMatch> matches;
-                    if (!matchesByPhrase.TryGetValue(entry.Phrase, out matches))
+                    if (!built.TryGetValue(entry.Phrase, out matches))
                     {
                         matches = new List<VoiceMatch>();
-                        matchesByPhrase.Add(entry.Phrase, matches);
+                        built.Add(entry.Phrase, matches);
                     }
 
                     matches.Add(new VoiceMatch(games[gameIndex], entry.MatchType, entry.ConvertedTitle));
                 }
             }
 
+            Publish(built, stopwatch);
+        }
+
+        // Assign the finished index before flipping the flag - isSetup is volatile, so a
+        // reader that sees it set is guaranteed to see a fully built dictionary.
+        private void Publish(Dictionary<string, List<VoiceMatch>> built, Stopwatch stopwatch)
+        {
+            stopwatch.Stop();
+
+            matchesByPhrase = built;
+            buildMilliseconds = stopwatch.ElapsedMilliseconds;
             isSetup = true;
         }
 

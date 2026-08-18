@@ -4,34 +4,66 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Speech.Recognition;
+using System.Threading.Tasks;
 
 namespace Eclipse.Service
 {
     public class SpeechRecognizerService
     {
-        private bool isSetup;
-        private SpeechRecognizer speechRecognizer;        
+        private volatile VoiceSearchAvailability availability = VoiceSearchAvailability.Preparing;
+        private SpeechRecognizer speechRecognizer;
+        private string failureMessage;
 
-        public SpeechRecognizer GetRecognizer()
+        // Whether a voice search can be started right now.
+        public VoiceSearchAvailability Availability => availability;
+
+        // Why voice search is unavailable, when Availability is Failed.
+        public string FailureMessage => failureMessage;
+
+        // Build the phrase index and the recogniser away from the startup path, so the first
+        // screen is not held up by work most sessions never use. Voice search reports itself
+        // unavailable until this finishes.
+        public void PrepareInBackground()
         {
-            if (!isSetup)
+            if (!EclipseSettingsDataProvider.Instance.EclipseSettings.EnableVoiceSearch)
             {
-                isSetup = true;
-
-                try
-                {
-                    // the distinct set of phrases that can be used with voice recognition
-                    List<string> titleElements = VoiceSearchIndex.Instance.Phrases.ToList();
-
-                    speechRecognizer = new SpeechRecognizer(titleElements);
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.LogException(ex, "CreateRecognizer");
-                }
+                availability = VoiceSearchAvailability.Disabled;
+                return;
             }
 
-            return speechRecognizer;            
+            availability = VoiceSearchAvailability.Preparing;
+            Task.Run(() => Prepare());
+        }
+
+        private void Prepare()
+        {
+            try
+            {
+                // the distinct set of phrases that can be used with voice recognition
+                List<string> titleElements = VoiceSearchIndex.Instance.Phrases.ToList();
+
+                speechRecognizer = new SpeechRecognizer(titleElements);
+
+                // assign the recogniser before publishing the status - availability is
+                // volatile, so a reader that sees Ready is guaranteed to see the recogniser
+                availability = VoiceSearchAvailability.Ready;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.LogException(ex, "CreateRecognizer");
+
+                // One attempt only. A recogniser that fails to initialise almost never
+                // succeeds on a retry, so record why and let the user be told, rather than
+                // retrying forever or failing silently.
+                failureMessage = $"Voice search could not start: {ex.Message}";
+                availability = VoiceSearchAvailability.Failed;
+            }
+        }
+
+        // The recogniser, or null when voice search is not ready.
+        public SpeechRecognizer GetRecognizer()
+        {
+            return availability == VoiceSearchAvailability.Ready ? speechRecognizer : null;
         }
 
         #region singleton implementation 
@@ -59,6 +91,11 @@ namespace Eclipse.Service
     {
         public List<RecognizedPhrase> RecognizedPhrases { get; set; } = new List<RecognizedPhrase>();
         public string ErrorMessage { get; set; }
+
+        // The recognition was cancelled rather than finishing - the user backed out, or a
+        // cancel raised a completion event. There is nothing to search for, and the caller
+        // must not treat it as a search that returned no games.
+        public bool Cancelled { get; set; }
     }
 
     public delegate void RecognitionCompletedDelegate(SpeechRecognizerResult speechRecognizerResult);
@@ -135,7 +172,13 @@ namespace Eclipse.Service
 
         void RecognizeCompleted(object sender, RecognizeCompletedEventArgs e)
         {
-            // save any error 
+            // cancelling raises this event too, including the cancel the timeout below issues
+            if (e?.Cancelled == true)
+            {
+                SpeechRecognizerResult.Cancelled = true;
+            }
+
+            // save any error
             if (e?.Error != null)
             {
                 if (Recognizer != null)

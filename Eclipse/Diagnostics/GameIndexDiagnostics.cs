@@ -59,7 +59,9 @@ namespace Eclipse.Diagnostics
             }
         }
 
-        public static void Capture(MainWindowViewModel viewModel, long catalogMilliseconds, long voiceIndexMilliseconds, long createGameListsMilliseconds)
+        // Note: the voice sections wait for the background index build to finish, so a
+        // capture is complete even though voice search is no longer part of startup.
+        public static void Capture(MainWindowViewModel viewModel, long catalogMilliseconds, long createGameListsMilliseconds)
         {
             try
             {
@@ -77,7 +79,7 @@ namespace Eclipse.Diagnostics
                                   BuildGolden(viewModel), Encoding.UTF8);
 
                 File.WriteAllText(Path.Combine(outputFolder, $"metrics-{stamp}.txt"),
-                                  BuildMetrics(viewModel, catalogMilliseconds, voiceIndexMilliseconds, createGameListsMilliseconds), Encoding.UTF8);
+                                  BuildMetrics(viewModel, catalogMilliseconds, createGameListsMilliseconds), Encoding.UTF8);
 
                 LogHelper.Log($"Index diagnostics written to {outputFolder} (stamp {stamp})");
             }
@@ -255,7 +257,7 @@ namespace Eclipse.Diagnostics
 
         #region metrics
 
-        private static string BuildMetrics(MainWindowViewModel viewModel, long catalogMilliseconds, long voiceIndexMilliseconds, long createGameListsMilliseconds)
+        private static string BuildMetrics(MainWindowViewModel viewModel, long catalogMilliseconds, long createGameListsMilliseconds)
         {
             StringBuilder sb = new StringBuilder();
 
@@ -327,8 +329,11 @@ namespace Eclipse.Diagnostics
 
             sb.AppendLine("[timings-ms]");
             AppendMetric(sb, "buildCatalog", (int)catalogMilliseconds);
-            AppendMetric(sb, "buildVoiceIndex", (int)voiceIndexMilliseconds);
             AppendMetric(sb, "createGameLists", (int)createGameListsMilliseconds);
+            sb.AppendLine($"startupBlocking={Count((int)(catalogMilliseconds + createGameListsMilliseconds))}");
+
+            // built off the startup path, so this overlaps the work above rather than adding to it
+            AppendMetric(sb, "buildVoiceIndexBackground", (int)VoiceSearchIndex.Instance.BuildMilliseconds);
 
             return sb.ToString();
         }

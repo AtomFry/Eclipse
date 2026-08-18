@@ -21,7 +21,8 @@ namespace Eclipse.Service
         private static readonly ILookup<string, GameMatch> EmptyLookup =
             Enumerable.Empty<GameMatch>().ToLookup(gameMatch => string.Empty);
 
-        private bool isSetup;
+        private readonly object setupLock = new object();
+        private volatile bool isSetup;
         private List<GameMatch> games;
         private List<GameFiles> mediaEntries;
         private Dictionary<ListCategoryType, ILookup<string, GameMatch>> categoryIndex;
@@ -61,11 +62,21 @@ namespace Eclipse.Service
             return EmptyLookup;
         }
 
+        // The voice index builds on a background thread from this catalog, so first access
+        // can genuinely race. Callers that arrive mid-build wait rather than building twice.
         private void EnsureSetup()
         {
-            if (!isSetup)
+            if (isSetup)
             {
-                Setup();
+                return;
+            }
+
+            lock (setupLock)
+            {
+                if (!isSetup)
+                {
+                    Setup();
+                }
             }
         }
 

@@ -87,20 +87,15 @@ namespace Eclipse.State
                 EclipseStateContext.MainWindowViewModel.gameFilesBag = GameCatalog.Instance.MediaEntries;
                 catalogStopwatch.Stop();
 
-                // build the voice index at the same point the voice clones used to be built
-                Stopwatch voiceIndexStopwatch = Stopwatch.StartNew();
-                VoiceSearchIndex.Instance.Prepare();
-                voiceIndexStopwatch.Stop();
-
                 BackgroundWorker worker = new BackgroundWorker();
                 worker.DoWork += EclipseStateContext.MainWindowViewModel.SetupFiles;
                 worker.RunWorkerAsync();
 
-                // create the voice recognition
-                if (EclipseSettingsDataProvider.Instance.EclipseSettings.EnableVoiceSearch)
-                {
-                    _ = SpeechRecognizerService.Instance.GetRecognizer();
-                }
+                // the phrase index and the recogniser build in the background - they are
+                // only needed if the user actually starts a voice search, so they no longer
+                // hold up the first screen. Voice search reports itself as still preparing
+                // until this finishes.
+                SpeechRecognizerService.Instance.PrepareInBackground();
 
                 // prepare lists of games by different categories
                 EclipseStateContext.MainWindowViewModel.GameListSets = new List<GameListSet>();
@@ -115,7 +110,6 @@ namespace Eclipse.State
                 // file is present. Remove along with GameIndexDiagnostics when done.
                 GameIndexDiagnostics.Capture(EclipseStateContext.MainWindowViewModel,
                                              catalogStopwatch.ElapsedMilliseconds,
-                                             voiceIndexStopwatch.ElapsedMilliseconds,
                                              createGameListsStopwatch.ElapsedMilliseconds);
 
                 // get settings and setup default list category type

@@ -15,6 +15,17 @@ namespace Eclipse.Models
         None = 0
     }
 
+    // Whether a voice search can be started right now. The index and the recogniser are
+    // built in the background after startup, so there is a window where the feature exists
+    // but is not usable yet.
+    public enum VoiceSearchAvailability
+    {
+        Disabled,
+        Preparing,
+        Ready,
+        Failed
+    }
+
     public enum BezelType
     {
         Game,

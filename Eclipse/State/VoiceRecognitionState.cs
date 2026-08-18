@@ -21,9 +21,44 @@ namespace Eclipse.State
         {
             EclipseStateContext = eclipseStateContext;
 
+            // the recogniser is built in the background after startup, so it may not be
+            // ready yet - say so rather than appearing to do nothing
+            VoiceSearchAvailability availability = SpeechRecognizerService.Instance.Availability;
+            if (availability != VoiceSearchAvailability.Ready)
+            {
+                ShowUnavailable(availability);
+                return;
+            }
+
             speechRecognizer = SpeechRecognizerService.Instance.GetRecognizer();
 
             DoRecognize();
+        }
+
+        private void ShowUnavailable(VoiceSearchAvailability availability)
+        {
+            string message;
+            switch (availability)
+            {
+                case VoiceSearchAvailability.Preparing:
+                    message = "Voice search is still getting ready - please try again in a moment";
+                    break;
+
+                case VoiceSearchAvailability.Failed:
+                    message = SpeechRecognizerService.Instance.FailureMessage ?? "Voice search is not available";
+                    break;
+
+                default:
+                    message = "Voice search is turned off in the Eclipse settings";
+                    break;
+            }
+
+            EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
+
+            DisplayingErrorState displayingErrorState = EclipseStateContext.GetState(typeof(DisplayingErrorState)) as DisplayingErrorState;
+            displayingErrorState.ErrorMessage = message;
+
+            EclipseStateContext.TransitionToState(displayingErrorState);
         }
 
         public bool OnDown(EclipseStateContext eclipseStateContext, bool held)
@@ -38,7 +73,7 @@ namespace Eclipse.State
 
         public bool OnEscape(EclipseStateContext eclipseStateContext)
         {
-            speechRecognizer.TryCancelRecognition();
+            speechRecognizer?.TryCancelRecognition();
             EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
             eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
@@ -115,6 +150,15 @@ namespace Eclipse.State
                 return;
             }
 
+            // a cancelled recognition is not a search that found nothing - go back to
+            // browsing and leave the current lists exactly as they were
+            if (speechRecognizerResult.Cancelled)
+            {
+                EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
+                EclipseStateContext.TransitionToState(EclipseStateContext.GetState(typeof(SelectingGameState)));
+                return;
+            }
+
             try
             {
                 List<GameList> voiceRecognitionResults = new List<GameList>();
@@ -150,6 +194,18 @@ namespace Eclipse.State
                             voiceRecognitionResults.Add(gameList);
                         }
                     }
+                }
+
+                // nothing matched - say so and leave the current lists alone, rather than
+                // installing an empty result set that leaves nothing to navigate
+                if (voiceRecognitionResults.Count == 0)
+                {
+                    EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
+
+                    DisplayingErrorState noResultsState = EclipseStateContext.GetState(typeof(DisplayingErrorState)) as DisplayingErrorState;
+                    noResultsState.ErrorMessage = "No games matched what you said, please try again";
+                    EclipseStateContext.TransitionToState(noResultsState);
+                    return;
                 }
 
                 // remove any prior voice search set and then add these results in the voice search category

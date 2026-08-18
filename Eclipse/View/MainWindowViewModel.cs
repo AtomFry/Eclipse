@@ -874,12 +874,20 @@ namespace Eclipse.View
                                              where gameListSet.ListCategoryType == listCategoryType
                                              select gameListSet;
 
-            CurrentGameListSet = query?.FirstOrDefault();
-            if (CurrentGameListSet != null)
+            GameListSet requestedListSet = query?.FirstOrDefault();
+
+            // Switching to a set with no lists leaves nothing to navigate: the list cycle
+            // ends up empty while CurrentGameList still points at the old list, so moving
+            // left and right appears to work but moving between lists reports a failure.
+            // Keep the lists we already have instead.
+            if (requestedListSet?.GameLists == null || requestedListSet.GameLists.Count == 0)
             {
-                listCycle = new ListCycle<GameList>(CurrentGameListSet.GameLists, 2);
-                RefreshGameLists();
+                return;
             }
+
+            CurrentGameListSet = requestedListSet;
+            listCycle = new ListCycle<GameList>(CurrentGameListSet.GameLists, 2);
+            RefreshGameLists();
         }
 
         private static readonly Random random = new Random();
