@@ -17,7 +17,6 @@ namespace Eclipse.View
     public partial class MainWindowView : UserControl, IBigBoxThemeElementPlugin
     {
         private readonly AttractModeService attractModeService;
-        private readonly AttractModeTimings attractModeTimings;
         private readonly MainWindowViewModel mainWindowViewModel;
 
         private BackgroundWorker stopVideoAndAnimationWorker;
@@ -32,8 +31,6 @@ namespace Eclipse.View
         private BitmapImage activePlayModeImage;
         private BitmapImage activePlatformLogoImage;
         private BitmapImage activeGameBezelImage;
-        private BitmapImage activeAttractModeBackgroundImage;
-        private BitmapImage activeAttractModeClearLogo;
 
         private string activeMatchPercentageText;
         private string activeReleaseYearText;
@@ -79,136 +76,10 @@ namespace Eclipse.View
 
             attractModeService = AttractModeService.Instance;
             attractModeService.MainWindowViewModel = mainWindowViewModel;
-            attractModeService.MainWindowView = this;
-
-            attractModeTimings = AttractModeTimings.Current;
-        }
-
-        #region attract mode - screen saver stuff
-        public void AttractModeTurnOff()
-        {
-            Dispatcher.Invoke(() =>
-            {
-                double exitFade = attractModeTimings.ExitFade.TotalMilliseconds;
-
-                FadeFrameworkElementOpacity(Image_AttractModeBackgroundImage, 0, exitFade);
-                Image_AttractModeBackgroundImage.Source = null;
-                Image_AttractModeBackgroundImage.RenderTransform = null;
-
-                FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 0, exitFade);
-                Image_AttractModeClearLogo.Source = null;
-
-                FadeFrameworkElementOpacity(Grid_AttractMode, 0, exitFade);
-                mainWindowViewModel.IsDisplayingAttractMode = false;
-            });
-        }
-
-        public void AttractModeFadeToBlack()
-        {
-            Dispatcher.Invoke(() =>
-            {
-                // reset the background image - it should already be faded out but make sure
-                Image_AttractModeBackgroundImage.Opacity = 0;
-                Image_AttractModeBackgroundImage.Source = null;
-                Image_AttractModeBackgroundImage.RenderTransform = null;
-
-                Image_AttractModeClearLogo.Opacity = 0;
-                Image_AttractModeClearLogo.Source = null;
-
-                // make the grid transparent so we can fade it in 
-                Grid_AttractMode.Opacity = 0;
-
-                // flag attract mode 
-                mainWindowViewModel.IsDisplayingAttractMode = true;
-
-                // fade the grid in if it isn't already
-                FadeFrameworkElementOpacity(Grid_AttractMode, 1, attractModeTimings.FadeIn.TotalMilliseconds);
-            });
-        }
-
-        public void AttractModeFadeInAndSlideBackground(bool slideLeft)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                // reset the background image - it should already be faded out but make sure
-                Image_AttractModeBackgroundImage.Opacity = 0;
-                Image_AttractModeBackgroundImage.Source = null;
-                Image_AttractModeBackgroundImage.RenderTransform = null;
-
-                Image_AttractModeClearLogo.Opacity = 0;
-                Image_AttractModeClearLogo.Source = null;
-
-                mainWindowViewModel.NextAttractModeGame();
-
-                // get the next image to use for a attract mode background
-                activeAttractModeBackgroundImage = new BitmapImage(mainWindowViewModel.AttractModeGame.GameFiles.BackgroundImage);
-
-                // assign the image and fade it in
-                if (activeAttractModeBackgroundImage != null)
-                {
-                    Image_AttractModeBackgroundImage.Source = activeAttractModeBackgroundImage;
-                    FadeFrameworkElementOpacity(Image_AttractModeBackgroundImage, 1, attractModeTimings.BackgroundFadeIn.TotalMilliseconds);
-                }
-
-                // The image is deliberately wider than the screen; the pan slides that
-                // overhang across. Measure against the control's own width, NOT the monitor
-                // resolution: Image.Width comes from MainWindowUserControl.ActualWidth, which
-                // is in device-independent units, while Screen.Bounds is in physical pixels.
-                // On a display with DPI scaling those differ, and mixing them made the image
-                // slide the wrong way and far too far, leaving the screen partly black.
-                double displayWidth = ActualWidth;
-
-                // To slide left - set canvas left edge to 0 and shift image from 0 to (displayWidth - ImageWidth) (i.e. from 0 to -25)
-                // To slide right - set canvas left edge to (displayWidth - imageWidth) and shift image from 0 to imageWidth - displayWidth (i.e. from 0 to 25)
-                double attractCanvasLeftCoordinate, // where to start the canvas
-                        shiftCanvasFrom,            // where to shift from
-                        shiftCanvasTo;              // where to shift to
-
-                if (slideLeft)
-                {
-                    attractCanvasLeftCoordinate = 0;
-                    shiftCanvasFrom = 0;
-                    shiftCanvasTo = displayWidth - Image_AttractModeBackgroundImage.Width;
-                }
-                else
-                {
-                    attractCanvasLeftCoordinate = displayWidth - Image_AttractModeBackgroundImage.Width;
-                    shiftCanvasFrom = 0;
-                    shiftCanvasTo = Image_AttractModeBackgroundImage.Width - displayWidth;
-                }
-
-                // shift the canvas
-                Canvas.SetLeft(Canvas_AttractModeInnerCanvas, attractCanvasLeftCoordinate);
-                ShiftFrameworkElement(Canvas_AttractModeInnerCanvas, shiftCanvasFrom, shiftCanvasTo, attractModeTimings.Pan.TotalMilliseconds);
-            });
+            attractModeService.Presenter = AttractModeView_Control;
 
         }
 
-        public void AttractModeFadeInLogo()
-        {
-            Dispatcher.Invoke(() =>
-            {
-                activeAttractModeClearLogo = new BitmapImage(mainWindowViewModel.AttractModeGame.GameFiles.ClearLogo);
-                if (activeAttractModeClearLogo != null)
-                {
-                    Image_AttractModeClearLogo.Source = activeAttractModeClearLogo;
-                    FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 1, attractModeTimings.LogoFadeIn.TotalMilliseconds);
-                }
-            });
-
-        }
-
-        // when the AttractModeChangeDelay elapses, change games and continue attract mode
-        public void AttractModeFadeOutBackgroundAndLogo()
-        {
-            Dispatcher.Invoke(() =>
-            {
-                // fade out this image
-                FadeFrameworkElementOpacity(Image_AttractModeBackgroundImage, 0, attractModeTimings.BackgroundFadeOut.TotalMilliseconds);
-                FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 0, attractModeTimings.LogoFadeOut.TotalMilliseconds);
-            });
-        }
-        #endregion
 
         public bool OnDown(bool held)
         {
@@ -293,19 +164,6 @@ namespace Eclipse.View
 
                 element.BeginAnimation(OpacityProperty, dimElement);
             }
-        }
-
-        private void ShiftFrameworkElement(FrameworkElement element, double fromValue, double toValue, double durationInMilliseconds)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                TranslateTransform translateTransform = new TranslateTransform();
-                element.RenderTransform = translateTransform;
-
-                DoubleAnimation moveElement = new DoubleAnimation(fromValue, toValue, TimeSpan.FromMilliseconds(durationInMilliseconds));
-
-                translateTransform.BeginAnimation(TranslateTransform.XProperty, moveElement);
-            });
         }
 
         private void DoAnimateGameChange()

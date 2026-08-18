@@ -130,124 +130,14 @@
         </Grid>
         <!-- END LOADING -->
 
-        <!-- ATTRACT MODE -->
-        <Grid   Name="Grid_AttractMode"
+        <!-- ATTRACT MODE - visuals and their animations live in AttractModeView -->
+        <local:AttractModeView x:Name="AttractModeView_Control"
                 IsHitTestVisible="False"
                 VerticalAlignment="Stretch"
                 HorizontalAlignment="Stretch"
                 Panel.ZIndex="900"
-                Background="Black"
-                Width="{Binding ActualWidth, ElementName=MainWindowUserControl, Converter={StaticResource OversizeImageConverter}}"
-                Height="{Binding ActualHeight, ElementName=MainWindowUserControl, Converter={StaticResource OversizeImageConverter}}"
-                Visibility="{Binding IsDisplayingAttractMode, Converter={StaticResource BoolToVis}}">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <Canvas Name="Canvas_AttractModeCanvas"
-                    Grid.Row="0" 
-                    Grid.RowSpan="18" 
-                    Grid.Column="0" 
-                    Grid.ColumnSpan="32"
-                    IsHitTestVisible="False"
-                    Panel.ZIndex="901">
-
-                <Canvas Name="Canvas_AttractModeInnerCanvas"
-                        Width="{Binding ActualWidth, ElementName=Canvas_AttractModeCanvas}"
-                        Height="{Binding ActualHeight, ElementName=Canvas_AttractModeCanvas}"
-                        IsHitTestVisible="False">
-
-                    <!-- Height must be set as well as Width. With only Width, UniformToFill
-                         derives the height from the image's own aspect ratio, so any artwork
-                         proportionally wider than the display left black bars above and
-                         below. The normal background image above sets both. -->
-                    <Image Name="Image_AttractModeBackgroundImage"
-                       VerticalAlignment="Center"
-                       Stretch="UniformToFill"
-                       Width="{Binding ActualWidth, ElementName=MainWindowUserControl, Converter={StaticResource OversizeImageConverter}}"
-                       Height="{Binding ActualHeight, ElementName=MainWindowUserControl, Converter={StaticResource OversizeImageConverter}}"
-                       RenderOptions.BitmapScalingMode="HighQuality" >
-                        <Image.OpacityMask>
-                            <LinearGradientBrush StartPoint="0.5,1" EndPoint="0.5,0">
-                                <LinearGradientBrush.GradientStops>
-                                    <GradientStop Offset="0" Color="Transparent"/>
-                                    <GradientStop Offset="0.25" Color="Black"/>
-                                </LinearGradientBrush.GradientStops>
-                            </LinearGradientBrush>
-                        </Image.OpacityMask>
-                    </Image>
-                </Canvas>
-            </Canvas>
-
-            <!-- Darken the background when displaying feature and more info (helps with text visibility) -->
-            <Rectangle Grid.Row="0" Grid.RowSpan="18"
-                       Grid.Column="0" Grid.ColumnSpan="32"
-                       IsHitTestVisible="False"
-                       Fill="Black" Opacity="0.1" 
-                       Panel.ZIndex="902"
-                       Visibility="{Binding IsDisplayingFeature, Converter={StaticResource BoolToVis}}">
-            </Rectangle>
-
-            <Image Name="Image_AttractModeClearLogo" HorizontalAlignment="Center" VerticalAlignment="Stretch"
-                   IsHitTestVisible="False"
-                   Panel.ZIndex="903"
-                   Grid.Row="2" Grid.RowSpan="6"
-                   Grid.Column="1" Grid.ColumnSpan="12"
-                   Stretch="Uniform"
-                   RenderOptions.BitmapScalingMode="HighQuality">
-            </Image>
-        </Grid>
+                Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
+                Height="{Binding ActualHeight, ElementName=MainWindowUserControl}"/>
         
         <!-- DISPLAY ERROR -->
         <Grid   Background="Transparent"

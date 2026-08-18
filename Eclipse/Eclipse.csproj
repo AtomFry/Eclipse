@@ -31,6 +31,7 @@
   <!-- WPF pages, listed explicitly because default page globbing is disabled above. -->
   <ItemGroup>
     <Page Include="View\MainWindowView.xaml" />
+    <Page Include="View\AttractModeView.xaml" />
     <Page Include="View\EclipseSettings\EclipseSettingsView.xaml" />
     <Page Include="View\EclipseSettings\CustomListDefinitionEditView.xaml" />
   </ItemGroup>

@@ -1,8 +1,6 @@
 ﻿using Eclipse.State;
 using Eclipse.View;
-using System.Security.RightsManagement;
 using System.Timers;
-using System.Windows.Threading;
 
 namespace Eclipse.Service
 {
@@ -14,7 +12,7 @@ namespace Eclipse.Service
 
     public sealed class AttractModeService
     {
-        public MainWindowView MainWindowView { get; set; }
+        public IAttractModePresenter Presenter { get; set; }
         public MainWindowViewModel MainWindowViewModel { get; set; }
 
         private readonly Timer attractModeDelay;
@@ -45,7 +43,7 @@ namespace Eclipse.Service
 
             AttractModeState attractModeState = MainWindowViewModel.EclipseStateContext.GetState(typeof(AttractModeState)) as AttractModeState;
 
-            attractModeState.MainWindowView = MainWindowView;
+            attractModeState.Presenter = Presenter;
             attractModeState.MainWindowViewModel = MainWindowViewModel;
             attractModeState.PreviousState = MainWindowViewModel.EclipseStateContext.CurrentState;
 
@@ -56,9 +54,9 @@ namespace Eclipse.Service
         {
             attractModeDelay?.Stop();
 
-            if (MainWindowView != null)
+            if (Presenter != null)
             {
-                MainWindowView.AttractModeTurnOff();
+                Presenter.TurnOff();
             }
         }
 
