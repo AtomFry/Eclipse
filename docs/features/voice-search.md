@@ -77,7 +77,7 @@ errored, the user is shown a message rather than being silently returned.
 | Concern | Location |
 |---|---|
 | Title decomposition | `Models/GameTitleGrammarBuilder.cs` — `GameTitleGrammar`, `IsNoiseWord`, `GetRomanNumeralReplacement` |
-| Phrase registration | `Service/GameBagService.cs` — the `ListCategoryType.VoiceSearch` clones |
+| Phrase registration | `Service/VoiceSearchIndex.cs` - phrase to game index, deduplicated by game at build time |
 | Engine setup & session | `Service/SpeechRecognizer.cs` — `SpeechRecognizerService`, `SpeechRecognizer` |
 | State & result assembly | `State/VoiceRecognitionState.cs` — `DoRecognize`, `RecognizeCompleted` |
 | Scoring | `Models/GameMatch.cs` — `SetupVoiceMatchPercentage`, `SetMatchDescription` |
@@ -92,17 +92,17 @@ RID-specific Windows assembly — the platform-agnostic stub throws on every cal
 
 | Finding | Effect |
 |---|---|
-| M-5 | A failed recogniser construction is cached permanently; voice search stays dead until restart. |
-| M-6 | That failure presents as a keypress doing nothing. |
+| M-5 | **Resolved.** Failure is no longer a silent permanent latch; `SpeechRecognizerService` publishes a `VoiceSearchAvailability` and records why. Still a single attempt by product decision. |
+| M-6 | **Resolved.** A keypress now reports "still getting ready", the failure reason, or "no games matched" instead of doing nothing. |
 | S-8 | Phrase registration is O(words²) per title and is the largest contributor to index size. |
 | S-2 | Scoring operates on `IGame`, so it cannot be tested without the host. |
-| S-14 | The recogniser catch logs and continues, leaving a null recogniser. |
+| S-14 | **Resolved.** The catch records a failure status rather than leaving a null recogniser behind a set-up flag. |
 
 ## Modernization backlog
 
 | Item | Relationship |
 |---|---|
-| B-03 | Fixes the permanent failure caching (`M-5`). |
+| B-03 | **Done** - delivered alongside moving the index off the startup path. |
 | B-04 | Makes the silent failure visible (`M-6`). |
 | B-30 | Would reduce phrase fan-out — must not change match results. |
 | B-12 | Scoring moves onto the Eclipse-owned game model. |

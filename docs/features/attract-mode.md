@@ -30,7 +30,7 @@ running, and is stopped when a video preview begins.
 |---|---|---|
 | RULE-ATTRACT-001 | The idle timer restarts on essentially every user action and on most state transitions. | Almost every state handler restarts it; missing one produces a screensaver that appears during use. |
 | RULE-ATTRACT-002 | The idle delay is configurable; attract mode can be disabled entirely, in which case no timer is created at all. | |
-| RULE-ATTRACT-003 | Attract mode games are chosen at random from the whole library index, **not** from the currently browsed list set. | Unlike `RULE-BROWSE-011`, this is uniform across the library. |
+| RULE-ATTRACT-003 | Attract mode games are chosen at random from the whole library, **not** from the currently browsed list set, and **each game is equally likely** - selection is never weighted by how many genres, playlists or title words a game has. | Unlike `RULE-BROWSE-011`. Until the index refactor the implementation contradicted this rule: it picked from the flat game bag, where a game appeared once per category value and once per voice phrase, so a 55-entry game was ~7x likelier than an 8-entry one. |
 | RULE-ATTRACT-004 | The slideshow sequence per game is: fade to black → wait 4s → pick game, fade in background over 3s and begin a 17s pan → wait 4s → fade in logo over 1.5s → wait 15s from the pan start → fade out background over 3s and logo over 0.5s → repeat. | These timings are the entire feel of the feature and exist only in code. |
 | RULE-ATTRACT-005 | The pan direction alternates between games, and the pan distance is the difference between the image width and the monitor width. | Images narrower than the monitor pan the other way. |
 | RULE-ATTRACT-006 | Attract mode is not entered while a game is running. | |
@@ -46,7 +46,7 @@ running, and is stopped when a video preview begins.
 | Idle timer and entry | `Service/AttractModeService.cs` — `RestartAttractMode`, `StopAttractMode`, `AttractModeDelay_Elapsed` |
 | Slideshow sequencing | `State/AttractModeState.cs` — three timers |
 | Fades, pan, image swap | `View/MainWindowView.xaml.cs` — `AttractModeFadeToBlack`, `AttractModeFadeInAndSlideBackground`, `AttractModeFadeInLogo`, `AttractModeFadeOutBackgroundAndLogo`, `AttractModeTurnOff` |
-| Game selection | `View/MainWindowViewModel.cs` — `NextAttractModeGame` |
+| Game selection | `View/MainWindowViewModel.cs` - `NextAttractModeGame`, indexing `GameCatalog.Games` directly |
 | Timer restarts | Every `EclipseState` implementation |
 | Suppression | `View/MainWindowViewModel.cs` — `IsPlayingGame`; `View/MainWindowView.xaml.cs` — video handlers |
 

@@ -100,8 +100,8 @@ and voice match.
 
 | Concern | Location |
 |---|---|
-| Game index construction | `Service/GameBagService.cs` — `Setup()` |
-| Library filtering | `Service/GameBagService.cs` (broken/hidden checks) |
+| Game index construction | `Service/GameCatalog.cs` - `Setup()`, `BuildCategoryIndex()` |
+| Library filtering | `Service/GameCatalog.cs` (broken/hidden checks) |
 | Category list construction | `View/MainWindowViewModel.cs` — `GetGamesByListCategoryType`, `CreateGameLists` |
 | Custom list filtering/sorting | `View/MainWindowViewModel.cs` — `CustomGameListServiceExtensionMethods` (`ApplyDynamicFilter`, `ApplyOrder`) |
 | Custom list definitions | `Service/CustomListDefinitionDataProvider.cs`; `Models/EclipseSettings.cs` (`CustomListDefinition`) |

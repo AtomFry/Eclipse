@@ -47,7 +47,7 @@ Behaviour the repository does not establish. Each needs a product decision or an
 experiment, not a guess.
 
 ### OQ-001 — Should a game appear multiple times in one list set?
-**Feature:** FEAT-BROWSE-001 · **Evidence:** `GameBagService.Setup`, `RULE-BROWSE-001`
+**Feature:** FEAT-BROWSE-001 · **Evidence:** `GameCatalog.BuildCategoryIndex`, `RULE-BROWSE-001`
 A game with three genres appears in three genre lists. **Interpretations:** (a) intended —
 that is what browsing by genre means; (b) acceptable side effect of the index design.
 **Observed:** it happens and looks correct. **Why it matters:** `B-30` may restructure the
@@ -58,8 +58,11 @@ index; if (a), multiplicity is a contract. **Resolve by:** product confirmation.
 Random picks an index across the whole set, so games in big lists are likelier.
 **Interpretations:** (a) intended — uniform across *games*; (b) accidental — the user may
 expect uniform across *lists*. **Observed:** weighted by list size. **Why it matters:**
-random game is a headline feature. **Resolve by:** product decision. Note attract mode
-(`RULE-ATTRACT-003`) picks uniformly from the library instead — the two differ.
+random game is a headline feature. **Resolve by:** product decision. Attract mode
+(`RULE-ATTRACT-003`) now genuinely picks uniformly across games; note that when this question
+was written the contrast drawn here did not actually hold - attract mode was itself weighted
+by clone count until the index refactor. `DoRandomGame` is unchanged and remains weighted by
+list size, so the open question stands.
 
 ### OQ-003 — Is "more like this" ordering intentional?
 **Feature:** FEAT-BROWSE-008 · **Evidence:** `DoMoreLikeCurrentGame`, `RULE-BROWSE-012`

@@ -4,6 +4,11 @@
 > the design and its evidence survive until we pick it up.
 >
 > Addresses `RC-2` and backlog items `B-01` (test project) and `B-09` (dependency injection).
+>
+> **Superseded in part (2026-08-17).** The game-index refactor replaced `GameBagService` with
+> `GameCatalog` and `VoiceSearchIndex`. Singleton references below naming `GameBagService`
+> should be read as those two services; the dependency argument is unchanged. The net effect
+> is one more singleton than the count below, not one fewer.
 
 ## Context
 
