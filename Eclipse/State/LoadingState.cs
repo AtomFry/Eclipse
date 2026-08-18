@@ -1,9 +1,11 @@
-﻿using Eclipse.Helpers;
+﻿using Eclipse.Diagnostics;
+using Eclipse.Helpers;
 using Eclipse.Models;
 using Eclipse.Service;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Speech.Recognition;
@@ -76,10 +78,14 @@ namespace Eclipse.State
                 // create folders that are required by the plugin
                 DirectoryInfoHelper.CreateFolders();
 
-                // setup the list of options 
+                // setup the list of options
                 EclipseStateContext.MainWindowViewModel.OptionList = OptionListService.Instance.OptionList;
+
+                // reading GameBag is what triggers the index build, so time it here
+                Stopwatch gameBagStopwatch = Stopwatch.StartNew();
                 EclipseStateContext.MainWindowViewModel.gameBag = GameBagService.Instance.GameBag;
                 EclipseStateContext.MainWindowViewModel.gameFilesBag = GameBagService.Instance.GameFilesBag;
+                gameBagStopwatch.Stop();
 
                 BackgroundWorker worker = new BackgroundWorker();
                 worker.DoWork += EclipseStateContext.MainWindowViewModel.SetupFiles;
@@ -94,8 +100,17 @@ namespace Eclipse.State
                 // prepare lists of games by different categories
                 EclipseStateContext.MainWindowViewModel.GameListSets = new List<GameListSet>();
 
-                // populate the lists 
+                // populate the lists
+                Stopwatch createGameListsStopwatch = Stopwatch.StartNew();
                 EclipseStateContext.MainWindowViewModel.CreateGameLists();
+                createGameListsStopwatch.Stop();
+
+                // capture the shape of the index so the refactor stages that replace it can
+                // be proved behaviour-preserving by diff - does nothing unless the marker
+                // file is present. Remove along with GameIndexDiagnostics when done.
+                GameIndexDiagnostics.Capture(EclipseStateContext.MainWindowViewModel,
+                                             gameBagStopwatch.ElapsedMilliseconds,
+                                             createGameListsStopwatch.ElapsedMilliseconds);
 
                 // get settings and setup default list category type
                 EclipseSettings eclipseSettings = EclipseSettingsDataProvider.Instance.EclipseSettings;
