@@ -208,10 +208,15 @@
                         Height="{Binding ActualHeight, ElementName=Canvas_AttractModeCanvas}"
                         IsHitTestVisible="False">
 
+                    <!-- Height must be set as well as Width. With only Width, UniformToFill
+                         derives the height from the image's own aspect ratio, so any artwork
+                         proportionally wider than the display left black bars above and
+                         below. The normal background image above sets both. -->
                     <Image Name="Image_AttractModeBackgroundImage"
                        VerticalAlignment="Center"
                        Stretch="UniformToFill"
                        Width="{Binding ActualWidth, ElementName=MainWindowUserControl, Converter={StaticResource OversizeImageConverter}}"
+                       Height="{Binding ActualHeight, ElementName=MainWindowUserControl, Converter={StaticResource OversizeImageConverter}}"
                        RenderOptions.BitmapScalingMode="HighQuality" >
                         <Image.OpacityMask>
                             <LinearGradientBrush StartPoint="0.5,1" EndPoint="0.5,0">
@@ -1267,7 +1272,8 @@
                               LoadedBehavior="Manual"
                               Panel.ZIndex="110"
                               MediaOpened="Video_SelectedGame_MediaOpened"
-                              MediaEnded="Video_SelectedGame_MediaEnded">
+                              MediaEnded="Video_SelectedGame_MediaEnded"
+                              MediaFailed="Video_SelectedGame_MediaFailed">
                 </MediaElement>
                 <Image  Name="Image_Bezel"
                         IsHitTestVisible="False"

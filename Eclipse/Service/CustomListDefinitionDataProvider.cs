@@ -372,52 +372,14 @@ namespace Eclipse.Service
 
         private EclipseSettings GetDefaultSettings()
         {
-            EclipseSettings eclipseSettings = new EclipseSettings
-            {
-                DefaultListCategoryType = ListCategoryType.Platform,
-
-                DisableVideos = false,
-                EnableScreenSaver = true,
-                EnableVoiceSearch = true,
-                ShowGameCountInList = true,
-                IncludeBrokenGames = false,
-                IncludeHiddenGames = false,
-                OpenSettingsPaneOnLeft = true,
-                AdditionalVersionsEnable = true,
-                AdditionalVersionsExcludeRunBefore = true,
-                AdditionalVersionsExcludeRunAfter = true,
-                AdditionalVersionsOnlyEmulatorOrDosBox = true,
-                AdditionalApplicationDisplayField = AdditionalApplicationDisplayField.Name,
-                AdditionalVersionsRemovePlayPrefix = true,
-                AdditionalVersionsRemoveVersionPostfix = true,
-
-                PageDownFunction = PageFunction.VoiceSearch,
-                PageUpFunction = PageFunction.RandomGame,
-
-                ScreensaverDelayInSeconds = 90,
-                VideoDelayInMilliseconds = 2000,
-                DefaultVideoVolume = 0.5,
-                BypassDetails = false,
-                RepeatGamesToFillScreen = true,
-                ShowMatchPercent = true,
-                ShowPlatformLogo = true,
-                ShowPlayMode = true,
-                ShowReleaseYear = true,
-                ShowStarRating = true,
-                ShowOptionsIcon = true, 
-
-                BoxFrontMarginBottom = 2.0,
-                BoxFrontMarginLeft = 2.0,
-                BoxFrontMarginRight = 2.0,
-                BoxFrontMarginTop = 2.0,
-
-                SelectedGameDetailsPadding = 0,
-
-                DisplayFeaturedGame = false,
-                DisplayOptionsOnEscape = true
-            };
-
-            return eclipseSettings;
+            // Used only when no settings file exists yet. Every property on EclipseSettings
+            // declares its default as a [DefaultValue] attribute with
+            // DefaultValueHandling.Populate, which Json.NET already applies when a property
+            // is missing from an existing file. Deserialising an empty object runs that same
+            // path, so defaults have one home instead of two - a hand-maintained list here
+            // silently drifts every time a setting is added, and a missing entry hands a new
+            // installation a zero instead of the intended value.
+            return JsonConvert.DeserializeObject<EclipseSettings>("{}");
         }
 
         private void BackupDataFile()

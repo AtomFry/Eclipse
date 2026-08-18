@@ -20,20 +20,29 @@ namespace Eclipse.State
         {
             attractModeService = AttractModeService.Instance;
 
-            // create a timer to delay before fading in an image (2 seconds?)
-            attractModeImageFadeInDelay = new Timer(4 * 1000);
+            AttractModeTimings timings = AttractModeTimings.Current;
+
+            // delay from a game fading out until the next one fades in
+            attractModeImageFadeInDelay = new Timer(TimerInterval(timings.DelayBetweenImages));
             attractModeImageFadeInDelay.Elapsed += AttractModeImageFadeInDelay_Elapsed;
             attractModeImageFadeInDelay.AutoReset = false;
 
-            // create a timer to delay between switching games in attract mode (15 seconds)
-            attractModeChangeDelay = new Timer(15 * 1000);
+            // how long each game is displayed before fading out and moving to the next
+            attractModeChangeDelay = new Timer(TimerInterval(timings.GameDuration));
             attractModeChangeDelay.Elapsed += AttractModeChangeDelay_Elapsed;
             attractModeChangeDelay.AutoReset = false;
 
-            // create a timer to delay before fading in the game logo in attract mode (3 seconds)
-            attractModeLogoFadeInDelay = new Timer(4 * 1000);
+            // delay after the background appears before the game's logo fades in
+            attractModeLogoFadeInDelay = new Timer(TimerInterval(timings.LogoDelay));
             attractModeLogoFadeInDelay.Elapsed += AttractModeLogoFadeInDelay_Elapsed;
             attractModeLogoFadeInDelay.AutoReset = false;
+        }
+
+        // System.Timers.Timer rejects an interval of zero, and these durations are
+        // user-configurable - a hold of zero is a reasonable thing to ask for.
+        private static double TimerInterval(TimeSpan duration)
+        {
+            return duration > TimeSpan.Zero ? duration.TotalMilliseconds : 1;
         }
 
         public void EnterState(EclipseStateContext eclipseStateContext)

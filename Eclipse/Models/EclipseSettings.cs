@@ -82,6 +82,49 @@ namespace Eclipse.Models
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public int ScreensaverDelayInSeconds { get; set; }
 
+        // Screen saver slideshow timings. These defaults are the values that used to be
+        // hardcoded in AttractModeState and MainWindowView, so an existing installation
+        // behaves exactly as it did before they became settings.
+        [DefaultValue(1000)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public int ScreensaverFadeInMilliseconds { get; set; }
+
+        [DefaultValue(4000)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public int ScreensaverDelayBetweenImagesMilliseconds { get; set; }
+
+        [DefaultValue(3000)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public int ScreensaverBackgroundFadeInMilliseconds { get; set; }
+
+        [DefaultValue(17000)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public int ScreensaverPanMilliseconds { get; set; }
+
+        [DefaultValue(4000)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public int ScreensaverLogoDelayMilliseconds { get; set; }
+
+        [DefaultValue(1500)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public int ScreensaverLogoFadeInMilliseconds { get; set; }
+
+        [DefaultValue(15000)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public int ScreensaverGameDurationMilliseconds { get; set; }
+
+        [DefaultValue(3000)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public int ScreensaverBackgroundFadeOutMilliseconds { get; set; }
+
+        [DefaultValue(500)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public int ScreensaverLogoFadeOutMilliseconds { get; set; }
+
+        [DefaultValue(500)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public int ScreensaverExitFadeMilliseconds { get; set; }
+
         [DefaultValue(2000)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public int VideoDelayInMilliseconds { get; set; }

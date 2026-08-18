@@ -17,6 +17,7 @@ namespace Eclipse.View
     public partial class MainWindowView : UserControl, IBigBoxThemeElementPlugin
     {
         private readonly AttractModeService attractModeService;
+        private readonly AttractModeTimings attractModeTimings;
         private readonly MainWindowViewModel mainWindowViewModel;
 
         private BackgroundWorker stopVideoAndAnimationWorker;
@@ -38,7 +39,6 @@ namespace Eclipse.View
         private string activeReleaseYearText;
         private string activeGameTitleText;
 
-        private readonly int monitorWidth;
 
         private bool disableVideos;
 
@@ -48,7 +48,6 @@ namespace Eclipse.View
 
             SetupStopVideoAndAnimationWorker();
 
-            monitorWidth = ImageScaler.GetMonitorWidth();
 
             // create a timer to delay swapping background images
             backgroundImageChangeDelay = new Timer(1000);
@@ -81,6 +80,8 @@ namespace Eclipse.View
             attractModeService = AttractModeService.Instance;
             attractModeService.MainWindowViewModel = mainWindowViewModel;
             attractModeService.MainWindowView = this;
+
+            attractModeTimings = AttractModeTimings.Current;
         }
 
         #region attract mode - screen saver stuff
@@ -88,14 +89,16 @@ namespace Eclipse.View
         {
             Dispatcher.Invoke(() =>
             {
-                FadeFrameworkElementOpacity(Image_AttractModeBackgroundImage, 0, 500);
+                double exitFade = attractModeTimings.ExitFade.TotalMilliseconds;
+
+                FadeFrameworkElementOpacity(Image_AttractModeBackgroundImage, 0, exitFade);
                 Image_AttractModeBackgroundImage.Source = null;
                 Image_AttractModeBackgroundImage.RenderTransform = null;
 
-                FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 0, 500);
+                FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 0, exitFade);
                 Image_AttractModeClearLogo.Source = null;
 
-                FadeFrameworkElementOpacity(Grid_AttractMode, 0, 500);
+                FadeFrameworkElementOpacity(Grid_AttractMode, 0, exitFade);
                 mainWindowViewModel.IsDisplayingAttractMode = false;
             });
         }
@@ -119,7 +122,7 @@ namespace Eclipse.View
                 mainWindowViewModel.IsDisplayingAttractMode = true;
 
                 // fade the grid in if it isn't already
-                FadeFrameworkElementOpacity(Grid_AttractMode, 1, 1000);
+                FadeFrameworkElementOpacity(Grid_AttractMode, 1, attractModeTimings.FadeIn.TotalMilliseconds);
             });
         }
 
@@ -144,12 +147,20 @@ namespace Eclipse.View
                 if (activeAttractModeBackgroundImage != null)
                 {
                     Image_AttractModeBackgroundImage.Source = activeAttractModeBackgroundImage;
-                    FadeFrameworkElementOpacity(Image_AttractModeBackgroundImage, 1, 3000);
+                    FadeFrameworkElementOpacity(Image_AttractModeBackgroundImage, 1, attractModeTimings.BackgroundFadeIn.TotalMilliseconds);
                 }
 
-                // To slide left - set canvas left edge to 0 and shift image from 0 to (monitorWidth - ImageWidth) (i.e. from 0 to -25)
-                // To slide right - set canvas left edge to (monitorWidth - imageWidth) and shift image from 0 to imageWidth - monitorWidth (i.e. from 0 to 25)
-                double attractCanvasLeftCoordinate, // where to start the canvas  
+                // The image is deliberately wider than the screen; the pan slides that
+                // overhang across. Measure against the control's own width, NOT the monitor
+                // resolution: Image.Width comes from MainWindowUserControl.ActualWidth, which
+                // is in device-independent units, while Screen.Bounds is in physical pixels.
+                // On a display with DPI scaling those differ, and mixing them made the image
+                // slide the wrong way and far too far, leaving the screen partly black.
+                double displayWidth = ActualWidth;
+
+                // To slide left - set canvas left edge to 0 and shift image from 0 to (displayWidth - ImageWidth) (i.e. from 0 to -25)
+                // To slide right - set canvas left edge to (displayWidth - imageWidth) and shift image from 0 to imageWidth - displayWidth (i.e. from 0 to 25)
+                double attractCanvasLeftCoordinate, // where to start the canvas
                         shiftCanvasFrom,            // where to shift from
                         shiftCanvasTo;              // where to shift to
 
@@ -157,18 +168,18 @@ namespace Eclipse.View
                 {
                     attractCanvasLeftCoordinate = 0;
                     shiftCanvasFrom = 0;
-                    shiftCanvasTo = monitorWidth - Image_AttractModeBackgroundImage.Width;
+                    shiftCanvasTo = displayWidth - Image_AttractModeBackgroundImage.Width;
                 }
                 else
                 {
-                    attractCanvasLeftCoordinate = monitorWidth - Image_AttractModeBackgroundImage.Width;
+                    attractCanvasLeftCoordinate = displayWidth - Image_AttractModeBackgroundImage.Width;
                     shiftCanvasFrom = 0;
-                    shiftCanvasTo = Image_AttractModeBackgroundImage.Width - monitorWidth;
+                    shiftCanvasTo = Image_AttractModeBackgroundImage.Width - displayWidth;
                 }
 
                 // shift the canvas
                 Canvas.SetLeft(Canvas_AttractModeInnerCanvas, attractCanvasLeftCoordinate);
-                ShiftFrameworkElement(Canvas_AttractModeInnerCanvas, shiftCanvasFrom, shiftCanvasTo, 17 * 1000);
+                ShiftFrameworkElement(Canvas_AttractModeInnerCanvas, shiftCanvasFrom, shiftCanvasTo, attractModeTimings.Pan.TotalMilliseconds);
             });
 
         }
@@ -181,7 +192,7 @@ namespace Eclipse.View
                 if (activeAttractModeClearLogo != null)
                 {
                     Image_AttractModeClearLogo.Source = activeAttractModeClearLogo;
-                    FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 1, 1500);
+                    FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 1, attractModeTimings.LogoFadeIn.TotalMilliseconds);
                 }
             });
 
@@ -192,9 +203,9 @@ namespace Eclipse.View
         {
             Dispatcher.Invoke(() =>
             {
-                // fade out this image 
-                FadeFrameworkElementOpacity(Image_AttractModeBackgroundImage, 0, 3000);
-                FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 0, 500);
+                // fade out this image
+                FadeFrameworkElementOpacity(Image_AttractModeBackgroundImage, 0, attractModeTimings.BackgroundFadeOut.TotalMilliseconds);
+                FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 0, attractModeTimings.LogoFadeOut.TotalMilliseconds);
             });
         }
         #endregion
@@ -307,6 +318,13 @@ namespace Eclipse.View
                     {
                         // stop animations
                         StopEverything();
+
+                        // StopEverything also switches off the idle timer. That is right when
+                        // a game is launching, but changing the selected game is ordinary
+                        // browsing, so re-arm it. Previously the timer was left stopped here
+                        // and only a video's MediaEnded turned it back on - so for a game with
+                        // no preview video the screen saver never started at all.
+                        attractModeService.RestartAttractMode();
 
                         // dim background image
                         DimBackground();
@@ -482,17 +500,27 @@ namespace Eclipse.View
             {
                 Dispatcher.Invoke(() =>
                 {
-                    if ((!disableVideos) && (Video_SelectedGame != null))
+                    // Only hand the idle timer over to the video if one is actually going to
+                    // play. Nothing but MediaEnded turns it back on, so stopping it here when
+                    // there is no video left the screen saver switched off until the next
+                    // keypress. The old guard tested the MediaElement itself, which is never
+                    // null, rather than whether it had a source.
+                    if (disableVideos
+                        || Video_SelectedGame?.Source == null
+                        || mainWindowViewModel.IsPlayingGame)
                     {
-                        attractModeService.StopAttractMode();
-
-                        PlayVideo(Video_SelectedGame);
-
-                        // fade background images while the video plays
-                        FadeFrameworkElementOpacity(Image_Displayed_BackgroundImage, 0, 1000, SwapBackgroundImages);
-                        FadeFrameworkElementOpacity(Image_Active_BackgroundImage, 0, 1000);
-                        FadeFrameworkElementOpacity(Image_Selected_Background_Black, 0, 1000);
+                        attractModeService.RestartAttractMode();
+                        return;
                     }
+
+                    attractModeService.StopAttractMode();
+
+                    PlayVideo(Video_SelectedGame);
+
+                    // fade background images while the video plays
+                    FadeFrameworkElementOpacity(Image_Displayed_BackgroundImage, 0, 1000, SwapBackgroundImages);
+                    FadeFrameworkElementOpacity(Image_Active_BackgroundImage, 0, 1000);
+                    FadeFrameworkElementOpacity(Image_Selected_Background_Black, 0, 1000);
                 });
             }
             catch(Exception ex)
@@ -526,6 +554,26 @@ namespace Eclipse.View
             catch(Exception ex)
             {
                 LogHelper.LogException(ex, "Video_SelectedGame_MediaEnded");
+            }
+        }
+
+        // A video that never loads would otherwise never raise MediaEnded, leaving the idle
+        // timer switched off for the rest of the session.
+        private void Video_SelectedGame_MediaFailed(object sender, ExceptionRoutedEventArgs e)
+        {
+            try
+            {
+                LogHelper.LogException(e?.ErrorException, "play the selected game's video");
+
+                Dispatcher.Invoke(() =>
+                {
+                    FadeInBackgroundImages();
+                    attractModeService.RestartAttractMode();
+                });
+            }
+            catch (Exception ex)
+            {
+                LogHelper.LogException(ex, "Video_SelectedGame_MediaFailed");
             }
         }
 

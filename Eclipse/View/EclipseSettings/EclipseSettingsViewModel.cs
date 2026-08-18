@@ -160,6 +160,7 @@ namespace Eclipse.View.EclipseSettings
             TabPages.Add(EclipseSettingsTabs.Other);
             TabPages.Add(EclipseSettingsTabs.CustomLists);
             TabPages.Add(EclipseSettingsTabs.BoxMargin);
+            TabPages.Add(EclipseSettingsTabs.ScreenSaver);
         }
 
         private string selectedTabPage;
@@ -438,6 +439,106 @@ namespace Eclipse.View.EclipseSettings
             }
         }
 
+        public int ScreensaverFadeInMilliseconds
+        {
+            get { return eclipseSettings.ScreensaverFadeInMilliseconds; }
+            set
+            {
+                eclipseSettings.ScreensaverFadeInMilliseconds = value;
+                OnPropertyChanged("ScreensaverFadeInMilliseconds");
+            }
+        }
+
+        public int ScreensaverDelayBetweenImagesMilliseconds
+        {
+            get { return eclipseSettings.ScreensaverDelayBetweenImagesMilliseconds; }
+            set
+            {
+                eclipseSettings.ScreensaverDelayBetweenImagesMilliseconds = value;
+                OnPropertyChanged("ScreensaverDelayBetweenImagesMilliseconds");
+            }
+        }
+
+        public int ScreensaverBackgroundFadeInMilliseconds
+        {
+            get { return eclipseSettings.ScreensaverBackgroundFadeInMilliseconds; }
+            set
+            {
+                eclipseSettings.ScreensaverBackgroundFadeInMilliseconds = value;
+                OnPropertyChanged("ScreensaverBackgroundFadeInMilliseconds");
+            }
+        }
+
+        public int ScreensaverPanMilliseconds
+        {
+            get { return eclipseSettings.ScreensaverPanMilliseconds; }
+            set
+            {
+                eclipseSettings.ScreensaverPanMilliseconds = value;
+                OnPropertyChanged("ScreensaverPanMilliseconds");
+            }
+        }
+
+        public int ScreensaverLogoDelayMilliseconds
+        {
+            get { return eclipseSettings.ScreensaverLogoDelayMilliseconds; }
+            set
+            {
+                eclipseSettings.ScreensaverLogoDelayMilliseconds = value;
+                OnPropertyChanged("ScreensaverLogoDelayMilliseconds");
+            }
+        }
+
+        public int ScreensaverLogoFadeInMilliseconds
+        {
+            get { return eclipseSettings.ScreensaverLogoFadeInMilliseconds; }
+            set
+            {
+                eclipseSettings.ScreensaverLogoFadeInMilliseconds = value;
+                OnPropertyChanged("ScreensaverLogoFadeInMilliseconds");
+            }
+        }
+
+        public int ScreensaverGameDurationMilliseconds
+        {
+            get { return eclipseSettings.ScreensaverGameDurationMilliseconds; }
+            set
+            {
+                eclipseSettings.ScreensaverGameDurationMilliseconds = value;
+                OnPropertyChanged("ScreensaverGameDurationMilliseconds");
+            }
+        }
+
+        public int ScreensaverBackgroundFadeOutMilliseconds
+        {
+            get { return eclipseSettings.ScreensaverBackgroundFadeOutMilliseconds; }
+            set
+            {
+                eclipseSettings.ScreensaverBackgroundFadeOutMilliseconds = value;
+                OnPropertyChanged("ScreensaverBackgroundFadeOutMilliseconds");
+            }
+        }
+
+        public int ScreensaverLogoFadeOutMilliseconds
+        {
+            get { return eclipseSettings.ScreensaverLogoFadeOutMilliseconds; }
+            set
+            {
+                eclipseSettings.ScreensaverLogoFadeOutMilliseconds = value;
+                OnPropertyChanged("ScreensaverLogoFadeOutMilliseconds");
+            }
+        }
+
+        public int ScreensaverExitFadeMilliseconds
+        {
+            get { return eclipseSettings.ScreensaverExitFadeMilliseconds; }
+            set
+            {
+                eclipseSettings.ScreensaverExitFadeMilliseconds = value;
+                OnPropertyChanged("ScreensaverExitFadeMilliseconds");
+            }
+        }
+
         public bool EnableVoiceSearch
         {
             get { return eclipseSettings.EnableVoiceSearch; }
@@ -567,6 +668,7 @@ namespace Eclipse.View.EclipseSettings
             OtherTabVisibility = Visibility.Collapsed;
             CustomListsTabVisibility = Visibility.Collapsed;
             BoxMarginTabVisibility = Visibility.Collapsed;
+            ScreenSaverTabVisibility = Visibility.Collapsed;
 
             switch (SelectedTabPage)
             {
@@ -593,6 +695,21 @@ namespace Eclipse.View.EclipseSettings
                 case EclipseSettingsTabs.BoxMargin:
                     BoxMarginTabVisibility = Visibility.Visible;
                     break;
+
+                case EclipseSettingsTabs.ScreenSaver:
+                    ScreenSaverTabVisibility = Visibility.Visible;
+                    break;
+            }
+        }
+
+        private Visibility screenSaverTabVisibility;
+        public Visibility ScreenSaverTabVisibility
+        {
+            get => screenSaverTabVisibility;
+            set
+            {
+                screenSaverTabVisibility = value;
+                OnPropertyChanged("ScreenSaverTabVisibility");
             }
         }
 
@@ -803,6 +920,16 @@ namespace Eclipse.View.EclipseSettings
             PageDownFunction = eclipseSettings.PageDownFunction;
 
             ScreensaverDelayInSeconds = eclipseSettings.ScreensaverDelayInSeconds;
+            ScreensaverFadeInMilliseconds = eclipseSettings.ScreensaverFadeInMilliseconds;
+            ScreensaverDelayBetweenImagesMilliseconds = eclipseSettings.ScreensaverDelayBetweenImagesMilliseconds;
+            ScreensaverBackgroundFadeInMilliseconds = eclipseSettings.ScreensaverBackgroundFadeInMilliseconds;
+            ScreensaverPanMilliseconds = eclipseSettings.ScreensaverPanMilliseconds;
+            ScreensaverLogoDelayMilliseconds = eclipseSettings.ScreensaverLogoDelayMilliseconds;
+            ScreensaverLogoFadeInMilliseconds = eclipseSettings.ScreensaverLogoFadeInMilliseconds;
+            ScreensaverGameDurationMilliseconds = eclipseSettings.ScreensaverGameDurationMilliseconds;
+            ScreensaverBackgroundFadeOutMilliseconds = eclipseSettings.ScreensaverBackgroundFadeOutMilliseconds;
+            ScreensaverLogoFadeOutMilliseconds = eclipseSettings.ScreensaverLogoFadeOutMilliseconds;
+            ScreensaverExitFadeMilliseconds = eclipseSettings.ScreensaverExitFadeMilliseconds;
             VideoDelayInMilliseconds = eclipseSettings.VideoDelayInMilliseconds;
             BypassDetails = eclipseSettings.BypassDetails;
             RepeatGamesToFillScreen = eclipseSettings.RepeatGamesToFillScreen;
@@ -845,5 +972,6 @@ namespace Eclipse.View.EclipseSettings
         public const string CustomLists = "Custom lists";
         public const string Other = "Other";
         public const string BoxMargin = "Margin";
+        public const string ScreenSaver = "Screen saver";
     }
 }

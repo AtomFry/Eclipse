@@ -6,6 +6,7 @@
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:local="clr-namespace:Eclipse.View.EclipseSettings"
         xmlns:models="clr-namespace:Eclipse.Models"
+        xmlns:converters="clr-namespace:Eclipse.Converters"
         mc:Ignorable="d"
         Title="Manage eclipse" 
         Height="700" 
@@ -18,6 +19,7 @@
         MouseDown="Window_MouseDown">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <converters:MillisecondsToSecondsConverter x:Key="MsToSeconds"/>
         <ObjectDataProvider x:Key="PageFunctionEnum" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
             <ObjectDataProvider.MethodParameters>
                 <x:Type TypeName="models:PageFunction"/>
@@ -434,88 +436,67 @@
                         Minimum="0" Maximum="1" TickFrequency="0.1" SmallChange="0.1" LargeChange="0.1" TickPlacement="BottomRight"
                         ToolTip="Volume for videos (default 0.5)"/>
 
-                <CheckBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
-                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                          Background="#343542" Foreground="#D3D3D5"
-                          IsChecked="{Binding EnableScreenSaver, Mode=TwoWay}"
-                          ToolTip="Check this box to enable the screen saver"
-                          Content="Enable screen saver"/>
+                <!-- screen saver settings moved to their own tab -->
 
-                <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"                             
-                            HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
-                    <Label Content="Screensaver delay: " Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
-                    <Label Content="{Binding ScreensaverDelayInSeconds}" ContentStringFormat="N1" Margin="2,0" 
-                           Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
-                    <Label Content=" second(s)" Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
-                </StackPanel>
-                <Slider Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
-                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                        Background="#343542" Foreground="#D3D3D5"
-                        Value="{Binding ScreensaverDelayInSeconds, Mode=TwoWay}"
-                        IsEnabled="{Binding EnableScreenSaver, Mode=TwoWay}"
-                        Minimum="10" Maximum="600" TickFrequency="1" SmallChange="1" LargeChange="10" TickPlacement="BottomRight"
-                        ToolTip="Amount of inactivity time (in seconds) to delay before starting the screen saver"/>
-
-
-                <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"                             
+                <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
                             HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
                     <Label Content="Video delay: " Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
-                    <Label Content="{Binding VideoDelayInMilliseconds}" ContentStringFormat="N1" Margin="2,0" 
+                    <Label Content="{Binding VideoDelayInMilliseconds}" ContentStringFormat="N1" Margin="2,0"
                            Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
                     <Label Content=" millisecond(s)" Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
                 </StackPanel>
-                <Slider Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                <Slider Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                         Background="#343542" Foreground="#D3D3D5"
                         Value="{Binding VideoDelayInMilliseconds, Mode=TwoWay}"
                         Minimum="0" Maximum="10000" TickFrequency="1" SmallChange="250" LargeChange="1000" TickPlacement="BottomRight"
                         ToolTip="Amount of time to delay after selecting a game (in milliseconds) before playing the video"/>
-                <CheckBox Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                <CheckBox Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                           Background="#343542" Foreground="#D3D3D5"
                           IsChecked="{Binding ShowMatchPercent, Mode=TwoWay}"
                           ToolTip="Check this box to display the game match percent"
                           Content="Show match percent"/>
-                <CheckBox Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                <CheckBox Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                           Background="#343542" Foreground="#D3D3D5"
                           IsChecked="{Binding ShowReleaseYear, Mode=TwoWay}"
                           ToolTip="Check this box to display the game release year"
                           Content="Show release year"/>
-                <CheckBox Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                <CheckBox Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                           Background="#343542" Foreground="#D3D3D5"
                           IsChecked="{Binding ShowStarRating, Mode=TwoWay}"
                           ToolTip="Check this box to display the game star rating"
                           Content="Show star rating"/>
-                <CheckBox Grid.Row="11" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                <CheckBox Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                           Background="#343542" Foreground="#D3D3D5"
                           IsChecked="{Binding ShowPlayMode, Mode=TwoWay}"
                           ToolTip="Check this box to display the game play mode"
                           Content="Show play mode"/>
-                <CheckBox Grid.Row="12" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                <CheckBox Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                           Background="#343542" Foreground="#D3D3D5"
                           IsChecked="{Binding ShowPlatformLogo, Mode=TwoWay}"
                           ToolTip="Check this box to display the game platform logo"
                           Content="Show platform logo"/>
 
-                <CheckBox Grid.Row="13" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                <CheckBox Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                           Background="#343542" Foreground="#D3D3D5"
                           IsChecked="{Binding ShowOptionsIcon, Mode=TwoWay}"
                           ToolTip="Check this box to display the options icon"
                           Content="Show options icon"/>
 
-                <CheckBox Grid.Row="14" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                <CheckBox Grid.Row="11" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                           Background="#343542" Foreground="#D3D3D5"
                           IsChecked="{Binding DisplayFeaturedGame, Mode=TwoWay}"
                           ToolTip="Check this box to display the featured game"
                           Content="Display featured game"/>
 
-                <CheckBox Grid.Row="15" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                <CheckBox Grid.Row="12" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                           Background="#343542" Foreground="#D3D3D5"
                           IsChecked="{Binding DisplayOptionsOnEscape, Mode=TwoWay}"
@@ -694,6 +675,261 @@
                         Minimum="0" Maximum="100" TickFrequency="1" SmallChange="1" LargeChange="10" TickPlacement="BottomRight"
                         ToolTip="Game details padding"/>
             </Grid>
+        </Grid>
+
+        <Grid Name="ScreenSaverGrid" Grid.Row="1" Grid.Column="3"  Visibility="{Binding ScreenSaverTabVisibility}"
+              HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Height="35" Background="#2A2B34"
+                    HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="5,5,5,10">
+                <TextBlock Text="Screen saver settings"
+                           HorizontalAlignment="Center" TextAlignment="Center" VerticalAlignment="Center"
+                           Background="#2A2B34" Foreground="#D3D3D5" />
+            </Border>
+
+            <!-- more settings than fit the window, so this tab scrolls -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <CheckBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,2"
+                              HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                              Background="#343542" Foreground="#D3D3D5"
+                              IsChecked="{Binding EnableScreenSaver, Mode=TwoWay}"
+                              ToolTip="Check this box to enable the screen saver"
+                              Content="Enable screen saver"/>
+
+                    <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                                HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
+                        <Label Content="Start after: " Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                        <Label Content="{Binding ScreensaverDelayInSeconds}" ContentStringFormat="N1" Margin="2,0"
+                               Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                        <Label Content=" second(s) of inactivity" Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                    </StackPanel>
+                    <Slider Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            Background="#343542" Foreground="#D3D3D5"
+                            Value="{Binding ScreensaverDelayInSeconds, Mode=TwoWay}"
+                            IsEnabled="{Binding EnableScreenSaver}"
+                            Minimum="10" Maximum="600" TickFrequency="1" SmallChange="1" LargeChange="10" TickPlacement="BottomRight"
+                            ToolTip="How long Eclipse waits with no input before the screen saver starts"/>
+
+                    <Border Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="8" Height="28" Background="#2A2B34"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5,15,5,5">
+                        <TextBlock Text="Slide sequence" Margin="10,0"
+                                   HorizontalAlignment="Left" VerticalAlignment="Center"
+                                   Background="#2A2B34" Foreground="#D3D3D5"/>
+                    </Border>
+
+                    <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                                HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
+                        <Label Content="Delay between images: " Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                        <Label Content="{Binding ScreensaverDelayBetweenImagesMilliseconds, Converter={StaticResource MsToSeconds}}"
+                               ContentStringFormat="N1" Margin="2,0"
+                               Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                        <Label Content=" second(s)" Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                    </StackPanel>
+                    <Slider Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            Background="#343542" Foreground="#D3D3D5"
+                            Value="{Binding ScreensaverDelayBetweenImagesMilliseconds, Mode=TwoWay}"
+                            IsEnabled="{Binding EnableScreenSaver}"
+                            Minimum="0" Maximum="15000" TickFrequency="100" SmallChange="250" LargeChange="1000" TickPlacement="BottomRight"
+                            ToolTip="How long from one game starting to fade out until the next one starts to fade in. This overlaps the background fade out, so the screen is only fully black for the remainder"/>
+
+                    <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                                HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
+                        <Label Content="Background fade in: " Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                        <Label Content="{Binding ScreensaverBackgroundFadeInMilliseconds, Converter={StaticResource MsToSeconds}}"
+                               ContentStringFormat="N1" Margin="2,0"
+                               Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                        <Label Content=" second(s)" Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                    </StackPanel>
+                    <Slider Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            Background="#343542" Foreground="#D3D3D5"
+                            Value="{Binding ScreensaverBackgroundFadeInMilliseconds, Mode=TwoWay}"
+                            IsEnabled="{Binding EnableScreenSaver}"
+                            Minimum="0" Maximum="10000" TickFrequency="100" SmallChange="250" LargeChange="1000" TickPlacement="BottomRight"
+                            ToolTip="How long each game's background image takes to fade in from black"/>
+
+                    <StackPanel Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                                HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
+                        <Label Content="Pan across screen: " Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                        <Label Content="{Binding ScreensaverPanMilliseconds, Converter={StaticResource MsToSeconds}}"
+                               ContentStringFormat="N1" Margin="2,0"
+                               Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                        <Label Content=" second(s)" Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                    </StackPanel>
+                    <Slider Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            Background="#343542" Foreground="#D3D3D5"
+                            Value="{Binding ScreensaverPanMilliseconds, Mode=TwoWay}"
+                            IsEnabled="{Binding EnableScreenSaver}"
+                            Minimum="1000" Maximum="60000" TickFrequency="500" SmallChange="500" LargeChange="5000" TickPlacement="BottomRight"
+                            ToolTip="How long the background image takes to drift across the screen. Longer is slower and gentler. Set this longer than the time on each game so the image never appears to stop"/>
+
+                    <StackPanel Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                                HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
+                        <Label Content="Logo appears after: " Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                        <Label Content="{Binding ScreensaverLogoDelayMilliseconds, Converter={StaticResource MsToSeconds}}"
+                               ContentStringFormat="N1" Margin="2,0"
+                               Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                        <Label Content=" second(s)" Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                    </StackPanel>
+                    <Slider Grid.Row="11" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            Background="#343542" Foreground="#D3D3D5"
+                            Value="{Binding ScreensaverLogoDelayMilliseconds, Mode=TwoWay}"
+                            IsEnabled="{Binding EnableScreenSaver}"
+                            Minimum="0" Maximum="30000" TickFrequency="100" SmallChange="250" LargeChange="1000" TickPlacement="BottomRight"
+                            ToolTip="How long after the background image appears before the game's logo fades in. Keep this shorter than the time on each game"/>
+
+                    <StackPanel Grid.Row="12" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                                HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
+                        <Label Content="Logo fade in: " Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                        <Label Content="{Binding ScreensaverLogoFadeInMilliseconds, Converter={StaticResource MsToSeconds}}"
+                               ContentStringFormat="N1" Margin="2,0"
+                               Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                        <Label Content=" second(s)" Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                    </StackPanel>
+                    <Slider Grid.Row="13" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            Background="#343542" Foreground="#D3D3D5"
+                            Value="{Binding ScreensaverLogoFadeInMilliseconds, Mode=TwoWay}"
+                            IsEnabled="{Binding EnableScreenSaver}"
+                            Minimum="0" Maximum="5000" TickFrequency="100" SmallChange="100" LargeChange="500" TickPlacement="BottomRight"
+                            ToolTip="How long the game's logo takes to fade in"/>
+
+                    <StackPanel Grid.Row="14" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                                HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
+                        <Label Content="Time on each game: " Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                        <Label Content="{Binding ScreensaverGameDurationMilliseconds, Converter={StaticResource MsToSeconds}}"
+                               ContentStringFormat="N1" Margin="2,0"
+                               Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                        <Label Content=" second(s)" Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                    </StackPanel>
+                    <Slider Grid.Row="15" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            Background="#343542" Foreground="#D3D3D5"
+                            Value="{Binding ScreensaverGameDurationMilliseconds, Mode=TwoWay}"
+                            IsEnabled="{Binding EnableScreenSaver}"
+                            Minimum="2000" Maximum="120000" TickFrequency="500" SmallChange="500" LargeChange="5000" TickPlacement="BottomRight"
+                            ToolTip="How long each game is shown before it fades out and the next one is chosen"/>
+
+                    <Border Grid.Row="16" Grid.Column="0" Grid.ColumnSpan="8" Height="28" Background="#2A2B34"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5,15,5,5">
+                        <TextBlock Text="Fades" Margin="10,0"
+                                   HorizontalAlignment="Left" VerticalAlignment="Center"
+                                   Background="#2A2B34" Foreground="#D3D3D5"/>
+                    </Border>
+
+                    <StackPanel Grid.Row="17" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                                HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
+                        <Label Content="Background fade out: " Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                        <Label Content="{Binding ScreensaverBackgroundFadeOutMilliseconds, Converter={StaticResource MsToSeconds}}"
+                               ContentStringFormat="N1" Margin="2,0"
+                               Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                        <Label Content=" second(s)" Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                    </StackPanel>
+                    <Slider Grid.Row="18" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            Background="#343542" Foreground="#D3D3D5"
+                            Value="{Binding ScreensaverBackgroundFadeOutMilliseconds, Mode=TwoWay}"
+                            IsEnabled="{Binding EnableScreenSaver}"
+                            Minimum="0" Maximum="10000" TickFrequency="100" SmallChange="250" LargeChange="1000" TickPlacement="BottomRight"
+                            ToolTip="How long the background image takes to fade out before the next game"/>
+
+                    <StackPanel Grid.Row="19" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                                HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
+                        <Label Content="Logo fade out: " Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                        <Label Content="{Binding ScreensaverLogoFadeOutMilliseconds, Converter={StaticResource MsToSeconds}}"
+                               ContentStringFormat="N1" Margin="2,0"
+                               Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                        <Label Content=" second(s)" Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                    </StackPanel>
+                    <Slider Grid.Row="20" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            Background="#343542" Foreground="#D3D3D5"
+                            Value="{Binding ScreensaverLogoFadeOutMilliseconds, Mode=TwoWay}"
+                            IsEnabled="{Binding EnableScreenSaver}"
+                            Minimum="0" Maximum="5000" TickFrequency="100" SmallChange="100" LargeChange="500" TickPlacement="BottomRight"
+                            ToolTip="How long the game's logo takes to fade out before the next game"/>
+
+                    <StackPanel Grid.Row="21" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                                HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
+                        <Label Content="Screen saver fade in: " Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                        <Label Content="{Binding ScreensaverFadeInMilliseconds, Converter={StaticResource MsToSeconds}}"
+                               ContentStringFormat="N1" Margin="2,0"
+                               Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                        <Label Content=" second(s)" Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                    </StackPanel>
+                    <Slider Grid.Row="22" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            Background="#343542" Foreground="#D3D3D5"
+                            Value="{Binding ScreensaverFadeInMilliseconds, Mode=TwoWay}"
+                            IsEnabled="{Binding EnableScreenSaver}"
+                            Minimum="0" Maximum="5000" TickFrequency="100" SmallChange="100" LargeChange="500" TickPlacement="BottomRight"
+                            ToolTip="How long the screen saver takes to fade in when it first starts"/>
+
+                    <StackPanel Grid.Row="23" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                                HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
+                        <Label Content="Exit fade out: " Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                        <Label Content="{Binding ScreensaverExitFadeMilliseconds, Converter={StaticResource MsToSeconds}}"
+                               ContentStringFormat="N1" Margin="2,0"
+                               Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                        <Label Content=" second(s)" Foreground="#D3D3D5" VerticalAlignment="Bottom"/>
+                    </StackPanel>
+                    <Slider Grid.Row="24" Grid.Column="0" Grid.ColumnSpan="8" Margin="10,2"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            Background="#343542" Foreground="#D3D3D5"
+                            Value="{Binding ScreensaverExitFadeMilliseconds, Mode=TwoWay}"
+                            IsEnabled="{Binding EnableScreenSaver}"
+                            Minimum="0" Maximum="3000" TickFrequency="100" SmallChange="100" LargeChange="500" TickPlacement="BottomRight"
+                            ToolTip="How quickly the screen saver disappears when you press a key"/>
+                </Grid>
+            </ScrollViewer>
         </Grid>
 
         <StackPanel Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Orientation="Horizontal" VerticalAlignment="Stretch" HorizontalAlignment="Right">
