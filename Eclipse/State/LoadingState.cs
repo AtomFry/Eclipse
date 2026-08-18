@@ -1,11 +1,9 @@
-﻿using Eclipse.Diagnostics;
-using Eclipse.Helpers;
+﻿using Eclipse.Helpers;
 using Eclipse.Models;
 using Eclipse.Service;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Speech.Recognition;
@@ -81,11 +79,8 @@ namespace Eclipse.State
                 // setup the list of options
                 EclipseStateContext.MainWindowViewModel.OptionList = OptionListService.Instance.OptionList;
 
-                // reading these is what triggers the catalog build, so time it here
-                Stopwatch catalogStopwatch = Stopwatch.StartNew();
                 EclipseStateContext.MainWindowViewModel.gameCatalog = GameCatalog.Instance;
                 EclipseStateContext.MainWindowViewModel.gameFilesBag = GameCatalog.Instance.MediaEntries;
-                catalogStopwatch.Stop();
 
                 BackgroundWorker worker = new BackgroundWorker();
                 worker.DoWork += EclipseStateContext.MainWindowViewModel.SetupFiles;
@@ -101,16 +96,7 @@ namespace Eclipse.State
                 EclipseStateContext.MainWindowViewModel.GameListSets = new List<GameListSet>();
 
                 // populate the lists
-                Stopwatch createGameListsStopwatch = Stopwatch.StartNew();
                 EclipseStateContext.MainWindowViewModel.CreateGameLists();
-                createGameListsStopwatch.Stop();
-
-                // capture the shape of the index so the refactor stages that replace it can
-                // be proved behaviour-preserving by diff - does nothing unless the marker
-                // file is present. Remove along with GameIndexDiagnostics when done.
-                GameIndexDiagnostics.Capture(EclipseStateContext.MainWindowViewModel,
-                                             catalogStopwatch.ElapsedMilliseconds,
-                                             createGameListsStopwatch.ElapsedMilliseconds);
 
                 // get settings and setup default list category type
                 EclipseSettings eclipseSettings = EclipseSettingsDataProvider.Instance.EclipseSettings;

@@ -365,14 +365,13 @@ namespace Eclipse.View
             }
         }
 
-        private void GetGamesByListCategoryType(ListCategoryType listCategoryType)
+        private void GetGamesByListCategoryType(ListCategoryType listCategoryType, IReadOnlyList<CustomListDefinition> customListDefinitions)
         {
             List<GameList> listOfGameList = new List<GameList>();
 
             // remove any prior set of this type and then add these results to the set list category
             GameListSets.RemoveAll(set => set.ListCategoryType == listCategoryType);
 
-            IEnumerable<CustomListDefinition> customListDefinitions = new CustomListDefinitionDataProvider().GetAllCustomListDefinitions();
             IEnumerable<CustomListDefinition> filteredCustomListDefinitions = from customListDefinition in customListDefinitions
                                                                               where customListDefinition.ListCategoryTypes.Contains(listCategoryType)
                                                                               select customListDefinition;
@@ -563,14 +562,21 @@ namespace Eclipse.View
 
         public void CreateGameLists()
         {
-            GetGamesByListCategoryType(ListCategoryType.Platform);
-            GetGamesByListCategoryType(ListCategoryType.ReleaseYear);
-            GetGamesByListCategoryType(ListCategoryType.Genre);
-            GetGamesByListCategoryType(ListCategoryType.Publisher);
-            GetGamesByListCategoryType(ListCategoryType.Developer);
-            GetGamesByListCategoryType(ListCategoryType.Series);
-            GetGamesByListCategoryType(ListCategoryType.PlayMode);
-            GetGamesByListCategoryType(ListCategoryType.Playlist);
+            // Read the custom list definitions once. This used to be reloaded and
+            // deserialised from disk inside every GetGamesByListCategoryType call - eight
+            // file reads per rebuild, and a rebuild happens on every favourite, rating
+            // change and game launch.
+            IReadOnlyList<CustomListDefinition> customListDefinitions =
+                new CustomListDefinitionDataProvider().GetAllCustomListDefinitions().ToList();
+
+            GetGamesByListCategoryType(ListCategoryType.Platform, customListDefinitions);
+            GetGamesByListCategoryType(ListCategoryType.ReleaseYear, customListDefinitions);
+            GetGamesByListCategoryType(ListCategoryType.Genre, customListDefinitions);
+            GetGamesByListCategoryType(ListCategoryType.Publisher, customListDefinitions);
+            GetGamesByListCategoryType(ListCategoryType.Developer, customListDefinitions);
+            GetGamesByListCategoryType(ListCategoryType.Series, customListDefinitions);
+            GetGamesByListCategoryType(ListCategoryType.PlayMode, customListDefinitions);
+            GetGamesByListCategoryType(ListCategoryType.Playlist, customListDefinitions);
         }
 
         public void DoMoreLikeCurrentGame()

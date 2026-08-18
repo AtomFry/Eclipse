@@ -50,7 +50,11 @@ namespace Eclipse.Service
         {
             get
             {
-                if (playlistsSet)
+                // Guard was inverted: this rebuilt the dictionary - re-enumerating every
+                // LaunchBox playlist - on each access once it was already set, and would
+                // have returned null if read before PlaylistGames. Same contents either way,
+                // so only the wasted work changes.
+                if (!playlistsSet)
                 {
                     playlists = new Dictionary<string, bool>();
 
