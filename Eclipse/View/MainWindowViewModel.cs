@@ -6,7 +6,6 @@ using Unbroken.LaunchBox.Plugins;
 using Unbroken.LaunchBox.Plugins.Data;
 using Eclipse.Models;
 using System.Threading.Tasks;
-using System.Collections.Concurrent;
 using Eclipse.Helpers;
 using System.Threading;
 using Eclipse.State;
@@ -26,7 +25,6 @@ namespace Eclipse.View
         public ListCycle<GameList> listCycle;
         public List<GameListSet> GameListSets;
         public GameCatalog gameCatalog;
-        public ConcurrentBag<GameMatch> gameBag;
         public IReadOnlyList<GameFiles> gameFilesBag;
 
         private bool isInitializing;

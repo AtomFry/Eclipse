@@ -131,9 +131,6 @@ namespace Eclipse.Models
         // set the match percentage based on star rating unless voice match then use voice recognition details
         public int MatchPercentage { get; set; }
         public string MatchDescription { get; set; }
-
-        public ListCategoryType CategoryType { get; set; }
-        public string CategoryValue { get; set; }
         #endregion
 
         public GameMatch()
@@ -155,18 +152,17 @@ namespace Eclipse.Models
             SetMatchDescription();
         }
 
-        public static GameMatch CloneGameMatch(GameMatch otherGameMatch,
-                                               ListCategoryType categoryType,
-                                               string categoryValue,
-                                               TitleMatchType titleMatchType = TitleMatchType.None,
-                                               string convertedTitle = "")
+        // A voice search result is a decorated copy of the catalogue's game, carrying how the
+        // spoken phrase matched. Only games a search actually returned are copied - browsing
+        // shares the catalogue's instance instead.
+        public static GameMatch CloneForVoiceResult(GameMatch otherGameMatch,
+                                                    TitleMatchType titleMatchType,
+                                                    string convertedTitle)
         {
             GameMatch gameMatch = new GameMatch();
             gameMatch.Game = otherGameMatch.Game;
             gameMatch.GameFiles = otherGameMatch.GameFiles;
             gameMatch.TitleMatchType = titleMatchType;
-            gameMatch.CategoryType = categoryType;
-            gameMatch.CategoryValue = categoryValue;
             gameMatch.ConvertedTitle = convertedTitle;
 
             gameMatch.Developer = otherGameMatch.Developer;

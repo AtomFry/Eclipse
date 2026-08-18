@@ -12,7 +12,7 @@ namespace Eclipse.Service
     // The game library: one GameMatch per game, plus an index from each category value to
     // the games carrying it.
     //
-    // This replaces the per-category cloning GameBagService used to do. A game in three
+    // This replaces the per-category cloning the old flat game bag did. A game in three
     // genres is now one object referenced from three buckets rather than three objects, so
     // a category lookup is a dictionary hit instead of a scan over every clone in the
     // library.

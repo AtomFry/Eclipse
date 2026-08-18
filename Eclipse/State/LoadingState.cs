@@ -81,12 +81,16 @@ namespace Eclipse.State
                 // setup the list of options
                 EclipseStateContext.MainWindowViewModel.OptionList = OptionListService.Instance.OptionList;
 
-                // reading these is what triggers the index build, so time it here
-                Stopwatch gameBagStopwatch = Stopwatch.StartNew();
+                // reading these is what triggers the catalog build, so time it here
+                Stopwatch catalogStopwatch = Stopwatch.StartNew();
                 EclipseStateContext.MainWindowViewModel.gameCatalog = GameCatalog.Instance;
                 EclipseStateContext.MainWindowViewModel.gameFilesBag = GameCatalog.Instance.MediaEntries;
-                EclipseStateContext.MainWindowViewModel.gameBag = GameBagService.Instance.GameBag;
-                gameBagStopwatch.Stop();
+                catalogStopwatch.Stop();
+
+                // build the voice index at the same point the voice clones used to be built
+                Stopwatch voiceIndexStopwatch = Stopwatch.StartNew();
+                VoiceSearchIndex.Instance.Prepare();
+                voiceIndexStopwatch.Stop();
 
                 BackgroundWorker worker = new BackgroundWorker();
                 worker.DoWork += EclipseStateContext.MainWindowViewModel.SetupFiles;
@@ -110,7 +114,8 @@ namespace Eclipse.State
                 // be proved behaviour-preserving by diff - does nothing unless the marker
                 // file is present. Remove along with GameIndexDiagnostics when done.
                 GameIndexDiagnostics.Capture(EclipseStateContext.MainWindowViewModel,
-                                             gameBagStopwatch.ElapsedMilliseconds,
+                                             catalogStopwatch.ElapsedMilliseconds,
+                                             voiceIndexStopwatch.ElapsedMilliseconds,
                                              createGameListsStopwatch.ElapsedMilliseconds);
 
                 // get settings and setup default list category type

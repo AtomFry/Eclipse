@@ -1,7 +1,6 @@
 ﻿using Eclipse.Helpers;
 using Eclipse.Models;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Speech.Recognition;
@@ -21,14 +20,8 @@ namespace Eclipse.Service
 
                 try
                 {
-                    ConcurrentBag<GameMatch> gameBag = GameBagService.Instance.GameBag;
-
-                    // get the distinct set of phrases that can be used with voice recognition
-                    List<string> titleElements = gameBag.Where(game => game.CategoryType == ListCategoryType.VoiceSearch)
-                        .GroupBy(game => game.CategoryValue)
-                        .Distinct()
-                        .Select(gameMatch => gameMatch.Key)
-                        .ToList();
+                    // the distinct set of phrases that can be used with voice recognition
+                    List<string> titleElements = VoiceSearchIndex.Instance.Phrases.ToList();
 
                     speechRecognizer = new SpeechRecognizer(titleElements);
                 }

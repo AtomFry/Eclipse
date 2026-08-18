@@ -109,8 +109,10 @@ function Get-Blocks {
     return [pscustomobject]@{ Blocks = $blocks; Order = $order.ToArray() }
 }
 
-$beforeLines = Get-Content -LiteralPath $Before
-$afterLines  = Get-Content -LiteralPath $After
+# Comment lines document the capture format rather than describing behaviour, so they are
+# not part of the contract - a reworded header must not read as a behaviour change.
+$beforeLines = Get-Content -LiteralPath $Before | Where-Object { $_ -notmatch '^#( |$)' }
+$afterLines  = Get-Content -LiteralPath $After  | Where-Object { $_ -notmatch '^#( |$)' }
 
 $b = Get-Blocks $beforeLines
 $a = Get-Blocks $afterLines

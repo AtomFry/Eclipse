@@ -3,7 +3,6 @@ using Eclipse.Models;
 using Eclipse.Service;
 using Eclipse.View;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -60,7 +59,7 @@ namespace Eclipse.Diagnostics
             }
         }
 
-        public static void Capture(MainWindowViewModel viewModel, long gameBagMilliseconds, long createGameListsMilliseconds)
+        public static void Capture(MainWindowViewModel viewModel, long catalogMilliseconds, long voiceIndexMilliseconds, long createGameListsMilliseconds)
         {
             try
             {
@@ -78,7 +77,7 @@ namespace Eclipse.Diagnostics
                                   BuildGolden(viewModel), Encoding.UTF8);
 
                 File.WriteAllText(Path.Combine(outputFolder, $"metrics-{stamp}.txt"),
-                                  BuildMetrics(viewModel, gameBagMilliseconds, createGameListsMilliseconds), Encoding.UTF8);
+                                  BuildMetrics(viewModel, catalogMilliseconds, voiceIndexMilliseconds, createGameListsMilliseconds), Encoding.UTF8);
 
                 LogHelper.Log($"Index diagnostics written to {outputFolder} (stamp {stamp})");
             }
@@ -102,10 +101,10 @@ namespace Eclipse.Diagnostics
             sb.AppendLine("# Byte-identical output is the acceptance criterion for behaviour-preserving");
             sb.AppendLine("# refactor stages. Counts and timings live in the matching metrics file.");
             sb.AppendLine("#");
-            sb.AppendLine("# Order is recorded exactly as produced. The index is built with Parallel.ForEach");
-            sb.AppendLine("# into a ConcurrentBag and every sort in the pipeline is a stable LINQ sort, so");
-            sb.AppendLine("# ties resolve to bag insertion order - which is not deterministic. Capture twice");
-            sb.AppendLine("# before refactoring and diff the two runs to establish which sections are stable.");
+            sb.AppendLine("# Order is recorded exactly as produced. Index construction runs in parallel, so");
+            sb.AppendLine("# any collection merged without a deterministic order leaves entries that tie on");
+            sb.AppendLine("# a sort key in thread-completion order. Compare with Tools/Compare-GoldenCapture.ps1,");
+            sb.AppendLine("# which canonicalises ties before diffing rather than requiring a byte match.");
             sb.AppendLine();
 
             sb.AppendLine("[settings]");
@@ -117,8 +116,8 @@ namespace Eclipse.Diagnostics
             sb.AppendLine();
 
             AppendCategoryLists(sb, viewModel);
-            AppendVoiceGrammar(sb, viewModel);
-            AppendVoiceMatching(sb, viewModel);
+            AppendVoiceGrammar(sb);
+            AppendVoiceMatching(sb);
 
             return sb.ToString();
         }
@@ -159,11 +158,11 @@ namespace Eclipse.Diagnostics
             sb.AppendLine();
         }
 
-        private static void AppendVoiceGrammar(StringBuilder sb, MainWindowViewModel viewModel)
+        private static void AppendVoiceGrammar(StringBuilder sb)
         {
             sb.AppendLine("[voice-grammar]");
 
-            List<string> phrases = GetGrammarPhrases(viewModel);
+            List<string> phrases = GetGrammarPhrases();
             if (phrases == null)
             {
                 sb.AppendLine("(voice search disabled)");
@@ -180,21 +179,21 @@ namespace Eclipse.Diagnostics
             sb.AppendLine();
         }
 
-        private static void AppendVoiceMatching(StringBuilder sb, MainWindowViewModel viewModel)
+        private static void AppendVoiceMatching(StringBuilder sb)
         {
             sb.AppendLine("[voice-matching]");
             sb.AppendLine($"# Simulated at fixed confidence {SimulatedConfidence.ToString("0.000", CultureInfo.InvariantCulture)}.");
 
-            List<string> phrases = GetGrammarPhrases(viewModel);
+            List<string> phrases = GetGrammarPhrases();
             if (phrases == null)
             {
                 sb.AppendLine("(voice search disabled)");
                 return;
             }
 
-            foreach (string phrase in SelectPhrasesToProbe(viewModel, phrases))
+            foreach (string phrase in SelectPhrasesToProbe(phrases))
             {
-                List<GameMatch> matches = MatchPhrase(viewModel, phrase);
+                List<GameMatch> matches = MatchPhrase(phrase);
 
                 sb.AppendLine($"## \"{phrase}\" matches={Count(matches.Count)}");
                 foreach (GameMatch gameMatch in matches)
@@ -204,20 +203,18 @@ namespace Eclipse.Diagnostics
             }
         }
 
-        // Mirrors VoiceRecognitionState.RecognizeCompleted exactly - same query, same
-        // grouping, same scoring, same ordering. If that method changes, change this too.
-        private static List<GameMatch> MatchPhrase(MainWindowViewModel viewModel, string phrase)
+        // Mirrors VoiceRecognitionState.RecognizeCompleted exactly - same lookup, same
+        // scoring, same ordering. If that method changes, change this too.
+        private static List<GameMatch> MatchPhrase(string phrase)
         {
-            IEnumerable<GameMatch> query = from game in viewModel.gameBag
-                                           where game.CategoryType == ListCategoryType.VoiceSearch
-                                           && game.CategoryValue == phrase
-                                           group game by game into grouping
-                                           select GameMatch.CloneGameMatch(grouping.Key, ListCategoryType.VoiceSearch, phrase, grouping.Max(g => g.TitleMatchType), grouping.Key.ConvertedTitle);
+            IReadOnlyList<VoiceMatch> voiceMatches = VoiceSearchIndex.Instance.Lookup(phrase);
 
-            List<GameMatch> matches = query.ToList();
-            foreach (GameMatch gameMatch in matches)
+            List<GameMatch> matches = new List<GameMatch>(voiceMatches.Count);
+            foreach (VoiceMatch voiceMatch in voiceMatches)
             {
-                gameMatch.SetupVoiceMatchPercentage(SimulatedConfidence, phrase);
+                GameMatch match = GameMatch.CloneForVoiceResult(voiceMatch.Game, voiceMatch.MatchType, voiceMatch.ConvertedTitle);
+                match.SetupVoiceMatchPercentage(SimulatedConfidence, phrase);
+                matches.Add(match);
             }
 
             return matches.OrderByDescending(match => match.MatchPercentage).ToList();
@@ -225,7 +222,7 @@ namespace Eclipse.Diagnostics
 
         // A fixed, library-independent sample: evenly spaced phrases across the sorted
         // grammar, plus the phrases matching the most games.
-        private static List<string> SelectPhrasesToProbe(MainWindowViewModel viewModel, List<string> sortedPhrases)
+        private static List<string> SelectPhrasesToProbe(List<string> sortedPhrases)
         {
             HashSet<string> selected = new HashSet<string>(StringComparer.Ordinal);
 
@@ -239,10 +236,8 @@ namespace Eclipse.Diagnostics
                 }
             }
 
-            IEnumerable<string> busiestPhrases = viewModel.gameBag
-                .Where(game => game.CategoryType == ListCategoryType.VoiceSearch)
-                .GroupBy(game => game.CategoryValue)
-                .Select(grouping => new { Phrase = grouping.Key, GameCount = grouping.Distinct().Count() })
+            IEnumerable<string> busiestPhrases = sortedPhrases
+                .Select(phrase => new { Phrase = phrase, GameCount = VoiceSearchIndex.Instance.Lookup(phrase).Count })
                 .OrderByDescending(entry => entry.GameCount)
                 .ThenBy(entry => entry.Phrase, StringComparer.Ordinal)
                 .Take(BusiestPhraseCount)
@@ -260,24 +255,40 @@ namespace Eclipse.Diagnostics
 
         #region metrics
 
-        private static string BuildMetrics(MainWindowViewModel viewModel, long gameBagMilliseconds, long createGameListsMilliseconds)
+        private static string BuildMetrics(MainWindowViewModel viewModel, long catalogMilliseconds, long voiceIndexMilliseconds, long createGameListsMilliseconds)
         {
             StringBuilder sb = new StringBuilder();
-            ConcurrentBag<GameMatch> gameBag = viewModel.gameBag;
 
             sb.AppendLine("# Eclipse game index - metrics");
             sb.AppendLine("# These numbers are expected to change between refactor stages.");
             sb.AppendLine();
 
             int catalogGames = viewModel.gameCatalog?.Games?.Count ?? 0;
-            int voiceClones = gameBag?.Count ?? 0;
 
             sb.AppendLine("[objects]");
             AppendMetric(sb, "catalogGames", catalogGames);
-            AppendMetric(sb, "voiceClones", voiceClones);
-            AppendMetric(sb, "totalGameMatchObjects", catalogGames + voiceClones);
             AppendMetric(sb, "gameFilesEntries", viewModel.gameFilesBag?.Count ?? 0);
-            sb.AppendLine($"objectsPerGame={Ratio(catalogGames + voiceClones, catalogGames)}");
+
+            // GameMatch objects now exist only for real games. Voice search holds lightweight
+            // index entries, and creates a decorated copy only for games a search returns.
+            AppendMetric(sb, "totalGameMatchObjects", catalogGames);
+            sb.AppendLine($"objectsPerGame={Ratio(catalogGames, catalogGames)}");
+            sb.AppendLine();
+
+            sb.AppendLine("[voice-index]");
+            if (EclipseSettingsDataProvider.Instance.EclipseSettings.EnableVoiceSearch)
+            {
+                IReadOnlyCollection<string> phrases = VoiceSearchIndex.Instance.Phrases;
+                int voiceIndexEntries = phrases.Sum(phrase => VoiceSearchIndex.Instance.Lookup(phrase).Count);
+
+                AppendMetric(sb, "phrases", phrases.Count);
+                AppendMetric(sb, "phraseGameEntries", voiceIndexEntries);
+                sb.AppendLine($"entriesPerGame={Ratio(voiceIndexEntries, catalogGames)}");
+            }
+            else
+            {
+                sb.AppendLine("(voice search disabled)");
+            }
             sb.AppendLine();
 
             // Category membership is references into the catalog now, not copies. These
@@ -315,7 +326,8 @@ namespace Eclipse.Diagnostics
             sb.AppendLine();
 
             sb.AppendLine("[timings-ms]");
-            AppendMetric(sb, "buildGameBag", (int)gameBagMilliseconds);
+            AppendMetric(sb, "buildCatalog", (int)catalogMilliseconds);
+            AppendMetric(sb, "buildVoiceIndex", (int)voiceIndexMilliseconds);
             AppendMetric(sb, "createGameLists", (int)createGameListsMilliseconds);
 
             return sb.ToString();
@@ -325,17 +337,14 @@ namespace Eclipse.Diagnostics
 
         #region formatting
 
-        private static List<string> GetGrammarPhrases(MainWindowViewModel viewModel)
+        private static List<string> GetGrammarPhrases()
         {
-            if (!EclipseSettingsDataProvider.Instance.EclipseSettings.EnableVoiceSearch || viewModel.gameBag == null)
+            if (!EclipseSettingsDataProvider.Instance.EclipseSettings.EnableVoiceSearch)
             {
                 return null;
             }
 
-            return viewModel.gameBag
-                .Where(game => game.CategoryType == ListCategoryType.VoiceSearch)
-                .Select(game => game.CategoryValue)
-                .Distinct(StringComparer.Ordinal)
+            return VoiceSearchIndex.Instance.Phrases
                 .OrderBy(phrase => phrase, StringComparer.Ordinal)
                 .ToList();
         }
