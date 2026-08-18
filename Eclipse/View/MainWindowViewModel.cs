@@ -25,8 +25,9 @@ namespace Eclipse.View
     {
         public ListCycle<GameList> listCycle;
         public List<GameListSet> GameListSets;
+        public GameCatalog gameCatalog;
         public ConcurrentBag<GameMatch> gameBag;
-        public ConcurrentBag<GameFiles> gameFilesBag;
+        public IReadOnlyList<GameFiles> gameFilesBag;
 
         private bool isInitializing;
         private bool isPickingCategory;
@@ -381,7 +382,9 @@ namespace Eclipse.View
             int sortOrder = 0;
             foreach (CustomListDefinition customListDefinition in filteredCustomListDefinitions)
             {
-                IQueryable<GameMatch> baseQuery = gameBag.Where(g => g.CategoryType == ListCategoryType.Platform).AsQueryable();
+                // custom lists filter the whole library - every game once, which is what the
+                // platform-category projection amounted to since each game has one platform
+                IQueryable<GameMatch> baseQuery = gameCatalog.Games.AsQueryable();
 
                 if (customListDefinition.FilterExpressions.Any())
                 {
@@ -438,27 +441,17 @@ namespace Eclipse.View
                 }
             }
 
-            var gameQuery = from gameMatch in gameBag
-                            where gameMatch.CategoryType == listCategoryType
-                            group gameMatch by gameMatch.CategoryValue into gameGroup
-                            select gameGroup;
-
-            foreach (var gameGroup in gameQuery)
+            foreach (IGrouping<string, GameMatch> gameGroup in gameCatalog.ByCategory(listCategoryType))
             {
                 listOfGameList.Add(new GameList(gameGroup.Key, gameGroup.OrderBy(game => game.Game.SortTitleOrTitle).ToList()));
             }
 
-            // include playlists in platforms if they are set to be included 
+            // include playlists in platforms if they are set to be included
             if (listCategoryType == ListCategoryType.Platform)
             {
                 Dictionary<string, bool> playlists = PlaylistGameService.Instance.Playlists;
 
-                var playListQuery = from gameMatch in gameBag
-                                    where gameMatch.CategoryType == ListCategoryType.Playlist
-                                    group gameMatch by gameMatch.CategoryValue into gameGroup
-                                    select gameGroup;
-
-                foreach (var gameGroup in playListQuery)
+                foreach (IGrouping<string, GameMatch> gameGroup in gameCatalog.ByCategory(ListCategoryType.Playlist))
                 {
                     bool includeInPlaylists = false;
                     if (playlists.TryGetValue(gameGroup.Key, out includeInPlaylists))
@@ -770,8 +763,16 @@ namespace Eclipse.View
 
         public void NextAttractModeGame()
         {
-            int randomIndex = random.Next(gameBag.Count);
-            AttractModeGame = gameBag.ElementAt(randomIndex);
+            // Each game is equally likely. This used to pick from the flat bag, where a game
+            // appeared once per category value and once per voice phrase - so games with
+            // long titles or rich metadata turned up several times more often than others.
+            IReadOnlyList<GameMatch> games = gameCatalog.Games;
+            if (games.Count == 0)
+            {
+                return;
+            }
+
+            AttractModeGame = games[random.Next(games.Count)];
         }
 
         private void RefreshGameLists()
@@ -952,15 +953,8 @@ namespace Eclipse.View
 
                 PluginHelper.DataManager.Save(false);
 
-                IEnumerable<GameMatch> gameMatchQuery = from gameMatch in gameBag
-                                                        where gameMatch.Game.Id == currentGame.Game.Id
-                                                        select gameMatch;
-
-                // flag the game as a favorite wherever it appears
-                foreach (GameMatch gameMatch in gameMatchQuery)
-                {
-                    gameMatch.Favorite = currentGame.Favorite;
-                }
+                // every list holds the same object for a given game, so the assignment above
+                // is already visible everywhere it appears - there is nothing to propagate
 
                 // save state so we can get back to the current game
                 SaveStateForGameListChange();

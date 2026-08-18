@@ -269,33 +269,39 @@ namespace Eclipse.Diagnostics
             sb.AppendLine("# These numbers are expected to change between refactor stages.");
             sb.AppendLine();
 
+            int catalogGames = viewModel.gameCatalog?.Games?.Count ?? 0;
+            int voiceClones = gameBag?.Count ?? 0;
+
             sb.AppendLine("[objects]");
-            if (gameBag != null)
+            AppendMetric(sb, "catalogGames", catalogGames);
+            AppendMetric(sb, "voiceClones", voiceClones);
+            AppendMetric(sb, "totalGameMatchObjects", catalogGames + voiceClones);
+            AppendMetric(sb, "gameFilesEntries", viewModel.gameFilesBag?.Count ?? 0);
+            sb.AppendLine($"objectsPerGame={Ratio(catalogGames + voiceClones, catalogGames)}");
+            sb.AppendLine();
+
+            // Category membership is references into the catalog now, not copies. These
+            // counts are what used to be clone counts, so they stay comparable.
+            sb.AppendLine("[category-index-entries]");
+            if (viewModel.gameCatalog != null)
             {
-                List<GameMatch> entries = gameBag.ToList();
-                int distinctGames = entries.Select(entry => entry.Game.Id).Distinct().Count();
-                int voiceEntries = entries.Count(entry => entry.CategoryType == ListCategoryType.VoiceSearch);
-
-                AppendMetric(sb, "distinctGames", distinctGames);
-                AppendMetric(sb, "gameBagEntries", entries.Count);
-                AppendMetric(sb, "gameFilesEntries", viewModel.gameFilesBag?.Count ?? 0);
-                sb.AppendLine($"voiceShareOfBag={Percent(voiceEntries, entries.Count)}");
-                sb.AppendLine($"entriesPerGame={Ratio(entries.Count, distinctGames)}");
-                sb.AppendLine();
-
-                sb.AppendLine("[entries-by-category]");
-                IEnumerable<IGrouping<ListCategoryType, GameMatch>> byCategory = entries
-                    .GroupBy(entry => entry.CategoryType)
-                    .OrderByDescending(grouping => grouping.Count());
-
-                foreach (IGrouping<ListCategoryType, GameMatch> grouping in byCategory)
+                IEnumerable<ListCategoryType> indexed = new[]
                 {
-                    sb.AppendLine($"{grouping.Key}={Count(grouping.Count())} ({Ratio(grouping.Count(), distinctGames)} per game)");
+                    ListCategoryType.Platform, ListCategoryType.ReleaseYear, ListCategoryType.Genre,
+                    ListCategoryType.Publisher, ListCategoryType.Developer, ListCategoryType.Series,
+                    ListCategoryType.PlayMode, ListCategoryType.Playlist
+                };
+
+                IEnumerable<KeyValuePair<ListCategoryType, int>> counts = indexed
+                    .Select(categoryType => new KeyValuePair<ListCategoryType, int>(
+                        categoryType,
+                        viewModel.gameCatalog.ByCategory(categoryType).Sum(grouping => grouping.Count())))
+                    .OrderByDescending(entry => entry.Value);
+
+                foreach (KeyValuePair<ListCategoryType, int> entry in counts)
+                {
+                    sb.AppendLine($"{entry.Key}={Count(entry.Value)} ({Ratio(entry.Value, catalogGames)} per game)");
                 }
-            }
-            else
-            {
-                sb.AppendLine("(no game bag)");
             }
             sb.AppendLine();
 

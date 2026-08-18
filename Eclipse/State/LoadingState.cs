@@ -81,10 +81,11 @@ namespace Eclipse.State
                 // setup the list of options
                 EclipseStateContext.MainWindowViewModel.OptionList = OptionListService.Instance.OptionList;
 
-                // reading GameBag is what triggers the index build, so time it here
+                // reading these is what triggers the index build, so time it here
                 Stopwatch gameBagStopwatch = Stopwatch.StartNew();
+                EclipseStateContext.MainWindowViewModel.gameCatalog = GameCatalog.Instance;
+                EclipseStateContext.MainWindowViewModel.gameFilesBag = GameCatalog.Instance.MediaEntries;
                 EclipseStateContext.MainWindowViewModel.gameBag = GameBagService.Instance.GameBag;
-                EclipseStateContext.MainWindowViewModel.gameFilesBag = GameBagService.Instance.GameFilesBag;
                 gameBagStopwatch.Stop();
 
                 BackgroundWorker worker = new BackgroundWorker();
