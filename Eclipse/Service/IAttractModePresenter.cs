@@ -1,3 +1,5 @@
+using System.Windows.Media;
+
 namespace Eclipse.Service
 {
     // What attract mode needs the screen to do, and nothing else.
@@ -6,19 +8,23 @@ namespace Eclipse.Service
     // entry point, with every named element in the theme reachable from either of them.
     // They now depend on this instead, so the surface they can touch is these five calls.
     //
-    // The signatures deliberately mirror the original methods: this stage moves code without
-    // changing behaviour. Loading images off the UI thread changes ShowBackground/ShowLogo to
-    // take a decoded ImageSource, and that belongs in its own stage.
+    // The images arrive already decoded and frozen. The presenter used to pick the game and
+    // build a BitmapImage itself, which put a full-size synchronous decode on the UI thread
+    // once per slide and left the view knowing how games are chosen. Both now belong to
+    // AttractModeSlideshow.
     public interface IAttractModePresenter
     {
         /// <summary>Clear any previous game and fade the screen saver in over black.</summary>
         void FadeToBlack();
 
-        /// <summary>Pick the next game, fade its background in and start the pan.</summary>
-        void FadeInAndSlideBackground(bool slideLeft);
+        /// <summary>Show a game's background image and start the pan across it.</summary>
+        /// <param name="image">A frozen image, or null if even the default background failed to load.</param>
+        /// <param name="slideLeft">Which way the pan travels; alternates between slides.</param>
+        void ShowBackground(ImageSource image, bool slideLeft);
 
-        /// <summary>Fade in the current game's clear logo.</summary>
-        void FadeInLogo();
+        /// <summary>Fade the current game's clear logo in.</summary>
+        /// <param name="logo">A frozen image, or null for a game with no logo - which shows no logo at all.</param>
+        void ShowLogo(ImageSource logo);
 
         /// <summary>Fade the current game's background and logo out.</summary>
         void FadeOutBackgroundAndLogo();

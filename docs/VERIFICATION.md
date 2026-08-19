@@ -31,7 +31,8 @@ model — see `S-2` and backlog item `B-12`.
 |---|---|---|
 | Testable **now** | Title decomposition, match scoring, list-window cycling, dynamic filter/sort expression building | Immediately |
 | Testable after `B-11`/`B-12` | List construction, custom-list membership, position restoration, alternate-version filtering, media path resolution | After the adapter and game model exist |
-| Testable after `B-18`/`B-19` | State machine transitions, attract-mode sequencing, presenter call ordering | After the view is behind an interface |
+| Testable **now** (was `B-18`) | Attract-mode sequencing and presenter call ordering — `IAttractModePresenter` exists and `AttractModeSlideshow` takes it plus its timings by constructor | Immediately |
+| Testable after `B-19` | State machine transitions, presentation presenter call ordering | After the rest of the view is behind an interface |
 | Host-dependent, manual only | Plugin registration, theme hosting, menu item, game launching, video playback, speech recognition | Always |
 
 ---
@@ -109,9 +110,11 @@ Each scenario is written so a developer can execute it without reading the code.
 
 | ID | Scenario | Type | Covers |
 |---|---|---|---|
-| VER-ATTRACT-001 | **Sequence.** Idle until attract mode starts. Record the timing of: fade to black, image fade-in, logo fade-in, fade-out, next game. Compare to `RULE-ATTRACT-004`. | **Characterization — recording fake after B-18** | RULE-ATTRACT-004, 005 |
+| VER-ATTRACT-001 | **Sequence.** Drive `AttractModeSlideshow` with a recording `IAttractModePresenter` and a short `AttractModeTimings`; assert the call order and the delay between calls against `RULE-ATTRACT-004`. | **Characterization — writable now** (`B-18` delivered; blocked only on `B-01`) | RULE-ATTRACT-004, 005 |
 | VER-ATTRACT-002 | Idle into attract mode from the detail overlay. Press a key. Confirm return to the overlay, not to browsing. | Manual | RULE-ATTRACT-008 |
 | VER-ATTRACT-003 | Launch a game and leave it running past the idle delay. Confirm attract mode does not start. | Manual | RULE-ATTRACT-006 |
+| VER-ATTRACT-004 | **Cold session.** Restart Big Box and let attract mode trigger before media hydration finishes. Confirm games show their own artwork, not the default background. | Manual | RULE-ATTRACT-009 |
+| VER-ATTRACT-005 | **Pan geometry.** At a non-100% Windows display scaling, confirm the background fills the screen with no black bands and the pan drifts into the screen in both directions. | Manual | RULE-ATTRACT-005 |
 
 ### EPIC-INPUT
 
@@ -161,10 +164,12 @@ a refactor cannot change it silently. These are ranked by (risk of silent breaka
 | 7 | **Default custom lists** (`VER-CONFIG-002`) | Every new user sees these; they are constructed in code and easy to alter accidentally. | Nothing |
 | 8 | **Settings round-trip** (`VER-CONFIG-003`) | `B-27` changes serialization; missing-property defaulting is the only migration mechanism. | Nothing |
 | 9 | **Alternate-version filtering** (`VER-LAUNCH-002`, `003`) | Four independent settings interacting; wrong results are subtle. | `B-12` |
-| 10 | **Attract-mode sequence** (`VER-ATTRACT-001`) | Timing *is* the feature; `B-18` rewrites the seam. | `B-18` |
+| 10 | **Attract-mode sequence** (`VER-ATTRACT-001`) | Timing *is* the feature. `B-18` has landed and the seam it created makes this a plain unit test. | Nothing — **writable today** |
 
-**Three can be written before any refactoring begins** — 2, 3 and 6 — plus 7 and 8 with
-minimal setup. Those are the natural contents of the first test project (`B-01`).
+**Four can be written before any further refactoring** — 2, 3, 6 and now 10 — plus 7 and 8
+with minimal setup. Those are the natural contents of the first test project (`B-01`).
+Item 10 joined them when `B-18` landed: `AttractModeSlideshow` takes its presenter and its
+timings by constructor, so the sequence can be driven at a hundredth of real speed.
 
 ---
 

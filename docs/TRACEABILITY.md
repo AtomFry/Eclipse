@@ -16,7 +16,7 @@ modernization backlog (`B-NN`).
 | EPIC-MEDIA | M-1, M-2, M-3, M-4, M-9, S-4, S-7 |
 | EPIC-LAUNCH | S-1, S-2, S-9, S-12 |
 | EPIC-CURATE | M-4, S-1, S-2, S-9 |
-| EPIC-ATTRACT | M-4, M-8, S-4, C-5 |
+| EPIC-ATTRACT | ~~M-4, M-8, S-4, C-5~~ — all four **closed for this epic** |
 | EPIC-INPUT | M-8, S-1, C-5 |
 | EPIC-CONFIG | M-4, S-5, S-6, S-13, C-7, C-8 |
 | EPIC-INTEGRATE | M-7, M-9, S-2, C-6, C-7 |
@@ -31,16 +31,16 @@ feature-specific regression coverage.
 | M-1 resolve-once race | EPIC-MEDIA (FEAT-MEDIA-011) | Rarely — duplicate scaling | Correctness | **Yes** — localised, testable in isolation |
 | M-2 bitmap leak | EPIC-MEDIA (FEAT-MEDIA-010) | No | Resource | **Yes** |
 | M-3 stream leak | EPIC-MEDIA (FEAT-MEDIA-013) | No | Resource | **Yes** |
-| M-4 subscription/disposal asymmetry | EPIC-PRESENT, EPIC-MEDIA, EPIC-ATTRACT, EPIC-CURATE, EPIC-CONFIG | No, until it does | Resource | **No** — removing a live subscription silently kills a feature |
+| M-4 subscription/disposal asymmetry | EPIC-PRESENT, EPIC-MEDIA, ~~EPIC-ATTRACT~~, EPIC-CURATE, EPIC-CONFIG | No, until it does | Resource | **No** — removing a live subscription silently kills a feature |
 | M-5 cached recogniser failure | EPIC-SEARCH | **Yes** — feature dead until restart | Correctness | **Yes** |
 | M-6 silent no-op failures | EPIC-SEARCH, and any catch site | **Yes** — keypress does nothing | Correctness / UX | **Decision needed** — changes what the user sees |
 | M-7 log destination | EPIC-INTEGRATE | No | Infrastructure | **Yes** |
-| M-8 view held by state/services | EPIC-ATTRACT, EPIC-PRESENT, EPIC-INPUT | No | Structural | **No** — attract sequencing must be characterised first |
+| M-8 view held by state/services | ~~EPIC-ATTRACT~~, EPIC-PRESENT, EPIC-INPUT | No | Structural | **Done for ATTRACT** via `IAttractModePresenter`; still **No** for the rest |
 | M-9 async void loading pump | EPIC-MEDIA, EPIC-INTEGRATE | No — failures are invisible | Correctness | **Yes**, but expect new (real) errors to surface |
 | S-1 god view model | BROWSE, SEARCH, LAUNCH, CURATE, PRESENT, INPUT | No | Structural | **No** — touches six capabilities |
 | S-2 no LaunchBox boundary | BROWSE, SEARCH, MEDIA, LAUNCH, CURATE, INTEGRATE | No | Structural | **No** |
 | S-3 fixed 13-slot window | EPIC-PRESENT, EPIC-BROWSE | Yes if wrong | Structural | **No** — visual fidelity risk |
-| S-4 logic in code-behind | EPIC-PRESENT, EPIC-MEDIA, EPIC-ATTRACT | No | Structural | **No** |
+| S-4 logic in code-behind | EPIC-PRESENT, EPIC-MEDIA, ~~EPIC-ATTRACT~~ | No | Structural | **No** |
 | S-5 triplicated settings | EPIC-CONFIG + every epic it parameterises | Yes if live/restart semantics change | Structural | **No** — needs the live-vs-restart table |
 | S-6 unsafe persistence | EPIC-CONFIG | Only on corruption | Correctness | **Yes** |
 | S-7 per-pixel crop | EPIC-MEDIA | Startup time only | Performance | **Yes**, with golden-file output equivalence |
@@ -55,7 +55,7 @@ feature-specific regression coverage.
 | C-2 category-picker switch | EPIC-BROWSE | No | Cleanup | **Yes** |
 | C-3 duplicate converters | EPIC-PRESENT | No | Cleanup | **Yes** — with a binding-error sweep |
 | C-4 dead assets | none | No | Cleanup | **Yes** |
-| C-5 magic values | PRESENT, ATTRACT, MEDIA, INPUT | No | Cleanup | **Yes** |
+| C-5 magic values | PRESENT, ~~ATTRACT~~, MEDIA, INPUT | No | Cleanup | **Yes** |
 | ~~C-6~~ unused deps.json | EPIC-INTEGRATE | No | Cleanup | **RESOLVED** — removed from the payload |
 | C-7 Prism load failure | EPIC-CONFIG, EPIC-INTEGRATE | No (latent) | Infrastructure | **Yes** |
 | C-8 four-class file | EPIC-CONFIG | No | Cleanup | **Yes** |
@@ -77,7 +77,7 @@ naming a constant changes nothing, provided the value is preserved exactly.
 | EPIC-MEDIA | B-05, B-06, B-20, B-22, B-28, B-29 |
 | EPIC-LAUNCH | B-11, B-12, B-16, B-24 |
 | EPIC-CURATE | B-11, B-12, B-14, B-16 |
-| EPIC-ATTRACT | B-18, B-23 |
+| EPIC-ATTRACT | ~~B-18~~ delivered, ~~B-23~~ satisfied |
 | EPIC-INPUT | B-18, B-19, B-26 |
 | EPIC-CONFIG | B-10, B-13, B-23, B-25, B-26, B-27 |
 | EPIC-INTEGRATE | B-02, B-11, B-13, B-22 |
@@ -103,12 +103,12 @@ naming a constant changes nothing, provided the value is preserved exactly.
 | B-15 list construction | EPIC-BROWSE | no | list membership and order | VER-BROWSE-006 — characterization first |
 | B-16 incremental rebuild | EPIC-CURATE, EPIC-LAUNCH | no | stale lists after curation | VER-CURATE-001; equivalence vs full rebuild |
 | B-17 picker switch | EPIC-BROWSE | no | category selection | VER-BROWSE-001 |
-| B-18 attract presenter | EPIC-ATTRACT, EPIC-PRESENT | **Yes** | **attract timing** | VER-ATTRACT-001 — characterization first |
+| B-18 attract presenter | ~~EPIC-ATTRACT~~ **delivered**, EPIC-PRESENT | **Yes** | **attract timing** | VER-ATTRACT-001 — now writable against the presenter seam, blocked only on `B-01` |
 | B-19 view delegates | EPIC-PRESENT, EPIC-INPUT | **Yes** | fade/animation dispatch | VER-PRESENT-001 |
 | B-20 bezel consolidation | EPIC-MEDIA | no | which bezel is chosen | VER-MEDIA-001 — enumerate chain first |
 | B-21 brush off model | EPIC-PRESENT | no | none if dead | confirm `DEAD-005` |
 | B-22 loading pipeline | EPIC-MEDIA, EPIC-INTEGRATE | no | loading completion signalling | VER-INTEGRATE-005 |
-| B-23 disposal symmetry | PRESENT, MEDIA, ATTRACT, CONFIG | no | **a removed subscription kills a feature** | open/close settings ×20; 30 min idle soak |
+| B-23 disposal symmetry | PRESENT, MEDIA, ~~ATTRACT~~, CONFIG | no | **a removed subscription kills a feature** | open/close settings ×20; 30 min idle soak |
 | B-24 sleep loop | EPIC-LAUNCH | no | **video/screensaver during gameplay** | VER-LAUNCH-001 ×10 |
 | B-25 async void commands | EPIC-CONFIG | no | save/delete failure reporting | VER-CONFIG-004 |
 | B-26 settings consolidation | EPIC-CONFIG + all | no | **live vs restart semantics** | live-vs-restart table (`OQ-011`) |
@@ -145,7 +145,7 @@ together are "make the game catalogue substitutable".
 |---|---|
 | `B-12` | **Should be split.** It bundles (a) defining an Eclipse-owned game model, (b) rewriting every XAML binding path, and (c) moving curation mutation off property setters. (c) is a behavioural change affecting EPIC-CURATE and deserves its own item with its own verification. |
 | `B-15` | **Should be split.** Category-list construction and the reflection-based custom-list query engine are independent, carry different risks, and have different characterization needs. |
-| `B-23` | **Should be split by subsystem.** "94 subscriptions" spans attract mode, media, presentation and the settings windows. Done as one sweep, a mistake is very hard to attribute. |
+| `B-23` | **Should be split by subsystem.** "94 subscriptions" spans attract mode, media, presentation and the settings windows. Done as one sweep, a mistake is very hard to attribute. *The attract mode share has since been done on its own, as part of `EPIC-ATTRACT` — which is the argument for the split.* |
 | `B-04` | **Blocked on a product decision**, not engineering. Should not be scheduled until the "how loud is a degraded failure" question is answered. |
 | `B-30` | **Premature.** Explicitly gated on `B-28`, but it also lacks the characterization coverage (`VER-BROWSE-006`, `VER-SEARCH-003`) that would make it safe. Both should be prerequisites. |
 | `B-31` | **Possibly premature.** The fixed 13-slot window may be a deliberate performance choice — fixed elements avoid container regeneration per keypress. Needs `B-28` latency data before it is treated as debt at all. |

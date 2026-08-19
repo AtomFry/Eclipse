@@ -39,10 +39,44 @@ order determines their order in the browse view.
 | Browsing | `DefaultListCategoryType`, `ShowGameCountInList`, `RepeatGamesToFillScreen`, `IncludeBrokenGames`, `IncludeHiddenGames` |
 | Navigation | `PageUpFunction`, `PageDownFunction`, `OpenSettingsPaneOnLeft`, `DisplayOptionsOnEscape`, `BypassDetails` |
 | Voice | `EnableVoiceSearch` |
-| Attract mode | `EnableScreenSaver`, `ScreensaverDelayInSeconds` |
+| Attract mode | `EnableScreenSaver`, `ScreensaverDelayInSeconds`, and the ten slideshow timings below |
 | Video | `DisableVideos`, `VideoDelayInMilliseconds`, `DefaultVideoVolume` |
 | Presentation | `DisplayFeaturedGame`, `ShowMatchPercent`, `ShowReleaseYear`, `ShowStarRating`, `ShowPlayMode`, `ShowPlatformLogo`, `ShowOptionsIcon`, `SelectedGameDetailsPadding`, `BoxFrontMargin{Left,Right,Top,Bottom}` |
 | Alternate versions | `AdditionalVersionsEnable`, `AdditionalVersionsExcludeRunBefore`, `AdditionalVersionsExcludeRunAfter`, `AdditionalVersionsOnlyEmulatorOrDosBox`, `AdditionalApplicationDisplayField`, `AdditionalVersionsRemovePlayPrefix`, `AdditionalVersionsRemoveVersionPostfix` |
+
+#### Screen saver slideshow timings
+
+Every duration in the attract mode slideshow is a setting, on its own **Screen saver** tab.
+All are `int` milliseconds; the tab displays them in seconds via `MillisecondsToSecondsConverter`.
+Each default is the value that was previously hardcoded, so an existing installation behaves
+exactly as it did before — see `RULE-ATTRACT-004`.
+
+| Property | Default | Label on the tab |
+|---|---|---|
+| `ScreensaverDelayBetweenImagesMilliseconds` | 4000 | Hold on black |
+| `ScreensaverBackgroundFadeInMilliseconds` | 3000 | Background fade in |
+| `ScreensaverPanMilliseconds` | 17000 | Pan across screen |
+| `ScreensaverLogoDelayMilliseconds` | 4000 | Logo appears after |
+| `ScreensaverLogoFadeInMilliseconds` | 1500 | Logo fade in |
+| `ScreensaverGameDurationMilliseconds` | 15000 | Time on each game |
+| `ScreensaverBackgroundFadeOutMilliseconds` | 3000 | Background fade out |
+| `ScreensaverLogoFadeOutMilliseconds` | 500 | Logo fade out |
+| `ScreensaverFadeInMilliseconds` | 1000 | Screen saver fade in |
+| `ScreensaverExitFadeMilliseconds` | 500 | Exit fade out |
+
+They are consumed only through `Service/AttractModeTimings.cs`, which converts them to
+`TimeSpan`s once per run. Nothing else converts milliseconds or reads the settings provider
+for them. Two constraints are enforced there rather than in the UI: a negative value falls
+back to its default, and *time on each game* minus *logo appears after* is clamped at zero, so
+a logo delay longer than the game duration shortens the slide instead of producing a negative
+wait.
+
+`AttractModeTimings.Current` is built per run of the slideshow rather than cached, but that
+does **not** make these settings live: the settings window loads its own copy from file and
+saves it back, while the running plugin keeps the instance it read at startup
+(`RULE-CONFIG-004`). All of them, `EnableScreenSaver` included, require a restart
+(`OQ-011`). Building per run only guarantees that the slideshow and the view cannot disagree
+about a value.
 
 ### Behavioural rules
 

@@ -751,21 +751,12 @@ namespace Eclipse.View
             }
         }
 
-        private GameMatch attractModeGame;
-        public GameMatch AttractModeGame
-        {
-            get => attractModeGame;
-            set
-            {
-                if (attractModeGame != value)
-                {
-                    attractModeGame = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("AttractModeGame"));
-                }
-            }
-        }
-
-        public void NextAttractModeGame()
+        /// <summary>
+        /// Picks the next game for the screen saver and returns it, or null if the library is
+        /// empty. The slideshow needs the game itself so it can hydrate and decode its
+        /// artwork before showing the slide.
+        /// </summary>
+        public GameMatch NextAttractModeGame()
         {
             // Each game is equally likely. This used to pick from the flat bag, where a game
             // appeared once per category value and once per voice phrase - so games with
@@ -773,10 +764,10 @@ namespace Eclipse.View
             IReadOnlyList<GameMatch> games = gameCatalog.Games;
             if (games.Count == 0)
             {
-                return;
+                return null;
             }
 
-            AttractModeGame = games[random.Next(games.Count)];
+            return games[random.Next(games.Count)];
         }
 
         private void RefreshGameLists()

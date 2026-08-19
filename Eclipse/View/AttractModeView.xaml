@@ -118,9 +118,12 @@
         </Canvas>
 
         <!-- Darken the background when displaying feature and more info (helps with text visibility) -->
-        <!-- NOTE: this is not an attract mode element - it is bound to IsDisplayingFeature and
-             was already nested inside this grid, which is collapsed unless attract mode is on.
-             Moved verbatim to keep behaviour identical; see the plan for the open question. -->
+        <!-- NOTE: this is not an attract mode element - it is bound to IsDisplayingFeature,
+             not to IsDisplayingAttractMode, so it only ever shows when attract mode started
+             from a feature state and that state is still underneath. It was already nested in
+             this grid before the extraction (see MainWindowView.xaml at e710a35) and is kept
+             here verbatim so behaviour is identical. Whether it belongs in MainWindowView
+             instead is a presentation question, not an attract mode one. -->
         <Rectangle Grid.Row="0" Grid.RowSpan="18"
                    Grid.Column="0" Grid.ColumnSpan="32"
                    IsHitTestVisible="False"

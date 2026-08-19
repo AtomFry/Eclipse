@@ -1,19 +1,18 @@
 using Eclipse.Service;
-using Eclipse.View;
 
 namespace Eclipse.State
 {
-    // Drives the screen saver. The sequence itself lives in AttractModeSlideshow; this state
-    // starts it on entry and cancels it on any input.
+    // Drives the screen saver. The sequence lives in AttractModeSlideshow and the service owns
+    // the running one, so this state is now only "start it on entry, and let any input end it".
     public class AttractModeState : EclipseState
     {
         private readonly AttractModeService attractModeService;
 
-        public MainWindowViewModel MainWindowViewModel { get; set; }
-        public IAttractModePresenter Presenter { get; set; }
+        /// <summary>
+        /// Where to go back to on any input. Attract mode returns the user to exactly where
+        /// they were, not to a default state (RULE-ATTRACT-008).
+        /// </summary>
         public EclipseState PreviousState { get; set; }
-
-        private AttractModeSlideshow slideshow;
 
         public AttractModeState()
         {
@@ -22,17 +21,7 @@ namespace Eclipse.State
 
         public void EnterState(EclipseStateContext eclipseStateContext)
         {
-            // Built per entry rather than in the constructor: this state is cached and reused,
-            // and a slideshow owns a cancellation token for exactly one run. The three timers
-            // that used to live here were created once and never disposed.
-            slideshow?.Stop();
-
-            slideshow = new AttractModeSlideshow(
-                Presenter,
-                AttractModeTimings.Current,
-                () => MainWindowViewModel?.IsPlayingGame != true);
-
-            slideshow.Start();
+            attractModeService.StartSlideshow();
         }
 
         public bool OnDown(EclipseStateContext eclipseStateContext, bool held)
@@ -85,8 +74,8 @@ namespace Eclipse.State
 
         private void TransitionToPreviousState(EclipseStateContext eclipseStateContext)
         {
-            slideshow?.Stop();
-
+            // RestartAttractMode stops the slideshow, turns the visuals off and re-arms the
+            // idle timer
             attractModeService.RestartAttractMode();
             eclipseStateContext.TransitionToState(PreviousState);
         }
