@@ -1,3 +1,4 @@
+using Eclipse.Models;
 using Eclipse.Service;
 using System;
 using System.Windows;
@@ -31,13 +32,16 @@ namespace Eclipse.View
 
         public void TurnOff()
         {
-            Dispatcher.Invoke(() =>
+            OnUiThread(() =>
             {
                 double exitFade = attractModeTimings.ExitFade.TotalMilliseconds;
 
+                // The pan runs for 17 seconds by default and was never stopped on the way out,
+                // so it carried on animating a hidden element after the user had left.
+                StopPan();
+
                 FadeFrameworkElementOpacity(Image_AttractModeBackgroundImage, 0, exitFade);
                 Image_AttractModeBackgroundImage.Source = null;
-                Image_AttractModeBackgroundImage.RenderTransform = null;
 
                 FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 0, exitFade);
                 Image_AttractModeClearLogo.Source = null;
@@ -54,12 +58,12 @@ namespace Eclipse.View
 
         public void FadeToBlack()
         {
-            Dispatcher.Invoke(() =>
+            OnUiThread(() =>
             {
                 // reset the background image - it should already be faded out but make sure
                 Image_AttractModeBackgroundImage.Opacity = 0;
                 Image_AttractModeBackgroundImage.Source = null;
-                Image_AttractModeBackgroundImage.RenderTransform = null;
+                StopPan();
 
                 Image_AttractModeClearLogo.Opacity = 0;
                 Image_AttractModeClearLogo.Source = null;
@@ -81,12 +85,12 @@ namespace Eclipse.View
 
         public void FadeInAndSlideBackground(bool slideLeft)
         {
-            Dispatcher.Invoke(() =>
+            OnUiThread(() =>
             {
                 // reset the background image - it should already be faded out but make sure
                 Image_AttractModeBackgroundImage.Opacity = 0;
                 Image_AttractModeBackgroundImage.Source = null;
-                Image_AttractModeBackgroundImage.RenderTransform = null;
+                StopPan();
 
                 Image_AttractModeClearLogo.Opacity = 0;
                 Image_AttractModeClearLogo.Source = null;
@@ -99,15 +103,20 @@ namespace Eclipse.View
 
                 viewModel.NextAttractModeGame();
 
-                // get the next image to use for a attract mode background
-                activeAttractModeBackgroundImage = new BitmapImage(viewModel.AttractModeGame.GameFiles.BackgroundImage);
+                // Media is hydrated lazily in the background, and attract mode picks from the
+                // whole library - so early in a session it can land on a game whose artwork
+                // has not been resolved yet and whose BackgroundImage is still null. Falling
+                // back to the default background keeps the slide showing something; passing
+                // null to BitmapImage would throw on the UI thread. (Waiting for that game's
+                // media to hydrate needs the async sequencer.)
+                Uri backgroundUri = viewModel.AttractModeGame?.GameFiles?.BackgroundImage
+                                    ?? ResourceImages.DefaultBackground;
 
-                // assign the image and fade it in
-                if (activeAttractModeBackgroundImage != null)
-                {
-                    Image_AttractModeBackgroundImage.Source = activeAttractModeBackgroundImage;
-                    FadeFrameworkElementOpacity(Image_AttractModeBackgroundImage, 1, attractModeTimings.BackgroundFadeIn.TotalMilliseconds);
-                }
+                // assign the image and fade it in - new BitmapImage never returns null, it
+                // throws, so the old null check here could never fire
+                activeAttractModeBackgroundImage = new BitmapImage(backgroundUri);
+                Image_AttractModeBackgroundImage.Source = activeAttractModeBackgroundImage;
+                FadeFrameworkElementOpacity(Image_AttractModeBackgroundImage, 1, attractModeTimings.BackgroundFadeIn.TotalMilliseconds);
 
                 // The image is deliberately wider than the screen; the pan slides that
                 // overhang across. Measure against this control's own width, NOT the monitor
@@ -142,7 +151,7 @@ namespace Eclipse.View
 
         public void FadeInLogo()
         {
-            Dispatcher.Invoke(() =>
+            OnUiThread(() =>
             {
                 MainWindowViewModel viewModel = ViewModel;
                 if (viewModel == null)
@@ -150,23 +159,45 @@ namespace Eclipse.View
                     return;
                 }
 
-                activeAttractModeClearLogo = new BitmapImage(viewModel.AttractModeGame.GameFiles.ClearLogo);
-                if (activeAttractModeClearLogo != null)
+                // A game with no resolved logo simply shows no logo - better than a
+                // placeholder box-front, and better than throwing on a null Uri.
+                Uri clearLogoUri = viewModel.AttractModeGame?.GameFiles?.ClearLogo;
+                if (clearLogoUri == null)
                 {
-                    Image_AttractModeClearLogo.Source = activeAttractModeClearLogo;
-                    FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 1, attractModeTimings.LogoFadeIn.TotalMilliseconds);
+                    return;
                 }
+
+                activeAttractModeClearLogo = new BitmapImage(clearLogoUri);
+                Image_AttractModeClearLogo.Source = activeAttractModeClearLogo;
+                FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 1, attractModeTimings.LogoFadeIn.TotalMilliseconds);
             });
         }
 
         public void FadeOutBackgroundAndLogo()
         {
-            Dispatcher.Invoke(() =>
+            OnUiThread(() =>
             {
                 // fade out this image
                 FadeFrameworkElementOpacity(Image_AttractModeBackgroundImage, 0, attractModeTimings.BackgroundFadeOut.TotalMilliseconds);
                 FadeFrameworkElementOpacity(Image_AttractModeClearLogo, 0, attractModeTimings.LogoFadeOut.TotalMilliseconds);
             });
+        }
+
+        // The slideshow runs off the UI thread, so every presenter call has to marshal. This
+        // used to be a blocking Dispatcher.Invoke from a timer thread: if the UI thread was
+        // stalled - a host dialog, a game launching - the caller parked with it. Running
+        // inline when already on the UI thread keeps ordering identical to before; going
+        // through InvokeAsync otherwise means the slideshow never waits on the UI.
+        private void OnUiThread(Action action)
+        {
+            if (Dispatcher.CheckAccess())
+            {
+                action();
+            }
+            else
+            {
+                Dispatcher.InvokeAsync(action);
+            }
         }
 
         // Kept private here rather than shared with MainWindowView: it is a few lines of
@@ -184,6 +215,20 @@ namespace Eclipse.View
                 }
 
                 element.BeginAnimation(OpacityProperty, dimElement);
+            }
+        }
+
+        // Stops the pan where it is rather than removing the animation outright, which would
+        // snap the image back to its start position part way through the fade out. The pan
+        // animates the inner canvas - the reset code used to clear the RenderTransform on the
+        // background image instead, which is a different element, so it never had any effect.
+        private void StopPan()
+        {
+            if (Canvas_AttractModeInnerCanvas.RenderTransform is TranslateTransform panTransform)
+            {
+                double currentX = panTransform.X;
+                panTransform.BeginAnimation(TranslateTransform.XProperty, null);
+                panTransform.X = currentX;
             }
         }
 
