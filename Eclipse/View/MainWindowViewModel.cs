@@ -1228,16 +1228,6 @@ namespace Eclipse.View
             }
         }
 
-        public int Star1 => 1;
-        public int Star2 => 2;
-        public int Star3 => 3;
-        public int Star4 => 4;
-        public int Star5 => 5;
-        public float StarOffset00 => 0.0f;
-        public float StarOffset01 => 0.1f;
-        public float StarOffset05 => 0.5f;
-        public float StarOffset06 => 0.6f;
-        public float StarOffset10 => 1.0f;
 
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
     }

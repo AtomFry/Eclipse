@@ -313,34 +313,6 @@ namespace Eclipse.Models
             }
         }
 
-        private Uri communityStarRatingImage;
-        public Uri CommunityStarRatingImage
-        {
-            get { return communityStarRatingImage; }
-            set
-            {
-                if (communityStarRatingImage != value)
-                {
-                    communityStarRatingImage = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("CommunityStarRatingImage"));
-                }
-            }
-        }
-
-        private Uri userStarRatingImage;
-        public Uri UserStarRatingImage
-        {
-            get { return userStarRatingImage; }
-            set
-            {
-                if (userStarRatingImage != value)
-                {
-                    userStarRatingImage = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("UserStarRatingImage"));
-                }
-            }
-        }
-
 
         private Uri playModeImage;
         public Uri PlayModeImage
@@ -445,8 +417,6 @@ namespace Eclipse.Models
                     BackImage = ResolveGameBackImage();
 
                     ClearLogo = ResolveClearLogoPath(game);
-                    CommunityStarRatingImage = ResolveStarRatingPath(game);
-                    UserStarRatingImage = ResolveUserStarRatingPath(game);
                     PlayModeImage = ResolvePlayModePath(game);
                     BackgroundImage = ResolveBackgroundImagePath(game);
                     PlatformClearLogoImage = ResolvePlatformLogoPath(game);
@@ -543,12 +513,6 @@ namespace Eclipse.Models
         private string lbFrontImagePath;
         private string lbBackImagePath;
 
-        public void ResetStarRatingImage()
-        {
-            CommunityStarRatingImage = ResolveStarRatingPath(game);
-            UserStarRatingImage = ResolveUserStarRatingPath(game);
-        }
-
         public static char[] InvalidFileNameChars = Path.GetInvalidFileNameChars();
 
        
@@ -609,28 +573,6 @@ namespace Eclipse.Models
                     }
                     return new Uri(customPath);
                 }
-            }
-            return null;
-        }
-
-        public static Uri ResolveStarRatingPath(IGame Game)
-        {
-            string ratingFormatted = String.Format("{0:0.0}", Math.Round(Game.CommunityStarRating, 1));
-            string path = $"{DirectoryInfoHelper.Instance.MediaFolder}\\StarRating\\{ratingFormatted}.png";
-            if (File.Exists(path))
-            {
-                return new Uri(path);
-            }
-            return null;
-        }
-
-        public static Uri ResolveUserStarRatingPath(IGame Game)
-        {
-            string ratingFormatted = String.Format("{0:0.0}", Math.Round(Game.StarRatingFloat, 1));
-            string path = $"{DirectoryInfoHelper.Instance.MediaFolder}\\UserStarRating\\{ratingFormatted}.png";
-            if (File.Exists(path))
-            {
-                return new Uri(path);
             }
             return null;
         }

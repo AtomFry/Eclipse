@@ -97,6 +97,36 @@ namespace Eclipse.View
             set => SetValue(EmptyProperty, value);
         }
 
+
+        /// <summary>Outline colour for every star. Null for no outline.</summary>
+        public static readonly DependencyProperty StrokeProperty = DependencyProperty.Register(
+            nameof(Stroke),
+            typeof(Brush),
+            typeof(StarRatingView),
+            new PropertyMetadata(null, OnStarPropertyChanged));
+
+        public Brush Stroke
+        {
+            get => (Brush)GetValue(StrokeProperty);
+            set => SetValue(StrokeProperty, value);
+        }
+
+        /// <summary>
+        /// Outline width, in the coordinates of the 856x147 canvas rather than screen pixels -
+        /// the stars are scaled to fit, and the outline scales with them. Roughly 5 reads as a
+        /// hairline at the size the rating button draws them.
+        /// </summary>
+        public static readonly DependencyProperty StrokeThicknessProperty = DependencyProperty.Register(
+            nameof(StrokeThickness),
+            typeof(double),
+            typeof(StarRatingView),
+            new PropertyMetadata(0.0, OnStarPropertyChanged));
+
+        public double StrokeThickness
+        {
+            get => (double)GetValue(StrokeThicknessProperty);
+            set => SetValue(StrokeThicknessProperty, value);
+        }
         private static void OnStarPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             (d as StarRatingView)?.UpdateStars();
@@ -113,6 +143,8 @@ namespace Eclipse.View
             for (int index = 0; index < stars.Length; index++)
             {
                 stars[index].Fill = BrushForStar(Rating - index);
+                stars[index].Stroke = Stroke;
+                stars[index].StrokeThickness = StrokeThickness;
             }
         }
 
