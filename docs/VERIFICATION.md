@@ -102,9 +102,10 @@ Each scenario is written so a developer can execute it without reading the code.
 | ID | Scenario | Type | Covers |
 |---|---|---|---|
 | VER-CURATE-001 | Favourite a game from the Genre view. Switch to Platform view and confirm it appears in Favorites there too. | Manual | RULE-CURATE-004 |
-| VER-CURATE-002 | Enter rating mode, adjust several steps, confirm the displayed rating updates live. Exit with Escape and confirm the value persisted. | Manual | RULE-CURATE-002, 005 |
+| VER-CURATE-002 | Enter rating mode, adjust several steps, confirm the displayed rating updates live. Commit with Enter and confirm the value survives a Big Box restart. | Manual | RULE-CURATE-002, 005 |
 | VER-CURATE-003 | Favourite a game while the overlay is open and confirm the row does **not** rebuild until the overlay closes. | Manual | RULE-CURATE-006 |
 | VER-CURATE-004 | Confirm Page Up/Down do nothing while in rating mode. | Manual | RULE-CURATE-007 |
+| VER-CURATE-005 | Enter rating mode, change the rating, exit with **Escape**. Confirm the original rating is restored and still there after a Big Box restart. | Manual | RULE-CURATE-009 |
 
 ### EPIC-ATTRACT
 

@@ -1091,14 +1091,51 @@ namespace Eclipse.View
             }
         }
 
+        // The rating being edited is written straight into the game as the user moves it, so
+        // the stars track live. This remembers what it was on the way in, which is what lets
+        // Escape put it back - and it doubles as the marker for whether anything has actually
+        // changed, so leaving without touching the rating does not write to the LaunchBox data.
+        private float? ratingBeforeEditing;
+
+        /// <summary>Call when the rating editor opens, so a later cancel has something to restore.</summary>
+        public void BeginRatingCurrentGame()
+        {
+            ratingBeforeEditing = CurrentGameList?.Game1?.UserRating;
+        }
+
+        /// <summary>Put the rating back to what it was when the editor opened.</summary>
+        public void CancelRatingCurrentGame()
+        {
+            GameMatch currentGame = CurrentGameList?.Game1;
+
+            if (currentGame != null && ratingBeforeEditing.HasValue)
+            {
+                currentGame.UserRating = ratingBeforeEditing.Value;
+            }
+
+            ratingBeforeEditing = null;
+        }
+
         public void SaveRatingCurrentGame()
         {
             GameMatch currentGame = CurrentGameList?.Game1;
-            if (currentGame != null)
+            if (currentGame == null)
             {
-                // save the rating change to the launchbox data 
-                PluginHelper.DataManager.Save(false);
+                return;
             }
+
+            // Nothing moved, so there is nothing to write. Enter can be pressed repeatedly in
+            // the rating editor and each press used to run a full LaunchBox save.
+            if (ratingBeforeEditing.HasValue && ratingBeforeEditing.Value == currentGame.UserRating)
+            {
+                return;
+            }
+
+            // save the rating change to the launchbox data
+            PluginHelper.DataManager.Save(false);
+
+            // committed - a cancel after this point goes back to the value just saved
+            ratingBeforeEditing = currentGame.UserRating;
         }
 
         public bool DoEnter()

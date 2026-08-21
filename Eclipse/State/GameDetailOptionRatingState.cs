@@ -21,6 +21,9 @@ namespace Eclipse.State
             eclipseStateContext.MainWindowViewModel.IsDisplayingMoreInfo = true;
             eclipseStateContext.MainWindowViewModel.GameDetailOption = GameDetailOption.Rating;
             eclipseStateContext.MainWindowViewModel.IsRatingGame = true;
+
+            // remember the rating on the way in so Escape can put it back
+            eclipseStateContext.MainWindowViewModel.BeginRatingCurrentGame();
         }
 
         public bool OnDown(EclipseStateContext eclipseStateContext, bool held)
@@ -42,6 +45,11 @@ namespace Eclipse.State
         public bool OnEscape(EclipseStateContext eclipseStateContext)
         {
             attractModeService.RestartAttractMode();
+
+            // Escape means cancel - restore the rating the editor opened with. The value is
+            // written into the game as the user moves it, so without this the change stuck
+            // even though Eclipse never saved it.
+            eclipseStateContext.MainWindowViewModel.CancelRatingCurrentGame();
 
             eclipseStateContext.MainWindowViewModel.CheckResetGameLists();
 
