@@ -32,6 +32,7 @@
   <ItemGroup>
     <Page Include="View\MainWindowView.xaml" />
     <Page Include="View\AttractModeView.xaml" />
+    <Page Include="View\StarRatingView.xaml" />
     <Page Include="View\EclipseSettings\EclipseSettingsView.xaml" />
     <Page Include="View\EclipseSettings\CustomListDefinitionEditView.xaml" />
   </ItemGroup>

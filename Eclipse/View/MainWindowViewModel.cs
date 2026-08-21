@@ -18,7 +18,6 @@ namespace Eclipse.View
     public delegate void AnimateGameChangeFunction();
     public delegate void IncrementLoadingProgressFunction();
     public delegate void StopVideoAndAnimations();
-    public delegate void UpdateRatingImage();
 
     public class MainWindowViewModel : INotifyPropertyChanged
     {
@@ -335,7 +334,6 @@ namespace Eclipse.View
 
         public AnimateGameChangeFunction GameChangeFunction { get; set; }
         public StopVideoAndAnimations StopVideoAndAnimationsFunction { get; set; }
-        public UpdateRatingImage UpdateRatingImageFunction { get; set; }
 
         private GameListSet currentGameListSet;
         public GameListSet CurrentGameListSet
@@ -794,12 +792,6 @@ namespace Eclipse.View
         {
             StopVideoAndAnimationsFunction?.Invoke();
         }
-
-        private void CallUpdateRatingImageFunction()
-        {
-            UpdateRatingImageFunction?.Invoke();
-        }
-
         public void AdjustVideoVolume(double increment)
         {
             if (VideoVolume + increment > 1)
@@ -1106,12 +1098,6 @@ namespace Eclipse.View
             {
                 // save the rating change to the launchbox data 
                 PluginHelper.DataManager.Save(false);
-
-                // reload the game's start rating image
-                currentGame.GameFiles.ResetStarRatingImage();
-
-                // trigger the view to update the image
-                CallUpdateRatingImageFunction();
             }
         }
 

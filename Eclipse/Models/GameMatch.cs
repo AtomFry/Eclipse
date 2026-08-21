@@ -122,6 +122,13 @@ namespace Eclipse.Models
             }
         }
 
+        // The community's rating, shown underneath the user's own. Read only - it comes from
+        // the LaunchBox metadata and only changes when that is refreshed.
+        public float CommunityRating
+        {
+            get { return Game.CommunityStarRating; }
+        }
+
         public string Developer { get; set; }
         public string Publisher { get; set; }
         public string Series { get; set; }

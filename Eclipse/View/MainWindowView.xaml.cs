@@ -26,8 +26,6 @@ namespace Eclipse.View
 
         private BitmapImage activeBackgroundImage;
         private BitmapImage activeClearLogo;
-        private BitmapImage activeCommunityStarRatingImage;
-        private BitmapImage activeUserStarRatingImage;
         private BitmapImage activePlayModeImage;
         private BitmapImage activePlatformLogoImage;
         private BitmapImage activeGameBezelImage;
@@ -71,8 +69,6 @@ namespace Eclipse.View
             // pass in a function that will stop animations and videos when games are started or voice recognition is happening
             mainWindowViewModel.StopVideoAndAnimationsFunction = StopVideoAndAnimations;
 
-            // pass in a function that will update the rating image 
-            mainWindowViewModel.UpdateRatingImageFunction = UpdateRatingImage;
 
             attractModeService = AttractModeService.Instance;
             attractModeService.MainWindowViewModel = mainWindowViewModel;
@@ -220,23 +216,9 @@ namespace Eclipse.View
                         activeGameTitleText = mainWindowViewModel?.CurrentGameList?.Game1?.Game?.Title;
                         activeMatchPercentageText = mainWindowViewModel?.CurrentGameList?.Game1?.MatchDescription;
                         activeReleaseYearText = mainWindowViewModel?.CurrentGameList?.Game1?.ReleaseYear;
-                        activeCommunityStarRatingImage = null;
-                        activeUserStarRatingImage = null;
                         activePlayModeImage = null;
                         activePlatformLogoImage = null;
                         activeGameBezelImage = null;
-
-                        Uri communityStarRatingUri = mainWindowViewModel?.CurrentGameList?.Game1?.GameFiles?.CommunityStarRatingImage;
-                        if(communityStarRatingUri != null)
-                        {
-                            activeCommunityStarRatingImage = new BitmapImage(communityStarRatingUri);
-                        }
-
-                        Uri userStarRatingUri = mainWindowViewModel?.CurrentGameList?.Game1?.GameFiles?.UserStarRatingImage;
-                        if(userStarRatingUri != null)
-                        {
-                            activeUserStarRatingImage = new BitmapImage(userStarRatingUri);
-                        }
 
                         Uri playModeUri = mainWindowViewModel?.CurrentGameList?.Game1?.GameFiles?.PlayModeImage;
                         if(playModeUri != null)
@@ -304,8 +286,6 @@ namespace Eclipse.View
             FadeFrameworkElementOpacity(TextBlock_Displayed_GameTitle, 1, 500);
 
             // fade in the active game details 
-            Image_CommunityStarRating.Source = activeCommunityStarRatingImage;
-            Image_UserStarRating.Source = activeUserStarRatingImage;
             Image_Playmode.Source = activePlayModeImage;
             TextBlock_MatchPercentage.Text = activeMatchPercentageText;
             TextBlock_ReleaseYear.Text = activeReleaseYearText;
@@ -459,32 +439,6 @@ namespace Eclipse.View
             }
         }
 
-        // delegate called by view model when the rating changes to refresh the rating image
-        public void UpdateRatingImage()
-        {
-            activeCommunityStarRatingImage = null;
-            activeUserStarRatingImage = null;
-
-            Uri communityStarRatingUri = mainWindowViewModel?.CurrentGameList?.Game1?.GameFiles?.CommunityStarRatingImage;
-            if (communityStarRatingUri != null)
-            {
-                activeCommunityStarRatingImage = new BitmapImage(communityStarRatingUri);
-            }
-
-            Uri userStarRatingUri = mainWindowViewModel?.CurrentGameList?.Game1?.GameFiles?.UserStarRatingImage;
-            if(userStarRatingUri != null)
-            {
-                activeUserStarRatingImage = new BitmapImage(userStarRatingUri);
-            }
-
-            // fade in the active game details 
-            Image_CommunityStarRating.Source = activeCommunityStarRatingImage;
-            Image_UserStarRating.Source = activeUserStarRatingImage;
-
-            // fade in the rating image
-            FadeFrameworkElementOpacity(Image_CommunityStarRating, 1, 300);
-            FadeFrameworkElementOpacity(Image_UserStarRating, 1, 300);
-        }
 
 
         // setup fallback bezels once the media opens so we can identify whether we need the horizontal or veritical bezel

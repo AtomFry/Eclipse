@@ -449,18 +449,17 @@
                                     HorizontalAlignment="Center"/>
                         </Viewbox>
 
-                        <!-- grid for star rating so we can overlay the user's rating on top of the community rating - for this to work the images need to be the same size and user rating needs to be colored differently -->
-                        <Grid   Margin="0,0,15,0" 
+                        <!-- the user's rating overlays the community's - both reserve the full
+                             five-star width, so they line up whatever the ratings are -->
+                        <Grid   Margin="0,0,15,0"
                                 Visibility="{Binding ShowStarRating, Converter={StaticResource BoolToVis}}"
                                 VerticalAlignment="Stretch">
-                            <Image Name="Image_CommunityStarRating"
-                                RenderOptions.BitmapScalingMode="HighQuality" 
-                                VerticalAlignment="Stretch"
-                                Stretch="Uniform"/>
-                            <Image Name="Image_UserStarRating"
-                                RenderOptions.BitmapScalingMode="HighQuality" 
-                                VerticalAlignment="Stretch"
-                                Stretch="Uniform"/>
+                            <local:StarRatingView Rating="{Binding CurrentGameList.Game1.CommunityRating}"
+                                                  Fill="WhiteSmoke"
+                                                  VerticalAlignment="Stretch"/>
+                            <local:StarRatingView Rating="{Binding CurrentGameList.Game1.UserRating}"
+                                                  Fill="Red"
+                                                  VerticalAlignment="Stretch"/>
                         </Grid>
                         <Image  Name="Image_Playmode"  
                                 Margin="0,0,15,0" 
