@@ -6,19 +6,19 @@ using System.Windows.Media.Imaging;
 
 namespace Eclipse.Service
 {
-    // Decodes a screen saver image away from the UI thread.
+    // Decodes an image away from the UI thread and freezes it for use on the UI thread.
     //
-    // Attract mode used to call new BitmapImage(uri) on the UI thread once per slide, which
-    // decodes the whole file synchronously - a visible hitch at the start of every slide, and
-    // worst on the 4K artwork the pan exists to show off.
+    // Both the screen saver and the browsing path used to call new BitmapImage(uri) directly on
+    // the UI thread, which decodes the whole file synchronously - a visible hitch per slide, and
+    // five decodes per keypress while scrolling through games.
     //
     // A BitmapImage can be built on any thread as long as it is frozen before it is handed
     // over, and CacheOption.OnLoad is what forces the decode to happen here rather than
     // lazily on first render back on the UI thread.
-    public static class AttractModeImageLoader
+    public static class FrozenImageLoader
     {
         /// <summary>
-        /// Decodes an image on a background thread and freezes it for use on the UI thread.
+        /// Decodes on a background thread and freezes, so the result is safe to hand to the UI.
         /// Returns null for a null Uri, and for anything that fails to load - a missing or
         /// corrupt file should cost the slide its artwork, not stop the slideshow.
         /// </summary>
@@ -49,7 +49,7 @@ namespace Eclipse.Service
                 }
                 catch (Exception ex)
                 {
-                    LogHelper.LogException(ex, $"load the attract mode image at {uri}");
+                    LogHelper.LogException(ex, $"load the image at {uri}");
                     return null;
                 }
             });

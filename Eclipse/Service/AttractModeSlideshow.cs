@@ -94,7 +94,7 @@ namespace Eclipse.Service
                     presenter.ShowBackground(background, slideLeft);
 
                     // and again: the logo decodes while it is waiting to appear
-                    Task<ImageSource> logo = AttractModeImageLoader.LoadAsync(game?.GameFiles?.ClearLogo);
+                    Task<ImageSource> logo = FrozenImageLoader.LoadAsync(game?.GameFiles?.ClearLogo);
 
                     await Task.Delay(timings.LogoDelay, cancellationToken);
                     presenter.ShowLogo(await logo);
@@ -136,12 +136,12 @@ namespace Eclipse.Service
 
             if (backgroundUri == null)
             {
-                return await AttractModeImageLoader.LoadAsync(ResourceImages.DefaultBackground);
+                return await FrozenImageLoader.LoadAsync(ResourceImages.DefaultBackground);
             }
 
             // a game whose artwork is missing or corrupt falls back the same way
-            return await AttractModeImageLoader.LoadAsync(backgroundUri)
-                   ?? await AttractModeImageLoader.LoadAsync(ResourceImages.DefaultBackground);
+            return await FrozenImageLoader.LoadAsync(backgroundUri)
+                   ?? await FrozenImageLoader.LoadAsync(ResourceImages.DefaultBackground);
         }
     }
 }
