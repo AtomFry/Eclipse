@@ -71,7 +71,7 @@ naming a constant changes nothing, provided the value is preserved exactly.
 
 | Epic | Backlog items |
 |---|---|
-| EPIC-BROWSE | B-07, B-12, B-14, ~~B-15a~~ delivered, ~~B-15b~~ delivered, B-16, B-17, B-30 |
+| EPIC-BROWSE | ~~B-07~~ closed, B-12, B-14, ~~B-15a~~ delivered, ~~B-15b~~ delivered, B-16, B-17, B-30 |
 | EPIC-SEARCH | B-03, B-04, B-12, B-30 |
 | EPIC-PRESENT | B-18, B-19, B-21, B-31, B-32, B-33 |
 | EPIC-MEDIA | B-05, B-06, B-20, B-22, B-28, B-29 |
@@ -92,7 +92,7 @@ naming a constant changes nothing, provided the value is preserved exactly.
 | B-04 surface failures | all | no | **what the user sees on failure** | VER-INTEGRATE-005; needs a product decision |
 | B-05 resolve-once race | EPIC-MEDIA | no | duplicate scaling | unit test on concurrent resolve |
 | B-06 GDI+ leaks | EPIC-MEDIA | no | none | VER-MEDIA-002 |
-| B-07 memoise count | EPIC-BROWSE | no | row slot population | VER-BROWSE-007 |
+| ~~B-07~~ memoise count | EPIC-BROWSE | no | row slot population | **Closed, not done.** `MatchCount` returns `MatchingGames.Count()`, and `Enumerable.Count()` takes the `ICollection<T>` fast path on a `List<T>` - it is already `O(1)`. Memoising would add an invalidation obligation (`MatchingGames` is publicly settable and is replaced on every curation rebuild) in exchange for nothing. `VER-BROWSE-007` stands on its own - it verifies repeat-to-fill slot population, not the count. |
 | B-08 dead code | none | no | none | build + visual sweep |
 | B-09 DI | all | **Yes** | initialisation order | init-order trace before/after |
 | B-10 split file | EPIC-CONFIG | no | none | build |

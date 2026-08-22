@@ -210,9 +210,8 @@ namespace Eclipse.State
                     return;
                 }
 
-                // remove any prior voice search set and then add these results in the voice search category
-                EclipseStateContext.MainWindowViewModel.GameListSets.RemoveAll(set => set.ListCategoryType == ListCategoryType.VoiceSearch);
-                EclipseStateContext.MainWindowViewModel.GameListSets.Add(new GameListSet
+                // replaces any prior voice search set
+                EclipseStateContext.MainWindowViewModel.Navigator.InstallSet(new GameListSet
                 {
                     ListCategoryType = ListCategoryType.VoiceSearch,
                     GameLists = voiceRecognitionResults
@@ -222,7 +221,7 @@ namespace Eclipse.State
                 });
 
                 // display voice search results
-                EclipseStateContext.MainWindowViewModel.ResetGameLists(ListCategoryType.VoiceSearch);
+                EclipseStateContext.MainWindowViewModel.Navigator.ShowCategory(ListCategoryType.VoiceSearch);
                 EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
                 EclipseStateContext.TransitionToState(EclipseStateContext.GetState(typeof(SelectingGameState)));
             }

@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Windows.Media;
 using System.Threading.Tasks;
 using Unbroken.LaunchBox.Plugins;
 using Unbroken.LaunchBox.Plugins.Data;
@@ -266,9 +267,40 @@ namespace Eclipse.Models
                 {
                     frontImage = value;
                     PropertyChanged(this, new PropertyChangedEventArgs("FrontImage"));
+
+                    // The decoded copy belongs to the path it came from. Flipping the box
+                    // reassigns this, and the row must not go on showing the other side.
+                    RowImageDecoder.Instance.Invalidate(this);
                 }
             }
         }
+
+        // The row's artwork, decoded off the UI thread by RowImageDecoder before the game
+        // reaches the window. Binding the Uri directly made WPF decode the file inside the
+        // slot assignment, on the UI thread, the first time each game was seen.
+        //
+        // Null means "not decoded yet" - either the decoder has not reached this game or the
+        // bounded cache has evicted it. The row shows nothing for that slot until it arrives,
+        // which is why the decoder works a margin ahead of the window in both directions.
+        private ImageSource frontImageSource;
+        public ImageSource FrontImageSource
+        {
+            get { return frontImageSource; }
+            set
+            {
+                if (frontImageSource != value)
+                {
+                    frontImageSource = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("FrontImageSource"));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Set while a decode is in flight, so that scrolling back and forth over the same game
+        /// does not queue the same file several times.
+        /// </summary>
+        public bool FrontImageDecodePending { get; set; }
 
         private Uri bigFrontImage;
         public Uri BigFrontImage

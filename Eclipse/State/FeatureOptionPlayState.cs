@@ -79,7 +79,7 @@ namespace Eclipse.State
             if (!held)
             {
                 eclipseStateContext.MainWindowViewModel.IsDisplayingFeature = false;
-                eclipseStateContext.MainWindowViewModel.CycleListBackward();
+                eclipseStateContext.MainWindowViewModel.Navigator.MoveToPreviousList();
                 eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             }
             return true;

@@ -20,8 +20,13 @@ namespace Eclipse.View
 
     public class MainWindowViewModel : INotifyPropertyChanged
     {
-        public ListCycle<GameList> listCycle;
-        public List<GameListSet> GameListSets;
+        /// <summary>
+        /// Where the user is - which set, which list, which game - and everything that moves
+        /// them. CurrentGameList and NextGameList below are a copy of what it decided, kept for
+        /// the XAML to bind to; the navigator is the one that knows.
+        /// </summary>
+        public GameListNavigator Navigator { get; } = new GameListNavigator();
+
         /// <summary>The options in the game detail overlay. Driven by GameDetailOptionsState.</summary>
         public GameDetailOptionList GameDetailOptions { get; } = new GameDetailOptionList();
 
@@ -52,6 +57,11 @@ namespace Eclipse.View
         public MainWindowViewModel()
         {
             IsInitializing = true;
+
+            // The navigator decides; this repeats. Nothing else assigns CurrentGameList or
+            // NextGameList, so the two cannot drift apart.
+            Navigator.SelectionChanged += OnSelectionChanged;
+            Navigator.NavigationFailed += OnNavigationFailed;
 
             FeatureOption = FeatureGameOption.PlayGame;
 
@@ -324,20 +334,6 @@ namespace Eclipse.View
         public AnimateGameChangeFunction GameChangeFunction { get; set; }
         public StopVideoAndAnimations StopVideoAndAnimationsFunction { get; set; }
 
-        private GameListSet currentGameListSet;
-        public GameListSet CurrentGameListSet
-        {
-            get { return currentGameListSet; }
-            set
-            {
-                if (currentGameListSet != value)
-                {
-                    currentGameListSet = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("CurrentGameListSet"));
-                }
-            }
-        }
-
         private OptionList optionList;
         public OptionList OptionList
         {
@@ -357,12 +353,16 @@ namespace Eclipse.View
             int? GameFilesCount = gameFilesBag?.Count;
             int processedCount = 0;
 
+            BrowsePerformanceMonitor.Instance.PumpStarted(GameFilesCount ?? 0);
+
             await Task.Run(async () =>
             {
                 Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
 
                 while (await SetupNextGameFiles())
                 {
+                    BrowsePerformanceMonitor.Instance.PumpIterationCompleted();
+
                     // just to be safe and avoid an infinite loop
                     // check how many times we've been through the loop and stop after we have
                     // processed enough to go through all game files
@@ -373,6 +373,19 @@ namespace Eclipse.View
                     }
                 }
             });
+
+            BrowsePerformanceMonitor.Instance.PumpFinished(
+                gameFilesBag?.Count(gameFiles => gameFiles.IsSetup) ?? 0,
+                GameFilesCount ?? 0);
+        }
+
+        // The pump's "has this one been done already" test, counted. Every call site below used
+        // to be a bare lambda; routing them through here is what makes the quadratic re-scan
+        // visible as a number rather than as a suspicion.
+        private static bool NeedsSetup(GameFiles gameFiles)
+        {
+            BrowsePerformanceMonitor.Instance.PumpPredicateEvaluated();
+            return !gameFiles.IsSetup;
         }
 
         private async Task<bool> SetupNextGameFiles()
@@ -386,7 +399,7 @@ namespace Eclipse.View
                     // setup a game in the current list 
                     if (CurrentGameList != null && CurrentGameList.MatchingGames != null)
                     {
-                        IEnumerable<GameMatch> currentListQuery = CurrentGameList.MatchingGames.Where(g => !g.GameFiles.IsSetup);
+                        IEnumerable<GameMatch> currentListQuery = CurrentGameList.MatchingGames.Where(g => NeedsSetup(g.GameFiles));
                         if (currentListQuery.Any())
                         {
                             GameMatch gameMatchCurrentList = currentListQuery.FirstOrDefault();
@@ -395,7 +408,7 @@ namespace Eclipse.View
                                 moreGameFiles = true;
                                 await gameMatchCurrentList.GameFiles.SetupFiles();
 
-                                if (gameMatchCurrentList?.GameFiles?.Game?.Id == currentGameList?.Game1?.Game?.Id)
+                                if (gameMatchCurrentList?.GameFiles?.Game?.Id == currentGameList?.SelectedGame?.Game?.Id)
                                 {
                                     CallGameChangeFunction();
                                 }
@@ -406,7 +419,7 @@ namespace Eclipse.View
                     // setup a game in the next list
                     if (NextGameList != null && NextGameList.MatchingGames != null)
                     {
-                        IEnumerable<GameMatch> nextListQuery = NextGameList.MatchingGames.Where(g => !g.GameFiles.IsSetup);
+                        IEnumerable<GameMatch> nextListQuery = NextGameList.MatchingGames.Where(g => NeedsSetup(g.GameFiles));
                         if (nextListQuery.Any())
                         {
                             GameMatch gameMatchNextList = nextListQuery.FirstOrDefault();
@@ -421,7 +434,7 @@ namespace Eclipse.View
                     // setup any game that still needs to be setup
                     if (gameFilesBag != null)
                     {
-                        IEnumerable<GameFiles> anyGameQuery = gameFilesBag.Where(gf => !gf.IsSetup);
+                        IEnumerable<GameFiles> anyGameQuery = gameFilesBag.Where(gf => NeedsSetup(gf));
                         if (anyGameQuery.Any())
                         {
                             GameFiles anyGameFiles = anyGameQuery.FirstOrDefault();
@@ -467,33 +480,34 @@ namespace Eclipse.View
             // favouriting a game has no business discarding them.
             foreach (GameListSet gameListSet in gameListBuilder.BuildAll())
             {
-                GameListSets.RemoveAll(set => set.ListCategoryType == gameListSet.ListCategoryType);
-                GameListSets.Add(gameListSet);
+                Navigator.InstallSet(gameListSet);
             }
         }
 
         public void DoMoreLikeCurrentGame()
         {
-            GameMatch currentGame = CurrentGameList?.Game1;
+            GameMatch currentGame = CurrentGameList?.SelectedGame;
             if (currentGame != null)
             {
-                List<GameList> moreLikeThisResults = GameListBuilder.BuildMoreLikeThis(currentGame, GameListSets);
+                List<GameList> moreLikeThisResults = GameListBuilder.BuildMoreLikeThis(currentGame, Navigator.Sets);
 
-                // remove any prior "more like this" set and then add these results in the more like this category
-                GameListSets.RemoveAll(set => set.ListCategoryType == ListCategoryType.MoreLikeThis);
-                GameListSets.Add(new GameListSet
+                Navigator.InstallSet(new GameListSet
                 {
                     ListCategoryType = ListCategoryType.MoreLikeThis,
                     GameLists = moreLikeThisResults
                 });
 
-                ResetGameLists(ListCategoryType.MoreLikeThis);
+                Navigator.ShowCategory(ListCategoryType.MoreLikeThis);
                 IsDisplayingResults = true;
                 IsDisplayingFeature = false;
                 IsDisplayingMoreInfo = false;
                 CallGameChangeFunction();
             }
         }
+
+        // Each game is equally likely, so this only needs a source of numbers - the weighting
+        // that random game does lives in the navigator with the lists it weights by.
+        private static readonly Random random = new Random();
 
         /// <summary>
         /// Picks the next game for the screen saver and returns it, or null if the library is
@@ -513,20 +527,49 @@ namespace Eclipse.View
 
             return games[random.Next(games.Count)];
         }
-
-        private void RefreshGameLists()
+        private void OnSelectionChanged(object sender, EventArgs e)
         {
-            if (listCycle?.GenericList?.Count == 0)
+            CurrentGameList = Navigator.CurrentList;
+            NextGameList = Navigator.NextList;
+
+            // These two lists are the only ones on screen, so they are the only ones whose
+            // artwork is worth decoding ahead. Moving between lists brings a row that has never
+            // been warmed, which is the one case where the decoder starts from nothing.
+            CurrentGameList?.WarmRowImages();
+            NextGameList?.WarmRowImages();
+
+            CallGameChangeFunction();
+        }
+
+        private void OnNavigationFailed(object sender, EventArgs e)
+        {
+            DisplayingErrorState displayingErrorState = EclipseStateContext.GetState(typeof(DisplayingErrorState)) as DisplayingErrorState;
+            displayingErrorState.ErrorMessage = "A problem occurred trying to refresh the list of games";
+            EclipseStateContext.TransitionToState(displayingErrorState);
+        }
+
+        // Which lists have changed under the user since their position was noted. Favouriting,
+        // rating and launching a game all change what the lists contain; the rebuild is deferred
+        // until the detail overlay closes rather than happening on each change.
+        private bool gameListsChanged;
+
+        private void SaveStateForGameListChange()
+        {
+            gameListsChanged = true;
+            Navigator.RememberPosition();
+        }
+
+        public void CheckResetGameLists()
+        {
+            if (!gameListsChanged)
             {
-                DisplayingErrorState displayingErrorState = EclipseStateContext.GetState(typeof(DisplayingErrorState)) as DisplayingErrorState;
-                displayingErrorState.ErrorMessage = "A problem occurred trying to refresh the list of games";
-                EclipseStateContext.TransitionToState(displayingErrorState);
                 return;
             }
 
-            CurrentGameList = listCycle.GetItem(0);
-            NextGameList = listCycle.GetItem(1);
-            CallGameChangeFunction();
+            gameListsChanged = false;
+
+            CreateGameLists();
+            Navigator.RestorePosition();
         }
 
         public void CallGameChangeFunction()
@@ -554,17 +597,14 @@ namespace Eclipse.View
             }
         }
 
-        public void CycleListBackward()
-        {
-            listCycle.CycleBackward();
-            RefreshGameLists();
-        }
-
-        public void CycleListForward()
-        {
-            listCycle.CycleForward();
-            RefreshGameLists();
-        }
+        /// <summary>
+        /// Puts a set of lists in place, replacing whatever set of the same category was there.
+        ///
+        /// Three places used to write this out longhand - building the category sets, voice
+        /// search, and more like this - each removing by category and adding, in three different
+        /// files. Replacing rather than clearing matters: a rebuild triggered by favouriting a
+        /// game must not throw away the voice search results or the more-like-this set.
+        /// </summary>
 
         public bool DoUp(bool held)
         {
@@ -602,76 +642,22 @@ namespace Eclipse.View
             return EclipseStateContext.OnPageDown();
         }
 
-        public void ResetGameLists(ListCategoryType listCategoryType)
-        {
-            // get the game list from the GameListSet for the given listCategoryType
-            IEnumerable<GameListSet> query = from gameListSet in GameListSets
-                                             where gameListSet.ListCategoryType == listCategoryType
-                                             select gameListSet;
-
-            GameListSet requestedListSet = query?.FirstOrDefault();
-
-            // Switching to a set with no lists leaves nothing to navigate: the list cycle
-            // ends up empty while CurrentGameList still points at the old list, so moving
-            // left and right appears to work but moving between lists reports a failure.
-            // Keep the lists we already have instead.
-            if (requestedListSet?.GameLists == null || requestedListSet.GameLists.Count == 0)
-            {
-                return;
-            }
-
-            CurrentGameListSet = requestedListSet;
-            listCycle = new ListCycle<GameList>(CurrentGameListSet.GameLists, 2);
-            RefreshGameLists();
-        }
-
-        private static readonly Random random = new Random();
-        public void DoRandomGame(int randomIndex = -1)
-        {
-            // get a game index from the current list set
-            if (randomIndex == -1)
-            {
-                randomIndex = random.Next(0, CurrentGameListSet.TotalGameCount);
-            }
-
-            // find the index of which list it's in 
-            for (int listIndex = 0; listIndex < CurrentGameListSet.GameLists.Count; listIndex++)
-            {
-                GameList gameList = CurrentGameListSet.GameLists[listIndex];
-
-                if (gameList.ListSetStartIndex <= randomIndex && gameList.ListSetEndIndex >= randomIndex)
-                {
-                    // once found, cycle to that list
-                    listCycle.SetCurrentIndex(listIndex);
-
-                    // refresh the game lists so we can get a handle on the current list
-                    CurrentGameList = listCycle.GetItem(0);
-                    NextGameList = listCycle.GetItem(1);
-
-                    // setup the game list to the random game index 
-                    CurrentGameList.SetGameIndex(randomIndex - gameList.ListSetStartIndex);
-                    break;
-                }
-            }
-
-            // call the game change function to refresh things
-            CallGameChangeFunction();
-        }
 
         // start the current game
         public void PlayCurrentGame()
         {
-            // get a handle on the current game 
-            IGame currentGame = CurrentGameList?.Game1?.Game;
-            IAdditionalApplication additionalApplication = CurrentGameList?.Game1?.GameFiles?.GameVersionList?.SelectedGameVersion?.AdditionalApplication;
+            // get a handle on the current game
+            IGame currentGame = CurrentGameList?.SelectedGame?.Game;
+            IAdditionalApplication additionalApplication =
+                CurrentGameList?.SelectedGame?.GameFiles?.GameVersionList?.SelectedGameVersion?.AdditionalApplication;
 
             if (currentGame != null)
             {
                 currentGame.LastPlayedDate = DateTime.Now;
 
-                // reset the lists so the updated history reflects - first save the current game details then reload the lists 
+                // reset the lists so the updated history reflects - first save the current game details then reload the lists
                 SaveStateForGameListChange();
-                ResetListsAfterChange();
+                CheckResetGameLists();
 
                 // stop everything in the UI
                 CallStopVideoAndAnimationsFunction();
@@ -687,7 +673,7 @@ namespace Eclipse.View
         // mark current game as a favorite
         public void FavoriteCurrentGame()
         {
-            GameMatch currentGame = CurrentGameList?.Game1;
+            GameMatch currentGame = CurrentGameList?.SelectedGame;
             if (currentGame != null)
             {
                 currentGame.Favorite = !currentGame.Favorite;
@@ -702,126 +688,10 @@ namespace Eclipse.View
             }
         }
 
-        // variables to track what list set, list, and game we were on when a game is favorited
-        // save current list set type - i.e. lists by platform, genre, publisher, etc...
-        // save the current list type - generally would match the list set unless it's favorites
-        // identifies which list we are in within the list set - would be better if we created a guid to identify these
-        // get the game id that we are on 
-        // get the starting index for the list within the list set
-        // get the index of the game within the list 
-        private bool gameListsChanged;
-        private ListCategoryType preChangeListSetCategoryType;
-        private ListCategoryType preChangeListCategoryType;
-        private string preChangeListTypeValue;
-        private string preChangeGameId;
-        private int preChangeGameIndex;
-
-        // call this when lists are about to change to save which list set, list, and game we were on so we can find our way back after rebuilding lists
-        // this is needed when game lists are going to change (i.e. adding/removing favorites, adding/removing from history)
-        private void SaveStateForGameListChange()
-        {
-            // flag the favorites list has changed 
-            gameListsChanged = true;
-
-            // save current list set type, list type, list description, 
-            // save current list set type - i.e. lists by platform, genre, publisher, etc...
-            preChangeListSetCategoryType = currentGameListSet.ListCategoryType;
-
-            // save the current list type - generally would match the list set unless it's favorites
-            preChangeListCategoryType = currentGameList.ListCategoryType;
-
-            // identifies which list we are in within the list set - would be better if we created a guid to identify these.
-            // This has to be the list's value and not its description: the description carries the game count when
-            // ShowGameCountInList is on, and the count changes on exactly the rebuilds this is trying to survive - so
-            // "Favorites (12)" would never be found again once it had become "Favorites (11)".
-            preChangeListTypeValue = currentGameList.ListTypeValue;
-
-            // get the game id that we are on 
-            preChangeGameId = currentGameList.Game1.Game.Id;
-
-            // get the index of the game within the list 
-            preChangeGameIndex = currentGameList.CurrentGameIndex;
-        }
-
-        public void CheckResetGameLists()
-        {
-            if (gameListsChanged)
-            {
-                ResetListsAfterChange();
-            }
-        }
-
-        // call this when lists have changed (i.e. game added/removed from favorites history list)
-        // will try to find the game in the same list - if it can't (i.e. in favorites and game removed from favorites) then jumps to the next game
-        private void ResetListsAfterChange()
-        {
-            // clear the game list changed flag 
-            gameListsChanged = false;
-
-            // recreate the lists
-            CreateGameLists();
-
-            // reset to the list set that we were on 
-            ResetGameLists(preChangeListSetCategoryType);
-
-            // find the list that we were previously in 
-            var priorListQuery = from list in currentGameListSet.GameLists
-                                 where list.ListCategoryType == preChangeListCategoryType && list.ListTypeValue == preChangeListTypeValue
-                                 select list;
-
-            var gameList = priorListQuery?.FirstOrDefault();
-            if (gameList != null)
-            {
-                // try to find the game in the list
-                var gameMatchQuery = from match in gameList.MatchingGames
-                                     where match.Game.Id == preChangeGameId
-                                     select match;
-
-                var gameMatch = gameMatchQuery?.FirstOrDefault();
-                if (gameMatch != null)
-                {
-                    // the game is in the list 
-                    int gameIndex = gameList.MatchingGames.FindIndex(mat => mat.Game.Id == preChangeGameId);
-                    if (gameIndex >= 0)
-                    {
-                        // jump to the game
-                        DoRandomGame(gameList.ListSetStartIndex + gameIndex);
-                        return;
-                    }
-                }
-
-                // the game was not in the list so try the next game in the list 
-                if (gameList?.MatchingGames?.Count() > preChangeGameIndex)
-                {
-                    DoRandomGame(gameList.ListSetStartIndex + preChangeGameIndex);
-                    return;
-                }
-
-                // there was no next game so try a previous game in the list 
-                if (gameList?.MatchingGames?.Count() > preChangeGameIndex - 1)
-                {
-                    DoRandomGame(gameList.ListSetStartIndex + preChangeGameIndex - 1);
-                    return;
-                }
-
-                // there was no next or previous, try just the first game in the list 
-                if (gameList?.MatchingGames?.Count() > 0)
-                {
-                    DoRandomGame(gameList.ListSetStartIndex);
-                    return;
-                }
-            }
-            else
-            {
-                // the list was not there so pick any random game
-                DoRandomGame();
-                return;
-            }
-        }
 
         public void RateCurrentGame(float changeAmount)
         {
-            GameMatch currentGame = CurrentGameList?.Game1;
+            GameMatch currentGame = CurrentGameList?.SelectedGame;
             if (currentGame != null)
             {
                 float newRating = currentGame.UserRating + changeAmount;
@@ -849,13 +719,13 @@ namespace Eclipse.View
         /// <summary>Call when the rating editor opens, so a later cancel has something to restore.</summary>
         public void BeginRatingCurrentGame()
         {
-            ratingBeforeEditing = CurrentGameList?.Game1?.UserRating;
+            ratingBeforeEditing = CurrentGameList?.SelectedGame?.UserRating;
         }
 
         /// <summary>Put the rating back to what it was when the editor opened.</summary>
         public void CancelRatingCurrentGame()
         {
-            GameMatch currentGame = CurrentGameList?.Game1;
+            GameMatch currentGame = CurrentGameList?.SelectedGame;
 
             if (currentGame != null && ratingBeforeEditing.HasValue)
             {
@@ -867,7 +737,7 @@ namespace Eclipse.View
 
         public void SaveRatingCurrentGame()
         {
-            GameMatch currentGame = CurrentGameList?.Game1;
+            GameMatch currentGame = CurrentGameList?.SelectedGame;
             if (currentGame == null)
             {
                 return;

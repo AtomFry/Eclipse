@@ -27,7 +27,7 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
 
-            eclipseStateContext.MainWindowViewModel.CycleListForward();
+            eclipseStateContext.MainWindowViewModel.Navigator.MoveToNextList();
             return true;
         }
 
@@ -76,8 +76,7 @@ namespace Eclipse.State
             if (!EclipseSettingsDataProvider.Instance.EclipseSettings.OpenSettingsPaneOnLeft
                 || eclipseStateContext.MainWindowViewModel.CurrentGameList.CurrentGameIndex != 0)
             {
-                eclipseStateContext.MainWindowViewModel.CurrentGameList.CycleBackward();
-                eclipseStateContext.MainWindowViewModel.CallGameChangeFunction();
+                eclipseStateContext.MainWindowViewModel.Navigator.MoveToPreviousGame();
                 return true;
             }
 
@@ -102,9 +101,7 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
 
-            eclipseStateContext.MainWindowViewModel.CurrentGameList.CycleForward();
-
-            eclipseStateContext.MainWindowViewModel.CallGameChangeFunction();
+            eclipseStateContext.MainWindowViewModel.Navigator.MoveToNextGame();
             return true;
         }
 
@@ -114,13 +111,13 @@ namespace Eclipse.State
 
             // if displaying first list and featured game is selected, display featured game
             if (EclipseSettingsDataProvider.Instance.EclipseSettings.DisplayFeaturedGame
-                && eclipseStateContext.MainWindowViewModel.listCycle.GetIndexValue(0) == 0)
+                && eclipseStateContext.MainWindowViewModel.Navigator.IsOnFirstList)
             {
                 eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(FeatureOptionPlayState))); 
                 return true;
             }
 
-            eclipseStateContext.MainWindowViewModel.CycleListBackward();
+            eclipseStateContext.MainWindowViewModel.Navigator.MoveToPreviousList();
             return true;
         }
     }

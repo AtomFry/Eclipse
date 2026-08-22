@@ -87,7 +87,7 @@
             <Polygon Points="10,10 10,70 70,40" Style="{StaticResource GameDetailOptionIcon}"/>
         </DataTemplate>
         <DataTemplate x:Key="FavoriteOptionIcon">
-            <Polygon Points="{Binding DataContext.CurrentGameList.Game1.Favorite, ElementName=MainWindowUserControl, Converter={StaticResource FavoriteDetailIconConverter}}"
+            <Polygon Points="{Binding DataContext.CurrentGameList.SelectedGame.Favorite, ElementName=MainWindowUserControl, Converter={StaticResource FavoriteDetailIconConverter}}"
                      Style="{StaticResource GameDetailOptionIcon}"/>
         </DataTemplate>
         <DataTemplate x:Key="MoreLikeThisOptionIcon">
@@ -107,17 +107,17 @@
             <Grid>
                 <TextBlock Text="Play"
                            Style="{StaticResource GameDetailOptionText}"
-                           Visibility="{Binding DataContext.CurrentGameList.Game1.GameFiles.GameVersionList.HasAdditionalVersions, ElementName=MainWindowUserControl, Converter={StaticResource InvertBooleanToVisibilityConverter}}"/>
+                           Visibility="{Binding DataContext.CurrentGameList.SelectedGame.GameFiles.GameVersionList.HasAdditionalVersions, ElementName=MainWindowUserControl, Converter={StaticResource InvertBooleanToVisibilityConverter}}"/>
                 <TextBlock Style="{StaticResource GameDetailOptionText}"
                            TextTrimming="CharacterEllipsis"
-                           Visibility="{Binding DataContext.CurrentGameList.Game1.GameFiles.GameVersionList.HasAdditionalVersions, ElementName=MainWindowUserControl, Converter={StaticResource BoolToVis}}">
+                           Visibility="{Binding DataContext.CurrentGameList.SelectedGame.GameFiles.GameVersionList.HasAdditionalVersions, ElementName=MainWindowUserControl, Converter={StaticResource BoolToVis}}">
                     <Run Text="Play "/>
-                    <Run Text="{Binding DataContext.CurrentGameList.Game1.GameFiles.GameVersionList.SelectedGameVersion.Description, ElementName=MainWindowUserControl}"/>
+                    <Run Text="{Binding DataContext.CurrentGameList.SelectedGame.GameFiles.GameVersionList.SelectedGameVersion.Description, ElementName=MainWindowUserControl}"/>
                 </TextBlock>
             </Grid>
         </DataTemplate>
         <DataTemplate x:Key="FavoriteOptionBody">
-            <TextBlock Text="{Binding DataContext.CurrentGameList.Game1.Favorite, ElementName=MainWindowUserControl, Converter={StaticResource FavoriteToFavoriteOptionConverter}}"
+            <TextBlock Text="{Binding DataContext.CurrentGameList.SelectedGame.Favorite, ElementName=MainWindowUserControl, Converter={StaticResource FavoriteToFavoriteOptionConverter}}"
                        Style="{StaticResource GameDetailOptionText}"/>
         </DataTemplate>
         <DataTemplate x:Key="MoreLikeThisOptionBody">
@@ -130,7 +130,7 @@
                            Style="{StaticResource GameDetailOptionText}"/>
                 <!-- Unfilled stars are near-white on a white button, so the outline is what
                      makes them readable. -->
-                <local:StarRatingView Rating="{Binding DataContext.CurrentGameList.Game1.UserRating, ElementName=MainWindowUserControl}"
+                <local:StarRatingView Rating="{Binding DataContext.CurrentGameList.SelectedGame.UserRating, ElementName=MainWindowUserControl}"
                                       Visibility="{Binding DataContext.IsRatingGame, ElementName=MainWindowUserControl, Converter={StaticResource BoolToVis}}"
                                       Height="{Binding ActualHeight, ElementName=TextBlock_DetailStarRatingButton}"
                                       Fill="Black" Empty="WhiteSmoke"
@@ -341,7 +341,7 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         Visibility="{Binding IsDisplayingMoreInfo, Converter={StaticResource InvertBooleanToVisibilityConverter}}"
-                        Opacity="{Binding CurrentGameList.Game0, Converter={StaticResource SettingsOpacityConverter}}"
+                        Opacity="{Binding CurrentGameList.PreviousGame, Converter={StaticResource SettingsOpacityConverter}}"
                         Panel.ZIndex="800">
                 <Image Name="Image_SettingsIcon" 
                        IsHitTestVisible="False"
@@ -474,7 +474,7 @@
                         HorizontalAlignment="Left" 
                         VerticalAlignment="Bottom"
                         RenderOptions.BitmapScalingMode="HighQuality" 
-                        Visibility="{Binding CurrentGameList.Game1.GameFiles.ClearLogo.AbsoluteUri, Converter={StaticResource StringLengthVisibilityConverter}}"
+                        Visibility="{Binding CurrentGameList.SelectedGame.GameFiles.ClearLogo.AbsoluteUri, Converter={StaticResource StringLengthVisibilityConverter}}"
                         Stretch="Uniform"/>
 
                 <!-- Game title to be displayed if clear logo is missing -->
@@ -490,7 +490,7 @@
                             Foreground="WhiteSmoke"
                             TextTrimming="None"
                             TextWrapping="Wrap"
-                            Visibility="{Binding CurrentGameList.Game1.GameFiles.ClearLogo.AbsoluteUri, Converter={StaticResource InvertStringLengthVisibilityConverter}}"
+                            Visibility="{Binding CurrentGameList.SelectedGame.GameFiles.ClearLogo.AbsoluteUri, Converter={StaticResource InvertStringLengthVisibilityConverter}}"
                             RenderOptions.BitmapScalingMode="HighQuality">
                 </TextBlock>
 
@@ -533,10 +533,10 @@
                         <Grid   Margin="0,0,15,0"
                                 Visibility="{Binding ShowStarRating, Converter={StaticResource BoolToVis}}"
                                 VerticalAlignment="Stretch">
-                            <local:StarRatingView Rating="{Binding CurrentGameList.Game1.CommunityRating}"
+                            <local:StarRatingView Rating="{Binding CurrentGameList.SelectedGame.CommunityRating}"
                                                   Fill="WhiteSmoke"
                                                   VerticalAlignment="Stretch"/>
-                            <local:StarRatingView Rating="{Binding CurrentGameList.Game1.UserRating}"
+                            <local:StarRatingView Rating="{Binding CurrentGameList.SelectedGame.UserRating}"
                                                   Fill="Red"
                                                   VerticalAlignment="Stretch"/>
                         </Grid>
@@ -603,13 +603,13 @@
                                 VerticalAlignment="Stretch">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                     IsHitTestVisible="False"
-                                    Visibility="{Binding CurrentGameList.Game1.Genre, Converter={StaticResource StringLengthVisibilityConverter}}">
+                                    Visibility="{Binding CurrentGameList.SelectedGame.Genre, Converter={StaticResource StringLengthVisibilityConverter}}">
                             <TextBlock Text="Genres:"       
                                        IsHitTestVisible="False"
                                        Foreground="DarkGray" TextWrapping="Wrap" TextTrimming="None" 
                                        VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" 
                                        FontFamily="Arial" FontSize="20"/>
-                            <TextBlock Text="{Binding CurrentGameList.Game1.Genre}"
+                            <TextBlock Text="{Binding CurrentGameList.SelectedGame.Genre}"
                                        IsHitTestVisible="False"
                                    Foreground="WhiteSmoke" TextWrapping="Wrap" TextTrimming="None" 
                                    Margin="10,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" 
@@ -617,13 +617,13 @@
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                     IsHitTestVisible="False"
-                                    Visibility="{Binding CurrentGameList.Game1.Series, Converter={StaticResource StringLengthVisibilityConverter}}">
+                                    Visibility="{Binding CurrentGameList.SelectedGame.Series, Converter={StaticResource StringLengthVisibilityConverter}}">
                             <TextBlock Text="Series:"       
                                        IsHitTestVisible="False"
                                        Foreground="DarkGray" TextWrapping="Wrap" TextTrimming="None" 
                                        VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" 
                                        FontFamily="Arial" FontSize="20"/>
-                            <TextBlock Text="{Binding CurrentGameList.Game1.Series}"
+                            <TextBlock Text="{Binding CurrentGameList.SelectedGame.Series}"
                                        IsHitTestVisible="False"
                                    Foreground="WhiteSmoke" TextWrapping="Wrap" TextTrimming="None" 
                                    Margin="10,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" 
@@ -631,13 +631,13 @@
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                     IsHitTestVisible="False"
-                                    Visibility="{Binding CurrentGameList.Game1.Developer, Converter={StaticResource StringLengthVisibilityConverter}}">
+                                    Visibility="{Binding CurrentGameList.SelectedGame.Developer, Converter={StaticResource StringLengthVisibilityConverter}}">
                             <TextBlock Text="Developer:"    
                                        IsHitTestVisible="False"
                                        Foreground="DarkGray" TextWrapping="Wrap" TextTrimming="None" 
                                        VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" 
                                        FontFamily="Arial" FontSize="20"/>
-                            <TextBlock Text="{Binding CurrentGameList.Game1.Developer}"
+                            <TextBlock Text="{Binding CurrentGameList.SelectedGame.Developer}"
                                        IsHitTestVisible="False"
                                    Foreground="WhiteSmoke" TextWrapping="Wrap" TextTrimming="None" 
                                    Margin="10,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" 
@@ -645,13 +645,13 @@
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                     IsHitTestVisible="False"
-                                    Visibility="{Binding CurrentGameList.Game1.Publisher, Converter={StaticResource StringLengthVisibilityConverter}}">
+                                    Visibility="{Binding CurrentGameList.SelectedGame.Publisher, Converter={StaticResource StringLengthVisibilityConverter}}">
                             <TextBlock Text="Publisher:"    
                                        IsHitTestVisible="False"
                                        Foreground="DarkGray" TextWrapping="Wrap" TextTrimming="None" 
                                        VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" 
                                        FontFamily="Arial" FontSize="20"/>
-                            <TextBlock Text="{Binding CurrentGameList.Game1.Publisher}"
+                            <TextBlock Text="{Binding CurrentGameList.SelectedGame.Publisher}"
                                        IsHitTestVisible="False"
                                    Foreground="WhiteSmoke" TextWrapping="Wrap" TextTrimming="None" 
                                    Margin="10,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" 
@@ -807,7 +807,7 @@
                 Grid.Row="0" Grid.RowSpan="18"
                 Grid.Column="0" Grid.ColumnSpan="32"
                 IsHitTestVisible="False"
-                Source="{Binding CurrentGameList.Game1.GameFiles.BigFrontImage}"
+                Source="{Binding CurrentGameList.SelectedGame.GameFiles.BigFrontImage}"
                 HorizontalAlignment="Center" 
                 VerticalAlignment="Stretch"
                 RenderOptions.BitmapScalingMode="HighQuality" 
@@ -884,102 +884,41 @@
                         <Border BorderThickness="2" BorderBrush="AntiqueWhite" IsHitTestVisible="False" Margin="{Binding FrontImageMargin}">
                             <Image Name="Image_Game1"
                                    IsHitTestVisible="False"
-                                   Source="{Binding CurrentGameList.Game1.GameFiles.FrontImage}"
+                                   Source="{Binding CurrentGameList.SelectedGame.GameFiles.FrontImageSource}"
                                    HorizontalAlignment="Center" 
                                    VerticalAlignment="Stretch"
                                    RenderOptions.BitmapScalingMode="HighQuality" 
                                    Stretch="Uniform"/>
                         </Border>
 
-                        <Image Name="Image_Game2"
-                               IsHitTestVisible="False"
-                               Source="{Binding CurrentGameList.Game2.GameFiles.FrontImage}"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Stretch"
-                               RenderOptions.BitmapScalingMode="HighQuality" 
-                               Margin="{Binding FrontImageMargin}"
-                               Stretch="Uniform"/>
-
-                        <Image Name="Image_Game3" 
-                               Source="{Binding CurrentGameList.Game3.GameFiles.FrontImage}"
-                               IsHitTestVisible="False"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Stretch"
-                               RenderOptions.BitmapScalingMode="HighQuality" 
-                               Margin="{Binding FrontImageMargin}"
-                               Stretch="Uniform"/>
-
-                        <Image Name="Image_Game4" Source="{Binding CurrentGameList.Game4.GameFiles.FrontImage}"
-                               IsHitTestVisible="False"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Stretch"
-                               RenderOptions.BitmapScalingMode="HighQuality" 
-                               Margin="{Binding FrontImageMargin}"
-                               Stretch="Uniform"/>
-
-                        <Image Name="Image_Game5" Source="{Binding CurrentGameList.Game5.GameFiles.FrontImage}"
-                               IsHitTestVisible="False"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Stretch"
-                               RenderOptions.BitmapScalingMode="HighQuality" 
-                               Margin="{Binding FrontImageMargin}"
-                               Stretch="Uniform"/>
-
-                        <Image Name="Image_Game6" Source="{Binding CurrentGameList.Game6.GameFiles.FrontImage}"
-                               IsHitTestVisible="False"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Stretch"
-                               RenderOptions.BitmapScalingMode="HighQuality" 
-                               Margin="{Binding FrontImageMargin}"
-                               Stretch="Uniform"/>
-
-                        <Image Name="Image_Game7" Source="{Binding CurrentGameList.Game7.GameFiles.FrontImage}"
-                               IsHitTestVisible="False"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Stretch"
-                               RenderOptions.BitmapScalingMode="HighQuality" 
-                               Margin="{Binding FrontImageMargin}"
-                               Stretch="Uniform"/>
-
-                        <Image Name="Image_Game8" Source="{Binding CurrentGameList.Game8.GameFiles.FrontImage}"
-                               IsHitTestVisible="False"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Stretch"
-                               RenderOptions.BitmapScalingMode="HighQuality" 
-                               Margin="{Binding FrontImageMargin}"
-                               Stretch="Uniform"/>
-
-                        <Image Name="Image_Game9" Source="{Binding CurrentGameList.Game9.GameFiles.FrontImage}"
-                               IsHitTestVisible="False"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Stretch"
-                               RenderOptions.BitmapScalingMode="HighQuality" 
-                               Margin="{Binding FrontImageMargin}"
-                               Stretch="Uniform"/>
-
-                        <Image Name="Image_Game10" Source="{Binding CurrentGameList.Game10.GameFiles.FrontImage}"
-                               IsHitTestVisible="False"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Stretch"
-                               RenderOptions.BitmapScalingMode="HighQuality" 
-                               Margin="{Binding FrontImageMargin}"
-                               Stretch="Uniform"/>
-
-                        <Image Name="Image_Game11" Source="{Binding CurrentGameList.Game11.GameFiles.FrontImage}"
-                               IsHitTestVisible="False"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Stretch"
-                               RenderOptions.BitmapScalingMode="HighQuality" 
-                               Margin="{Binding FrontImageMargin}"
-                               Stretch="Uniform"/>
-
-                        <Image Name="Image_Game12" Source="{Binding CurrentGameList.Game12.GameFiles.FrontImage}"
-                               IsHitTestVisible="False"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Stretch"
-                               RenderOptions.BitmapScalingMode="HighQuality" 
-                               Margin="{Binding FrontImageMargin}"
-                               Stretch="Uniform"/>
+                        <!-- The row after the selected game. One template instead of eleven
+                             near-identical Image elements. UpcomingGames is fixed length and its
+                             entries are replaced in place, so a move updates only the containers
+                             whose game actually changed rather than regenerating the row.
+                             The margin comes off the view model, not the item, so it is bound
+                             through the root element rather than the template's data context. -->
+                        <ItemsControl ItemsSource="{Binding CurrentGameList.UpcomingGames}"
+                                      IsHitTestVisible="False"
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Stretch">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"
+                                                VerticalAlignment="Stretch"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Image IsHitTestVisible="False"
+                                           Source="{Binding GameFiles.FrontImageSource}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Stretch"
+                                           RenderOptions.BitmapScalingMode="HighQuality"
+                                           Margin="{Binding DataContext.FrontImageMargin, ElementName=MainWindowUserControl}"
+                                           Stretch="Uniform"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
                 </Grid>
 
@@ -1018,7 +957,7 @@
                                 VerticalAlignment="Stretch">
                         <Image Name="Image_PreviousGame"
                                IsHitTestVisible="False"
-                           Source="{Binding CurrentGameList.Game0.GameFiles.FrontImage}"
+                           Source="{Binding CurrentGameList.PreviousGame.GameFiles.FrontImageSource}"
                            HorizontalAlignment="Left" 
                            VerticalAlignment="Stretch"
                            RenderOptions.BitmapScalingMode="HighQuality" 
@@ -1070,100 +1009,41 @@
                         VerticalAlignment="Stretch">
                         <Image Name="Image_NextListGame1"
                                IsHitTestVisible="False"
-                            Source="{Binding NextGameList.Game1.GameFiles.FrontImage}"
+                            Source="{Binding NextGameList.SelectedGame.GameFiles.FrontImageSource}"
                             HorizontalAlignment="Center" 
                             VerticalAlignment="Stretch"
                             RenderOptions.BitmapScalingMode="HighQuality" 
                             Margin="{Binding FrontImageMargin}"
                             Stretch="Uniform"/>
 
-                        <Image Source="{Binding NextGameList.Game2.GameFiles.FrontImage}"
-                               IsHitTestVisible="False"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Stretch"
-                               RenderOptions.BitmapScalingMode="HighQuality" 
-                               Margin="{Binding FrontImageMargin}"
-                               Stretch="Uniform"/>
-
-                        <Image Source="{Binding NextGameList.Game3.GameFiles.FrontImage}"
-                               IsHitTestVisible="False"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Stretch"
-                               RenderOptions.BitmapScalingMode="HighQuality" 
-                               Margin="{Binding FrontImageMargin}"
-                               Stretch="Uniform"/>
-
-                        <Image Source="{Binding NextGameList.Game4.GameFiles.FrontImage}"
-                               IsHitTestVisible="False"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Stretch"
-                               RenderOptions.BitmapScalingMode="HighQuality" 
-                               Margin="{Binding FrontImageMargin}"
-                               Stretch="Uniform"/>
-
-                        <Image Source="{Binding NextGameList.Game5.GameFiles.FrontImage}"
-                               IsHitTestVisible="False"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Stretch"
-                               RenderOptions.BitmapScalingMode="HighQuality" 
-                               Margin="{Binding FrontImageMargin}"
-                               Stretch="Uniform"/>
-
-                        <Image Source="{Binding NextGameList.Game6.GameFiles.FrontImage}"
-                               IsHitTestVisible="False"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Stretch"
-                               RenderOptions.BitmapScalingMode="HighQuality" 
-                               Margin="{Binding FrontImageMargin}"
-                               Stretch="Uniform"/>
-
-                        <Image Source="{Binding NextGameList.Game7.GameFiles.FrontImage}"
-                               IsHitTestVisible="False"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Stretch"
-                               RenderOptions.BitmapScalingMode="HighQuality" 
-                               Margin="{Binding FrontImageMargin}"
-                               Stretch="Uniform"/>
-
-                        <Image Source="{Binding NextGameList.Game8.GameFiles.FrontImage}"
-                               IsHitTestVisible="False"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Stretch"
-                               RenderOptions.BitmapScalingMode="HighQuality" 
-                               Margin="{Binding FrontImageMargin}"
-                               Stretch="Uniform"/>
-
-                        <Image Source="{Binding NextGameList.Game9.GameFiles.FrontImage}"
-                               IsHitTestVisible="False"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Stretch"
-                               RenderOptions.BitmapScalingMode="HighQuality" 
-                               Margin="{Binding FrontImageMargin}"
-                               Stretch="Uniform"/>
-
-                        <Image Source="{Binding NextGameList.Game10.GameFiles.FrontImage}"
-                               IsHitTestVisible="False"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Stretch"
-                               RenderOptions.BitmapScalingMode="HighQuality" 
-                               Margin="{Binding FrontImageMargin}"
-                               Stretch="Uniform"/>
-
-                        <Image Source="{Binding NextGameList.Game11.GameFiles.FrontImage}"
-                               IsHitTestVisible="False"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Stretch"
-                               RenderOptions.BitmapScalingMode="HighQuality" 
-                               Margin="{Binding FrontImageMargin}"
-                               Stretch="Uniform"/>
-
-                        <Image Source="{Binding NextGameList.Game12.GameFiles.FrontImage}"
-                               IsHitTestVisible="False"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Stretch"
-                               RenderOptions.BitmapScalingMode="HighQuality" 
-                               Margin="{Binding FrontImageMargin}"
-                               Stretch="Uniform"/>
+                        <!-- The row after the selected game. One template instead of eleven
+                             near-identical Image elements. UpcomingGames is fixed length and its
+                             entries are replaced in place, so a move updates only the containers
+                             whose game actually changed rather than regenerating the row.
+                             The margin comes off the view model, not the item, so it is bound
+                             through the root element rather than the template's data context. -->
+                        <ItemsControl ItemsSource="{Binding NextGameList.UpcomingGames}"
+                                      IsHitTestVisible="False"
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Stretch">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"
+                                                VerticalAlignment="Stretch"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Image IsHitTestVisible="False"
+                                           Source="{Binding GameFiles.FrontImageSource}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Stretch"
+                                           RenderOptions.BitmapScalingMode="HighQuality"
+                                           Margin="{Binding DataContext.FrontImageMargin, ElementName=MainWindowUserControl}"
+                                           Stretch="Uniform"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
                 </Grid>
 
@@ -1205,7 +1085,7 @@
                                 VerticalAlignment="Stretch">
                         <Image Name="Image_NextListPreviousGame"
                                IsHitTestVisible="False"
-                               Source="{Binding NextGameList.Game0.GameFiles.FrontImage}"
+                               Source="{Binding NextGameList.PreviousGame.GameFiles.FrontImageSource}"
                                HorizontalAlignment="Left" 
                                VerticalAlignment="Stretch"
                                RenderOptions.BitmapScalingMode="HighQuality" 

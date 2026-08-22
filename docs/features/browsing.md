@@ -137,7 +137,7 @@ and `IGame` metadata members throughout.
 | B-15 | Extracts list construction and the query engine. |
 | B-16 | Makes list rebuild incremental after curation. |
 | B-17 | Collapses the category-picker switch. |
-| B-07 | Memoises `MatchCount`. |
+| ~~B-07~~ | **Closed, not done.** `MatchCount` is already `O(1)` - `Count()` on a `List<T>` uses the `ICollection<T>` fast path. Memoising it would buy nothing and add an invalidation obligation. |
 | B-30 | Reduces index fan-out — gated on measurement (B-28). |
 | B-12 | Replaces `IGame` with an Eclipse-owned model; **highest risk to this epic** because list membership and ordering depend on its members. |
 

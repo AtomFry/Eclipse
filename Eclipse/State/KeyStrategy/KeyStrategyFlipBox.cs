@@ -7,17 +7,17 @@
         {
             if (IsValidForState(eclipseState))
             {
-                var backImage = eclipseStateContext.MainWindowViewModel.CurrentGameList.Game1.GameFiles.BackImage;
-                var bigBackImage = eclipseStateContext.MainWindowViewModel.CurrentGameList.Game1.GameFiles.BigBackImage;
+                var backImage = eclipseStateContext.MainWindowViewModel.CurrentGameList.SelectedGame.GameFiles.BackImage;
+                var bigBackImage = eclipseStateContext.MainWindowViewModel.CurrentGameList.SelectedGame.GameFiles.BigBackImage;
 
-                eclipseStateContext.MainWindowViewModel.CurrentGameList.Game1.GameFiles.BackImage =
-                    eclipseStateContext.MainWindowViewModel.CurrentGameList.Game1.GameFiles.FrontImage;
+                eclipseStateContext.MainWindowViewModel.CurrentGameList.SelectedGame.GameFiles.BackImage =
+                    eclipseStateContext.MainWindowViewModel.CurrentGameList.SelectedGame.GameFiles.FrontImage;
 
-                eclipseStateContext.MainWindowViewModel.CurrentGameList.Game1.GameFiles.BigBackImage =
-                    eclipseStateContext.MainWindowViewModel.CurrentGameList.Game1.GameFiles.BigFrontImage;
+                eclipseStateContext.MainWindowViewModel.CurrentGameList.SelectedGame.GameFiles.BigBackImage =
+                    eclipseStateContext.MainWindowViewModel.CurrentGameList.SelectedGame.GameFiles.BigFrontImage;
 
-                eclipseStateContext.MainWindowViewModel.CurrentGameList.Game1.GameFiles.FrontImage = backImage;
-                eclipseStateContext.MainWindowViewModel.CurrentGameList.Game1.GameFiles.BigFrontImage = bigBackImage;
+                eclipseStateContext.MainWindowViewModel.CurrentGameList.SelectedGame.GameFiles.FrontImage = backImage;
+                eclipseStateContext.MainWindowViewModel.CurrentGameList.SelectedGame.GameFiles.BigFrontImage = bigBackImage;
             }
         }
 

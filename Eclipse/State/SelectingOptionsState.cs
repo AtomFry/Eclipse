@@ -1,5 +1,6 @@
 ﻿using Eclipse.Models;
 using Eclipse.Service;
+using System.Linq;
 using Eclipse.State.KeyStrategy;
 using System;
 
@@ -26,66 +27,37 @@ namespace Eclipse.State
             eclipseStateContext.MainWindowViewModel.OptionList.CycleForward();
             return true;
         }
-
         public bool OnEnter(EclipseStateContext eclipseStateContext)
         {
             attractModeService.RestartAttractMode();
 
-            Option<ListCategoryType> option = eclipseStateContext.MainWindowViewModel.OptionList.SelectedOption;
-            switch (option.EnumOption)
+            // Two of the options do something of their own; the other eight all mean the same
+            // thing - browse by this category, then go back to the row. They used to be eight
+            // copies of the same two lines, one per category.
+            ListCategoryType category = eclipseStateContext.MainWindowViewModel.OptionList.SelectedOption.EnumOption;
+
+            if (category == ListCategoryType.VoiceSearch)
             {
-                case ListCategoryType.VoiceSearch:
-                    eclipseStateContext.DoVoiceSearch();
-                    break;
-
-                case ListCategoryType.RandomGame:
-                    eclipseStateContext.MainWindowViewModel.DoRandomGame();
-                    eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
-                    break;
-
-                case ListCategoryType.ReleaseYear:
-                    eclipseStateContext.MainWindowViewModel.ResetGameLists(ListCategoryType.ReleaseYear);
-                    eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
-                    break;
-
-                case ListCategoryType.Platform:
-                    eclipseStateContext.MainWindowViewModel.ResetGameLists(ListCategoryType.Platform);
-                    eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
-
-                    break;
-
-                case ListCategoryType.Developer:
-                    eclipseStateContext.MainWindowViewModel.ResetGameLists(ListCategoryType.Developer);
-                    eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
-                    break;
-
-                case ListCategoryType.Genre:
-                    eclipseStateContext.MainWindowViewModel.ResetGameLists(ListCategoryType.Genre);
-                    eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
-                    break;
-
-                case ListCategoryType.Playlist:
-                    eclipseStateContext.MainWindowViewModel.ResetGameLists(ListCategoryType.Playlist);
-                    eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
-                    break;
-
-                case ListCategoryType.PlayMode:
-                    eclipseStateContext.MainWindowViewModel.ResetGameLists(ListCategoryType.PlayMode);
-                    eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
-                    break;
-
-                case ListCategoryType.Publisher:
-                    eclipseStateContext.MainWindowViewModel.ResetGameLists(ListCategoryType.Publisher);
-                    eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
-                    break;
-
-                case ListCategoryType.Series:
-                    eclipseStateContext.MainWindowViewModel.ResetGameLists(ListCategoryType.Series);
-                    eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
-                    break;
+                eclipseStateContext.DoVoiceSearch();
             }
+            else if (category == ListCategoryType.RandomGame)
+            {
+                eclipseStateContext.MainWindowViewModel.Navigator.MoveToRandomGame();
+                GoBackToBrowsing(eclipseStateContext);
+            }
+            else if (GameListBuilder.BrowsableCategories.Contains(category))
+            {
+                eclipseStateContext.MainWindowViewModel.Navigator.ShowCategory(category);
+                GoBackToBrowsing(eclipseStateContext);
+            }
+
             eclipseStateContext.MainWindowViewModel.IsPickingCategory = false;
             return true;
+        }
+
+        private static void GoBackToBrowsing(EclipseStateContext eclipseStateContext)
+        {
+            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
         }
 
         public bool OnEscape(EclipseStateContext eclipseStateContext)
@@ -99,7 +71,7 @@ namespace Eclipse.State
         {
             attractModeService.RestartAttractMode();
 
-            eclipseStateContext.MainWindowViewModel.CurrentGameList.CycleBackward();
+            eclipseStateContext.MainWindowViewModel.Navigator.MoveToPreviousGame();
             eclipseStateContext.MainWindowViewModel.IsPickingCategory = false;
             eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;

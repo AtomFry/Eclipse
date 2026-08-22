@@ -2,6 +2,7 @@
 using Eclipse.Models;
 using Eclipse.Service;
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -339,6 +340,9 @@ namespace Eclipse.View
         {
             Dispatcher.Invoke(() =>
             {
+                BrowsePerformanceMonitor monitor = BrowsePerformanceMonitor.Instance;
+                Stopwatch animateTimer = monitor.IsEnabled ? Stopwatch.StartNew() : null;
+
                 try
                 {
                     if(mainWindowViewModel.IsDisplayingResults)
@@ -375,7 +379,7 @@ namespace Eclipse.View
                         // scrolled past, all of it discarded by the next keypress. The decode now
                         // waits for the settle and runs off the UI thread - see
                         // LoadSettledGameMediaAsync.
-                        GameMatch settledGame = mainWindowViewModel?.CurrentGameList?.Game1;
+                        GameMatch settledGame = mainWindowViewModel?.CurrentGameList?.SelectedGame;
                         GameFiles settledFiles = settledGame?.GameFiles;
 
                         activeBackgroundUri = settledFiles?.BackgroundImage;
@@ -400,6 +404,16 @@ namespace Eclipse.View
                 catch (Exception ex)
                 {
                     LogHelper.LogException(ex, "MainWindowView.xaml.cs.DoAnimateGameChange");
+                }
+
+                if (animateTimer != null)
+                {
+                    monitor.AnimateGameChangeCompleted(animateTimer.Elapsed.TotalMilliseconds);
+
+                    // Loaded runs after the dispatcher has finished the layout and render pass
+                    // this change caused, so it is the closest thing to "the user can see it" -
+                    // and it is where a synchronous image decode would show up.
+                    Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(monitor.RenderCompleted));
                 }
             });
         }
@@ -662,7 +676,7 @@ namespace Eclipse.View
                 StartPlaybackStartCheck();
             }
 
-            Uri gameBezelUri = mainWindowViewModel?.CurrentGameList?.Game1?.GameFiles?.GameBezelImage;
+            Uri gameBezelUri = mainWindowViewModel?.CurrentGameList?.SelectedGame?.GameFiles?.GameBezelImage;
             if (gameBezelUri == null)
             {
                 // fall back to platform or default bezel if no game bezel, based on height/width of game video if(width >= height) use horizontal, else use vertical
@@ -677,7 +691,7 @@ namespace Eclipse.View
                             defaultBezelOrientation = BezelOrientation.Vertical;
                         }
 
-                        gameBezelUri = BezelService.Instance.GetDefaultBezel(BezelType.PlatformDefault, defaultBezelOrientation, mainWindowViewModel.CurrentGameList.Game1.Game.Platform);
+                        gameBezelUri = BezelService.Instance.GetDefaultBezel(BezelType.PlatformDefault, defaultBezelOrientation, mainWindowViewModel.CurrentGameList.SelectedGame.Game.Platform);
                     }
                 }
             }

@@ -17,7 +17,7 @@ namespace Eclipse.Service
         // The eight categories a set is built for, in the order the sets are built. Not every
         // ListCategoryType appears: VoiceSearch, RandomGame and MoreLikeThis are assembled
         // elsewhere from results rather than from the catalog.
-        private static readonly ListCategoryType[] BrowsableCategories =
+        public static readonly IReadOnlyList<ListCategoryType> BrowsableCategories = new[]
         {
             ListCategoryType.Platform,
             ListCategoryType.ReleaseYear,
@@ -50,7 +50,7 @@ namespace Eclipse.Service
 
         public List<GameListSet> BuildAll()
         {
-            List<GameListSet> gameListSets = new List<GameListSet>(BrowsableCategories.Length);
+            List<GameListSet> gameListSets = new List<GameListSet>(BrowsableCategories.Count);
 
             foreach (ListCategoryType listCategoryType in BrowsableCategories)
             {
@@ -199,7 +199,7 @@ namespace Eclipse.Service
         // the same GameList instance ends up referenced from two sets. Duplicates are not
         // removed - a game sharing two genres with a list's category value contributes that list
         // twice - and the caller has always shown them as they come.
-        public static List<GameList> BuildMoreLikeThis(GameMatch currentGame, List<GameListSet> gameListSets)
+        public static List<GameList> BuildMoreLikeThis(GameMatch currentGame, IReadOnlyList<GameListSet> gameListSets)
         {
             List<GameList> moreLikeThisResults = new List<GameList>();
 

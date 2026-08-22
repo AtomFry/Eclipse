@@ -6,7 +6,7 @@
         {
             if (IsValidForState(eclipseState))
             {
-                eclipseStateContext.MainWindowViewModel.DoRandomGame();
+                eclipseStateContext.MainWindowViewModel.Navigator.MoveToRandomGame();
                 eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             }
         }

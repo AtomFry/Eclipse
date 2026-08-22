@@ -1,5 +1,6 @@
 ﻿using Eclipse.Service;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 
@@ -19,13 +20,13 @@ namespace Eclipse.Models
             {
                 gameLists = value;
 
-                // when the collection of lists are set, setup their start/end index - used for random searches
-                int nextStart = 0;
-                foreach (GameList gameList in gameLists)
-                {
-                    gameList.ListSetStartIndex = nextStart;
-                    nextStart = gameList.ListSetEndIndex + 1;
-                }
+                // A set used to number every game across all its lists here, writing a start
+                // index onto each list so that a random pick could be a single number in that
+                // space. Nothing needs that any more - random game counts the lists off as it
+                // walks them - and writing it was actively harmful: "more like this" builds a
+                // set from GameList instances borrowed from the genre, platform and series sets,
+                // so numbering them overwrote the positions those sets were navigating by.
+                totalGameCount = null;
             }
         }
         public ListCategoryType ListCategoryType { get; set; }
@@ -93,6 +94,7 @@ namespace Eclipse.Models
         {
             gameCycle.SetCurrentIndex(newIndex, true);
             RefreshGames();
+            WarmRowImages();
         }
 
         public int CurrentGameIndex
@@ -122,40 +124,137 @@ namespace Eclipse.Models
 
         public void CycleForward()
         {
+            BrowsePerformanceMonitor.Instance.MoveStarted();
             gameCycle.CycleForward();
             RefreshGames();
+            WarmRowImages();
         }
 
         public void CycleBackward()
         {
+            BrowsePerformanceMonitor.Instance.MoveStarted();
             gameCycle.CycleBackward();
             RefreshGames();
+            WarmRowImages();
         }
 
         private void RefreshGames()
         {
+            // The window advances by one game, so exactly one game enters it - but the slots
+            // shift, so every slot takes a new value. Counting how many actually changed is the
+            // measurement the row refactor is aiming at: it should be the window size today.
+            BrowsePerformanceMonitor monitor = BrowsePerformanceMonitor.Instance;
+            GameMatch[] slotsBefore = monitor.IsEnabled ? SnapshotSlots() : null;
+
+            RefreshGamesCore();
+
+            if (slotsBefore != null)
+            {
+                monitor.SlotsAssigned(CountChangedSlots(slotsBefore), slotsBefore.Length);
+
+                foreach (GameMatch slot in SnapshotSlots())
+                {
+                    monitor.RowImageShown(slot?.GameFiles?.FrontImage);
+                }
+            }
+        }
+
+        private GameMatch[] SnapshotSlots()
+        {
+            GameMatch[] slots = new GameMatch[SlotCount];
+
+            slots[0] = PreviousGame;
+            slots[1] = SelectedGame;
+            UpcomingGames.CopyTo(slots, 2);
+
+            return slots;
+        }
+
+        private int CountChangedSlots(GameMatch[] slotsBefore)
+        {
+            GameMatch[] slotsAfter = SnapshotSlots();
+
+            int changed = 0;
+            for (int slot = 0; slot < slotsAfter.Length; slot++)
+            {
+                if (slotsBefore[slot] != slotsAfter[slot])
+                {
+                    changed++;
+                }
+            }
+
+            return changed;
+        }
+
+        // The cycle supplies thirteen slots: one behind the selection, the selection, and eleven
+        // ahead of it.
+        private const int SlotCount = 13;
+        private const int UpcomingSlotCount = SlotCount - 2;
+
+        private void RefreshGamesCore()
+        {
             // at the start of the list, reset the previous game at index 0 to null
             if (gameCycle.GetIndexValue(1) == 0)
             {
-                Game0 = null;
+                PreviousGame = null;
             }
             else
             {
-                Game0 = gameCycle.GetItem(0);
+                PreviousGame = gameCycle.GetItem(0);
             }
 
-            Game1 = (MatchCount > 0) || (EclipseSettings.RepeatGamesToFillScreen) ? gameCycle.GetItem(1) : null;
-            Game2 = (MatchCount > 1) || (EclipseSettings.RepeatGamesToFillScreen) ? gameCycle.GetItem(2) : null;
-            Game3 = (MatchCount > 2) || (EclipseSettings.RepeatGamesToFillScreen) ? gameCycle.GetItem(3) : null;
-            Game4 = (MatchCount > 3) || (EclipseSettings.RepeatGamesToFillScreen) ? gameCycle.GetItem(4) : null;
-            Game5 = (MatchCount > 4) || (EclipseSettings.RepeatGamesToFillScreen) ? gameCycle.GetItem(5) : null;
-            Game6 = (MatchCount > 5) || (EclipseSettings.RepeatGamesToFillScreen) ? gameCycle.GetItem(6) : null;
-            Game7 = (MatchCount > 6) || (EclipseSettings.RepeatGamesToFillScreen) ? gameCycle.GetItem(7) : null;
-            Game8 = (MatchCount > 7) || (EclipseSettings.RepeatGamesToFillScreen) ? gameCycle.GetItem(8) : null;
-            Game9 = (MatchCount > 8) || (EclipseSettings.RepeatGamesToFillScreen) ? gameCycle.GetItem(9) : null;
-            Game10 = (MatchCount > 9) || (EclipseSettings.RepeatGamesToFillScreen) ? gameCycle.GetItem(10) : null;
-            Game11 = (MatchCount > 10) || (EclipseSettings.RepeatGamesToFillScreen) ? gameCycle.GetItem(11) : null;
-            Game12 = (MatchCount > 11) || (EclipseSettings.RepeatGamesToFillScreen) ? gameCycle.GetItem(12) : null;
+            SelectedGame = GameForSlot(1);
+
+            for (int slot = 2; slot < SlotCount; slot++)
+            {
+                // Assigning through the indexer replaces one entry and notifies for that entry
+                // alone, so only the container whose game changed is updated. Clearing and
+                // refilling the collection would regenerate the whole row on every keypress.
+                UpcomingGames[slot - 2] = GameForSlot(slot);
+            }
+        }
+
+        /// <summary>
+        /// Decodes the artwork around this list's window before it is needed. Returns
+        /// immediately; the decoding happens on the thread pool. Without it the first view of a
+        /// game decodes its box art on the UI thread, inside the slot assignments above.
+        ///
+        /// Deliberately not called from RefreshGames. Every list refreshes its slots when it is
+        /// built, and a library has hundreds of lists across the eight category sets - warming
+        /// there would queue tens of thousands of decodes at startup for rows nobody is looking
+        /// at. Only the two lists actually on screen are worth warming, so the callers are the
+        /// navigation methods and the view model when it changes which lists are displayed.
+        /// </summary>
+        public void WarmRowImages()
+        {
+            if (gameCycle == null)
+            {
+                return;
+            }
+
+            RowImageDecoder.Instance.WarmWindow(MatchingGames, gameCycle.GetIndexValue(0), SlotCount);
+        }
+
+        /// <summary>
+        /// The game for a slot, or null where the list is too short to fill it. Repeat-to-fill
+        /// wraps the list round instead of leaving a gap (RULE-BROWSE-016).
+        /// </summary>
+        private GameMatch GameForSlot(int slot)
+        {
+            // A list with no games at all has nothing to wrap round, so repeat-to-fill cannot
+            // apply. The old form of this check would have indexed an empty list; no list
+            // reaches here empty today, but the guard costs nothing and the crash was real.
+            if (MatchCount == 0)
+            {
+                return null;
+            }
+
+            if ((MatchCount > slot - 1) || EclipseSettings.RepeatGamesToFillScreen)
+            {
+                return gameCycle.GetItem(slot);
+            }
+
+            return null;
         }
 
         // Identity and ordering. The raw category value - a genre name, a platform, a release
@@ -256,195 +355,50 @@ namespace Eclipse.Models
             }
         }
 
-        public int ListSetStartIndex { get; set; }
-        public int ListSetEndIndex
-        {
-            get
-            {
-                return ListSetStartIndex + MatchCount - 1;
-            }
-        }
+        // The window of games on screen, as three named parts rather than thirteen numbered
+        // properties. The cycle still supplies thirteen slots; what changed is that the row no
+        // longer needs a property per slot, and the two slots that mean something specific say
+        // so in their names.
+        //
+        // PreviousGame is the dimmed slot behind the selection, SelectedGame is the one the
+        // details pane and every game action read, and UpcomingGames is the rest of the row.
+        // Previously these were Game0, Game1 and Game2..Game12 - names that said where a game
+        // sat rather than what it was.
 
-        private GameMatch game0;
-        public GameMatch Game0
+        private GameMatch previousGame;
+        public GameMatch PreviousGame
         {
-            get { return game0; }
+            get { return previousGame; }
             set
             {
-                if (game0 != value)
+                if (previousGame != value)
                 {
-                    game0 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game0"));
+                    previousGame = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("PreviousGame"));
                 }
             }
         }
 
-        private GameMatch game1;
-        public GameMatch Game1
+        private GameMatch selectedGame;
+        public GameMatch SelectedGame
         {
-            get { return game1; }
+            get { return selectedGame; }
             set
             {
-                if (game1 != value)
+                if (selectedGame != value)
                 {
-                    game1 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game1"));
+                    selectedGame = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("SelectedGame"));
                 }
             }
         }
 
-        private GameMatch game2;
-        public GameMatch Game2
-        {
-            get { return game2; }
-            set
-            {
-                if (game2 != value)
-                {
-                    game2 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game2"));
-                }
-            }
-        }
-
-        private GameMatch game3;
-        public GameMatch Game3
-        {
-            get { return game3; }
-            set
-            {
-                if (game3 != value)
-                {
-                    game3 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game3"));
-                }
-            }
-        }
-
-        private GameMatch game4;
-        public GameMatch Game4
-        {
-            get { return game4; }
-            set
-            {
-                if (game4 != value)
-                {
-                    game4 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game4"));
-                }
-            }
-        }
-
-        private GameMatch game5;
-        public GameMatch Game5
-        {
-            get { return game5; }
-            set
-            {
-                if (game5 != value)
-                {
-                    game5 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game5"));
-                }
-            }
-        }
-
-        private GameMatch game6;
-        public GameMatch Game6
-        {
-            get { return game6; }
-            set
-            {
-                if (game6 != value)
-                {
-                    game6 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game6"));
-                }
-            }
-        }
-
-        private GameMatch game7;
-        public GameMatch Game7
-        {
-            get { return game7; }
-            set
-            {
-                if (game7 != value)
-                {
-                    game7 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game7"));
-                }
-            }
-        }
-
-        private GameMatch game8;
-        public GameMatch Game8
-        {
-            get { return game8; }
-            set
-            {
-                if (game8 != value)
-                {
-                    game8 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game8"));
-                }
-            }
-        }
-
-        private GameMatch game9;
-        public GameMatch Game9
-        {
-            get { return game9; }
-            set
-            {
-                if (game9 != value)
-                {
-                    game9 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game9"));
-                }
-            }
-        }
-
-        private GameMatch game10;
-        public GameMatch Game10
-        {
-            get { return game10; }
-            set
-            {
-                if (game10 != value)
-                {
-                    game10 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game10"));
-                }
-            }
-        }
-
-        private GameMatch game11;
-        public GameMatch Game11
-        {
-            get { return game11; }
-            set
-            {
-                if (game11 != value)
-                {
-                    game11 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game11"));
-                }
-            }
-        }
-
-        private GameMatch game12;
-        public GameMatch Game12
-        {
-            get { return game12; }
-            set
-            {
-                if (game12 != value)
-                {
-                    game12 = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Game12"));
-                }
-            }
-        }
+        /// <summary>
+        /// The row after the selected game. Fixed length - the entries are replaced in place
+        /// rather than the collection being rebuilt, so a move updates only the item containers
+        /// whose game actually changed instead of regenerating the row.
+        /// </summary>
+        public ObservableCollection<GameMatch> UpcomingGames { get; } =
+            new ObservableCollection<GameMatch>(new GameMatch[UpcomingSlotCount]);
     }
 }

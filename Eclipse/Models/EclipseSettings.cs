@@ -190,6 +190,14 @@ namespace Eclipse.Models
         [DefaultValue(0)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public double SelectedGameDetailsPadding { get; set; }
+
+        // Development tool, deliberately not in the settings UI. Times the box art row's
+        // response to a keypress and counts what the background media pump does, so the row
+        // refactor can be measured rather than guessed at. See
+        // Eclipse.Service.BrowsePerformanceMonitor. Costs nothing when off.
+        [DefaultValue(false)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public bool MeasureBrowsePerformance { get; set; }
     }
 
     public class CustomListDefinition

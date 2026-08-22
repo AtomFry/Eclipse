@@ -44,11 +44,11 @@ namespace Eclipse.State.KeyStrategy
             switch (pageFunction)
             {
                 case PageFunction.PageDown:
-                    keyStrategy = new KeyStrategyPageDown();
+                    keyStrategy = KeyStrategyPage.Forward();
                     break;
 
                 case PageFunction.PageUp:
-                    keyStrategy = new KeyStrategyPageUp();
+                    keyStrategy = KeyStrategyPage.Backward();
                     break;
 
                 case PageFunction.RandomGame:

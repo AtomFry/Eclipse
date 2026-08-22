@@ -19,12 +19,12 @@ namespace Eclipse.State.GameDetailOptions
 
         public override void MoveLeft(EclipseStateContext eclipseStateContext)
         {
-            eclipseStateContext.MainWindowViewModel.CurrentGameList?.Game1?.GameFiles?.GameVersionList?.CycleBackward();
+            eclipseStateContext.MainWindowViewModel.CurrentGameList?.SelectedGame?.GameFiles?.GameVersionList?.CycleBackward();
         }
 
         public override void MoveRight(EclipseStateContext eclipseStateContext)
         {
-            eclipseStateContext.MainWindowViewModel.CurrentGameList?.Game1?.GameFiles?.GameVersionList?.CycleForward();
+            eclipseStateContext.MainWindowViewModel.CurrentGameList?.SelectedGame?.GameFiles?.GameVersionList?.CycleForward();
         }
     }
 }

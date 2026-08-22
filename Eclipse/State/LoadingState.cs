@@ -92,10 +92,7 @@ namespace Eclipse.State
                 // until this finishes.
                 SpeechRecognizerService.Instance.PrepareInBackground();
 
-                // prepare lists of games by different categories
-                EclipseStateContext.MainWindowViewModel.GameListSets = new List<GameListSet>();
-
-                // populate the lists
+                // populate the lists of games by different categories
                 EclipseStateContext.MainWindowViewModel.CreateGameLists();
 
                 // GameFieldEnum and the accessor table are two hand-written lists of the same
@@ -111,7 +108,7 @@ namespace Eclipse.State
                 // get settings and setup default list category type
                 EclipseSettings eclipseSettings = EclipseSettingsDataProvider.Instance.EclipseSettings;
 
-                EclipseStateContext.MainWindowViewModel.ResetGameLists(eclipseSettings.DefaultListCategoryType);
+                EclipseStateContext.MainWindowViewModel.Navigator.ShowCategory(eclipseSettings.DefaultListCategoryType);
 
                 e.Result = EclipseStateContext;
             }
