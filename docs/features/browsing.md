@@ -79,14 +79,14 @@ and voice match.
 | RULE-BROWSE-002 | Category lists are ordered by list name; games within a category list are ordered by LaunchBox sort-title-or-title. | Ordering is user-visible and relied upon for navigation muscle memory. |
 | RULE-BROWSE-003 | Custom lists sort ahead of category lists, in their defined order; category lists follow, name-ordered. | Users arrange custom lists deliberately (FEAT-CONFIG-006). |
 | RULE-BROWSE-004 | A custom list with no matching games is omitted from the set entirely. | Empty lists would otherwise appear as blank rows. |
-| RULE-BROWSE-005 | Custom list filters are applied to the platform-category projection of the index, not to the raw library. | Changing the source projection changes membership. |
+| RULE-BROWSE-005 | Custom list filters are applied to the whole library - every game once - not to a category projection of it. | Changing the source projection changes membership. Corrected during `B-15`: this rule described the pre-`GameCatalog` behaviour, where filtering the platform projection amounted to the same thing because each game has exactly one platform. |
 | RULE-BROWSE-006 | When a custom list defines sort expressions they replace the default sort; the first expression establishes order and later ones refine it. | Multi-key ordering is meaningful for e.g. History. |
 | RULE-BROWSE-007 | A custom list size cap is applied *after* sorting, so the cap selects the top N by the defined order. | Applying the cap first would produce arbitrary members. |
 | RULE-BROWSE-008 | Navigation wraps in all four directions. | Wrapping at list ends is core to the browsing feel. |
 | RULE-BROWSE-009 | Page jump moves a fixed number of games; for lists shorter than that, it moves half the list length instead. | Prevents a page jump from being a no-op or a full loop on short lists. |
 | RULE-BROWSE-010 | After a list rebuild, position is restored by trying in order: the same game in the same list; the same index in that list; the previous index; the first game in that list; a random game. | **High risk.** Subtle, four-deep fallback, no automated coverage. |
 | RULE-BROWSE-011 | Random game selects an index across the whole list set, then locates which list owns that index — so selection is weighted by list size. | A game in a large list is more likely than one in a small list. This is observable and may or may not be intended (`OQ-002`). |
-| RULE-BROWSE-012 | "More like this" appends one list per matching series, genre, platform, developer, publisher, play mode and release year, in that order, and does not deduplicate. | The same game appears many times; the ordering is the relevance signal. |
+| RULE-BROWSE-012 | "More like this" appends one list per matching series, genre, platform, developer, publisher, play mode and release year, in that order, and does not deduplicate. | The same game appears many times; the ordering is the relevance signal. Since `B-15` that order is a table in `GameListBuilder.MoreLikeThisCategories` rather than the order of seven copy-pasted blocks, so changing it is now a one-line decision (`OQ-003`). |
 | RULE-BROWSE-013 | The category picker's default option is the configured default category and is sorted first; remaining options follow a fixed order. | Ordering is stable so muscle memory works. |
 | RULE-BROWSE-014 | Broken/hidden filtering happens once during index construction, not per list. | Changing it requires a full index rebuild, i.e. a restart. |
 | RULE-BROWSE-015 | The row shows a fixed window of games around the selection; the window size is fixed at 13 slots. | Coupled to presentation; see FEAT-PRESENT-001. |
@@ -145,9 +145,12 @@ and `IGame` metadata members throughout.
 
 See [VERIFICATION.md](../VERIFICATION.md): `VER-BROWSE-001` … `VER-BROWSE-008`.
 
-**Currently automated:** none.
-**Highest-value gap:** `RULE-BROWSE-010` (position restoration) and `RULE-BROWSE-005`/`006`/`007`
-(custom-list membership and ordering).
+**Currently automated:** none. `RULE-BROWSE-005`/`006`/`007` are covered by a development-time
+probe (`CustomListQueryProbe`) rather than by tests - it walks every field and operator against
+the real library and was what verified `B-15b`. That is a refactor guard, not a suite: it proves
+behaviour did not change, not that the behaviour is correct.
+**Highest-value gap:** `RULE-BROWSE-010` (position restoration), and turning the probe coverage of
+`RULE-BROWSE-005`/`006`/`007` into real tests (`B-01`).
 
 ## Open questions
 

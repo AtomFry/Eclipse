@@ -1,6 +1,6 @@
 # Plan — B-15: extract list construction and the custom-list query engine
 
-**Status: proposed. No code written.**
+**Status: complete. All stages delivered and verified.**
 
 ## Context
 
@@ -119,7 +119,9 @@ Two routes:
 
 ## Stages
 
-Each stage builds and deploys on its own. `B-15a` is Stages 0–3; `B-15b` is Stages 4–5.
+Each stage builds and deploys on its own. `B-15a` is Stages -1 to 2; `B-15b` is Stages 4 to 5b.
+Stages 1 and 3 - the test project and its characterization suite - were deferred at the user's
+direction in favour of manual verification, and the probes described below stand in for them.
 
 ### Stage -1 — Stop using a display string as a sort key and an identity — **done**
 
@@ -363,31 +365,90 @@ softly is a product decision, not part of removing the reflection.
 - **Verify:** probe diff empty against the Stage 3 baseline; startup dump diff empty against a
   baseline taken after the last `CustomLists.json` change
 
-### Stage 5 — Collapse `DoMoreLikeCurrentGame`
+### Stage 5a — Move the selection out, and probe it — **built, awaiting a baseline run**
 
-177 lines, seven blocks that differ only in which category set to search and which values to
-search it for. Series, genre, developer, publisher and play mode are the same eleven lines five
-times; platform and release year are the same again with a single value instead of a collection.
+Splitting Stage 5 in two, for the same reason Stage 2 and Stage 4 were split: the collapse needs
+a before-and-after, and more-like-this has nothing at startup for the golden dump to catch. It
+is built on demand from whichever game happens to be selected.
 
-Becomes a table of `(ListCategoryType, Func<GameMatch, IEnumerable<string>>)` and one loop. The
-table's order *is* the current result order, so the ordering `OQ-003` asks about is preserved
-and becomes visible in one place instead of implied by statement order.
+`GameListBuilder.BuildMoreLikeThis(currentGame, gameListSets)` holds the selection; the view
+model keeps the six lines that follow it — replacing the set, resetting the lists, the three
+display flags and `CallGameChangeFunction`. **The moved body was cut, not retyped**, and
+verified textually identical to the original modulo indentation and the parameter name. The
+view model's diff for this stage is 150 lines removed and one line added.
 
-The last six lines — `ResetGameLists`, the three display flags, `CallGameChangeFunction` — stay
-in the view model. Only the list selection moves to the builder.
+`MoreLikeThisProbe` then drives that selection over an even stride through the catalog — 100
+games, so the sample spans rich metadata and sparse — and writes each game's own series, genres,
+platform, developers, publishers, play modes and release year alongside the lists that came
+back, in order, with duplicates intact. The metadata is there so that a changed line can be told
+apart from a re-scraped game.
+
+**The probe does not build a `GameListSet` from the results.** Those are the same `GameList`
+instances that live in the genre, platform and series sets, and `GameListSet`'s setter rewrites
+`ListSetStartIndex` on everything handed to it — so constructing one here would corrupt the
+indices the rest of the product navigates by. That is finding 5, and a diagnostic must not be
+the thing that triggers it.
+
+- **Files:** `Eclipse/Service/GameListBuilder.cs` (method moved in),
+  `Eclipse/View/MainWindowViewModel.cs` (150 lines out, 1 in),
+  `Eclipse/Service/MoreLikeThisProbe.cs` (new), `Eclipse/State/LoadingState.cs` (one call)
+- **Verify:** a probe baseline must be captured *before* Stage 5b is written
+
+### Stage 5b — Collapse `DoMoreLikeCurrentGame` — **built, awaiting the probe diff**
+
+150 lines, seven blocks that differ only in which category set to search and which values to
+search it for. Series, genre, developer, publisher and play mode were the same eleven lines five
+times; platform and release year the same again with a single value instead of a collection.
+
+Now `MoreLikeThisCategories` — a seven-row table of
+`(ListCategoryType, Func<GameMatch, IEnumerable<string>>)` — and one loop, about 30 lines. The
+table's order *is* the result order, so what `OQ-003` asks about is preserved and is visible in
+one place instead of implied by the order of seven statements.
+
+Two behaviours preserved that a tidier rewrite would have changed:
+
+- **The multi-value collections are still not null-guarded.** A metadata property returning null
+  has always thrown here rather than silently matching nothing, and adding `?? Enumerable.Empty`
+  would have turned a crash into a wrong answer. `Only()` supplies the none-or-one sequence for
+  platform and release year, which is exactly what their null checks did.
+- **`gameListSets` is not null-conditional.** The old query syntax threw `ArgumentNullException`
+  on a null collection; `FirstOrDefault` without `?.` throws the same.
+
+Duplicates are still not removed, and the caller still shows them as they come.
 
 - **Files:** `Eclipse/Service/GameListBuilder.cs`, `Eclipse/View/MainWindowViewModel.cs`
-  (delete ~170 lines), `Eclipse.Tests/*`
-- **Verify:** a test asserting the seven-category order and duplicate handling; manually, More
-  Like This on a game with multiple genres and a series
+- **Verified.** The `MoreLikeThisProbe` diff against the Stage 5a baseline was timestamp-only,
+  as were the startup dump and the custom-list probe. One of the two runs also toggled
+  `ShowGameCountInList` between dumps, and every list held its position — which the pre-Stage -1
+  code, sorting on the display string, would not have done. An unplanned confirmation of the
+  first stage by the last one's tooling.
 
-### Stage 6 — Documentation
+### Stage 6 — Documentation — **done**
 
-- `RULE-BROWSE-005` corrected to say custom lists filter the whole library (finding 1).
-- `VER-BROWSE-006` marked covered; `VER-BROWSE-002` likewise.
-- `B-15` split into `B-15a`/`B-15b` in `TRACEABILITY.md`; `B-01` marked delivered.
-- `OQ-003` answered as far as this work answers it.
-- Finding 5 recorded as a new backlog item.
+- `RULE-BROWSE-005` corrected: custom lists filter the whole library, not a category projection
+  of it (finding 1). The old wording described pre-`GameCatalog` behaviour, where filtering the
+  platform projection amounted to the same thing because each game has one platform.
+- `RULE-BROWSE-012` notes that the more-like-this order is now a table.
+- `VER-BROWSE-006` marked **covered by probe, not by tests**, with the distinction stated: a
+  probe proves behaviour did not change, not that the behaviour is correct. Its rank-4 entry in
+  the test-priority list notes that its stated rationale — reflection over property-name strings
+  breaking lists silently — no longer applies.
+- `VER-BROWSE-002` notes it is visible in the golden dump.
+- `B-15` split into `B-15a`/`B-15b`, both marked delivered, with the substitution of probes for
+  unit tests recorded rather than glossed. **`B-01` is not marked delivered** — the test project
+  was deferred, not built.
+- The testability table gains a "testable now" row: list construction no longer waits on
+  `B-11`/`B-12`, only on `B-01`.
+- `OQ-003` updated — still an open product decision, but now a one-line change to act on.
+- `OQ-012` **resolved**, and the summary's "two highest-value questions" reduced to one. The
+  stop-loop was compensating for a stale animation `Completed` callback that restarted the video
+  timer; cancellation makes that structurally impossible. `B-24` delivered, `S-12` closed.
+- Finding 5 recorded as **`OQ-022`** — more-like-this corrupting the `ListSetStartIndex` of other
+  sets — flagged as a defect needing a decision, and pointed at `B-14`.
+
+**Done.** `GameListDump`, `CustomListQueryProbe`, `MoreLikeThisProbe`, the `DumpGameLists`
+setting and the three calls in `LoadingState` are removed. The
+`GameFields.UnmappedFields()` drift guard stays.
 
 ---
 
@@ -395,11 +456,21 @@ in the view model. Only the list selection moves to the builder.
 
 | | Before | After |
 |---|---|---|
-| `MainWindowViewModel.cs` | 1385 lines | ~985 |
-| `DoMoreLikeCurrentGame` | 177 lines | ~25 |
+| `MainWindowViewModel.cs` | 1385 lines | 1019 |
+| `DoMoreLikeCurrentGame` | 177 lines | 21, of which 15 are view concerns |
 | Reflection over property-name strings | 2 call sites, 6 entry points | none |
 | Filter delegates run per rebuild | 2x per custom list | 1x |
-| Test projects | 0 | 1, with a reusable LaunchBox fixture |
+| Renaming a projected property | silently breaks a user's custom lists | compile error |
+| Test projects | 0 | 0 - deferred; probes stood in |
+
+Two defects were found and fixed along the way, and one was found and left alone:
+
+- **Fixed (Stage -1):** position restoration matched lists on a display string carrying the game
+  count, so un-favouriting from inside Favorites could never find the list again and dropped the
+  user on a random game.
+- **Fixed (Stage 4):** every custom list filter ran over the whole library twice per rebuild.
+- **Left alone (`OQ-022`):** more-like-this corrupts the `ListSetStartIndex` of the sets it
+  borrows lists from. Fixing it changes behaviour and belongs with `B-14`.
 
 ---
 

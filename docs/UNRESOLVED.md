@@ -65,11 +65,15 @@ by clone count until the index refactor. `DoRandomGame` is unchanged and remains
 list size, so the open question stands.
 
 ### OQ-003 — Is "more like this" ordering intentional?
-**Feature:** FEAT-BROWSE-008 · **Evidence:** `DoMoreLikeCurrentGame`, `RULE-BROWSE-012`
+**Feature:** FEAT-BROWSE-008 · **Evidence:** `GameListBuilder.MoreLikeThisCategories`,
+`RULE-BROWSE-012`
 Lists are appended in a fixed order (series, genre, platform, developer, publisher, play
 mode, year) with no deduplication and no relevance weighting. **Interpretations:** (a) the
 order *is* the relevance model; (b) it is simply the order the code was written in.
 **Why it matters:** any future ranking work needs to know. **Resolve by:** product decision.
+**Update (`B-15`):** still open, but no longer expensive to act on. The order used to be
+implied by the sequence of seven copy-pasted blocks; it is now the order of a seven-row
+table, so whichever answer the product decision gives, applying it is a one-line change.
 
 ### OQ-004 — Why is the browsing window 13 slots?
 **Feature:** FEAT-PRESENT-001 · **Evidence:** `new ListCycle<GameMatch>(MatchingGames, 13)`
@@ -127,13 +131,19 @@ silently make restart-only settings live. **Resolve by:** **empirical research t
 change each of the 45 settings with Big Box running and record which take effect. This
 should be its own backlog item; it is a prerequisite for `B-26`.
 
-### OQ-012 — What race does the 500 ms stop-loop compensate for?
+### ~~OQ-012~~ — What race does the 500 ms stop-loop compensate for? — **resolved**
 **Feature:** FEAT-LAUNCH-004 · **Evidence:** `StopVideoAndAnimationHandler`; commits
 `1a61c70` "Fix for screensaver and game videos playing while a game is playing" and
 `a487e97` "Fix bug where videos would restart and screen saver would start while playing
-games" **Interpretations:** a race between MediaElement state and timer callbacks.
-**Why it matters:** `B-24` removes the loop; removing it blind reintroduces a fixed bug.
-**Resolve by:** reproduce with the loop removed and diagnose the actual race.
+games"
+**Answer:** a stale animation `Completed` callback. `BackgroundImageFadeIn_Completed` was not
+just a visual step - it restarted the video timer - so a callback already queued when the
+timers were stopped would start them again immediately afterwards. Calling `StopEverything`
+five times over half a second was a retry loop standing in for cancellation: eventually a pass
+landed after the last queued callback had fired.
+**Resolution:** the video pipeline refactor replaced the timer-and-callback chain with one
+cancellable `async` sequence per selection, which makes a stale step structurally impossible
+rather than unlikely. `B-24` is delivered and the loop is gone; `S-12` is closed.
 
 ### OQ-013 — How does Eclipse know a game has exited?
 **Feature:** FEAT-LAUNCH-001 · **Evidence:** `RULE-LAUNCH-007` — the running flag is
@@ -218,13 +228,34 @@ action key and it behaves differently per row. **Resolve by:** product decision.
 | Suspected dead items | 12 (`DEAD-001` … `DEAD-012`) |
 | — high confidence, safe to remove after a grep | 5 |
 | — requires investigation first | 7 |
-| Open questions | 21 (`OQ-001` … `OQ-021`) |
+| Open questions | 22 (`OQ-001` … `OQ-022`), of which 1 resolved (`OQ-012`) |
 | — product decisions | 13 |
-| — research/experiment tasks | 5 |
+| — research/experiment tasks | 4 (`OQ-012` resolved) |
 | — external (LaunchBox) questions | 1 |
-| — likely genuine defects worth their own items | 2 (`OQ-010` stale cache, `OQ-019` startup background) |
+| — likely genuine defects worth their own items | 3 (`OQ-010` stale cache, `OQ-019` startup background, `OQ-022` shared list indices) |
 
-**The two highest-value questions to resolve first** are `OQ-011` (live-vs-restart
-settings table — a prerequisite for `B-26`) and `OQ-012` (the stop-loop race — a
-prerequisite for `B-24`). Both are research tasks with concrete methods, and both
-currently block backlog items that would otherwise be done blind.
+**The highest-value question to resolve** is `OQ-011` (live-vs-restart settings table — a
+prerequisite for `B-26`). It is a research task with a concrete method, and it blocks a
+backlog item that would otherwise be done blind.
+
+`OQ-012` (the stop-loop race) was the other, and is now answered — see above. `B-24` is
+delivered.
+
+`OQ-022` below is not a question about intent; it is a defect that needs a decision about
+when to fix it.
+
+### OQ-022 — "More like this" corrupts the list indices of other sets
+**Feature:** FEAT-BROWSE-008 · **Evidence:** `GameListBuilder.BuildMoreLikeThis`,
+`GameListSet.GameLists` setter, `RULE-BROWSE-011`
+More-like-this returns the *same* `GameList` instances that already live in the genre,
+platform and series sets, and the caller puts them into a new `GameListSet`. That setter
+rewrites `ListSetStartIndex` on every list handed to it — so opening more-like-this overwrites
+the start indices the other sets depend on, and `ListSetStartIndex` is what `DoRandomGame` and
+position restoration (`RULE-BROWSE-010`) navigate by. It self-heals on the next
+`CreateGameLists`, which is presumably why it has gone unnoticed.
+**Interpretations:** none — this is a defect, found by reading during `B-15` and deliberately
+left alone because fixing it changes behaviour.
+**Why it matters:** random game and position restoration silently mis-navigate after a
+more-like-this until the next rebuild. **Resolve by:** deciding whether the fix is to stop
+sharing instances, to stop the setter mutating them, or to give each set its own index map.
+Belongs with `B-14`, which rewrites position restoration.

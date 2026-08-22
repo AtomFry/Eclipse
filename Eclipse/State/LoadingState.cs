@@ -108,14 +108,6 @@ namespace Eclipse.State
                     LogHelper.Log($"Custom lists cannot filter or sort on these fields - no accessor is defined: {string.Join(", ", unmappedFields)}");
                 }
 
-                // record what was built, if the dump setting is on - the baseline that the
-                // list construction refactor is measured against. Does nothing by default.
-                GameListDump.WriteIfEnabled(EclipseStateContext.MainWindowViewModel.GameListSets, "startup");
-
-                // and every field/operator combination a custom list can use, which this user's
-                // own CustomLists.json will only cover a corner of
-                CustomListQueryProbe.WriteIfEnabled(EclipseStateContext.MainWindowViewModel.gameCatalog);
-
                 // get settings and setup default list category type
                 EclipseSettings eclipseSettings = EclipseSettingsDataProvider.Instance.EclipseSettings;
 

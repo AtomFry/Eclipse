@@ -30,7 +30,8 @@ model — see `S-2` and backlog item `B-12`.
 | Testability | Applies to | Available |
 |---|---|---|
 | Testable **now** | Title decomposition, match scoring, list-window cycling, dynamic filter/sort expression building | Immediately |
-| Testable after `B-11`/`B-12` | List construction, custom-list membership, position restoration, alternate-version filtering, media path resolution | After the adapter and game model exist |
+| Testable after `B-11`/`B-12` | Position restoration, alternate-version filtering, media path resolution | After the adapter and game model exist |
+| Testable now | List construction and custom-list membership - `GameListBuilder` takes an `IGameCatalogSource` since `B-15a`, and `IGame` is an interface in a vendored assembly, so a fixture needs a hand-written fake rather than the full game model | Needs `B-01` only |
 | Testable **now** (was `B-18`) | Attract-mode sequencing and presenter call ordering — `IAttractModePresenter` exists and `AttractModeSlideshow` takes it plus its timings by constructor | Immediately |
 | Testable after `B-19` | State machine transitions, presentation presenter call ordering | After the rest of the view is behind an interface |
 | Host-dependent, manual only | Plugin registration, theme hosting, menu item, game launching, video playback, speech recognition | Always |
@@ -46,11 +47,11 @@ Each scenario is written so a developer can execute it without reading the code.
 | ID | Scenario | Type | Covers |
 |---|---|---|---|
 | VER-BROWSE-001 | Select each browse category in turn. Every category produces at least one list; lists are ordered with custom lists first, then alphabetically; each list title shows a count when enabled. | Manual | RULE-BROWSE-002, 003, 012 |
-| VER-BROWSE-002 | Pick a game with three genres. Confirm it appears in all three genre lists. | Manual / unit after B-12 | RULE-BROWSE-001 |
+| VER-BROWSE-002 | Pick a game with three genres. Confirm it appears in all three genre lists. | Manual / unit after B-12; also visible in the `B-15` golden dump | RULE-BROWSE-001 |
 | VER-BROWSE-003 | Navigate right from the last game in a list; confirm wrap to the first. Repeat for left, up, down. | Manual | RULE-BROWSE-008 |
 | VER-BROWSE-004 | In a list of 100 games, press the page key; confirm the selection moves 7. In a list of 4, confirm it moves 2. | Manual / unit | RULE-BROWSE-009 |
 | VER-BROWSE-005 | **Position restoration.** Browse to a known game in the Favorites list. Un-favourite it. Confirm the user lands on the next game in that list, not at the top and not in a different list. Repeat for: game still present; list now empty; list gone entirely. | **Characterization — unit** | RULE-BROWSE-010 |
-| VER-BROWSE-006 | Define a custom list with a filter, two sort expressions and a max size. Confirm membership matches the filter, order matches both sorts, and the cap selects the top N *after* sorting. | **Characterization — unit** | RULE-BROWSE-005, 006, 007 |
+| VER-BROWSE-006 | Define a custom list with a filter, two sort expressions and a max size. Confirm membership matches the filter, order matches both sorts, and the cap selects the top N *after* sorting. | **Covered by probe, not by tests** — `CustomListQueryProbe` runs every field × operator and both sort directions against the real library; it guarded `B-15b`. Still wanted as a unit test (`B-01`), because a probe proves behaviour is unchanged, not that it is right. | RULE-BROWSE-005, 006, 007 |
 | VER-BROWSE-007 | Browse to a list with 3 games with repeat-to-fill on, then off. Confirm the row repeats in the first case and shows gaps in the second. | Manual | RULE-BROWSE-011, 016 |
 | VER-BROWSE-008 | Trigger random game 50 times from a set with one large and one small list; confirm selection is weighted by list size. | Exploratory | RULE-BROWSE-011 (`OQ-002`) |
 
@@ -159,7 +160,7 @@ a refactor cannot change it silently. These are ranked by (risk of silent breaka
 | 1 | **Position restoration** (`VER-BROWSE-005`) | Four-deep fallback, entirely undocumented outside the code, user-visible every time they favourite something, and `B-14` rewrites it. Nearly pure logic. | `B-12` for a clean fixture; a crude version is possible sooner |
 | 2 | **Voice title decomposition** (`VER-SEARCH-001`, `002`) | Pure string functions with many special cases (colon, slash, roman numerals, noise words). The most testable code in the product and completely uncovered. `B-30` would rewrite it. | Nothing — **can be written today** |
 | 3 | **Match scoring** (`VER-SEARCH-003`) | Tuned heuristics the author described as endlessly tweakable. Any change silently reorders results. Pure arithmetic. | Nothing — **can be written today** |
-| 4 | **Custom list membership and ordering** (`VER-BROWSE-006`) | Filters and sorts are built by reflection over property-name strings; a rename silently breaks user-defined lists that live in the user's own file, not in the repo. | `B-12` |
+| 4 | **Custom list membership and ordering** (`VER-BROWSE-006`) | **Rationale now partly spent.** The reflection over property-name strings is gone (`B-15b`) - a rename is a compile error - so the silent-break risk it names no longer exists. A test is still wanted to pin what the operators *should* do, which `CustomListQueryProbe` cannot say. | `B-01`; a fixture is easier after `B-12` but not blocked on it |
 | 5 | **Bezel resolution** (`VER-MEDIA-001`) | Five-level chain across three files plus a video-aspect rule. `B-20` consolidates it. | Partially now; fully after `B-11` |
 | 6 | **Clear-logo crop equivalence** (`VER-MEDIA-003`) | `B-29` rewrites the crop algorithm; the only meaningful acceptance criterion is pixel-identical output. | Nothing — **golden files can be captured today** |
 | 7 | **Default custom lists** (`VER-CONFIG-002`) | Every new user sees these; they are constructed in code and easy to alter accidentally. | Nothing |

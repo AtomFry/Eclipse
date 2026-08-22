@@ -71,7 +71,7 @@ naming a constant changes nothing, provided the value is preserved exactly.
 
 | Epic | Backlog items |
 |---|---|
-| EPIC-BROWSE | B-07, B-12, B-14, B-15, B-16, B-17, B-30 |
+| EPIC-BROWSE | B-07, B-12, B-14, ~~B-15a~~ delivered, ~~B-15b~~ delivered, B-16, B-17, B-30 |
 | EPIC-SEARCH | B-03, B-04, B-12, B-30 |
 | EPIC-PRESENT | B-18, B-19, B-21, B-31, B-32, B-33 |
 | EPIC-MEDIA | B-05, B-06, B-20, B-22, B-28, B-29 |
@@ -100,7 +100,8 @@ naming a constant changes nothing, provided the value is preserved exactly.
 | B-12 game model | BROWSE, SEARCH, MEDIA, LAUNCH, CURATE | **Yes** | **XAML bindings — silent empty controls** | binding-error trace clean; VER-PRESENT-002/006 |
 | B-13 Prism removal | EPIC-CONFIG, EPIC-INTEGRATE | no | settings editor event flow | VER-CONFIG-005 |
 | B-14 position restoration | EPIC-BROWSE, EPIC-CURATE | no | **where the user lands** | VER-BROWSE-005 — characterization first |
-| B-15 list construction | EPIC-BROWSE | no | list membership and order | VER-BROWSE-006 — characterization first |
+| ~~B-15a~~ list construction | EPIC-BROWSE | no | list membership and order | **delivered** — `GameListBuilder`; verified by golden dump diff |
+| ~~B-15b~~ custom-list query engine | EPIC-BROWSE | no | list membership and order | **delivered** — `GameFields` accessor map; verified by `CustomListQueryProbe` diff over every field/operator |
 | B-16 incremental rebuild | EPIC-CURATE, EPIC-LAUNCH | no | stale lists after curation | VER-CURATE-001; equivalence vs full rebuild |
 | B-17 picker switch | EPIC-BROWSE | no | category selection | VER-BROWSE-001 |
 | B-18 attract presenter | ~~EPIC-ATTRACT~~ **delivered**, EPIC-PRESENT | **Yes** | **attract timing** | VER-ATTRACT-001 — now writable against the presenter seam, blocked only on `B-01` |
@@ -144,7 +145,7 @@ together are "make the game catalogue substitutable".
 | Item | Observation |
 |---|---|
 | `B-12` | **Should be split.** It bundles (a) defining an Eclipse-owned game model, (b) rewriting every XAML binding path, and (c) moving curation mutation off property setters. (c) is a behavioural change affecting EPIC-CURATE and deserves its own item with its own verification. |
-| `B-15` | **Should be split.** Category-list construction and the reflection-based custom-list query engine are independent, carry different risks, and have different characterization needs. |
+| `B-15` | **Was split**, as this note recommended, into `B-15a` (category-list construction) and `B-15b` (the query engine). Both delivered. The characterization the note asked for was taken as development-time probes diffed before and after rather than as unit tests, because `B-01` was deferred — see `docs/plans/list-construction-refactor.md`. |
 | `B-23` | **Should be split by subsystem.** "94 subscriptions" spans attract mode, media, presentation and the settings windows. Done as one sweep, a mistake is very hard to attribute. *The attract mode share has since been done on its own, as part of `EPIC-ATTRACT` — which is the argument for the split.* |
 | `B-04` | **Blocked on a product decision**, not engineering. Should not be scheduled until the "how loud is a degraded failure" question is answered. |
 | `B-30` | **Premature.** Explicitly gated on `B-28`, but it also lacks the characterization coverage (`VER-BROWSE-006`, `VER-SEARCH-003`) that would make it safe. Both should be prerequisites. |

@@ -1,3 +1,4 @@
+using System;
 using Eclipse.Models;
 using System.Collections.Generic;
 using System.Linq;
@@ -170,6 +171,65 @@ namespace Eclipse.Service
                                             .ThenBy(list => list.ListTypeValue).ToList(),
                 ListCategoryType = listCategoryType
             };
+        }
+
+        // The categories "more like this" looks in, and how to get the current game's values for
+        // each. The order of this table is the order the results appear in - which is the
+        // question OQ-003 asks about, now visible in one place instead of implied by the order
+        // of seven copy-pasted blocks.
+        //
+        // Platform and release year yield at most one value; the rest yield the game's whole
+        // collection. Neither collection is null-guarded, because it never was: a metadata
+        // property returning null has always thrown here rather than silently matching nothing.
+        private static readonly (ListCategoryType Category, Func<GameMatch, IEnumerable<string>> ValuesOf)[] MoreLikeThisCategories =
+        {
+            (ListCategoryType.Series, gameMatch => gameMatch?.Game?.SeriesValues),
+            (ListCategoryType.Genre, gameMatch => gameMatch?.Game?.Genres),
+            (ListCategoryType.Platform, gameMatch => Only(gameMatch?.Game?.Platform)),
+            (ListCategoryType.Developer, gameMatch => gameMatch?.Game?.Developers),
+            (ListCategoryType.Publisher, gameMatch => gameMatch?.Game?.Publishers),
+            (ListCategoryType.PlayMode, gameMatch => gameMatch?.Game?.PlayModes),
+            (ListCategoryType.ReleaseYear, gameMatch => Only(gameMatch?.Game?.ReleaseDate?.Year.ToString()))
+        };
+
+        // Picks the lists to show for "more like this": every list, in every category set, whose
+        // value the current game shares.
+        //
+        // The lists are the ones that already exist in the other sets rather than new ones, so
+        // the same GameList instance ends up referenced from two sets. Duplicates are not
+        // removed - a game sharing two genres with a list's category value contributes that list
+        // twice - and the caller has always shown them as they come.
+        public static List<GameList> BuildMoreLikeThis(GameMatch currentGame, List<GameListSet> gameListSets)
+        {
+            List<GameList> moreLikeThisResults = new List<GameList>();
+
+            foreach (var categoryValues in MoreLikeThisCategories)
+            {
+                GameListSet categorySet = gameListSets.FirstOrDefault(set => set.ListCategoryType == categoryValues.Category);
+                if (categorySet == null)
+                {
+                    continue;
+                }
+
+                foreach (string value in categoryValues.ValuesOf(currentGame))
+                {
+                    moreLikeThisResults.AddRange(categorySet.GameLists
+                        .Where(gameList => gameList.ListTypeValue.Equals(value, StringComparison.InvariantCultureIgnoreCase)));
+                }
+            }
+
+            return moreLikeThisResults;
+        }
+
+        // The one-value categories, as a sequence of none or one, so the table can treat every
+        // category the same way. This is what the old platform and release year blocks did with
+        // their null checks.
+        private static IEnumerable<string> Only(string value)
+        {
+            if (value != null)
+            {
+                yield return value;
+            }
         }
     }
 }
