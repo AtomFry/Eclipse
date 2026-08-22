@@ -49,7 +49,7 @@ custom-list membership, the lists are rebuilt and the user's position restored.
 | Rating adjust / commit / cancel | `View/MainWindowViewModel.cs` — `RateCurrentGame`, `BeginRatingCurrentGame`, `SaveRatingCurrentGame`, `CancelRatingCurrentGame` |
 | Rating-mode input | `State/GameDetailOptions/RatingDetailOption.cs` |
 | Favourite input | `State/GameDetailOptions/FavoriteDetailOption.cs` |
-| Deferred rebuild | `View/MainWindowViewModel.cs` — `CheckResetGameLists`; the `OnEscape` handlers of the detail states |
+| Deferred rebuild | `View/MainWindowViewModel.cs` — `CheckResetGameLists` (rebuild), `Service/GameListNavigator.cs` — `RememberPosition`/`RestorePosition` (where the user lands); the `OnEscape` handlers of the detail states |
 | Value exposure | `Models/GameMatch.cs` — `Favorite`, `UserRating` (write straight through to `IGame`), `CommunityRating` (read only) |
 | Star rendering | `View/StarRatingView.xaml(.cs)` — one control for both the details display and the rating editor |
 

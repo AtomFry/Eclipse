@@ -85,7 +85,7 @@ and voice match.
 | RULE-BROWSE-008 | Navigation wraps in all four directions. | Wrapping at list ends is core to the browsing feel. |
 | RULE-BROWSE-009 | Page jump moves a fixed number of games; for lists shorter than that, it moves half the list length instead. | Prevents a page jump from being a no-op or a full loop on short lists. |
 | RULE-BROWSE-010 | After a list rebuild, position is restored by trying in order: the same game in the same list; the same index in that list; the previous index; the first game in that list; a random game. | **High risk.** Subtle, four-deep fallback, no automated coverage. |
-| RULE-BROWSE-011 | Random game selects an index across the whole list set, then locates which list owns that index — so selection is weighted by list size. | A game in a large list is more likely than one in a small list. This is observable and may or may not be intended (`OQ-002`). |
+| RULE-BROWSE-011 | Random game picks a game from anywhere in the current set, weighted by list size — a game in a large list is more likely than one in a small list. | Observable, and may or may not be intended (`OQ-002`). The weighting used to be done by numbering every game across the set and picking a number in that space; since the navigation refactor it walks the lists counting them off, which gives the same distribution without storing a position on each list. |
 | RULE-BROWSE-012 | "More like this" appends one list per matching series, genre, platform, developer, publisher, play mode and release year, in that order, and does not deduplicate. | The same game appears many times; the ordering is the relevance signal. Since `B-15` that order is a table in `GameListBuilder.MoreLikeThisCategories` rather than the order of seven copy-pasted blocks, so changing it is now a one-line decision (`OQ-003`). |
 | RULE-BROWSE-013 | The category picker's default option is the configured default category and is sorted first; remaining options follow a fixed order. | Ordering is stable so muscle memory works. |
 | RULE-BROWSE-014 | Broken/hidden filtering happens once during index construction, not per list. | Changing it requires a full index rebuild, i.e. a restart. |
@@ -102,17 +102,17 @@ and voice match.
 |---|---|
 | Game index construction | `Service/GameCatalog.cs` - `Setup()`, `BuildCategoryIndex()` |
 | Library filtering | `Service/GameCatalog.cs` (broken/hidden checks) |
-| Category list construction | `View/MainWindowViewModel.cs` — `GetGamesByListCategoryType`, `CreateGameLists` |
-| Custom list filtering/sorting | `View/MainWindowViewModel.cs` — `CustomGameListServiceExtensionMethods` (`ApplyDynamicFilter`, `ApplyOrder`) |
+| Category list construction | `Service/GameListBuilder.cs` — `Build`, `BuildAll`; kicked off by `MainWindowViewModel.CreateGameLists` |
+| Custom list filtering/sorting | `Service/CustomListQuery.cs` (`ApplyFilter`); `Service/GameFields.cs` (the field-to-expression map) |
 | Custom list definitions | `Service/CustomListDefinitionDataProvider.cs`; `Models/EclipseSettings.cs` (`CustomListDefinition`) |
 | Playlist inclusion | `Service/PlaylistGameService.cs` |
 | List set / list model | `Models/GameList.cs` (`GameListSet`, `GameList`) |
-| Navigation window | `Models/ListCycle.cs` |
-| Random game / index location | `View/MainWindowViewModel.cs` — `DoRandomGame` |
-| More like this | `View/MainWindowViewModel.cs` — `DoMoreLikeCurrentGame` |
-| Position restoration | `View/MainWindowViewModel.cs` — `SaveStateForGameListChange`, `ResetListsAfterChange`, `CheckResetGameLists` |
+| Navigation window | `Models/ListCycle.cs`; the row slots are `Models/GameList.cs` — `PreviousGame`, `SelectedGame`, `UpcomingGames` |
+| Random game | `Service/GameListNavigator.cs` — `MoveToRandomGame` |
+| More like this | `Service/GameListBuilder.cs` — `BuildMoreLikeThis`; installed by `MainWindowViewModel.DoMoreLikeCurrentGame` |
+| Position restoration | `Service/GameListNavigator.cs` — `RememberPosition`, `RestorePosition`, `RestoredGameIndex`; deferred by `MainWindowViewModel.CheckResetGameLists` |
 | Category picker | `Service/OptionListService.cs`; `Models/Option.cs`; `State/SelectingOptionsState.cs` |
-| Navigation input handling | `State/SelectingGameState.cs`, `State/KeyStrategy/KeyStrategyPageUp.cs`, `KeyStrategyPageDown.cs` |
+| Navigation input handling | `State/SelectingGameState.cs`, `State/KeyStrategy/KeyStrategyPage.cs`; every move goes through `Service/GameListNavigator.cs` |
 
 LaunchBox SDK dependencies: `PluginHelper.DataManager.GetAllGames()`, `GetAllPlaylists()`,
 and `IGame` metadata members throughout.

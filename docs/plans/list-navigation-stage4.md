@@ -1,6 +1,6 @@
 # Stage 4 — Detailed plan: one owner for "where the user is"
 
-**Status: proposed, awaiting review. No code written.**
+**Status: complete. 4a, 4b, 4c and 4d all delivered and verified.**
 
 Stages 1–3 of `list-navigation-refactor.md` are done. This is the detailed design for Stage 4,
 written functionally first and then technically, as asked. **No performance change is intended

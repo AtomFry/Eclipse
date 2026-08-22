@@ -1,6 +1,6 @@
 # Plan — How game lists are navigated
 
-**Status: proposed, awaiting review. No code written.**
+**Status: complete. Stages 1-3 and all four parts of Stage 4 delivered and verified.**
 
 ## What was asked
 

@@ -82,7 +82,8 @@ available.
 | Layout and bindings | `View/MainWindowView.xaml` — 1,756 lines, 165 bindings, 97 converter references, 30 multi-bindings |
 | Animation, fades, timing | `View/MainWindowView.xaml.cs` — `DoAnimateGameChange`, `FadeInCurrentGame`, `FadeForMovie`, `FadeFrameworkElementOpacity` |
 | View-state flags | `View/MainWindowViewModel.cs` — `IsDisplayingResults`, `IsDisplayingFeature`, `IsDisplayingMoreInfo`, `IsPickingCategory`, `IsZoomingBox`, `IsRatingGame`, `IsRecognizing`, `IsInitializing`, `IsDisplayingError` |
-| Row slots | `Models/GameList.cs` — `Game0`…`Game12`, `RefreshGames()` |
+| Row slots | `Models/GameList.cs` — `PreviousGame`, `SelectedGame`, `UpcomingGames`, `RefreshGames()`; bound as two `ItemsControl`s in `View/MainWindowView.xaml` |
+| Row artwork decoding | `Service/RowImageDecoder.cs` — decoded off the UI thread ahead of the window; `GameFiles.FrontImageSource` |
 | Detail overlay | `State/GameDetailOptionsState.cs` — one state for all four options; `State/GameDetailOptions/` — the option list and one class per option |
 | Featured view states | `State/FeatureOptionPlayState.cs`, `State/FeatureOptionMoreInfoState.cs` |
 | Loading / error states | `State/LoadingState.cs`, `State/DisplayingErrorState.cs` |

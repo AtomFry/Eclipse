@@ -54,14 +54,14 @@ that is what browsing by genre means; (b) acceptable side effect of the index de
 index; if (a), multiplicity is a contract. **Resolve by:** product confirmation.
 
 ### OQ-002 — Should random game be weighted by list size?
-**Feature:** FEAT-BROWSE-007 · **Evidence:** `DoRandomGame`, `RULE-BROWSE-011`
+**Feature:** FEAT-BROWSE-007 · **Evidence:** `GameListNavigator.MoveToRandomGame`, `RULE-BROWSE-011`
 Random picks an index across the whole set, so games in big lists are likelier.
 **Interpretations:** (a) intended — uniform across *games*; (b) accidental — the user may
 expect uniform across *lists*. **Observed:** weighted by list size. **Why it matters:**
 random game is a headline feature. **Resolve by:** product decision. Attract mode
 (`RULE-ATTRACT-003`) now genuinely picks uniformly across games; note that when this question
 was written the contrast drawn here did not actually hold - attract mode was itself weighted
-by clone count until the index refactor. `DoRandomGame` is unchanged and remains weighted by
+by clone count until the index refactor. Random game is still weighted by
 list size, so the open question stands.
 
 ### OQ-003 — Is "more like this" ordering intentional?
@@ -228,11 +228,11 @@ action key and it behaves differently per row. **Resolve by:** product decision.
 | Suspected dead items | 12 (`DEAD-001` … `DEAD-012`) |
 | — high confidence, safe to remove after a grep | 5 |
 | — requires investigation first | 7 |
-| Open questions | 22 (`OQ-001` … `OQ-022`), of which 1 resolved (`OQ-012`) |
+| Open questions | 22 (`OQ-001` … `OQ-022`), of which 2 resolved (`OQ-012`, `OQ-022`) |
 | — product decisions | 13 |
 | — research/experiment tasks | 4 (`OQ-012` resolved) |
 | — external (LaunchBox) questions | 1 |
-| — likely genuine defects worth their own items | 3 (`OQ-010` stale cache, `OQ-019` startup background, `OQ-022` shared list indices) |
+| — likely genuine defects worth their own items | 2 (`OQ-010` stale cache, `OQ-019` startup background); `OQ-022` was a third and is resolved |
 
 **The highest-value question to resolve** is `OQ-011` (live-vs-restart settings table — a
 prerequisite for `B-26`). It is a research task with a concrete method, and it blocks a
@@ -241,21 +241,22 @@ backlog item that would otherwise be done blind.
 `OQ-012` (the stop-loop race) was the other, and is now answered — see above. `B-24` is
 delivered.
 
-`OQ-022` below is not a question about intent; it is a defect that needs a decision about
-when to fix it.
-
-### OQ-022 — "More like this" corrupts the list indices of other sets
+### ~~OQ-022~~ — "More like this" corrupts the list indices of other sets — **resolved**
 **Feature:** FEAT-BROWSE-008 · **Evidence:** `GameListBuilder.BuildMoreLikeThis`,
 `GameListSet.GameLists` setter, `RULE-BROWSE-011`
 More-like-this returns the *same* `GameList` instances that already live in the genre,
-platform and series sets, and the caller puts them into a new `GameListSet`. That setter
-rewrites `ListSetStartIndex` on every list handed to it — so opening more-like-this overwrites
-the start indices the other sets depend on, and `ListSetStartIndex` is what `DoRandomGame` and
-position restoration (`RULE-BROWSE-010`) navigate by. It self-heals on the next
-`CreateGameLists`, which is presumably why it has gone unnoticed.
-**Interpretations:** none — this is a defect, found by reading during `B-15` and deliberately
-left alone because fixing it changes behaviour.
-**Why it matters:** random game and position restoration silently mis-navigate after a
-more-like-this until the next rebuild. **Resolve by:** deciding whether the fix is to stop
-sharing instances, to stop the setter mutating them, or to give each set its own index map.
-Belongs with `B-14`, which rewrites position restoration.
+platform and series sets, and the caller put them into a new `GameListSet`. That setter
+rewrote `ListSetStartIndex` on every list handed to it — so opening more-like-this overwrote
+the start indices the other sets depended on, and `ListSetStartIndex` was what random game and
+position restoration (`RULE-BROWSE-010`) navigated by. It self-healed on the next
+`CreateGameLists`, which is presumably why it went unnoticed.
+
+**Resolution: the state it corrupted no longer exists.** The navigation refactor
+(`docs/plans/list-navigation-refactor.md`, Stage 2) found that `ListSetStartIndex` had one
+writer and fifteen readers, and that every reader except random game already held the list it
+was looking for — they were converting a list-local position into a set-wide one and then
+searching every list in the set to convert it back. Random game now walks the lists counting
+them off, so nothing needs a stored position, and `ListSetStartIndex`, `ListSetEndIndex` and
+the loop that wrote them are deleted.
+
+Not fixed — made unreachable. There is no derived state on a shared `GameList` left to corrupt.

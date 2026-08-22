@@ -1,7 +1,7 @@
 # Plan — The box art row: `ListCycle`, the 13 slots, and what feeds them
 
-**Status: Stages 0, 1 and 5a delivered and verified. Stage 3 reduced to a look-ahead decode
-after the long-session data; Stage 5b reduced to the `ListCycle` simplification.**
+**Status: complete. Stages 0, 1, 3 and 5a delivered and verified; Stage 2 and the test project
+skipped by decision; Stage 5b reduced to the `ListCycle` simplification and not taken.**
 
 **Decisions taken:** `B-07` closed (Stage 0). F5 re-trigger left alone; the pump hydrates the
 selection first instead (Stage 2). Test project skipped (Stage 4). Frozen-image retention is a
