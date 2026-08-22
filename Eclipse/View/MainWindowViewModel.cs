@@ -10,8 +10,6 @@ using Eclipse.Helpers;
 using System.Threading;
 using Eclipse.State;
 using Eclipse.State.GameDetailOptions;
-using System.Linq.Expressions;
-using System.Reflection;
 using Eclipse.Service;
 
 namespace Eclipse.View
@@ -354,110 +352,6 @@ namespace Eclipse.View
             }
         }
 
-        private void GetGamesByListCategoryType(ListCategoryType listCategoryType, IReadOnlyList<CustomListDefinition> customListDefinitions)
-        {
-            List<GameList> listOfGameList = new List<GameList>();
-
-            // remove any prior set of this type and then add these results to the set list category
-            GameListSets.RemoveAll(set => set.ListCategoryType == listCategoryType);
-
-            IEnumerable<CustomListDefinition> filteredCustomListDefinitions = from customListDefinition in customListDefinitions
-                                                                              where customListDefinition.ListCategoryTypes.Contains(listCategoryType)
-                                                                              select customListDefinition;
-
-            int sortOrder = 0;
-            foreach (CustomListDefinition customListDefinition in filteredCustomListDefinitions)
-            {
-                // custom lists filter the whole library - every game once, which is what the
-                // platform-category projection amounted to since each game has one platform
-                IQueryable<GameMatch> baseQuery = gameCatalog.Games.AsQueryable();
-
-                if (customListDefinition.FilterExpressions.Any())
-                {
-                    foreach (FilterExpression filterExpression in customListDefinition.FilterExpressions)
-                    {
-                        baseQuery = baseQuery.ApplyDynamicFilter(filterExpression.GameFieldEnum.ToFieldName(), filterExpression.FilterFieldOperator, filterExpression.FilterFieldValue);
-                    }
-                }
-
-                var orderedQuery = baseQuery.OrderBy(g => g.Game.SortTitleOrTitle);
-
-                if (customListDefinition.SortExpressions.Any())
-                {
-                    bool first = true;
-                    foreach (var sortExpression in customListDefinition.SortExpressions)
-                    {
-                        if (first)
-                        {
-                            first = false;
-                            switch (sortExpression.SortDirection)
-                            {
-                                case SortDirection.Ascending:
-                                    orderedQuery = baseQuery.OrderBy(sortExpression.GameFieldEnum.ToFieldName());
-                                    break;
-                                case SortDirection.Descending:
-                                    orderedQuery = baseQuery.OrderByDescending(sortExpression.GameFieldEnum.ToFieldName());
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            switch (sortExpression.SortDirection)
-                            {
-                                case SortDirection.Ascending:
-                                    orderedQuery = orderedQuery.ThenBy(sortExpression.GameFieldEnum.ToFieldName());
-                                    break;
-                                case SortDirection.Descending:
-                                    orderedQuery = orderedQuery.ThenByDescending(sortExpression.GameFieldEnum.ToFieldName());
-                                    break;
-                            }
-                        }
-                    }
-                }
-
-                baseQuery = orderedQuery;
-                if (customListDefinition.MaxGamesInList > 0)
-                {
-                    baseQuery = orderedQuery.Take(customListDefinition.MaxGamesInList).AsQueryable();
-                }
-
-                if (baseQuery.Any())
-                {
-                    listOfGameList.Add(new GameList(customListDefinition.Description, baseQuery.ToList(), sortOrder++));
-                }
-            }
-
-            foreach (IGrouping<string, GameMatch> gameGroup in gameCatalog.ByCategory(listCategoryType))
-            {
-                listOfGameList.Add(new GameList(gameGroup.Key, gameGroup.OrderBy(game => game.Game.SortTitleOrTitle).ToList()));
-            }
-
-            // include playlists in platforms if they are set to be included
-            if (listCategoryType == ListCategoryType.Platform)
-            {
-                Dictionary<string, bool> playlists = PlaylistGameService.Instance.Playlists;
-
-                foreach (IGrouping<string, GameMatch> gameGroup in gameCatalog.ByCategory(ListCategoryType.Playlist))
-                {
-                    bool includeInPlaylists = false;
-                    if (playlists.TryGetValue(gameGroup.Key, out includeInPlaylists))
-                    {
-                        if (includeInPlaylists)
-                        {
-                            listOfGameList.Add(new GameList(gameGroup.Key, gameGroup.OrderBy(game => game.Game.SortTitleOrTitle).ToList()));
-                        }
-                    }
-                }
-            }
-
-            GameListSets.Add(new GameListSet
-            {
-                GameLists = listOfGameList.OrderBy(list => list.SortOrder)
-                                            .ThenBy(list => list.ListTypeValue).ToList(),
-                ListCategoryType = listCategoryType
-            });
-        }
-
         public async void SetupFiles(object sender, DoWorkEventArgs e)
         {
             int? GameFilesCount = gameFilesBag?.Count;
@@ -552,20 +446,30 @@ namespace Eclipse.View
         public void CreateGameLists()
         {
             // Read the custom list definitions once. This used to be reloaded and
-            // deserialised from disk inside every GetGamesByListCategoryType call - eight
-            // file reads per rebuild, and a rebuild happens on every favourite, rating
-            // change and game launch.
+            // deserialised from disk inside every category's build - eight file reads per
+            // rebuild, and a rebuild happens on every favourite, rating change and game launch.
             IReadOnlyList<CustomListDefinition> customListDefinitions =
                 new CustomListDefinitionDataProvider().GetAllCustomListDefinitions().ToList();
 
-            GetGamesByListCategoryType(ListCategoryType.Platform, customListDefinitions);
-            GetGamesByListCategoryType(ListCategoryType.ReleaseYear, customListDefinitions);
-            GetGamesByListCategoryType(ListCategoryType.Genre, customListDefinitions);
-            GetGamesByListCategoryType(ListCategoryType.Publisher, customListDefinitions);
-            GetGamesByListCategoryType(ListCategoryType.Developer, customListDefinitions);
-            GetGamesByListCategoryType(ListCategoryType.Series, customListDefinitions);
-            GetGamesByListCategoryType(ListCategoryType.PlayMode, customListDefinitions);
-            GetGamesByListCategoryType(ListCategoryType.Playlist, customListDefinitions);
+            // Setting the catalog up is what populates the playlist service, and until now the
+            // playlist dictionary was read part-way through building the platform set - always
+            // after the catalog had been touched. Keep that order: read from a cold service and
+            // the dictionary builds itself, then gets rebuilt underneath us during the catalog's
+            // own setup, leaving this holding the previous instance. Same contents either way.
+            _ = gameCatalog.Games;
+
+            GameListBuilder gameListBuilder = new GameListBuilder(gameCatalog,
+                                                                  customListDefinitions,
+                                                                  PlaylistGameService.Instance.Playlists);
+
+            // Replace each set rather than clearing the collection: the voice search and
+            // more-like-this sets are built elsewhere from results, and a rebuild triggered by
+            // favouriting a game has no business discarding them.
+            foreach (GameListSet gameListSet in gameListBuilder.BuildAll())
+            {
+                GameListSets.RemoveAll(set => set.ListCategoryType == gameListSet.ListCategoryType);
+                GameListSets.Add(gameListSet);
+            }
         }
 
         public void DoMoreLikeCurrentGame()
@@ -1261,129 +1165,5 @@ namespace Eclipse.View
 
 
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
-    }
-
-
-    public static class CustomGameListServiceExtensionMethods
-    {
-        public static IOrderedQueryable<T> OrderBy<T>(this IQueryable<T> source, string property)
-        {
-            return ApplyOrder(source, property, "OrderBy");
-        }
-
-        public static IOrderedQueryable<T> OrderByDescending<T>(this IQueryable<T> source, string property)
-        {
-            return ApplyOrder(source, property, "OrderByDescending");
-        }
-
-        public static IOrderedQueryable<T> ThenBy<T>(this IOrderedQueryable<T> source, string property)
-        {
-            return ApplyOrder(source, property, "ThenBy");
-        }
-
-        public static IOrderedQueryable<T> ThenByDescending<T>(this IOrderedQueryable<T> source, string property)
-        {
-            return ApplyOrder(source, property, "ThenByDescending");
-        }
-
-        static IOrderedQueryable<T> ApplyOrder<T>(IQueryable<T> source, string property, string methodName)
-        {
-            string[] props = property.Split('.');
-            Type type = typeof(T);
-            ParameterExpression arg = Expression.Parameter(type, "x");
-            Expression expr = arg;
-            foreach (string prop in props)
-            {
-                PropertyInfo pi = type.GetProperty(prop);
-                expr = Expression.Property(expr, pi);
-                type = pi.PropertyType;
-            }
-            Type delegateType = typeof(Func<,>).MakeGenericType(typeof(T), type);
-            LambdaExpression lambda = Expression.Lambda(delegateType, expr, arg);
-
-            object result = typeof(Queryable)
-                .GetMethods()
-                .Single(method => method.Name == methodName
-                            && method.IsGenericMethodDefinition
-                            && method.GetGenericArguments().Length == 2
-                            && method.GetParameters().Length == 2)
-                .MakeGenericMethod(typeof(T), type)
-                .Invoke(null, new object[] { source, lambda });
-            return (IOrderedQueryable<T>)result;
-        }
-
-        public static IQueryable<T> ApplyDynamicFilter<T>(this IQueryable<T> source, string property, FilterFieldOperator filterFieldOperator, object value)
-        {
-            string[] props = property.Split('.');
-            Type type = typeof(T);
-
-            ParameterExpression arg = Expression.Parameter(type, "x");
-            Expression expr = arg;
-            foreach (string prop in props)
-            {
-                PropertyInfo pi = type.GetProperty(prop);
-                expr = Expression.Property(expr, pi);
-                type = pi.PropertyType;
-            }
-            Expression left = expr;
-            Expression constant = Expression.Constant(value);
-            Expression right = Expression.Convert(constant, type);
-
-            Expression whereExpression;
-            switch (filterFieldOperator)
-            {
-                case FilterFieldOperator.Equal:
-                    whereExpression = Expression.Equal(left, right);
-                    break;
-
-                case FilterFieldOperator.NotEqual:
-                    whereExpression = Expression.NotEqual(left, right);
-                    break;
-
-                case FilterFieldOperator.GreaterThan:
-                    whereExpression = Expression.GreaterThan(left, right);
-                    break;
-
-                case FilterFieldOperator.GreaterThanOrEqual:
-                    whereExpression = Expression.GreaterThanOrEqual(left, right);
-                    break;
-
-                case FilterFieldOperator.LessThan:
-                    whereExpression = Expression.LessThan(left, right);
-                    break;
-
-                case FilterFieldOperator.LessThanOrEqual:
-                    whereExpression = Expression.LessThanOrEqual(left, right);
-                    break;
-
-                case FilterFieldOperator.IsNull:
-                    right = Expression.Constant(null);
-                    whereExpression = Expression.Equal(left, right);
-                    break;
-
-                case FilterFieldOperator.IsNotNull:
-                    right = Expression.Constant(null);
-                    whereExpression = Expression.NotEqual(left, right);
-                    break;
-
-                case FilterFieldOperator.Contains:
-                    MethodInfo method = typeof(string).GetMethod("Contains", new[] { typeof(string) });
-                    whereExpression = Expression.Call(left, method, right);
-                    break;
-
-                default:
-                    whereExpression = null;
-                    break;
-            }
-
-            if (whereExpression == null)
-            {
-                return source;
-            }
-
-            var lambda = Expression.Lambda<Func<T, bool>>(whereExpression, arg).Compile();
-
-            return source.Where(lambda).AsQueryable();
-        }
     }
 }

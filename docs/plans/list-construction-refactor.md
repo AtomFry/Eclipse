@@ -174,21 +174,41 @@ for `RepeatGamesToFillScreen` in `RefreshGames`. That belongs with `B-31`.
 - **Verify:** builds clean; `VER-BROWSE-005` by hand; a voice search still returns results;
   the category picker still lists categories in a sane order
 
-### Stage 0 — Capture the baseline
+### Stage 0 — Capture the baseline — **built, awaiting a baseline run**
 
 The "done when" criterion is *a real user `CustomLists.json` produces byte-identical list
 membership*. That needs a recording of today's output before anything moves.
 
-Add a dump routine that walks `GameListSets` and writes, per set: the category type, then per
-list its `SortOrder`, `ListTypeValue`, `MatchCount` and the ordered game `Id`s. Trigger it once
-from the loading path behind a hidden setting, run BigBox against the real library and the real
-`CustomLists.json`, and keep the file as the golden baseline.
+`GameListDump.WriteIfEnabled` walks `GameListSets` and writes, per set: the category type, then
+per list its `SortOrder`, `ListSetStartIndex`, `MatchCount` and `ListTypeValue`, then every game
+in list order with its position, id and title. It is called once from the loading path
+immediately after `CreateGameLists`, and does nothing unless `DumpGameLists` is set.
 
-The dump routine stays in the tree until Stage 5 is verified, then comes out.
+Three decisions worth recording:
 
-- **Files:** `Eclipse/Service/GameListDump.cs` (new), `Eclipse/View/MainWindowViewModel.cs`
-  (one call), `Eclipse/Models/EclipseSettings.cs` (one hidden setting)
-- **Verify:** dump file exists and is plausible; browsing is unchanged
+- **Sets are written in category-name order, not build order.** Nothing reads `GameListSets`
+  positionally — every consumer looks a set up by its category — so a build that produces the
+  same sets in a different order is not a behaviour change and should not read as one.
+- **Lists within a set are written in the set's own order**, because that order is what the
+  user scrolls through and is exactly what the diff is protecting.
+- **The header records `ShowGameCountInList`, `IncludeHiddenGames` and `IncludeBrokenGames`.**
+  The first changes what a list is called; the other two change what the library contains. A
+  dump is only comparable against another taken with the same three values.
+
+`ListSetStartIndex` is in the output deliberately: it is the field finding 5 corrupts, so if
+that ever happens during this work the diff will show it.
+
+The dump routine and its setting stay in the tree until Stage 5 is verified, then come out.
+
+- **Files:** `Eclipse/Service/GameListDump.cs` (new), `Eclipse/State/LoadingState.cs` (one
+  call), `Eclipse/Models/EclipseSettings.cs` (one hidden setting)
+- **Deviation from the plan as written:** the call went in `LoadingState.cs` rather than
+  `MainWindowViewModel.cs`. The loading path is where `CreateGameLists` is already invoked, and
+  putting it inside `CreateGameLists` itself would have written a file on every favourite
+  toggle, every rating change and every game launch.
+- **Verify:** with `DumpGameLists` on, a dump file appears in `<LaunchBox>\Plugins\Eclipse` and
+  its contents are plausible; with it off (the default) nothing is written and browsing is
+  unchanged
 
 ### Stage 1 — Test project (`B-01`)
 
@@ -210,25 +230,40 @@ The dump routine stays in the tree until Stage 5 is verified, then comes out.
 - **Files:** `Eclipse.Tests/*` (new), `Eclipse.sln`
 - **Verify:** `dotnet test` green; `dotnet build Eclipse` output unchanged
 
-### Stage 2 — Move, don't change
+### Stage 2 — Move, don't change — **built, awaiting the dump diff**
 
 `GetGamesByListCategoryType` is private on a view model that cannot be constructed outside
 BigBox, so it cannot be tested where it sits. The characterization tests the backlog asks for
 require the move to happen first — which is why Stage 0 exists. This stage is guarded by the
 golden file, not by tests.
 
-- New `Eclipse/Service/GameListBuilder.cs`. It takes what it needs rather than reaching for it:
-  a catalog source, the custom list definitions, and the playlist-inclusion dictionary.
-- New `IGameCatalogSource` (`Games`, `ByCategory`) implemented by `GameCatalog` — a narrow seam,
-  not `B-11`.
-- The query engine moves verbatim to `Eclipse/Service/CustomListQuery.cs`, still
-  reflection-based. **Not one line of its logic changes in this stage.**
-- `CreateGameLists` becomes: read definitions, read playlists, call the builder, assign the
-  result.
+- `Eclipse/Service/GameListBuilder.cs` takes what it needs rather than reaching for it: a
+  catalog source, the custom list definitions, and the playlist-inclusion dictionary. `BuildAll`
+  returns the eight sets; `Build` returns one.
+- `Eclipse/Service/IGameCatalogSource.cs` — `Games` and `ByCategory`, implemented by
+  `GameCatalog`. A narrow seam, not `B-11`.
+- The query engine moved to `Eclipse/Service/CustomListQuery.cs`, still reflection-based. Only
+  the class name changed; **no logic changed.**
+- `CreateGameLists` reads the definitions, builds, and replaces each set by category. It
+  replaces rather than clears, exactly as before, so a rebuild triggered by favouriting a game
+  does not discard the voice search or more-like-this sets.
+- `System.Linq.Expressions` and `System.Reflection` are no longer used by the view model and
+  came out with the code that needed them.
+
+**One initialization-order detail had to be preserved deliberately.** Setting up `GameCatalog`
+is what populates `PlaylistGameService`, and the playlist dictionary used to be read part-way
+through building the platform set — always after the catalog had been touched. Read from a cold
+service, the dictionary builds itself and is then rebuilt during the catalog's own setup,
+leaving the caller holding the previous instance. The contents are identical either way, but
+`CreateGameLists` touches the catalog first so there is only ever one owner.
+
+**Deliberately not done:** passing `ShowGameCountInList` into the builder so `GameList` would
+stop reading the settings singleton. It buys nothing while `GameList`'s field initializer still
+reads the same singleton for `RepeatGamesToFillScreen` — the same reasoning as Stage -1.
 
 - **Files:** `Eclipse/Service/GameListBuilder.cs` (new), `Eclipse/Service/CustomListQuery.cs`
   (new), `Eclipse/Service/IGameCatalogSource.cs` (new), `Eclipse/Service/GameCatalog.cs`
-  (declare the interface), `Eclipse/View/MainWindowViewModel.cs` (delete ~225 lines, add ~15)
+  (declare the interface), `Eclipse/View/MainWindowViewModel.cs` (255 lines deleted, 21 added)
 - **Verify:** dump again in BigBox; **diff must be empty** against the Stage 0 baseline
 
 ### Stage 3 — `VER-BROWSE-006`
@@ -249,26 +284,84 @@ Now write the tests the backlog asks for, against `GameListBuilder` and `CustomL
 - **Files:** `Eclipse.Tests/*` only
 - **Verify:** suite green; no production change
 
-### Stage 4 — Replace reflection with an explicit accessor map (`B-15b`)
+### Stage 3 — `VER-BROWSE-006` — **replaced by a probe, at the user's direction**
 
-The point of the whole item. A `GameFieldEnum` to accessor table replaces property-name strings,
-so renaming a projected property becomes a compile error instead of a silently broken
-user-defined list.
+The test project (Stage 1) and this suite were skipped in favour of manual verification. That
+leaves Stage 4 rewriting the engine for 27 fields and 9 operators with only the startup dump
+behind it — and a `CustomLists.json` uses a handful of those combinations at most. The rest are
+what *other people's* lists use, and those files are not in this repository.
 
-- One table keyed by `GameFieldEnum`, giving a typed accessor and the field's type. It sits
-  beside `ToFieldName` and `ToGameFieldType`, which already enumerate the same 27 values — a
-  test asserts all three cover the enum exhaustively.
-- Filters become typed predicates built from the accessor; sorts become `OrderBy`/`ThenBy` over
-  the accessor.
-- Fix the double enumeration from finding 3 — materialise once, test emptiness on the list.
-- Delete `CustomGameListServiceExtensionMethods`.
+`CustomListQueryProbe` gets that coverage from a dump instead of from tests. It builds one
+synthetic custom list per field/operator pair, runs each through the real `GameListBuilder`
+against the real library, and records the outcome: the first 25 members in order, `EMPTY` if the
+filter excluded everything, or `THREW` with the exception type and message.
 
-Behaviour is held by the Stage 3 tests plus the golden file. Where the current reflection path
-throws, the new path must throw the same way unless we decide otherwise first.
+Two details make the probes represent real custom lists rather than a friendlier version:
 
-- **Files:** `Eclipse/Models/EclipseSettings.cs` (the accessor table beside the existing
-  converters), `Eclipse/Service/CustomListQuery.cs`, `Eclipse.Tests/*`
-- **Verify:** suite green; dump diff empty
+- **Filter values are sampled from the library and re-boxed the way JSON would deliver them** —
+  `long` for whole numbers, `double` for fractional ones. A real value arrives from
+  `CustomLists.json` boxed as Newtonsoft left it, and the conversion to the property's type is
+  exactly where finding 4 says it can throw. The sampled values are written to the file so a
+  library change explains itself rather than leaving a hundred probes to be puzzled over.
+- **Each probe runs in its own builder with its own try/catch.** The builder has no
+  per-definition error handling, which is part of what is being recorded, and a throwing
+  combination must not stop the ones after it.
+
+`THREW` is a valid result to lock in. A combination that throws today must still throw
+tomorrow; making it stop throwing is a decision, not a refactor.
+
+Sort coverage is included: every field in both directions, plus three two-key definitions to
+show the second key only breaking ties of the first. Every probe carries a size cap, so
+cap-after-sort is exercised throughout.
+
+- **Files:** `Eclipse/Service/CustomListQueryProbe.cs` (new), `Eclipse/State/LoadingState.cs`
+  (one call). Runs with `DumpGameLists`; comes out with the rest of the dump machinery.
+- **Verify:** a probe baseline must be captured *before* Stage 4 is written
+
+### Stage 4 — Replace reflection with an explicit accessor map (`B-15b`) — **built, awaiting the diffs**
+
+The point of the whole item. `GameFields` maps each `GameFieldEnum` to a compile-checked
+expression — `gameMatch => gameMatch.Game.StarRatingFloat` — instead of the string
+`"Game.StarRatingFloat"` walked by reflection. Renaming a projected property now stops the
+build. That all 27 entries compiled is itself the first result: every name `ToFieldName`
+produces does resolve against the real `IGame`.
+
+**The expressions are kept as expressions, not compiled delegates.** Two reasons, and both are
+about not changing behaviour while removing the reflection:
+
+- The filter is still assembled from the field's expression *body* over the field's own
+  parameter, feeding the same `Expression.Equal`/`Convert`/`Call` switch as before. Comparison,
+  conversion and — critically — *which combinations throw* are unchanged. Hand-writing typed
+  predicates instead would have quietly changed all three.
+- The sort hands the whole expression to `Queryable`, so ordering still uses
+  `Comparer<T>.Default` for the property's real type. An accessor returning `object` would have
+  boxed every key and changed comparison semantics for nullable and numeric fields.
+
+Both ordering switches keep their missing `default`, so a `SortDirection` outside the enum —
+which a hand-edited `CustomLists.json` can produce — still leaves the order untouched.
+
+`ApplyOrder`, the four `OrderBy`/`ThenBy` string extensions and `ApplyDynamicFilter`'s property
+walk are gone. `Queryable` is no longer reached through `GetMethods().Single(...)`.
+
+**Finding 3 fixed.** The query is materialised once instead of being run for `Any()` and again
+for `ToList()`. Every filter delegate used to run over the whole library twice on every rebuild,
+and a rebuild happens on every favourite, rating change and game launch.
+
+**Drift guard.** `GameFieldEnum`, `ToFieldName` and the accessor table are three hand-written
+lists of the same fields. `GameFields.UnmappedFields()` is checked at startup and logs anything
+missing, rather than letting it surface whenever a user's custom list happens to use that field.
+This stays after the dump machinery comes out at Stage 6.
+
+**Deliberately unchanged: the combinations that throw.** `IsNull` against a non-nullable field,
+`Contains` against a number, a JSON value that will not convert to the property's type — all of
+these fail today and a user's `CustomLists.json` can contain any of them. Making them fail
+softly is a product decision, not part of removing the reflection.
+
+- **Files:** `Eclipse/Service/GameFields.cs` (new), `Eclipse/Service/CustomListQuery.cs`
+  (rewritten), `Eclipse/Service/GameListBuilder.cs`, `Eclipse/State/LoadingState.cs` (drift
+  guard)
+- **Verify:** probe diff empty against the Stage 3 baseline; startup dump diff empty against a
+  baseline taken after the last `CustomLists.json` change
 
 ### Stage 5 — Collapse `DoMoreLikeCurrentGame`
 

@@ -190,6 +190,13 @@ namespace Eclipse.Models
         [DefaultValue(0)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public double SelectedGameDetailsPadding { get; set; }
+
+        // Development tool, deliberately not in the settings UI. Writes the full contents of
+        // every game list to a file at startup so that a change to list construction can be
+        // shown to have changed nothing. See Eclipse.Service.GameListDump.
+        [DefaultValue(false)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public bool DumpGameLists { get; set; }
     }
 
     public class CustomListDefinition

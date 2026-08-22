@@ -98,6 +98,24 @@ namespace Eclipse.State
                 // populate the lists
                 EclipseStateContext.MainWindowViewModel.CreateGameLists();
 
+                // GameFieldEnum and the accessor table are two hand-written lists of the same
+                // fields, so they can drift apart. A field with no accessor throws the moment a
+                // user's custom list happens to use it, which could be long after the mistake -
+                // say so at startup instead. Silent unless something is actually missing.
+                List<GameFieldEnum> unmappedFields = GameFields.UnmappedFields().ToList();
+                if (unmappedFields.Count > 0)
+                {
+                    LogHelper.Log($"Custom lists cannot filter or sort on these fields - no accessor is defined: {string.Join(", ", unmappedFields)}");
+                }
+
+                // record what was built, if the dump setting is on - the baseline that the
+                // list construction refactor is measured against. Does nothing by default.
+                GameListDump.WriteIfEnabled(EclipseStateContext.MainWindowViewModel.GameListSets, "startup");
+
+                // and every field/operator combination a custom list can use, which this user's
+                // own CustomLists.json will only cover a corner of
+                CustomListQueryProbe.WriteIfEnabled(EclipseStateContext.MainWindowViewModel.gameCatalog);
+
                 // get settings and setup default list category type
                 EclipseSettings eclipseSettings = EclipseSettingsDataProvider.Instance.EclipseSettings;
 

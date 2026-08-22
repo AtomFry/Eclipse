@@ -16,7 +16,7 @@ namespace Eclipse.Service
     // genres is now one object referenced from three buckets rather than three objects, so
     // a category lookup is a dictionary hit instead of a scan over every clone in the
     // library.
-    public sealed class GameCatalog
+    public sealed class GameCatalog : IGameCatalogSource
     {
         private static readonly ILookup<string, GameMatch> EmptyLookup =
             Enumerable.Empty<GameMatch>().ToLookup(gameMatch => string.Empty);
