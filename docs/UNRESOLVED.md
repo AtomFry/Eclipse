@@ -190,6 +190,25 @@ LaunchBox moved its executables. **Interpretations:** (a) still works by some me
 startup-theme instructions may see a missing background. **Resolve by:** enable the
 startup theme and look.
 
+### OQ-020 — Should Left/Right do something on every detail option?
+**Feature:** FEAT-PRESENT (detail overlay) · **Evidence:** `State/GameDetailOptions/`
+Left and Right cycle game versions on **Play** and adjust the value on **Rating**, but do
+nothing at all on **Favorite** and **More like this** — the keys are accepted and discarded.
+**Interpretations:** (a) intended, since neither option has anything to vary; (b) an accident
+of each option having been written as its own state class. **Observed:** the keys are dead on
+two of four options. **Why it matters:** on a controller the stick is the obvious thing to
+push, and half the options ignore it. **Resolve by:** product decision. Surfaced while
+collapsing the four option states into one; behaviour deliberately preserved.
+
+### OQ-021 — Should Enter close the detail overlay consistently?
+**Feature:** FEAT-PRESENT (detail overlay) · **Evidence:** `State/GameDetailOptions/`
+Enter closes the overlay on **Play** (a game launches) and **More like this**, but leaves it
+open on **Favorite** and **Rating**. **Interpretations:** (a) intended — favouriting and
+rating are adjustments you may want to repeat or see confirmed, whereas the other two navigate
+away; (b) inconsistent. **Observed:** two of four close. **Why it matters:** it is the primary
+action key and it behaves differently per row. **Resolve by:** product decision. Note that
+`RULE-CURATE-002` depends on Rating staying open, since Enter is one of its commit points.
+
 ---
 
 ## Summary
@@ -199,8 +218,8 @@ startup theme and look.
 | Suspected dead items | 12 (`DEAD-001` … `DEAD-012`) |
 | — high confidence, safe to remove after a grep | 5 |
 | — requires investigation first | 7 |
-| Open questions | 19 (`OQ-001` … `OQ-019`) |
-| — product decisions | 11 |
+| Open questions | 21 (`OQ-001` … `OQ-021`) |
+| — product decisions | 13 |
 | — research/experiment tasks | 5 |
 | — external (LaunchBox) questions | 1 |
 | — likely genuine defects worth their own items | 2 (`OQ-010` stale cache, `OQ-019` startup background) |

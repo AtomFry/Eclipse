@@ -48,7 +48,7 @@ causes History-style lists to change.
 |---|---|
 | Launch | `View/MainWindowViewModel.cs` — `PlayCurrentGame` |
 | Version list construction & filtering | `Models/GameFiles.cs` — `ResolveAdditionalGameVersionList`, `GameVersion`, `GameVersionList` |
-| Version cycling | `State/GameDetailOptionPlayState.cs` — `OnLeft`, `OnRight` |
+| Version cycling | `State/GameDetailOptions/PlayDetailOption.cs` — `MoveLeft`, `MoveRight` |
 | Bypass details | `State/SelectingGameState.cs` — `OnEnter` |
 | Launch from featured view | `State/FeatureOptionPlayState.cs` — `OnEnter` |
 | Playback suppression | `View/MainWindowView.xaml.cs` — `StopVideoAndAnimations`, `StopEverything` |

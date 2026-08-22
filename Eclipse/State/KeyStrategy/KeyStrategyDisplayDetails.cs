@@ -6,7 +6,7 @@
         {
             if (IsValidForState(eclipseState))
             {
-                eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(GameDetailOptionPlayState)));
+                eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(GameDetailOptionsState)));
             }
         }
 

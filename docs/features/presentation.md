@@ -83,7 +83,7 @@ available.
 | Animation, fades, timing | `View/MainWindowView.xaml.cs` — `DoAnimateGameChange`, `FadeInCurrentGame`, `FadeForMovie`, `FadeFrameworkElementOpacity` |
 | View-state flags | `View/MainWindowViewModel.cs` — `IsDisplayingResults`, `IsDisplayingFeature`, `IsDisplayingMoreInfo`, `IsPickingCategory`, `IsZoomingBox`, `IsRatingGame`, `IsRecognizing`, `IsInitializing`, `IsDisplayingError` |
 | Row slots | `Models/GameList.cs` — `Game0`…`Game12`, `RefreshGames()` |
-| Detail overlay states | `State/GameDetailOptionPlayState.cs`, `…FavoriteState`, `…RatingState`, `…MoreState` |
+| Detail overlay | `State/GameDetailOptionsState.cs` — one state for all four options; `State/GameDetailOptions/` — the option list and one class per option |
 | Featured view states | `State/FeatureOptionPlayState.cs`, `State/FeatureOptionMoreInfoState.cs` |
 | Loading / error states | `State/LoadingState.cs`, `State/DisplayingErrorState.cs` |
 | Flip / zoom | `State/KeyStrategy/KeyStrategyFlipBox.cs`, `KeyStrategyZoomBox.cs` |

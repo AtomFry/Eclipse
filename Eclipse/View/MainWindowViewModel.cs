@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Eclipse.Helpers;
 using System.Threading;
 using Eclipse.State;
+using Eclipse.State.GameDetailOptions;
 using System.Linq.Expressions;
 using System.Reflection;
 using Eclipse.Service;
@@ -23,6 +24,9 @@ namespace Eclipse.View
     {
         public ListCycle<GameList> listCycle;
         public List<GameListSet> GameListSets;
+        /// <summary>The options in the game detail overlay. Driven by GameDetailOptionsState.</summary>
+        public GameDetailOptionList GameDetailOptions { get; } = new GameDetailOptionList();
+
         public GameCatalog gameCatalog;
         public IReadOnlyList<GameFiles> gameFilesBag;
 
@@ -41,7 +45,6 @@ namespace Eclipse.View
 
         private double videoVolume;
 
-        private GameDetailOption gameDetailOption;
         private string errorMessage;
 
         public EclipseStateContext EclipseStateContext { get; set; }
@@ -303,18 +306,6 @@ namespace Eclipse.View
                 {
                     isRatingGame = value;
                     PropertyChanged(this, new PropertyChangedEventArgs("IsRatingGame"));
-                }
-            }
-        }
-
-        public GameDetailOption GameDetailOption
-        {
-            get => gameDetailOption;
-            set
-            {
-                {
-                    gameDetailOption = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("GameDetailOption"));
                 }
             }
         }

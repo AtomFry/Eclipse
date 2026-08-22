@@ -27,10 +27,7 @@
 
             if ((eclipseState is FeatureOptionMoreInfoState)
                 || (eclipseState is FeatureOptionPlayState)
-                || (eclipseState is GameDetailOptionFavoriteState)
-                || (eclipseState is GameDetailOptionMoreState)
-                || (eclipseState is GameDetailOptionPlayState)
-                || (eclipseState is GameDetailOptionRatingState)
+                || (eclipseState is GameDetailOptionsState)
                 || (eclipseState is SelectingGameState)
                 || (eclipseState is SelectingOptionsState))
             {

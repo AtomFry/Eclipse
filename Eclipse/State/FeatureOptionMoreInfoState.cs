@@ -36,7 +36,7 @@ namespace Eclipse.State
             attractModeService.RestartAttractMode();
 
             eclipseStateContext.MainWindowViewModel.IsDisplayingFeature = false;
-            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(GameDetailOptionPlayState)));
+            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(GameDetailOptionsState)));
             return true;
         }
 

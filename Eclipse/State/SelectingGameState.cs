@@ -41,7 +41,7 @@ namespace Eclipse.State
             else
             {
                 attractModeService.RestartAttractMode();
-                eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(GameDetailOptionPlayState)));
+                eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(GameDetailOptionsState)));
             }
 
             return true;
