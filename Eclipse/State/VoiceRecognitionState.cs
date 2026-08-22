@@ -167,17 +167,19 @@ namespace Eclipse.State
                 // for each phrase, get the set of matching games from the GameTitlePhrases dictionary
                 if (speechRecognizerResult?.RecognizedPhrases?.Count() > 0)
                 {
-                    // in case the same phrase was recognized multiple times, group by phrase and keep only the max confidence
+                    // in case the same phrase was recognized multiple times, group by phrase and keep only the max confidence.
+                    // The phrase is the list's value as well as what it displays - these lists are named after what was
+                    // said rather than after a category - so it is set on both, and the phrase is read back from the value.
                     List<GameList> distinctGameLists = speechRecognizerResult?.RecognizedPhrases
                         .GroupBy(s => s.Phrase)
-                        .Select(s => new GameList { ListDescription = s.Key, Confidence = s.Max(m => m.Confidence) }).ToList();
+                        .Select(s => new GameList { ListTypeValue = s.Key, ListDescription = s.Key, Confidence = s.Max(m => m.Confidence) }).ToList();
 
                     // loop through the gamelists (one list for each hypothesized phrase)
                     foreach (GameList gameList in distinctGameLists)
                     {
                         // get the games this phrase matches - already one entry per game,
                         // carrying that game's best match type for the phrase
-                        IReadOnlyList<VoiceMatch> voiceMatches = VoiceSearchIndex.Instance.Lookup(gameList.ListDescription);
+                        IReadOnlyList<VoiceMatch> voiceMatches = VoiceSearchIndex.Instance.Lookup(gameList.ListTypeValue);
 
                         if (voiceMatches.Count > 0)
                         {
@@ -186,7 +188,7 @@ namespace Eclipse.State
                             foreach (VoiceMatch voiceMatch in voiceMatches)
                             {
                                 GameMatch match = GameMatch.CloneForVoiceResult(voiceMatch.Game, voiceMatch.MatchType, voiceMatch.ConvertedTitle);
-                                match.SetupVoiceMatchPercentage(gameList.Confidence, gameList.ListDescription);
+                                match.SetupVoiceMatchPercentage(gameList.Confidence, gameList.ListTypeValue);
                                 matches.Add(match);
                             }
 

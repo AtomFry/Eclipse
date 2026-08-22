@@ -121,6 +121,59 @@ Two routes:
 
 Each stage builds and deploys on its own. `B-15a` is Stages 0–3; `B-15b` is Stages 4–5.
 
+### Stage -1 — Stop using a display string as a sort key and an identity — **done**
+
+`GameList.ListDescription` was doing four incompatible jobs: the name on screen, the tie-break
+sort key for every list set, the identity used to find your list again after a rebuild, and —
+via the parameterless constructor in voice search — the recognised phrase itself.
+
+It is built at construction as `ListTypeValue` plus ` (N)` when `ShowGameCountInList` is on,
+which defaults to `true`. So the identity key changed whenever the list's membership changed:
+
+1. You are in the Favorites list, which renders as `Favorites (12)`. That exact string is saved.
+2. You un-favourite the game. Lists rebuild. The list is now `Favorites (11)`.
+3. The lookup matches on the old string, finds nothing, falls to the `else` — and calls
+   `DoRandomGame()`.
+
+The four-deep fallback that `RULE-BROWSE-010` describes — same game, next game, previous game,
+first in the list — was skipped entirely and the user landed on a random game elsewhere in the
+library. It only bit when the count of the list *you were in* changed, which is the
+favourites-and-history case the feature exists for; browsing by platform and favouriting
+something was unaffected, which is presumably why it survived.
+
+`ListTypeValue` already held the raw value, so the fix was to use it:
+
+- `MainWindowViewModel.cs:456` — lists are ordered by `ListTypeValue`.
+- `MainWindowViewModel.cs:979, :1011` — `preChangeListDescription` became
+  `preChangeListTypeValue`, captured and matched on `ListTypeValue`.
+- `VoiceRecognitionState.cs:175, :182, :191` — voice results carry the phrase in `ListTypeValue`
+  as well as `ListDescription`, and the index lookup and match scoring read it from the value.
+  Voice lists had no `ListTypeValue` at all before this, so they had no usable identity.
+- `GameList.cs` — the constructor's first parameter is named for what it actually sets, and both
+  properties now document which job is theirs.
+
+**This is a behaviour change, which is why it sits before the Stage 0 baseline rather than
+inside the region that baseline guards.** Two effects:
+
+- Position restoration now works in the case it was written for. Verify with `VER-BROWSE-005`.
+- The tie-break order of category lists can shift where names share a prefix, because the
+  comparison is now `Action` rather than `Action (12)` and culture-aware comparison weights the
+  parenthesis differently from a letter. Any such move is visible on the category picker.
+
+**Noted, not changed:** `GameList.ListCategoryType` is never assigned anywhere in the product,
+so every list carries the default (`VoiceSearch`) and the `list.ListCategoryType ==
+preChangeListCategoryType` half of the restoration match always passes. The whole match rests on
+the string. That belongs to `B-14`.
+
+Also not changed: `GameList` still reads `EclipseSettingsDataProvider.Instance` — removing it
+from the constructor buys nothing while the field initializer keeps reading the same singleton
+for `RepeatGamesToFillScreen` in `RefreshGames`. That belongs with `B-31`.
+
+- **Files:** `Eclipse/Models/GameList.cs`, `Eclipse/View/MainWindowViewModel.cs`,
+  `Eclipse/State/VoiceRecognitionState.cs`
+- **Verify:** builds clean; `VER-BROWSE-005` by hand; a voice search still returns results;
+  the category picker still lists categories in a sane order
+
 ### Stage 0 — Capture the baseline
 
 The "done when" criterion is *a real user `CustomLists.json` produces byte-identical list

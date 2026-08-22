@@ -453,7 +453,7 @@ namespace Eclipse.View
             GameListSets.Add(new GameListSet
             {
                 GameLists = listOfGameList.OrderBy(list => list.SortOrder)
-                                            .ThenBy(list => list.ListDescription).ToList(),
+                                            .ThenBy(list => list.ListTypeValue).ToList(),
                 ListCategoryType = listCategoryType
             });
         }
@@ -957,7 +957,7 @@ namespace Eclipse.View
         private bool gameListsChanged;
         private ListCategoryType preChangeListSetCategoryType;
         private ListCategoryType preChangeListCategoryType;
-        private string preChangeListDescription;
+        private string preChangeListTypeValue;
         private string preChangeGameId;
         private int preChangeGameIndex;
 
@@ -975,8 +975,11 @@ namespace Eclipse.View
             // save the current list type - generally would match the list set unless it's favorites
             preChangeListCategoryType = currentGameList.ListCategoryType;
 
-            // identifies which list we are in within the list set - would be better if we created a guid to identify these
-            preChangeListDescription = currentGameList.ListDescription;
+            // identifies which list we are in within the list set - would be better if we created a guid to identify these.
+            // This has to be the list's value and not its description: the description carries the game count when
+            // ShowGameCountInList is on, and the count changes on exactly the rebuilds this is trying to survive - so
+            // "Favorites (12)" would never be found again once it had become "Favorites (11)".
+            preChangeListTypeValue = currentGameList.ListTypeValue;
 
             // get the game id that we are on 
             preChangeGameId = currentGameList.Game1.Game.Id;
@@ -1008,7 +1011,7 @@ namespace Eclipse.View
 
             // find the list that we were previously in 
             var priorListQuery = from list in currentGameListSet.GameLists
-                                 where list.ListCategoryType == preChangeListCategoryType && list.ListDescription == preChangeListDescription
+                                 where list.ListCategoryType == preChangeListCategoryType && list.ListTypeValue == preChangeListTypeValue
                                  select list;
 
             var gameList = priorListQuery?.FirstOrDefault();

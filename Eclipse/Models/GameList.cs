@@ -107,9 +107,9 @@ namespace Eclipse.Models
         {
         }
 
-        public GameList(string _listDescription, List<GameMatch> _matchingGames, int sortOrder = 9999)
+        public GameList(string _listTypeValue, List<GameMatch> _matchingGames, int sortOrder = 9999)
         {
-            ListTypeValue = _listDescription;
+            ListTypeValue = _listTypeValue;
             MatchingGames = _matchingGames;
             SortOrder = sortOrder;
 
@@ -158,6 +158,14 @@ namespace Eclipse.Models
             Game12 = (MatchCount > 11) || (EclipseSettings.RepeatGamesToFillScreen) ? gameCycle.GetItem(12) : null;
         }
 
+        // Identity and ordering. The raw category value - a genre name, a platform, a release
+        // year, or a custom list's name - with nothing appended to it. Lists are sorted by this
+        // and position restoration finds its way back to a list by matching it after a rebuild.
+        //
+        // ListDescription below is the display form of the same thing and is deliberately not
+        // usable for either job: it carries the game count when ShowGameCountInList is on, so it
+        // changes whenever the list's membership changes - which is exactly when restoration
+        // needs to recognise the list.
         private string listTypeValue;
         public string ListTypeValue
         {
