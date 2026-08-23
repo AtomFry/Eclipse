@@ -101,10 +101,10 @@ about a value.
 |---|---|---|
 | RULE-CONFIG-001 | On first run, if no settings file exists, a default file is written to disk. | Settings exist as a file from the first launch. |
 | RULE-CONFIG-002 | On first run, if no custom-list file exists, two lists are created: **Favorites** (games flagged favourite, sorted by title) and **History** (games with a last-played date, most recent first). Both appear in the Platform and Playlist categories. | These are the shipped defaults and users expect them. |
-| RULE-CONFIG-003 | Missing properties in a saved file are populated with their declared defaults on load. This is the **only** migration mechanism — there is no schema version. | Renaming a setting silently resets it. |
-| RULE-CONFIG-004 | Settings are read once and cached for the process lifetime; the cached instance is shared. | Most changes require a restart to take effect. |
-| RULE-CONFIG-005 | Saving writes the whole file, replacing it in place. | Interruption can truncate it — see `S-6`. |
-| RULE-CONFIG-006 | Each save first copies the previous file into a timestamped backup. Backups are never pruned. | The folder grows without bound. |
+| RULE-CONFIG-003 | Missing properties in a saved file are populated with their declared defaults on load. Files carry a `SchemaVersion`, but nothing reads it yet — defaulting is still the only active migration mechanism. | Renaming a setting silently resets it; the version stamp gives a future migration something to branch on. |
+| RULE-CONFIG-004 | Settings are read once and cached for the process lifetime; the cached instance is shared. | **Every** change requires a Big Box restart — see "When settings take effect" above. |
+| RULE-CONFIG-005 | Saving serialises to a temp file in the same folder and then replaces the target in one step. | An interrupted save leaves the previous file intact. |
+| RULE-CONFIG-006 | Each save first copies the previous file into a timestamped backup, and the ten most recent are kept. A file that will not parse is recovered from the newest backup that does, then from defaults. | Bounded, and the backups are now actually read. |
 | RULE-CONFIG-007 | Custom list definitions are identified by a GUID assigned on first save. | Reordering and editing rely on it. |
 | RULE-CONFIG-008 | The categories a custom list may appear in exclude *More like this*, *Random* and *Voice search*. | Those sets are generated, not browsed by category. |
 | RULE-CONFIG-009 | Reordering custom lists is only persisted when the settings window is saved, not when the move is made. | Cancelling discards reordering. |
@@ -116,15 +116,18 @@ about a value.
 
 | Concern | Location |
 |---|---|
-| Settings model & defaults | `Models/EclipseSettings.cs`; `Service/CustomListDefinitionDataProvider.cs` — `GetDefaultSettings` |
+| Settings model & defaults | `Models/EclipseSettings.cs`; `Service/EclipseSettingsDataService.cs` — `GetDefaultSettings` |
 | Custom list model | `Models/EclipseSettings.cs` — `CustomListDefinition`, `FilterExpression`, `SortExpression`, `GameFieldEnum` |
-| Persistence | `Service/CustomListDefinitionDataProvider.cs` — `EclipseSettingsDataService`, `CustomListDefinitionDataService` |
-| Default custom lists | `Service/CustomListDefinitionDataProvider.cs` — `GetDefaultCustomLists` |
+| Persistence | `Service/EclipseSettingsDataService.cs`, `Service/CustomListDefinitionDataService.cs`, both over `Helpers/JsonFileStore.cs` |
+| Default custom lists | `Service/CustomListDefinitionDataService.cs` — `GetDefaultCustomLists` |
 | File locations | `Helpers/DirectoryInfoHelper.cs` — `EclipseSettingsFile`, `CustomListsFile`, `SettingsBackupPath` |
 | Settings window | `View/EclipseSettings/EclipseSettingsView.xaml(.cs)`, `EclipseSettingsViewModel.cs` |
 | List editor | `View/EclipseSettings/CustomListDefinitionEditView.xaml(.cs)`, `CustomListDefinitionEditViewModel.cs` |
 | Window entry point | `Plugins/EclipseSettingsMenuItem.cs` |
-| Editor messaging | `Event/Event.cs`; `Helpers/EventAggregatorHelper.cs` (Prism) |
+| Editor messaging | `Event/Event.cs` — the static `SettingsEvents`; commands are `Helpers/RelayCommand.cs`. No framework dependency. |
+| Window palette & control styles | `EclipseSettingsView.xaml` — `Window.Resources`: seven brushes, styles for the field types, and templates for `ComboBox`, `CheckBox` and `Slider` |
+| Tab layout | `EclipseSettingsView.xaml` — seven `DataTemplate`s in `Grid.Resources`, selected by triggers on `SelectedTabPage` |
+| One setting row | `SettingRowStyle` / `HalfWidthRowStyle`; sliders are `View/EclipseSettings/SliderRow.cs` |
 
 Files on disk: `<LaunchBox>/Plugins/Eclipse/Settings/EclipseSettings.json`,
 `CustomLists.json`, `DataBackup/`.

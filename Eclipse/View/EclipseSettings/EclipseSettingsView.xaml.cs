@@ -37,9 +37,8 @@ namespace Eclipse.View.EclipseSettings
         }
 
         // Everything the constructor attached, detached - the window's own handlers, its
-        // subscription, and the view model's two. The event aggregator is a process-lifetime
-        // singleton and this window is opened and closed repeatedly, so a subscription left
-        // behind means a closed window still receiving events for as long as it stays alive.
+        // subscription, and the view model's two. SettingsEvents are static, so a handler left
+        // attached keeps this closed window alive and still receiving events.
         private void EclipseSettingsView_Closed(object sender, EventArgs e)
         {
             SettingsEvents.EclipseSettingsClose -= OnEclipseSettingsClose;

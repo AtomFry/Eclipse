@@ -52,7 +52,6 @@
     <Resource Include="Resources\ProgressBarImageBrush.png" />
     <Resource Include="Resources\SettingsIcon_Grey.png" />
     <Resource Include="Resources\SettingsIcon_White.png" />
-    <Resource Include="Resources\VoiceRecognitionGif.gif" />
   </ItemGroup>
 
   <ItemGroup>
@@ -76,7 +75,6 @@
     <!-- System.Drawing.Common is supplied by the Windows Desktop framework reference on
          net10.0-windows (NU1510); no explicit PackageReference is needed or wanted. -->
     <PackageReference Include="System.Speech" Version="10.0.11" />
-    <PackageReference Include="WpfAnimatedGif" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>

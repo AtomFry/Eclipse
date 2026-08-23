@@ -143,6 +143,11 @@ Each scenario is written so a developer can execute it without reading the code.
 | VER-CONFIG-010 | Reorder custom lists and Save; confirm the reorder survives a restart. Repeat with Add and with Edit, which also flush a pending reorder. | Manual | `B-25` |
 | VER-CONFIG-011 | Open and close the settings window and the custom-list editor 20× each, then trigger a save. Confirm one handler invocation per event, not twenty. | Manual | `B-23` (config share) |
 | VER-CONFIG-012 | Change a setting in LaunchBox while Big Box is running; confirm it takes effect only after Big Box restarts. Characterises the answer to `OQ-011`. | Manual | `OQ-011` |
+| VER-CONFIG-013 | Open each of the seven tabs. Confirm every control is present, in the same place, and legible — in particular that a checked box is distinguishable from an unchecked one and that the selected combo value can be read. | Manual | settings-window-layout L6, L7 |
+| VER-CONFIG-014 | Drag each of the four box-front margin sliders; confirm the preview updates live. This is the only side effect left in the settings view model. | Manual | settings-window-layout Stage 3 |
+| VER-CONFIG-015 | On the Screen saver tab, confirm each slider reads back its value, that values snap to whole steps rather than landing on arbitrary numbers, and that unchecking *Enable screen saver* dims every dependent row. | Manual | settings-window-layout Stage 3b |
+| VER-CONFIG-016 | Switch tabs repeatedly. Confirm no flicker, and that a tab returns showing values entered before leaving it — tab content is realised on demand now. | Manual | settings-window-layout Stage 4 |
+| VER-CONFIG-017 | Custom lists tab: confirm the grid, the five buttons and double-click-to-edit all behave as before. It is the one tab that kept its `Grid` layout. | Manual | settings-window-layout Stage 3 |
 
 ### EPIC-INTEGRATE
 

@@ -35,10 +35,8 @@ namespace Eclipse.View.EclipseSettings
             Closed += CustomListDefinitionEditView_Closed;
         }
 
-        // Everything the constructor attached, detached. The event aggregator is a
-        // process-lifetime singleton and this window is opened and closed repeatedly, so a
-        // subscription left behind means a closed window still receiving events for as long as
-        // it happens to stay alive.
+        // Everything the constructor attached, detached. SettingsEvents are static, so a handler
+        // left attached keeps this closed window alive and still receiving events.
         private void CustomListDefinitionEditView_Closed(object sender, EventArgs e)
         {
             SettingsEvents.CustomListDefinitionEditClose -= OnPatcherEditClose;

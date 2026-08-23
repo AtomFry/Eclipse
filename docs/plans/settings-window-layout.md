@@ -10,7 +10,14 @@ the remaining five.**
 | 3 — row styles | **Done, all six list-shaped tabs.** Custom lists keeps its `Grid` by design — a `DataGrid` beside a button column is a real two-dimensional layout. Design corrected — see the note in the stage. |
 | 3b — `SliderRow` | **Done.** All 18 sliders. Added on top of the plan; see L7 and the slider notes. |
 | 4 — tab templating | **Done.** Seven `DataTemplate`s and one `ContentControl`. |
-| 5 — documentation | Not started. |
+| 5 — documentation | **Done.** `configuration.md` rules and implementation map updated; `VER-CONFIG-013`…`017` added. |
+
+**Status: complete, pending the manual sweep in `VER-CONFIG-013`…`017`.**
+
+Two things done alongside and worth noting here: `WpfAnimatedGif` was removed once the voice
+overlay stopped using it, which with `Prism.Core` leaves the shipped payload at `Eclipse.dll`,
+`Newtonsoft.Json.dll` and `System.Speech.dll`. And the spacing question raised during Stage 3 is
+**still open** — it was never attributed, and the true baseline was never captured.
 
 | Measure | Before | After |
 |---|---|---|

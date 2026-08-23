@@ -11,7 +11,6 @@ namespace Eclipse.Models
     {
         public static Uri DefaultBezelVertical { get; } = new Uri($"{DirectoryInfoHelper.ResourceFolder}/DefaultBezelVertical.png");
         public static Uri DefaultBezelHorizontal { get; } = new Uri($"{DirectoryInfoHelper.ResourceFolder}/DefaultBezelHorizontal.png");
-        public static Uri VoiceRecognitionGif { get; } = new Uri($"{DirectoryInfoHelper.ResourceFolder}/VoiceRecognitionGif.gif");
         public static Uri SettingsIconGrey { get; } = new Uri($"{DirectoryInfoHelper.ResourceFolder}/SettingsIcon_Grey.png");
         public static Uri SettingsIconWhite { get; } = new Uri($"{DirectoryInfoHelper.ResourceFolder}/SettingsIcon_White.png");
         public static Uri GameFrontDummy { get; } = new Uri($"{DirectoryInfoHelper.ResourceFolder}/NES_BoxFront_Template.png");

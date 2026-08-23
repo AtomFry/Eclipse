@@ -68,8 +68,8 @@ namespace Eclipse.View.EclipseSettings
 
         /// <summary>
         /// Lets go of the two subscriptions taken in the constructor. Called by the window on
-        /// Closed - this object outlives nothing, but the aggregator it subscribed to lives for
-        /// the whole process, and the window is opened and closed repeatedly.
+        /// Closed - SettingsEvents are static and hold their handlers strongly, so this is what
+        /// lets a closed window be collected.
         /// </summary>
         public void Detach()
         {
