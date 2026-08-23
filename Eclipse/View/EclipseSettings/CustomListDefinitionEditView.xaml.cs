@@ -1,6 +1,5 @@
 ﻿using Eclipse.Event;
 using Eclipse.Helpers;
-using Prism.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,19 +21,31 @@ namespace Eclipse.View.EclipseSettings
     /// </summary>
     public partial class CustomListDefinitionEditView : Window
     {
-        readonly EventAggregator eventAggregator;
 
         public CustomListDefinitionEditView(CustomListDefinitionEditViewModel customListDefinitionEditViewModel)
         {
             InitializeComponent();
 
-            eventAggregator = EventAggregatorHelper.Instance.EventAggregator;
-            eventAggregator.GetEvent<CustomListDefinitionEditClose>().Subscribe(OnPatcherEditClose);
+            SettingsEvents.CustomListDefinitionEditClose += OnPatcherEditClose;
 
             DataContext = customListDefinitionEditViewModel;
 
             Closing += CustomListDefinitionEditView_Closing;
             PreviewKeyDown += CustomListDefinitionEditView_PreviewKeyDown;
+            Closed += CustomListDefinitionEditView_Closed;
+        }
+
+        // Everything the constructor attached, detached. The event aggregator is a
+        // process-lifetime singleton and this window is opened and closed repeatedly, so a
+        // subscription left behind means a closed window still receiving events for as long as
+        // it happens to stay alive.
+        private void CustomListDefinitionEditView_Closed(object sender, EventArgs e)
+        {
+            SettingsEvents.CustomListDefinitionEditClose -= OnPatcherEditClose;
+
+            Closing -= CustomListDefinitionEditView_Closing;
+            PreviewKeyDown -= CustomListDefinitionEditView_PreviewKeyDown;
+            Closed -= CustomListDefinitionEditView_Closed;
         }
 
         private void CustomListDefinitionEditView_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -47,12 +58,12 @@ namespace Eclipse.View.EclipseSettings
 
         private void CustomListDefinitionEditView_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            eventAggregator.GetEvent<CustomListDefinitionEditClosing>().Publish();
+            SettingsEvents.RaiseCustomListDefinitionEditClosing();
         }
 
         private void OnPatcherEditClose()
         {
-            eventAggregator.GetEvent<CustomListDefinitionEditClosing>().Publish();
+            SettingsEvents.RaiseCustomListDefinitionEditClosing();
             Close();
         }
 

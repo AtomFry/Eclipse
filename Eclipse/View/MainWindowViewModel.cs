@@ -98,12 +98,11 @@ namespace Eclipse.View
         {
             eclipseSettings = EclipseSettingsDataProvider.Instance?.EclipseSettings;
             VideoVolume = eclipseSettings?.DefaultVideoVolume ?? 0.5;
-            ShowMatchPercent = eclipseSettings?.ShowMatchPercent ?? true;
-            ShowReleaseYear = eclipseSettings?.ShowReleaseYear ?? true;
-            ShowStarRating = eclipseSettings?.ShowStarRating ?? true;
-            ShowPlayMode = eclipseSettings?.ShowPlayMode ?? true;
-            ShowPlatformLogo = eclipseSettings?.ShowPlatformLogo ?? true;
-            ShowOptionsIcon = eclipseSettings?.ShowOptionsIcon ?? true;
+
+            // The six Show* assignments that used to be here read a value off the settings object
+            // and wrote it straight back through a property whose getter read the same object.
+            // They were no-ops that ran before any binding existed; the theme binds to Settings
+            // directly now.
 
             double marginLeft = eclipseSettings?.BoxFrontMarginLeft ?? 2;
             double marginRight = eclipseSettings?.BoxFrontMarginRight ?? 2;
@@ -116,65 +115,15 @@ namespace Eclipse.View
             SelectedGameDetailsPadding = new System.Windows.Thickness(selectedGameDetailsPadding);
         }
 
-        public bool ShowMatchPercent
-        {
-            get => eclipseSettings.ShowMatchPercent;
-            set
-            {
-                eclipseSettings.ShowMatchPercent = value;
-                PropertyChanged(this, new PropertyChangedEventArgs("ShowMatchPercent"));
-            }
-        }
-
-        public bool ShowPlatformLogo
-        {
-            get => eclipseSettings.ShowPlatformLogo;
-            set
-            {
-                eclipseSettings.ShowPlatformLogo = value;
-                PropertyChanged(this, new PropertyChangedEventArgs("ShowPlatformLogo"));
-            }
-        }
-
-        public bool ShowPlayMode
-        {
-            get => eclipseSettings.ShowPlayMode;
-            set
-            {
-                eclipseSettings.ShowPlayMode = value;
-                PropertyChanged(this, new PropertyChangedEventArgs("ShowPlayMode"));
-            }
-        }
-
-        public bool ShowReleaseYear
-        {
-            get => eclipseSettings.ShowReleaseYear;
-            set
-            {
-                eclipseSettings.ShowReleaseYear = value;
-                PropertyChanged(this, new PropertyChangedEventArgs("ShowReleaseYear"));
-            }
-        }
-
-        public bool ShowStarRating
-        {
-            get => eclipseSettings.ShowStarRating;
-            set
-            {
-                eclipseSettings.ShowStarRating = value;
-                PropertyChanged(this, new PropertyChangedEventArgs("ShowStarRating"));
-            }
-        }
-
-        public bool ShowOptionsIcon
-        {
-            get => eclipseSettings.ShowOptionsIcon;
-            set
-            {
-                eclipseSettings.ShowOptionsIcon = value;
-                PropertyChanged(this, new PropertyChangedEventArgs("ShowOptionsIcon"));
-            }
-        }
+        /// <summary>
+        /// The settings this session started with, for the theme to bind to.
+        ///
+        /// Six of them used to be mirrored here as delegating properties. Nothing ever set them
+        /// after construction - the settings editor runs in LaunchBox, a different process, and
+        /// Big Box reads its settings once - so the mirroring bought a binding target and
+        /// nothing else. The theme binds through this instead.
+        /// </summary>
+        public Models.EclipseSettings Settings => eclipseSettings;
 
         public bool IsPlayingGame
         {

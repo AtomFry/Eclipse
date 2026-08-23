@@ -32,6 +32,23 @@ timestamped backup.
 **FEAT-CONFIG-006 — Reorder custom lists.** Custom lists can be moved up and down; the
 order determines their order in the browse view.
 
+### When settings take effect
+
+**Every setting applies the next time Big Box starts. None of them apply live.** This is
+structural, not a limitation anyone chose:
+
+* The settings editor is a LaunchBox menu item (`ShowInBigBox => false`), so it runs in
+  LaunchBox.exe — a different process from BigBox.exe.
+* Big Box reads the settings file once, into a cache that lives for the process, and nothing
+  writes to that cache. There is no file watcher and no reload path.
+
+So a change saved in LaunchBox cannot reach a Big Box that is already running. Start Big Box
+after saving and the change is there.
+
+`OQ-011` asked which settings were live and which needed a restart, on the premise that six
+were "mirrored for live binding". That was a misreading of the mechanism: those six were
+mirrored so the theme XAML had a binding target, and nothing ever set them after construction.
+
 ### Settings inventory
 
 | Group | Settings |
@@ -116,23 +133,23 @@ Files on disk: `<LaunchBox>/Plugins/Eclipse/Settings/EclipseSettings.json`,
 
 | Finding | Effect |
 |---|---|
-| S-5 | 45 settings, ~36 mirrored in the settings view model, 6 mirrored again in the main view model. |
-| S-6 | Non-atomic writes, no schema version, unbounded backups. |
-| S-13 | Six `async void` command handlers whose failures cannot be observed. |
-| M-4 | Prism event subscriptions in the settings view models are never detached, and these windows open and close repeatedly. |
-| C-7 | Prism does not resolve inside LaunchBox, so the assembly loads on a partial type list. |
-| C-8 | Four types share one misleadingly named file. |
+| S-5 | **Resolved.** Each setting is declared once, on `EclipseSettings`. Both view models bind to that object through a `Settings` property; the four box-front margins keep a wrapper because their setter refreshes the margin preview. |
+| S-6 | **Resolved.** `Helpers/JsonFileStore` writes via a temp file and replaces the target, stamps a `SchemaVersion`, keeps the ten most recent backups, and falls back to the newest readable backup - then to defaults - rather than throwing. |
+| S-13 | **Resolved.** All six report or log. A failed save now leaves the window open with the edits intact, and the custom-list write is awaited rather than racing the window closing. |
+| M-4 | **Resolved.** Both windows detach on `Closed`. Prism held subscribers weakly, so the leak was overstated - the real risk was delivery to a stale instance still alive. |
+| C-7 | **Resolved.** Prism is gone - `Helpers/RelayCommand` and the static `SettingsEvents` replaced it, and `Prism.dll` is no longer shipped. |
+| C-8 | **Resolved.** Split into `CustomListDefinitionDataProvider`, `CustomListDefinitionDataService`, `EclipseSettingsDataProvider` and `EclipseSettingsDataService`. |
 
 ## Modernization backlog
 
 | Item | Relationship |
 |---|---|
-| B-26 | Collapses the triplication — **first produce the live-vs-restart table** (`OQ-011`). |
-| B-27 | Atomic writes, schema version, bounded backups. |
-| B-25 | Fixes the `async void` command handlers. |
-| B-23 | Fixes the subscription leak — settings windows are the highest-value case. |
-| B-13 | Removes the Prism dependency. |
-| B-10 | Splits the four-class file. |
+| ~~B-26~~ | **Delivered.** Triplication collapsed; `OQ-011` answered by reading the code rather than by audit - no setting is live. |
+| ~~B-27~~ | **Delivered** - `Helpers/JsonFileStore`, shared with the custom-list file. |
+| ~~B-25~~ | **Delivered**, plus one defect the finding did not record: the custom-list write was started and never awaited. |
+| B-23 | **Settings share delivered** - both windows detach on Closed. The attract, media and presentation shares remain. |
+| ~~B-13~~ | **Delivered** - `RelayCommand` and `SettingsEvents`; `Prism.Core` reference removed. |
+| ~~B-10~~ | **Delivered.** |
 
 ## Verification
 

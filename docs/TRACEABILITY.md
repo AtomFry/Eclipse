@@ -95,10 +95,10 @@ naming a constant changes nothing, provided the value is preserved exactly.
 | ~~B-07~~ memoise count | EPIC-BROWSE | no | row slot population | **Closed, not done.** `MatchCount` returns `MatchingGames.Count()`, and `Enumerable.Count()` takes the `ICollection<T>` fast path on a `List<T>` - it is already `O(1)`. Memoising would add an invalidation obligation (`MatchingGames` is publicly settable and is replaced on every curation rebuild) in exchange for nothing. `VER-BROWSE-007` stands on its own - it verifies repeat-to-fill slot population, not the count. |
 | B-08 dead code | none | no | none | build + visual sweep |
 | B-09 DI | all | **Yes** | initialisation order | init-order trace before/after |
-| B-10 split file | EPIC-CONFIG | no | none | build |
+| ~~B-10~~ split file | EPIC-CONFIG | no | none | **delivered** - four types, four files |
 | B-11 LaunchBox adapter | INTEGRATE + 5 epics | **Yes** | catalogue reads, launching, saving | VER-LAUNCH-001, VER-CURATE-001 |
 | B-12 game model | BROWSE, SEARCH, MEDIA, LAUNCH, CURATE | **Yes** | **XAML bindings — silent empty controls** | binding-error trace clean; VER-PRESENT-002/006 |
-| B-13 Prism removal | EPIC-CONFIG, EPIC-INTEGRATE | no | settings editor event flow | VER-CONFIG-005 |
+| ~~B-13~~ Prism removal | EPIC-CONFIG, EPIC-INTEGRATE | no | settings editor event flow | **delivered** - `RelayCommand` + static `SettingsEvents`; closes `C-7`, and `B-32` should be re-evaluated since most hand-written notification went with `B-26` |
 | B-14 position restoration | EPIC-BROWSE, EPIC-CURATE | no | **where the user lands** | VER-BROWSE-005 — characterization first. **Partly overtaken:** the logic was rewritten into list-local coordinates and moved to `GameListNavigator.RememberPosition`/`RestorePosition`, and `OQ-022` closed with it. What remains of this item is making it *verifiable*, which still wants `B-01`. |
 | ~~B-15a~~ list construction | EPIC-BROWSE | no | list membership and order | **delivered** — `GameListBuilder`; verified by golden dump diff |
 | ~~B-15b~~ custom-list query engine | EPIC-BROWSE | no | list membership and order | **delivered** — `GameFields` accessor map; verified by `CustomListQueryProbe` diff over every field/operator |
@@ -109,11 +109,11 @@ naming a constant changes nothing, provided the value is preserved exactly.
 | B-20 bezel consolidation | EPIC-MEDIA | no | which bezel is chosen | VER-MEDIA-001 — enumerate chain first |
 | B-21 brush off model | EPIC-PRESENT | no | none if dead | confirm `DEAD-005` |
 | B-22 loading pipeline | EPIC-MEDIA, EPIC-INTEGRATE | no | loading completion signalling | VER-INTEGRATE-005 |
-| B-23 disposal symmetry | PRESENT, MEDIA, ~~ATTRACT~~, CONFIG | no | **a removed subscription kills a feature** | open/close settings ×20; 30 min idle soak |
+| B-23 disposal symmetry | PRESENT, MEDIA, ~~ATTRACT~~, ~~CONFIG~~ | no | **a removed subscription kills a feature** | open/close settings ×20; 30 min idle soak |
 | B-24 sleep loop | EPIC-LAUNCH | no | **video/screensaver during gameplay** | VER-LAUNCH-001 ×10 |
-| B-25 async void commands | EPIC-CONFIG | no | save/delete failure reporting | VER-CONFIG-004 |
-| B-26 settings consolidation | EPIC-CONFIG + all | no | **live vs restart semantics** | live-vs-restart table (`OQ-011`) |
-| B-27 safe persistence | EPIC-CONFIG | no | settings loading | VER-CONFIG-003, 004 |
+| ~~B-25~~ async void commands | EPIC-CONFIG | no | save/delete failure reporting | **delivered** - all six report or log; also fixed an unawaited custom-list write |
+| ~~B-26~~ settings consolidation | EPIC-CONFIG + all | no | **live vs restart semantics** | **delivered** - `OQ-011` answered from the code: nothing is live, so there were no semantics to preserve |
+| ~~B-27~~ safe persistence | EPIC-CONFIG | no | settings loading | **delivered** - `Helpers/JsonFileStore`; VER-CONFIG-006..008 added |
 | ~~B-28~~ instrumentation | EPIC-MEDIA, EPIC-BROWSE | **Yes** | none | **delivered** — `BrowsePerformanceMonitor`, off unless `MeasureBrowsePerformance` is set. Baseline recorded in `docs/plans/box-art-row-refactor.md`. Removal is `B-34`. |
 | B-29 crop rewrite | EPIC-MEDIA | no | cropped image output | VER-MEDIA-003 golden files |
 | B-30 index fan-out | EPIC-BROWSE, EPIC-SEARCH | no | **list membership + voice results** | VER-BROWSE-006, VER-SEARCH-003 |
@@ -152,7 +152,7 @@ together are "make the game catalogue substitutable".
 | `B-04` | **Blocked on a product decision**, not engineering. Should not be scheduled until the "how loud is a degraded failure" question is answered. |
 | `B-30` | **Premature.** Explicitly gated on `B-28`, but it also lacks the characterization coverage (`VER-BROWSE-006`, `VER-SEARCH-003`) that would make it safe. Both should be prerequisites. |
 | `B-31` | **Answered — do not treat as debt.** The note below said it needed `B-28` latency data first. That data now exists: a keypress costs 1.7 ms to slot assignment and 3.9 ms to rendered, flat across 1,000 moves, on a 694-game library at 2560x1600. The fixed window is not a performance problem, and replacing it with virtualization would trade a measured non-problem for container regeneration per keypress. The row was instead cleaned up structurally (`docs/plans/box-art-row-refactor.md` Stage 5a) without changing the window. |
-| `B-26` | **Missing a prerequisite deliverable.** The live-vs-restart table (`OQ-011`) is a research task that should be its own item. |
+| `B-26` | ~~**Missing a prerequisite deliverable.** The live-vs-restart table (`OQ-011`) is a research task that should be its own item.~~ **Answered, and the note was wrong about the shape of it.** The prerequisite was real but it was not research: reading the code settled it in minutes, and the answer — nothing is live — meant there were no semantics for `B-26` to preserve. Worth generalising: before scheduling an empirical audit, check whether the code already answers it. |
 
 ### Items that appear to overlap
 

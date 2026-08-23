@@ -136,6 +136,13 @@ Each scenario is written so a developer can execute it without reading the code.
 | VER-CONFIG-003 | Load a settings file missing several properties and containing an unknown property. Confirm defaults populate and the unknown value does not break loading. | **Characterization — unit** | RULE-CONFIG-003 |
 | VER-CONFIG-004 | Save settings; confirm a timestamped backup was created and the live file is valid JSON. | Manual | RULE-CONFIG-005, 006 |
 | VER-CONFIG-005 | Reorder custom lists, then Cancel; confirm order is unchanged. Reorder, then Save; confirm it persists. Delete a list, then Cancel; observe whether the delete persisted. | Manual — **records `OQ-017`** | RULE-CONFIG-009, 010 |
+| VER-CONFIG-006 | Corrupt `EclipseSettings.json` (truncate it mid-object). Start Big Box; confirm it starts on the newest readable backup and the log says why. Repeat with every backup corrupted; confirm it starts on defaults. | Manual | `JsonFileStore.Read` |
+| VER-CONFIG-007 | Interrupt a save (kill LaunchBox during the write, or make the folder read-only). Confirm the previous settings file is intact and parses. | Manual | `JsonFileStore.Write` |
+| VER-CONFIG-008 | Save 15 times; confirm exactly 10 backups remain and the newest are kept. | Manual | `JsonFileStore.BackupsToKeep` |
+| VER-CONFIG-009 | Make `EclipseSettings.json` read-only, then Save. Confirm the failure is reported and the window stays open with the edits intact. | Manual | `B-25` |
+| VER-CONFIG-010 | Reorder custom lists and Save; confirm the reorder survives a restart. Repeat with Add and with Edit, which also flush a pending reorder. | Manual | `B-25` |
+| VER-CONFIG-011 | Open and close the settings window and the custom-list editor 20× each, then trigger a save. Confirm one handler invocation per event, not twenty. | Manual | `B-23` (config share) |
+| VER-CONFIG-012 | Change a setting in LaunchBox while Big Box is running; confirm it takes effect only after Big Box restarts. Characterises the answer to `OQ-011`. | Manual | `OQ-011` |
 
 ### EPIC-INTEGRATE
 

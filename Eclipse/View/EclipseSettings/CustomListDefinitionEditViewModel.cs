@@ -2,8 +2,6 @@
 using Eclipse.Helpers;
 using Eclipse.Models;
 using Eclipse.Service;
-using Prism.Commands;
-using Prism.Events;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -16,7 +14,6 @@ namespace Eclipse.View.EclipseSettings
     public class CustomListDefinitionEditViewModel : ViewModelBase
     {
         private readonly CustomListDefinitionDataProvider eclipseSettingsDataProvider;
-        private readonly IEventAggregator eventAggregator;
         private readonly CustomListDefinition customListDefinition;
 
         private FilterExpression selectedFilterExpression;
@@ -48,27 +45,26 @@ namespace Eclipse.View.EclipseSettings
         {
             customListDefinition = customList;
 
-            eventAggregator = EventAggregatorHelper.Instance.EventAggregator;
             eclipseSettingsDataProvider = new CustomListDefinitionDataProvider();
 
             InitializeFilterExpressions();
             InitializeSortExpressions();
             InitializeListCategoryTypes();
 
-            AddFilterExpressionCommand = new DelegateCommand(OnAddFilterExpressionExecute);
-            RemoveFilterExpressionCommand = new DelegateCommand(OnRemoveFilterExpressionExecute);
-            AddSortExpressionCommand = new DelegateCommand(OnAddSortExpressionExecute);
-            RemoveSortExpressionCommand = new DelegateCommand(OnRemoveSortExpressionExecute);
-            MoveUpSortExpressionCommand = new DelegateCommand(OnMoveUpSortExpressionExecute);
-            MoveDownSortExpressionCommand = new DelegateCommand(OnMoveDownSortExpressionExecute);
+            AddFilterExpressionCommand = new RelayCommand(OnAddFilterExpressionExecute);
+            RemoveFilterExpressionCommand = new RelayCommand(OnRemoveFilterExpressionExecute);
+            AddSortExpressionCommand = new RelayCommand(OnAddSortExpressionExecute);
+            RemoveSortExpressionCommand = new RelayCommand(OnRemoveSortExpressionExecute);
+            MoveUpSortExpressionCommand = new RelayCommand(OnMoveUpSortExpressionExecute);
+            MoveDownSortExpressionCommand = new RelayCommand(OnMoveDownSortExpressionExecute);
 
-            SaveCommand = new DelegateCommand(OnSaveExecuteAsync);
-            CloseCommand = new DelegateCommand(OnCloseExecute);
+            SaveCommand = new RelayCommand(OnSaveExecuteAsync);
+            CloseCommand = new RelayCommand(OnCloseExecute);
 
-            AddAllListCategoryTypesCommand = new DelegateCommand(OnAddAllListCategoryTypesExecute);
-            AddListCategoryTypeCommand = new DelegateCommand(OnAddListCategoryTypeExecute);
-            RemoveListCategoryTypeCommand = new DelegateCommand(OnRemoveListCategoryTypeExecute);
-            RemoveAllListCategoryTypesCommand = new DelegateCommand(OnRemoveAllListCategoryTypesExecute);
+            AddAllListCategoryTypesCommand = new RelayCommand(OnAddAllListCategoryTypesExecute);
+            AddListCategoryTypeCommand = new RelayCommand(OnAddListCategoryTypeExecute);
+            RemoveListCategoryTypeCommand = new RelayCommand(OnRemoveListCategoryTypeExecute);
+            RemoveAllListCategoryTypesCommand = new RelayCommand(OnRemoveAllListCategoryTypesExecute);
 
         }
 
@@ -104,7 +100,7 @@ namespace Eclipse.View.EclipseSettings
 
         private void OnCloseExecute()
         {
-            eventAggregator.GetEvent<CustomListDefinitionEditClose>().Publish();
+            SettingsEvents.RaiseCustomListDefinitionEditClose();
         }
 
         private async void OnSaveExecuteAsync()
@@ -229,16 +225,29 @@ namespace Eclipse.View.EclipseSettings
                 }
             }
 
-            if (isValid)
-            {
-                await eclipseSettingsDataProvider.SaveCustomListDefinitionAsync(customListDefinition);
-                eventAggregator.GetEvent<CustomListDefinitionSaved>().Publish(customListDefinition.Id);
-                eventAggregator.GetEvent<CustomListDefinitionEditClose>().Publish();
-            }
-            else
+            if (!isValid)
             {
                 MessageDialogHelper.ShowOKDialog(stringBuilder.ToString(), "Invalid filters");
+                return;
             }
+
+            try
+            {
+                await eclipseSettingsDataProvider.SaveCustomListDefinitionAsync(customListDefinition);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.LogException(ex, "save a custom list definition");
+
+                // Leave the window open so the edits survive and the user can retry.
+                MessageDialogHelper.ShowOKDialog(
+                    $"This custom list could not be saved.\n\n{ex.Message}\n\nThe window has been left open so you can try again.",
+                    "Save failed");
+                return;
+            }
+
+            SettingsEvents.RaiseCustomListDefinitionSaved(customListDefinition.Id);
+            SettingsEvents.RaiseCustomListDefinitionEditClose();
         }
 
         private void OnMoveDownSortExpressionExecute()
@@ -524,9 +533,9 @@ namespace Eclipse.View.EclipseSettings
 
         private void InvalidateCommands()
         {
-            ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
-            ((DelegateCommand)RemoveFilterExpressionCommand).RaiseCanExecuteChanged();
-            ((DelegateCommand)RemoveSortExpressionCommand).RaiseCanExecuteChanged();
+            ((RelayCommand)SaveCommand).RaiseCanExecuteChanged();
+            ((RelayCommand)RemoveFilterExpressionCommand).RaiseCanExecuteChanged();
+            ((RelayCommand)RemoveSortExpressionCommand).RaiseCanExecuteChanged();
         }
 
         public Uri IconUri { get; } = ResourceImages.EclipseSettingsIcon1;

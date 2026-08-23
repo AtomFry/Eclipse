@@ -3,8 +3,6 @@ using Eclipse.Helpers;
 using Eclipse.Models;
 using Eclipse.Service;
 using Newtonsoft.Json;
-using Prism.Commands;
-using Prism.Events;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,7 +17,6 @@ namespace Eclipse.View.EclipseSettings
     public class EclipseSettingsViewModel : ViewModelBase
     {
         private CustomListDefinitionDataProvider customListDefinitionDataProvider;
-        private IEventAggregator eventAggregator;
         public ObservableCollection<CustomListDefinition> CustomListDefinitions { get; }
         public ICommand EditCommand { get; }
         public ICommand AddCommand { get; }
@@ -54,42 +51,88 @@ namespace Eclipse.View.EclipseSettings
 
             CustomListDefinitions = new ObservableCollection<CustomListDefinition>();
 
-            eventAggregator = EventAggregatorHelper.Instance.EventAggregator;
             customListDefinitionDataProvider = new CustomListDefinitionDataProvider();
 
-            EditCommand = new DelegateCommand(OnEditExecute, OnEditCanExecute);
-            AddCommand = new DelegateCommand(OnAddExecute, OnAddCanExecute);
-            DeleteCommand = new DelegateCommand(OnDeleteExecuteAsync, OnDeleteCanExecute);
-            CloseCommand = new DelegateCommand(OnCloseExecute);
-            MoveUpCustomListCommand = new DelegateCommand(OnMoveUpCustomListExecute);
-            MoveDownCustomListCommand = new DelegateCommand(OnMoveDownCustomListExecute);
-            SaveCommand = new DelegateCommand(OnSaveExecute);
-            CancelCommand = new DelegateCommand(OnCancelExecute);
+            EditCommand = new RelayCommand(OnEditExecute, OnEditCanExecute);
+            AddCommand = new RelayCommand(OnAddExecute, OnAddCanExecute);
+            DeleteCommand = new RelayCommand(OnDeleteExecuteAsync, OnDeleteCanExecute);
+            CloseCommand = new RelayCommand(OnCloseExecute);
+            MoveUpCustomListCommand = new RelayCommand(OnMoveUpCustomListExecute);
+            MoveDownCustomListCommand = new RelayCommand(OnMoveDownCustomListExecute);
+            SaveCommand = new RelayCommand(OnSaveExecute);
+            CancelCommand = new RelayCommand(OnCancelExecute);
 
-            eventAggregator.GetEvent<CustomListDefinitionSaved>().Subscribe(OnCustomListDefinitionSavedSavedAsync);
-            eventAggregator.GetEvent<CustomListDefinitionEditClosing>().Subscribe(OnCustomListDefinitionEditClosed);
+            SettingsEvents.CustomListDefinitionSaved += OnCustomListDefinitionSavedSavedAsync;
+            SettingsEvents.CustomListDefinitionEditClosing += OnCustomListDefinitionEditClosed;
+        }
+
+        /// <summary>
+        /// Lets go of the two subscriptions taken in the constructor. Called by the window on
+        /// Closed - this object outlives nothing, but the aggregator it subscribed to lives for
+        /// the whole process, and the window is opened and closed repeatedly.
+        /// </summary>
+        public void Detach()
+        {
+            SettingsEvents.CustomListDefinitionSaved -= OnCustomListDefinitionSavedSavedAsync;
+            SettingsEvents.CustomListDefinitionEditClosing -= OnCustomListDefinitionEditClosed;
         }
 
         private void OnCancelExecute()
         {
-            eventAggregator.GetEvent<EclipseSettingsClose>().Publish();
+            SettingsEvents.RaiseEclipseSettingsClose();
         }
 
+        // A command handler has to be void, so this is the one place the exception has to be
+        // caught rather than propagated. It used to be async void with no handler at all, which
+        // meant a save that failed - a read-only file, a full disk - closed the window and told
+        // the user nothing.
         private async void OnSaveExecute()
         {
-            SaveCustomListsIfChanged();
+            try
+            {
+                // Awaited. This used to be a bare call to an async void method, so the window
+                // could close with the custom-list write still in flight.
+                await SaveCustomListsIfChangedAsync();
 
-            await EclipseSettingsDataProvider.Instance.SaveEclipseSettingsAsync(eclipseSettings);
+                await EclipseSettingsDataProvider.Instance.SaveEclipseSettingsAsync(eclipseSettings);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.LogException(ex, "save Eclipse settings");
+
+                // Leave the window open. The user's edits are still in it, so they can retry or
+                // fix whatever is wrong with the file; closing would throw the edits away.
+                MessageDialogHelper.ShowOKDialog(
+                    $"Your settings could not be saved.\n\n{ex.Message}\n\nThe window has been left open so you can try again.",
+                    "Save failed");
+                return;
+            }
 
             OnCloseExecute();
         }
 
-        private async void SaveCustomListsIfChanged()
+        private async Task SaveCustomListsIfChangedAsync()
         {
             if (listOrderChanged == true)
             {
                 listOrderChanged = false;
                 await customListDefinitionDataProvider.SaveCustomListDefinitionsAsync(CustomListDefinitions.ToList());
+            }
+        }
+
+        /// <summary>
+        /// The same write, for callers whose own failure reporting would be misleading - opening
+        /// the add or edit window is not a save, and a modal there would be noise. Logged only.
+        /// </summary>
+        private async Task TrySaveCustomListsIfChangedAsync()
+        {
+            try
+            {
+                await SaveCustomListsIfChangedAsync();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.LogException(ex, "save the custom list order");
             }
         }
 
@@ -178,376 +221,19 @@ namespace Eclipse.View.EclipseSettings
 
         private Models.EclipseSettings eclipseSettings;
 
-        public ListCategoryType DefaultListCategoryType
-        {
-            get { return eclipseSettings.DefaultListCategoryType; }
-            set
-            {
-                eclipseSettings.DefaultListCategoryType = value;
-                OnPropertyChanged("DefaultListCategoryType");
-            }
-        }
-
-        public bool EnableScreenSaver
-        {
-            get => eclipseSettings.EnableScreenSaver;
-            set
-            {
-                eclipseSettings.EnableScreenSaver = value;
-                OnPropertyChanged("EnableScreenSaver");
-            }
-        }
-
-        public bool OpenSettingsPaneOnLeft
-        {
-            get => eclipseSettings.OpenSettingsPaneOnLeft;
-            set
-            {
-                eclipseSettings.OpenSettingsPaneOnLeft = value;
-                OnPropertyChanged("OpenSettingsPaneOnLeft");
-            }
-        }
-
-        public bool IncludeHiddenGames
-        {
-            get => eclipseSettings.IncludeHiddenGames;
-            set
-            {
-                eclipseSettings.IncludeHiddenGames = value;
-                OnPropertyChanged("IncludeHiddenGames");
-            }
-        }
-
-        public bool IncludeBrokenGames
-        {
-            get => eclipseSettings.IncludeBrokenGames;
-            set
-            {
-                eclipseSettings.IncludeBrokenGames = value;
-                OnPropertyChanged("IncludeBrokenGames");
-            }
-        }
-
-        public bool DisableVideos
-        {
-            get => eclipseSettings.DisableVideos;
-            set
-            {
-                eclipseSettings.DisableVideos = value;
-                OnPropertyChanged("DisableVideos");
-            }
-        }
-
-        public double DefaultVideoVolume
-        {
-            get => eclipseSettings.DefaultVideoVolume;
-            set
-            {
-                eclipseSettings.DefaultVideoVolume = value;
-                OnPropertyChanged("DefaultVideoVolume");
-            }
-        }
-
-        public bool ShowGameCountInList
-        {
-            get => eclipseSettings.ShowGameCountInList;
-            set
-            {
-                eclipseSettings.ShowGameCountInList = value;
-                OnPropertyChanged("ShowGameCountInList");
-            }
-        }
-
-        public bool AdditionalVersionsEnable
-        {
-            get => eclipseSettings.AdditionalVersionsEnable;
-            set
-            {
-                eclipseSettings.AdditionalVersionsEnable = value;
-                OnPropertyChanged("AdditionalVersionsEnable");
-            }
-        }
-
-        public bool AdditionalVersionsExcludeRunBefore
-        {
-            get => eclipseSettings.AdditionalVersionsExcludeRunBefore;
-            set
-            {
-                eclipseSettings.AdditionalVersionsExcludeRunBefore = value;
-                OnPropertyChanged("AdditionalVersionsExcludeRunBefore");
-            }
-        }
-
-        public bool AdditionalVersionsExcludeRunAfter
-        {
-            get => eclipseSettings.AdditionalVersionsExcludeRunAfter;
-            set
-            {
-                eclipseSettings.AdditionalVersionsExcludeRunAfter = value;
-                OnPropertyChanged("AdditionalVersionsExcludeRunAfter");
-            }
-        }
-
-        public bool AdditionalVersionsOnlyEmulatorOrDosBox
-        {
-            get => eclipseSettings.AdditionalVersionsOnlyEmulatorOrDosBox;
-            set
-            {
-                eclipseSettings.AdditionalVersionsOnlyEmulatorOrDosBox = value;
-                OnPropertyChanged("AdditionalVersionsOnlyEmulatorOrDosBox");
-            }
-        }
-
-        public AdditionalApplicationDisplayField AdditionalApplicationDisplayField
-        {
-            get => eclipseSettings.AdditionalApplicationDisplayField;
-            set
-            {
-                eclipseSettings.AdditionalApplicationDisplayField = value;
-                OnPropertyChanged("AdditionalApplicationDisplayField");
-            }
-        }
-
-        public bool AdditionalVersionsRemovePlayPrefix
-        {
-            get => eclipseSettings.AdditionalVersionsRemovePlayPrefix;
-            set
-            {
-                eclipseSettings.AdditionalVersionsRemovePlayPrefix = value;
-                OnPropertyChanged("AdditionalVersionsRemovePlayPrefix");
-            }
-        }
-
-        public bool AdditionalVersionsRemoveVersionPostfix
-        {
-            get => eclipseSettings.AdditionalVersionsRemoveVersionPostfix;
-            set
-            {
-                eclipseSettings.AdditionalVersionsRemoveVersionPostfix = value;
-                OnPropertyChanged("AdditionalVersionsRemoveVersionPostfix");
-            }
-        }
-
-        public PageFunction PageUpFunction
-        {
-            get => eclipseSettings.PageUpFunction;
-            set
-            {
-                eclipseSettings.PageUpFunction = value;
-                OnPropertyChanged("PageUpFunction");
-            }
-        }
-
-        public PageFunction PageDownFunction
-        {
-            get { return eclipseSettings.PageDownFunction; }
-            set
-            {
-                eclipseSettings.PageDownFunction = value;
-                OnPropertyChanged("PageDownFunction");
-            }
-        }
-
-        public int VideoDelayInMilliseconds
-        {
-            get { return eclipseSettings.VideoDelayInMilliseconds; }
-            set
-            {
-                eclipseSettings.VideoDelayInMilliseconds = value;
-                OnPropertyChanged("VideoDelayInMilliseconds");
-            }
-        }
-
-        public bool BypassDetails
-        {
-            get { return eclipseSettings.BypassDetails; }
-            set
-            {
-                eclipseSettings.BypassDetails = value;
-                OnPropertyChanged("BypassDetails");
-            }
-        }
-
-        public bool RepeatGamesToFillScreen
-        {
-            get => eclipseSettings.RepeatGamesToFillScreen;
-            set
-            {
-                eclipseSettings.RepeatGamesToFillScreen = value;
-                OnPropertyChanged("RepeatGamesToFillScreen");
-            }
-        }
-
-        public bool ShowMatchPercent
-        {
-            get => eclipseSettings.ShowMatchPercent;
-            set
-            {
-                eclipseSettings.ShowMatchPercent = value;
-                OnPropertyChanged("ShowMatchPercent");
-            }
-        }
-
-        public bool ShowPlatformLogo
-        {
-            get => eclipseSettings.ShowPlatformLogo;
-            set
-            {
-                eclipseSettings.ShowPlatformLogo = value;
-                OnPropertyChanged("ShowPlatformLogo");
-            }
-        }
-
-        public bool ShowPlayMode
-        {
-            get => eclipseSettings.ShowPlayMode;
-            set
-            {
-                eclipseSettings.ShowPlayMode = value;
-                OnPropertyChanged("ShowPlayMode");
-            }
-        }
-
-        public bool ShowReleaseYear
-        {
-            get => eclipseSettings.ShowReleaseYear;
-            set
-            {
-                eclipseSettings.ShowReleaseYear = value;
-                OnPropertyChanged("ShowReleaseYear");
-            }
-        }
-
-        public bool ShowStarRating
-        {
-            get => eclipseSettings.ShowStarRating;
-            set
-            {
-                eclipseSettings.ShowStarRating = value;
-                OnPropertyChanged("ShowStarRating");
-            }
-        }
-
-
-        public int ScreensaverDelayInSeconds
-        {
-            get { return eclipseSettings.ScreensaverDelayInSeconds; }
-            set
-            {
-                eclipseSettings.ScreensaverDelayInSeconds = value;
-                OnPropertyChanged("ScreensaverDelayInSeconds");
-            }
-        }
-
-        public int ScreensaverFadeInMilliseconds
-        {
-            get { return eclipseSettings.ScreensaverFadeInMilliseconds; }
-            set
-            {
-                eclipseSettings.ScreensaverFadeInMilliseconds = value;
-                OnPropertyChanged("ScreensaverFadeInMilliseconds");
-            }
-        }
-
-        public int ScreensaverDelayBetweenImagesMilliseconds
-        {
-            get { return eclipseSettings.ScreensaverDelayBetweenImagesMilliseconds; }
-            set
-            {
-                eclipseSettings.ScreensaverDelayBetweenImagesMilliseconds = value;
-                OnPropertyChanged("ScreensaverDelayBetweenImagesMilliseconds");
-            }
-        }
-
-        public int ScreensaverBackgroundFadeInMilliseconds
-        {
-            get { return eclipseSettings.ScreensaverBackgroundFadeInMilliseconds; }
-            set
-            {
-                eclipseSettings.ScreensaverBackgroundFadeInMilliseconds = value;
-                OnPropertyChanged("ScreensaverBackgroundFadeInMilliseconds");
-            }
-        }
-
-        public int ScreensaverPanMilliseconds
-        {
-            get { return eclipseSettings.ScreensaverPanMilliseconds; }
-            set
-            {
-                eclipseSettings.ScreensaverPanMilliseconds = value;
-                OnPropertyChanged("ScreensaverPanMilliseconds");
-            }
-        }
-
-        public int ScreensaverLogoDelayMilliseconds
-        {
-            get { return eclipseSettings.ScreensaverLogoDelayMilliseconds; }
-            set
-            {
-                eclipseSettings.ScreensaverLogoDelayMilliseconds = value;
-                OnPropertyChanged("ScreensaverLogoDelayMilliseconds");
-            }
-        }
-
-        public int ScreensaverLogoFadeInMilliseconds
-        {
-            get { return eclipseSettings.ScreensaverLogoFadeInMilliseconds; }
-            set
-            {
-                eclipseSettings.ScreensaverLogoFadeInMilliseconds = value;
-                OnPropertyChanged("ScreensaverLogoFadeInMilliseconds");
-            }
-        }
-
-        public int ScreensaverGameDurationMilliseconds
-        {
-            get { return eclipseSettings.ScreensaverGameDurationMilliseconds; }
-            set
-            {
-                eclipseSettings.ScreensaverGameDurationMilliseconds = value;
-                OnPropertyChanged("ScreensaverGameDurationMilliseconds");
-            }
-        }
-
-        public int ScreensaverBackgroundFadeOutMilliseconds
-        {
-            get { return eclipseSettings.ScreensaverBackgroundFadeOutMilliseconds; }
-            set
-            {
-                eclipseSettings.ScreensaverBackgroundFadeOutMilliseconds = value;
-                OnPropertyChanged("ScreensaverBackgroundFadeOutMilliseconds");
-            }
-        }
-
-        public int ScreensaverLogoFadeOutMilliseconds
-        {
-            get { return eclipseSettings.ScreensaverLogoFadeOutMilliseconds; }
-            set
-            {
-                eclipseSettings.ScreensaverLogoFadeOutMilliseconds = value;
-                OnPropertyChanged("ScreensaverLogoFadeOutMilliseconds");
-            }
-        }
-
-        public int ScreensaverExitFadeMilliseconds
-        {
-            get { return eclipseSettings.ScreensaverExitFadeMilliseconds; }
-            set
-            {
-                eclipseSettings.ScreensaverExitFadeMilliseconds = value;
-                OnPropertyChanged("ScreensaverExitFadeMilliseconds");
-            }
-        }
-
-        public bool EnableVoiceSearch
-        {
-            get { return eclipseSettings.EnableVoiceSearch; }
-            set
-            {
-                eclipseSettings.EnableVoiceSearch = value;
-                OnPropertyChanged("EnableVoiceSearch");
-            }
-        }
+        /// <summary>
+        /// The settings being edited, bound to directly by the XAML.
+        ///
+        /// There used to be forty-five delegating properties here - a getter that read this
+        /// object and a setter that wrote it - so every setting was declared twice, and adding
+        /// one meant remembering to add both. The four box-front margins below are the only ones
+        /// that survive, because they are the only ones whose setter does something beyond
+        /// notifying: they refresh the margin preview.
+        ///
+        /// This is a fresh instance read from disk, not the provider's cached copy, so Cancel
+        /// still discards edits by simply not saving them.
+        /// </summary>
+        public Models.EclipseSettings Settings => eclipseSettings;
 
         public double BoxFrontMarginLeft
         {
@@ -601,46 +287,6 @@ namespace Eclipse.View.EclipseSettings
             {
                 marginSample = value;
                 OnPropertyChanged("MarginSample");
-            }
-        }
-
-        public double SelectedGameDetailsPadding
-        {
-            get { return eclipseSettings.SelectedGameDetailsPadding; }
-            set
-            {
-                eclipseSettings.SelectedGameDetailsPadding = value;
-                OnPropertyChanged("SelectedGameDetailsPadding");
-            }
-        }
-
-        public bool DisplayFeaturedGame 
-        {
-            get => eclipseSettings.DisplayFeaturedGame;
-            set
-            {
-                eclipseSettings.DisplayFeaturedGame = value;
-                OnPropertyChanged("DisplayFeaturedGame");
-            }
-        }
-
-        public bool ShowOptionsIcon
-        {
-            get => eclipseSettings.ShowOptionsIcon;
-            set
-            {
-                eclipseSettings.ShowOptionsIcon = value;
-                OnPropertyChanged("ShowOptionsIcon");
-            }
-        }
-
-        public bool DisplayOptionsOnEscape 
-        {
-            get => eclipseSettings.DisplayOptionsOnEscape;
-            set
-            {
-                eclipseSettings.DisplayOptionsOnEscape = value;
-                OnPropertyChanged("DisplayOptionsOnEscape");
             }
         }
 
@@ -787,34 +433,58 @@ namespace Eclipse.View.EclipseSettings
             customListDefinitionEditViewModel = null;
         }
 
+        // An event handler, so void is forced. Reloading the list after a child window saved is
+        // not something the user asked for directly, so a failure is logged rather than shown -
+        // but it must not escape onto the dispatcher.
         private async void OnCustomListDefinitionSavedSavedAsync(string id)
         {
-            await InitializeCustomListsAsync();
-
-            CustomListDefinition customListDefinition = CustomListDefinitions.SingleOrDefault(l => l.Id == id);
-            if (customListDefinition != null)
+            try
             {
-                SelectedCustomListDefinition = customListDefinition;
+                await InitializeCustomListsAsync();
+
+                CustomListDefinition customListDefinition = CustomListDefinitions.SingleOrDefault(l => l.Id == id);
+                if (customListDefinition != null)
+                {
+                    SelectedCustomListDefinition = customListDefinition;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.LogException(ex, "reload custom lists after a save");
             }
         }
 
         private void OnCloseExecute()
         {
-            eventAggregator.GetEvent<EclipseSettingsClose>().Publish();
+            SettingsEvents.RaiseEclipseSettingsClose();
         }
 
         private async void OnDeleteExecuteAsync()
         {
-            SaveCustomListsIfChanged();
-
             string customListName = string.IsNullOrWhiteSpace(SelectedCustomListDefinition?.Description) ? "list" : SelectedCustomListDefinition.Description;
 
-            MessageDialogResult messageDialogResult = MessageDialogHelper.ShowOKCancelDialog($"Delete {customListName}?", "Delete custom list");
-            if (messageDialogResult == MessageDialogResult.OK)
+            try
             {
-                await customListDefinitionDataProvider.DeleteCustomListDefinition(SelectedCustomListDefinition.Id);
+                // Unchanged in order: a pending reorder is written whether or not the delete goes
+                // ahead. What has changed is that it is awaited, so the write completes before
+                // the dialog rather than racing it.
+                await SaveCustomListsIfChangedAsync();
 
-                await InitializeCustomListsAsync();
+                MessageDialogResult messageDialogResult = MessageDialogHelper.ShowOKCancelDialog($"Delete {customListName}?", "Delete custom list");
+                if (messageDialogResult == MessageDialogResult.OK)
+                {
+                    await customListDefinitionDataProvider.DeleteCustomListDefinition(SelectedCustomListDefinition.Id);
+
+                    await InitializeCustomListsAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.LogException(ex, $"delete custom list {customListName}");
+
+                MessageDialogHelper.ShowOKDialog(
+                    $"“{customListName}” could not be deleted.\n\n{ex.Message}",
+                    "Delete failed");
             }
 
             SelectedCustomListDefinition = null;
@@ -826,9 +496,13 @@ namespace Eclipse.View.EclipseSettings
             return (customListDefinitionEditView == null) && (SelectedCustomListDefinition != null);
         }
 
-        private void OnAddExecute()
+        // async void because a command handler has to be. The pending reorder is awaited rather
+        // than fired and forgotten, so the write finishes before the child window opens on top
+        // of it. A failure here is logged rather than shown - the user asked to open a window,
+        // not to save, and a modal in that flow would be noise.
+        private async void OnAddExecute()
         {
-            SaveCustomListsIfChanged();
+            await TrySaveCustomListsIfChangedAsync();
 
             if (customListDefinitionEditView != null)
             {
@@ -849,9 +523,9 @@ namespace Eclipse.View.EclipseSettings
             return customListDefinitionEditView == null;
         }
 
-        private void OnEditExecute()
+        private async void OnEditExecute()
         {
-            SaveCustomListsIfChanged();
+            await TrySaveCustomListsIfChangedAsync();
 
             if (customListDefinitionEditView != null)
             {
@@ -896,67 +570,21 @@ namespace Eclipse.View.EclipseSettings
         {
             eclipseSettings = await EclipseSettingsDataProvider.Instance.GetEclipseSettingsAsync();
 
-            DefaultListCategoryType = eclipseSettings.DefaultListCategoryType;
+            // One notification for the whole object, instead of forty-four lines that read each
+            // value off the model and wrote it straight back through a property whose getter
+            // read the same model. Their only effect was this - plus the margin preview, which
+            // is refreshed explicitly below.
+            OnPropertyChanged(nameof(Settings));
 
-            DisableVideos = eclipseSettings.DisableVideos;
-            DefaultVideoVolume = eclipseSettings.DefaultVideoVolume;
-
-            EnableVoiceSearch = eclipseSettings.EnableVoiceSearch;
-            EnableScreenSaver = eclipseSettings.EnableScreenSaver;
-            ShowGameCountInList = eclipseSettings.ShowGameCountInList;
-            IncludeBrokenGames = eclipseSettings.IncludeBrokenGames;
-            IncludeHiddenGames = eclipseSettings.IncludeHiddenGames;
-            OpenSettingsPaneOnLeft = eclipseSettings.OpenSettingsPaneOnLeft;
-
-            AdditionalVersionsEnable = eclipseSettings.AdditionalVersionsEnable;
-            AdditionalVersionsExcludeRunBefore = eclipseSettings.AdditionalVersionsExcludeRunBefore;
-            AdditionalVersionsExcludeRunAfter = eclipseSettings.AdditionalVersionsExcludeRunAfter;
-            AdditionalVersionsOnlyEmulatorOrDosBox = eclipseSettings.AdditionalVersionsOnlyEmulatorOrDosBox;
-            AdditionalApplicationDisplayField = eclipseSettings.AdditionalApplicationDisplayField;
-            AdditionalVersionsRemovePlayPrefix = eclipseSettings.AdditionalVersionsRemovePlayPrefix;
-            AdditionalVersionsRemoveVersionPostfix = eclipseSettings.AdditionalVersionsRemoveVersionPostfix;
-
-            PageUpFunction = eclipseSettings.PageUpFunction;
-            PageDownFunction = eclipseSettings.PageDownFunction;
-
-            ScreensaverDelayInSeconds = eclipseSettings.ScreensaverDelayInSeconds;
-            ScreensaverFadeInMilliseconds = eclipseSettings.ScreensaverFadeInMilliseconds;
-            ScreensaverDelayBetweenImagesMilliseconds = eclipseSettings.ScreensaverDelayBetweenImagesMilliseconds;
-            ScreensaverBackgroundFadeInMilliseconds = eclipseSettings.ScreensaverBackgroundFadeInMilliseconds;
-            ScreensaverPanMilliseconds = eclipseSettings.ScreensaverPanMilliseconds;
-            ScreensaverLogoDelayMilliseconds = eclipseSettings.ScreensaverLogoDelayMilliseconds;
-            ScreensaverLogoFadeInMilliseconds = eclipseSettings.ScreensaverLogoFadeInMilliseconds;
-            ScreensaverGameDurationMilliseconds = eclipseSettings.ScreensaverGameDurationMilliseconds;
-            ScreensaverBackgroundFadeOutMilliseconds = eclipseSettings.ScreensaverBackgroundFadeOutMilliseconds;
-            ScreensaverLogoFadeOutMilliseconds = eclipseSettings.ScreensaverLogoFadeOutMilliseconds;
-            ScreensaverExitFadeMilliseconds = eclipseSettings.ScreensaverExitFadeMilliseconds;
-            VideoDelayInMilliseconds = eclipseSettings.VideoDelayInMilliseconds;
-            BypassDetails = eclipseSettings.BypassDetails;
-            RepeatGamesToFillScreen = eclipseSettings.RepeatGamesToFillScreen;
-            ShowMatchPercent = eclipseSettings.ShowMatchPercent;
-            ShowReleaseYear = eclipseSettings.ShowReleaseYear;
-            ShowStarRating = eclipseSettings.ShowStarRating;
-            ShowPlayMode = eclipseSettings.ShowPlayMode;
-            ShowPlatformLogo = eclipseSettings.ShowPlatformLogo;
-            ShowOptionsIcon = eclipseSettings.ShowOptionsIcon;
-
-            BoxFrontMarginLeft = eclipseSettings.BoxFrontMarginLeft;
-            BoxFrontMarginRight = eclipseSettings.BoxFrontMarginRight;
-            BoxFrontMarginTop = eclipseSettings.BoxFrontMarginTop;
-            BoxFrontMarginBottom = eclipseSettings.BoxFrontMarginBottom;
-
-            SelectedGameDetailsPadding = eclipseSettings.SelectedGameDetailsPadding;
-
-            DisplayFeaturedGame = eclipseSettings.DisplayFeaturedGame;
-            DisplayOptionsOnEscape = eclipseSettings.DisplayOptionsOnEscape;
+            updateMarginSample();
         }
 
         private void InvalidateCommands()
         {
-            ((DelegateCommand)EditCommand).RaiseCanExecuteChanged();
-            ((DelegateCommand)DeleteCommand).RaiseCanExecuteChanged();
-            ((DelegateCommand)AddCommand).RaiseCanExecuteChanged();
-            ((DelegateCommand)CloseCommand).RaiseCanExecuteChanged();
+            ((RelayCommand)EditCommand).RaiseCanExecuteChanged();
+            ((RelayCommand)DeleteCommand).RaiseCanExecuteChanged();
+            ((RelayCommand)AddCommand).RaiseCanExecuteChanged();
+            ((RelayCommand)CloseCommand).RaiseCanExecuteChanged();
         }
 
         public Uri IconUri { get; } = ResourceImages.EclipseSettingsIcon1;

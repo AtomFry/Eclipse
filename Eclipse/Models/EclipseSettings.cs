@@ -6,6 +6,19 @@ namespace Eclipse.Models
 {
     public class EclipseSettings
     {
+        /// <summary>
+        /// What shape this file is in. Nothing reads it yet, and that is the point: a settings
+        /// file written today can be recognised by a future version that needs to migrate it.
+        /// Without a version stamped in the file, the only way to detect an old layout is to
+        /// guess from which properties happen to be present.
+        ///
+        /// A file written before this existed deserialises as version 1, which is correct - the
+        /// layout did not change when the stamp was added.
+        /// </summary>
+        [DefaultValue(1)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public int SchemaVersion { get; set; }
+
         [DefaultValue(ListCategoryType.Platform)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public ListCategoryType DefaultListCategoryType { get; set; }

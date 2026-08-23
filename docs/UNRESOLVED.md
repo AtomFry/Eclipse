@@ -122,14 +122,22 @@ stale scaled copy is used indefinitely. **Interpretations:** (a) known limitatio
 limitation with no workaround short of deleting the cache folder. **Resolve by:** product
 decision — likely a genuine bug worth its own item.
 
-### OQ-011 — Which settings apply live and which require a restart?
-**Feature:** FEAT-CONFIG-001 · **Evidence:** `RULE-CONFIG-004`, the six mirrored
-properties in `MainWindowViewModel`, `RULE-INPUT-008`
-Some settings are read once and cached; six are mirrored for live binding. There is no
-authoritative list. **Why it matters:** `B-26` collapses the triplication and could
-silently make restart-only settings live. **Resolve by:** **empirical research task** —
-change each of the 45 settings with Big Box running and record which take effect. This
-should be its own backlog item; it is a prerequisite for `B-26`.
+### ~~OQ-011~~ — Which settings apply live and which require a restart? — **resolved**
+**Feature:** FEAT-CONFIG-001 · **Evidence:** `EclipseSettingsMenuItem.ShowInBigBox`,
+`EclipseSettingsDataProvider.EclipseSettings`, `MainWindowViewModel.InitializeEclipseSettings`
+**Answer: none are live. All apply at the next Big Box start.** The settings editor only
+exists in LaunchBox, a different process; Big Box reads its settings once into a
+process-lifetime cache; nothing writes that cache; there is no watcher or reload path; and
+the initialiser runs once, from the constructor.
+
+The question's premise — that six were "mirrored for live binding" — was a misreading. Each
+of those six is assigned exactly twice, once on the constructor path and once inside its own
+setter, and nothing calls the setters afterwards. They existed to give the theme XAML a
+binding target.
+
+This was scheduled as a day-long empirical audit and resolved by reading the code instead. It
+is worth remembering as a pattern: the audit would have produced the same one-sentence answer
+46 times. Documented in `docs/features/configuration.md`.
 
 ### ~~OQ-012~~ — What race does the 500 ms stop-loop compensate for? — **resolved**
 **Feature:** FEAT-LAUNCH-004 · **Evidence:** `StopVideoAndAnimationHandler`; commits
@@ -234,9 +242,10 @@ action key and it behaves differently per row. **Resolve by:** product decision.
 | — external (LaunchBox) questions | 1 |
 | — likely genuine defects worth their own items | 2 (`OQ-010` stale cache, `OQ-019` startup background); `OQ-022` was a third and is resolved |
 
-**The highest-value question to resolve** is `OQ-011` (live-vs-restart settings table — a
-prerequisite for `B-26`). It is a research task with a concrete method, and it blocks a
-backlog item that would otherwise be done blind.
+~~**The highest-value question to resolve** is `OQ-011` (live-vs-restart settings table).~~
+**Resolved** — and not the way this note expected. It was described as a research task with a
+concrete method; it turned out to be answerable by reading five things in the code, and the
+answer is that no setting is live. `B-26` was delivered on the back of it.
 
 `OQ-012` (the stop-loop race) was the other, and is now answered — see above. `B-24` is
 delivered.

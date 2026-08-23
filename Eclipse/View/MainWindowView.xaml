@@ -370,7 +370,7 @@
                        Source="{Binding SettingsIconWhite}"
                        HorizontalAlignment="Stretch" 
                        VerticalAlignment="Stretch"
-                       Visibility="{Binding ShowOptionsIcon, Converter={StaticResource BoolToVis}}"
+                       Visibility="{Binding Settings.ShowOptionsIcon, Converter={StaticResource BoolToVis}}"
                        Height="{Binding ActualHeight, ElementName=TextBlock_CurrentGameListDescription}"                       
                        RenderOptions.BitmapScalingMode="HighQuality" 
                        Margin="2,2,2,2"
@@ -530,7 +530,7 @@
                                  VerticalAlignment="Stretch" 
                                  Stretch="Uniform" 
                                  Margin="0,0,15,0"
-                                 Visibility="{Binding ShowMatchPercent, Converter={StaticResource BoolToVis}}">
+                                 Visibility="{Binding Settings.ShowMatchPercent, Converter={StaticResource BoolToVis}}">
                             <TextBlock Name="TextBlock_MatchPercentage"
                                     FontFamily="Arial" 
                                     FontWeight="Bold"
@@ -542,7 +542,7 @@
                                  VerticalAlignment="Stretch" 
                                  Stretch="Uniform" 
                                  Margin="0,0,15,0"
-                                 Visibility="{Binding ShowReleaseYear, Converter={StaticResource BoolToVis}}">
+                                 Visibility="{Binding Settings.ShowReleaseYear, Converter={StaticResource BoolToVis}}">
                             <TextBlock  Name="TextBlock_ReleaseYear"
                                     FontFamily="Arial" 
                                     FontWeight="Bold"
@@ -553,7 +553,7 @@
                         <!-- the user's rating overlays the community's - both reserve the full
                              five-star width, so they line up whatever the ratings are -->
                         <Grid   Margin="0,0,15,0"
-                                Visibility="{Binding ShowStarRating, Converter={StaticResource BoolToVis}}"
+                                Visibility="{Binding Settings.ShowStarRating, Converter={StaticResource BoolToVis}}"
                                 VerticalAlignment="Stretch">
                             <local:StarRatingView Rating="{Binding CurrentGameList.SelectedGame.CommunityRating}"
                                                   Fill="WhiteSmoke"
@@ -564,13 +564,13 @@
                         </Grid>
                         <Image  Name="Image_Playmode"  
                                 Margin="0,0,15,0" 
-                                Visibility="{Binding ShowPlayMode, Converter={StaticResource BoolToVis}}"
+                                Visibility="{Binding Settings.ShowPlayMode, Converter={StaticResource BoolToVis}}"
                                 RenderOptions.BitmapScalingMode="HighQuality" 
                                 VerticalAlignment="Stretch"
                                 Stretch="Uniform"/>
                         <Image  Name="Image_PlatformLogo"
                                 Margin="0,0,15,0"                
-                                Visibility="{Binding ShowPlatformLogo, Converter={StaticResource BoolToVis}}"
+                                Visibility="{Binding Settings.ShowPlatformLogo, Converter={StaticResource BoolToVis}}"
                                 RenderOptions.BitmapScalingMode="HighQuality" 
                                 VerticalAlignment="Stretch"                                
                                 Stretch="Uniform"/>

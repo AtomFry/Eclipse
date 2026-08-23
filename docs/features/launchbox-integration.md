@@ -97,7 +97,7 @@ PluginHelper.BigBoxMainViewModel.PlayGame(game, additionalApp, null, null)
 |---|---|
 | S-2 | The six operations above are called from five files including the view model and the model layer. |
 | M-7 | The log path is relative and the writer is unsynchronised. |
-| C-7 | Prism does not resolve in the host load context. |
+| C-7 | **Resolved.** The Prism dependency was removed entirely - see `docs/plans/settings-refactor.md`. |
 | M-9 | The loading pipeline uses `async void` on a `BackgroundWorker`. |
 
 ## Modernization backlog
@@ -107,7 +107,7 @@ PluginHelper.BigBoxMainViewModel.PlayGame(game, additionalApp, null, null)
 | B-11 | Wraps the six SDK operations — **the defining item for this epic**. |
 | B-02 | Fixes the log destination. |
 | B-22 | Fixes the loading pipeline. |
-| B-13 | Resolves the Prism load failure. |
+| ~~B-13~~ | **Delivered** - Prism removed. |
 
 ## Verification
 

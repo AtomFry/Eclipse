@@ -1,6 +1,5 @@
 ﻿using Eclipse.Event;
 using Eclipse.Helpers;
-using Prism.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,19 +22,32 @@ namespace Eclipse.View.EclipseSettings
     public partial class EclipseSettingsView : Window
     {
         readonly EclipseSettingsViewModel eclipseSettingsViewModel;
-        readonly EventAggregator eventAggregator;
 
         public EclipseSettingsView()
         {
             InitializeComponent();
 
-            eventAggregator = EventAggregatorHelper.Instance.EventAggregator;
-            eventAggregator.GetEvent<EclipseSettingsClose>().Subscribe(OnEclipseSettingsClose);
+            SettingsEvents.EclipseSettingsClose += OnEclipseSettingsClose;
 
             eclipseSettingsViewModel = new EclipseSettingsViewModel();
             DataContext = eclipseSettingsViewModel;
             Loaded += EclipseSettingsView_Loaded;
             PreviewKeyDown += EclipseSettingsView_PreviewKeyDown;
+            Closed += EclipseSettingsView_Closed;
+        }
+
+        // Everything the constructor attached, detached - the window's own handlers, its
+        // subscription, and the view model's two. The event aggregator is a process-lifetime
+        // singleton and this window is opened and closed repeatedly, so a subscription left
+        // behind means a closed window still receiving events for as long as it stays alive.
+        private void EclipseSettingsView_Closed(object sender, EventArgs e)
+        {
+            SettingsEvents.EclipseSettingsClose -= OnEclipseSettingsClose;
+            eclipseSettingsViewModel.Detach();
+
+            Loaded -= EclipseSettingsView_Loaded;
+            PreviewKeyDown -= EclipseSettingsView_PreviewKeyDown;
+            Closed -= EclipseSettingsView_Closed;
         }
 
         private void OnEclipseSettingsClose()
@@ -51,9 +63,22 @@ namespace Eclipse.View.EclipseSettings
             }
         }
 
+        // An event handler, so void is forced. Without the guard, a settings file that could not
+        // be loaded threw onto the dispatcher and the window came up blank with no explanation.
         private async void EclipseSettingsView_Loaded(object sender, RoutedEventArgs e)
         {
-            await eclipseSettingsViewModel.LoadAsync();
+            try
+            {
+                await eclipseSettingsViewModel.LoadAsync();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.LogException(ex, "load the Eclipse settings window");
+
+                MessageDialogHelper.ShowOKDialog(
+                    $"Your settings could not be loaded.\n\n{ex.Message}\n\nClose this window without saving, or saving will overwrite them.",
+                    "Load failed");
+            }
         }
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
