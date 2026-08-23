@@ -895,6 +895,23 @@
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Bottom"
                                 Text="{Binding CurrentGameList.ListDescription}">
+                        <!-- While listening, the voice overlay draws the heard phrase in this
+                             exact spot, so this one gets out of the way. Opacity rather than
+                             Visibility: the settings icon's Height is bound to this element's
+                             ActualHeight, and collapsing it would shrink the gear to nothing and
+                             pop it back when the search ended. -->
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding VoiceSearchPhase}" Value="Listening">
+                                        <Setter Property="Opacity" Value="0"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding VoiceSearchPhase}" Value="NoMatch">
+                                        <Setter Property="Opacity" Value="0"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
                     </TextBlock>
                     <StackPanel Name="GameImages" 
                                 IsHitTestVisible="False"
@@ -1122,8 +1139,21 @@
         <!-- END DISPLAYING RESULTS -->
 
         <!-- RECOGNIZING -->
-        <!-- Explicit z-index: the error overlay is 1000 and attract mode is 900, and this used to
-             sit above them both only because it happens to be last in the canvas. -->
+        <!--
+             Voice search happens in the current list's heading band, not in the middle of the
+             screen. What the recogniser is hearing is drawn where the list title goes - and when
+             results arrive that is exactly what it becomes, because a result list is named after
+             what was said. The text does not move; the boxes change underneath it.
+
+             The row and column definitions below deliberately mirror the DISPLAYING RESULTS grid
+             and GameListGrid inside it, so the phrase lands on the heading rather than near it.
+             They have to be duplicated rather than shared: z-order in WPF is hierarchical, so the
+             real heading - nested inside GameListGrid - cannot be drawn above a scrim that is
+             GameListGrid's sibling. Change either grid's proportions and this one has to follow.
+
+             Explicit z-index: the error overlay is 1000 and attract mode is 900, and this used to
+             sit above them both only because it happens to be last in the canvas.
+        -->
         <Grid   Background="Transparent"
                 IsHitTestVisible="False"
                 VerticalAlignment="Stretch"
@@ -1133,70 +1163,216 @@
                 Height="{Binding ActualHeight, ElementName=MainWindowUserControl}">
             <Grid.Style>
                 <!-- A trigger on the phase rather than a converter over a bool: the same shape
-                     the game detail options use, and it extends to a new phase without one. -->
+                     the game detail options use, and it extends to a new phase without one.
+
+                     Fades in so the state change is not a cut, and leaves instantly - the phrase
+                     it is showing is replaced by an identical heading at the same pixel, and
+                     anything gradual would turn an invisible handover into a visible one. -->
                 <Style TargetType="Grid">
                     <Setter Property="Visibility" Value="Collapsed"/>
+                    <Setter Property="Opacity" Value="0"/>
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding VoiceSearchPhase}" Value="Listening">
                             <Setter Property="Visibility" Value="Visible"/>
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard Name="VoiceSearchFadeIn">
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                         To="1"
+                                                         Duration="0:0:0.2"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <!-- hand the property back, so the next search fades in again
+                                     instead of starting from where this one left it -->
+                                <StopStoryboard BeginStoryboardName="VoiceSearchFadeIn"/>
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+
+                        <!-- The "matched nothing" notice keeps the heading slot, but nothing else:
+                             the scrim and the microphone mark below are gated on Listening, so
+                             the library comes back to full brightness and the screen is the
+                             user's again while the notice is still standing there. -->
+                        <DataTrigger Binding="{Binding VoiceSearchPhase}" Value="NoMatch">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Setter Property="Opacity" Value="1"/>
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
             </Grid.Style>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
 
-            <!-- Hold the browse row back while listening. It used to stay at full brightness
-                 behind the indicator, so the screen did not read as having changed state. -->
+            <!-- mirrors the DISPLAYING RESULTS grid: 18 rows, and the 1/31 column split that
+                 GameListGrid uses to indent the row from the settings icon -->
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="31*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Hold the library back while listening, without losing it. It used to stay at full
+                 brightness behind the indicator, so the screen did not read as having changed
+                 state - and then at 0.7 it read as a modal takeover instead. -->
             <Rectangle  Grid.Row="0"
-                        Grid.RowSpan="5"
+                        Grid.RowSpan="18"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2"
                         IsHitTestVisible="False"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         Fill="Black"
-                        Opacity="0.7"/>
+                        Opacity="0.4">
+                <Rectangle.Style>
+                    <!-- Only while actually listening. A notice left standing afterwards must not
+                         hold the library back - the user is browsing again by then. -->
+                    <Style TargetType="Rectangle">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding VoiceSearchPhase}" Value="Listening">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Rectangle.Style>
+            </Rectangle>
 
-            <Image Name="Image_Listening"
-                   IsHitTestVisible="False"
-                Grid.Row="2"
-                Grid.RowSpan="1"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                Stretch="Uniform"
-                RenderOptions.BitmapScalingMode="HighQuality" 
-                gif:ImageBehavior.AnimatedSource="{Binding VoiceRecognitionGif}">
-                <Image.OpacityMask>
-                    <RadialGradientBrush Center="0.5,0.5">
-                        <GradientStop Offset="0" Color="Black"/>
-                        <GradientStop Offset="0.85" Color="Black"/>
-                        <GradientStop Offset="1.00" Color="Transparent"/>
-                    </RadialGradientBrush>
-                </Image.OpacityMask>
-            </Image>
+            <!-- mirrors GameListGrid: rows 8-17, of which the current list takes two thirds -->
+            <Grid   Grid.Row="8"
+                    Grid.RowSpan="10"
+                    Grid.Column="1"
+                    Grid.ColumnSpan="1"
+                    IsHitTestVisible="False"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="2*"/>
+                    <!-- current games list -->
+                    <RowDefinition Height="1*"/>
+                    <!-- next games list -->
+                </Grid.RowDefinitions>
 
-            <!-- What the recogniser thinks it is hearing, so a misheard phrase is visible while
-                 the user is still speaking rather than only after a search finds nothing.
-                 Collapsed until something has been heard. -->
-            <TextBlock  Name="TextBlock_HeardPhrase"
-                        Text="{Binding HeardPhrase}"
-                        Visibility="{Binding HeardPhrase, Converter={StaticResource StringLengthVisibilityConverter}}"
-                        IsHitTestVisible="False"
-                        Grid.Row="3"
+                <!-- mirrors CurrentListGrid: heading band, then the row of boxes -->
+                <Grid   Grid.Row="0"
                         Grid.RowSpan="1"
-                        Margin="0,20,0,0"
-                        Foreground="GhostWhite"
-                        FontFamily="Calibri"
-                        FontSize="44"
-                        TextTrimming="CharacterEllipsis"
-                        Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
-                        TextAlignment="Center"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Top"/>
+                        IsHitTestVisible="False"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="5*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0"
+                                Grid.RowSpan="1"
+                                IsHitTestVisible="False"
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Bottom">
+
+                        <!-- Type matched to TextBlock_CurrentGameListDescription exactly: this is
+                             the same words, in the same place, at the same size as the heading
+                             that replaces it, so the handover cannot be seen. -->
+                        <TextBlock  Name="TextBlock_VoiceSearchHeading"
+                                    IsHitTestVisible="False"
+                                    FontFamily="Calibri"
+                                    FontWeight="ExtraBold"
+                                    FontSize="28"
+                                    TextTrimming="CharacterEllipsis"
+                                    TextAlignment="Left"
+                                    VerticalAlignment="Bottom">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <!-- heard something: show it, in the heading's own colour -->
+                                    <Setter Property="Text" Value="{Binding HeardPhrase}"/>
+                                    <Setter Property="Foreground" Value="GhostWhite"/>
+                                    <Style.Triggers>
+                                        <!-- nothing heard yet: say what is going on, rather than
+                                             showing a mark hovering over an empty space -->
+                                        <DataTrigger Binding="{Binding HeardPhrase}" Value="{x:Null}">
+                                            <Setter Property="Text" Value="Listening…"/>
+                                            <Setter Property="Foreground" Value="#9AA3A0"/>
+                                        </DataTrigger>
+
+                                        <!-- Declared last so it wins: the notice phase also has a
+                                             null HeardPhrase, and the trigger above would
+                                             otherwise leave "Listening…" on screen after the
+                                             search had finished. -->
+                                        <DataTrigger Binding="{Binding VoiceSearchPhase}" Value="NoMatch">
+                                            <Setter Property="Text" Value="{Binding VoiceSearchNotice}"/>
+                                            <Setter Property="Foreground" Value="GhostWhite"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <!-- Live-microphone mark, in the green the match percentage already uses.
+                             It sits after the phrase so the phrase's left edge is the heading's
+                             left edge - a leading mark would indent the text and the handover
+                             would jump sideways. It breathes rather than reacting to speech: the
+                             phrase itself is what responds, and two things reacting at once reads
+                             as noise. -->
+                        <Ellipse    Name="Ellipse_ListeningPulse"
+                                    Width="13"
+                                    Height="13"
+                                    Margin="14,0,0,7"
+                                    VerticalAlignment="Bottom"
+                                    IsHitTestVisible="False"
+                                    Fill="#43C764"
+                                    RenderTransformOrigin="0.5,0.5">
+                            <Ellipse.RenderTransform>
+                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            </Ellipse.RenderTransform>
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <!-- gone the moment listening stops, so the notice that
+                                         follows is a message and not a live microphone -->
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding VoiceSearchPhase}" Value="Listening">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                            <DataTrigger.EnterActions>
+                                                <BeginStoryboard Name="ListeningPulse">
+                                                    <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                         From="1" To="0.3" Duration="0:0:0.85"/>
+                                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                                         From="1" To="0.7" Duration="0:0:0.85"/>
+                                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                                         From="1" To="0.7" Duration="0:0:0.85"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </DataTrigger.EnterActions>
+                                            <DataTrigger.ExitActions>
+                                                <StopStoryboard BeginStoryboardName="ListeningPulse"/>
+                                            </DataTrigger.ExitActions>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                    </StackPanel>
+                </Grid>
+            </Grid>
         </Grid>
         <!-- END RECOGNIZING -->
 

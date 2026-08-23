@@ -24,34 +24,23 @@ namespace Eclipse.Service
         public static List<GameList> Build(IReadOnlyList<RecognizedPhrase> recognizedPhrases,
                                            IVoicePhraseIndex index)
         {
-            List<GameList> results = new List<GameList>();
+            List<RankedList> ranked = new List<RankedList>();
 
             if (recognizedPhrases == null || recognizedPhrases.Count == 0 || index == null)
             {
-                return results;
+                return new List<GameList>();
             }
 
             // RULE-SEARCH-013: the same phrase can be hypothesised several times, and only the
             // highest confidence counts.
-            //
-            // The phrase is the list's value as well as what it displays - these lists are named
-            // after what was said rather than after a category - so it is set on both, and the
-            // phrase is read back from the value.
-            List<GameList> gameListsByPhrase = recognizedPhrases
-                .GroupBy(recognizedPhrase => recognizedPhrase.Phrase)
-                .Select(group => new GameList
-                {
-                    ListTypeValue = group.Key,
-                    ListDescription = group.Key,
-                    Confidence = group.Max(recognizedPhrase => recognizedPhrase.Confidence)
-                })
-                .ToList();
-
-            foreach (GameList gameList in gameListsByPhrase)
+            foreach (IGrouping<string, RecognizedPhrase> group in recognizedPhrases.GroupBy(recognizedPhrase => recognizedPhrase.Phrase))
             {
+                string phrase = group.Key;
+                float confidence = group.Max(recognizedPhrase => recognizedPhrase.Confidence);
+
                 // the games this phrase matches - already one entry per game, carrying that
                 // game's best match type for the phrase
-                IReadOnlyList<VoiceMatch> voiceMatches = index.Lookup(gameList.ListTypeValue);
+                IReadOnlyList<VoiceMatch> voiceMatches = index.Lookup(phrase);
 
                 // RULE-SEARCH-016: a phrase that matched nothing produces no list.
                 if (voiceMatches.Count == 0)
@@ -64,22 +53,59 @@ namespace Eclipse.Service
                 foreach (VoiceMatch voiceMatch in voiceMatches)
                 {
                     GameMatch match = GameMatch.CloneForVoiceResult(voiceMatch.Game, voiceMatch.MatchType, voiceMatch.ConvertedTitle);
-                    match.SetupVoiceMatchPercentage(gameList.Confidence, gameList.ListTypeValue);
+                    match.SetupVoiceMatchPercentage(confidence, phrase);
                     matches.Add(match);
                 }
 
                 // RULE-SEARCH-014: within a phrase's list, best match first.
-                gameList.MatchingGames = matches.OrderByDescending(match => match.MatchPercentage).ToList();
+                List<GameMatch> ordered = matches.OrderByDescending(match => match.MatchPercentage).ToList();
 
-                results.Add(gameList);
+                // The two numbers this list is ranked by, taken from the matches that were just
+                // scored. They used to be computed properties on GameList, which meant every
+                // browse category carried a pair of voice search concepts and the ranking rule
+                // was split between this method and three property getters over there.
+                int bestMatchPercentage = ordered[0].MatchPercentage;
+                int longestMatchingTitle = ordered
+                    .Where(match => match.MatchPercentage == bestMatchPercentage)
+                    .Max(match => match.Game.Title.Length);
+
+                // The phrase is the list's value as well as what it displays - these lists are
+                // named after what was said rather than after a category - so it is set on both.
+                GameList gameList = new GameList
+                {
+                    ListTypeValue = phrase,
+                    ListDescription = phrase,
+                    MatchingGames = ordered
+                };
+
+                ranked.Add(new RankedList(gameList, bestMatchPercentage, longestMatchingTitle));
             }
 
             // RULE-SEARCH-015: lists by best match, then by the longest title that achieved it -
             // which favours the more specific title where two score the same.
-            return results
-                .OrderByDescending(list => list.MaxMatchPercentage)
-                .ThenByDescending(list => list.MaxTitleLength)
+            return ranked
+                .OrderByDescending(list => list.BestMatchPercentage)
+                .ThenByDescending(list => list.LongestMatchingTitle)
+                .Select(list => list.GameList)
                 .ToList();
+        }
+
+        /// <summary>
+        /// A finished list, with the two numbers it is ranked by carried beside it rather than
+        /// recomputed off the list itself every time the sort compares a pair.
+        /// </summary>
+        private readonly struct RankedList
+        {
+            public RankedList(GameList gameList, int bestMatchPercentage, int longestMatchingTitle)
+            {
+                GameList = gameList;
+                BestMatchPercentage = bestMatchPercentage;
+                LongestMatchingTitle = longestMatchingTitle;
+            }
+
+            public GameList GameList { get; }
+            public int BestMatchPercentage { get; }
+            public int LongestMatchingTitle { get; }
         }
     }
 }

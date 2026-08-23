@@ -293,54 +293,11 @@ namespace Eclipse.Models
             }
         }
 
-        private float confidence;
-        public float Confidence
-        {
-            get => confidence;
-            set
-            {
-                if (confidence != value)
-                {
-                    confidence = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("Confidence"));
-                }
-            }
-        }
-
-        public TitleMatchType MaxTitleMatchType
-        {
-            get
-            {
-                if (MatchingGames == null)
-                    return TitleMatchType.None;
-
-                return MatchingGames.Max(game => game.TitleMatchType);
-            }
-        }
-
-        public float? MaxMatchPercentage
-        {
-            get
-            {
-                if (MatchingGames == null)
-                    return 0;
-
-                return MatchingGames.Max(game => game.MatchPercentage);
-            }
-        }
-
-        public int MaxTitleLength
-        {
-            get
-            {
-                if (MatchingGames == null)
-                    return 0;
-
-                // get max title length for games having the maximum match percentage
-                return matchingGames.Where(game => game.MatchPercentage == MaxMatchPercentage)
-                                    .Max(game => game.Game.Title.Length);
-            }
-        }
+        // A recogniser confidence, and the two numbers a voice search ranks its lists by, used to
+        // live here - on the class every browse category is made of, so a genre list carried
+        // them too. They were only ever read by VoiceSearchResultBuilder, which had already
+        // computed everything they were derived from; it now keeps them itself, and a fourth,
+        // MaxTitleMatchType, turned out never to have been read at all.
 
         public int MatchCount
         {

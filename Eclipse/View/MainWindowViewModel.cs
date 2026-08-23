@@ -51,6 +51,13 @@ namespace Eclipse.View
         private bool isDisplayingAttractMode;
         private VoiceSearchPhase voiceSearchPhase;
         private string heardPhrase;
+        private string voiceSearchNotice;
+
+        // Backstop for the "matched nothing" notice, for the user who says something, gets no
+        // results and then does nothing at all. A DispatcherTimer rather than System.Timers.Timer
+        // because it only ever touches view model state the bindings are reading, and this object
+        // is built on the UI thread.
+        private readonly DispatcherTimer noticeExpiry;
         private bool isDisplayingResults;
         private bool isDisplayingMoreInfo;
         private bool isDisplayingError;
@@ -78,6 +85,9 @@ namespace Eclipse.View
             Navigator.NavigationFailed += OnNavigationFailed;
 
             FeatureOption = FeatureGameOption.PlayGame;
+
+            noticeExpiry = new DispatcherTimer { Interval = TimeSpan.FromSeconds(8) };
+            noticeExpiry.Tick += (sender, args) => LeaveVoiceSearch();
 
             InitializeEclipseSettings();
 
@@ -286,6 +296,23 @@ namespace Eclipse.View
         }
 
         /// <summary>
+        /// A search that heard something but matched nothing, said in the list heading rather
+        /// than on a screen of its own. Null when there is nothing to say.
+        /// </summary>
+        public string VoiceSearchNotice
+        {
+            get => voiceSearchNotice;
+            private set
+            {
+                if (voiceSearchNotice != value)
+                {
+                    voiceSearchNotice = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("VoiceSearchNotice"));
+                }
+            }
+        }
+
+        /// <summary>
         /// Puts the screen into voice search.
         ///
         /// The screen the search was started from has to get out of the way, and nothing used to
@@ -301,7 +328,32 @@ namespace Eclipse.View
             IsPickingCategory = false;
 
             HeardPhrase = null;
+            VoiceSearchNotice = null;
+            noticeExpiry.Stop();
+
             VoiceSearchPhase = VoiceSearchPhase.Listening;
+        }
+
+        /// <summary>
+        /// Says that a search matched nothing, and hands the screen back.
+        ///
+        /// This used to be a full screen of black with a message on it, dismissed by any key -
+        /// a modal interruption for the most ordinary outcome a search has. The notice now
+        /// stands where the list heading goes, the lists stay exactly as they were, and input is
+        /// live the whole time: the user browses out of it, or speaks again, without dismissing
+        /// anything.
+        /// </summary>
+        public void ShowVoiceSearchNotice(string notice)
+        {
+            HeardPhrase = null;
+            VoiceSearchNotice = notice;
+            VoiceSearchPhase = VoiceSearchPhase.NoMatch;
+
+            // The notice normally goes when the user does anything at all - see OnUserInput. This
+            // only catches the case where they do nothing, so that walking away does not leave a
+            // stale message standing in the heading.
+            noticeExpiry.Stop();
+            noticeExpiry.Start();
         }
 
         /// <summary>
@@ -310,8 +362,11 @@ namespace Eclipse.View
         /// </summary>
         public void LeaveVoiceSearch()
         {
+            noticeExpiry.Stop();
+
             VoiceSearchPhase = VoiceSearchPhase.Inactive;
             HeardPhrase = null;
+            VoiceSearchNotice = null;
         }
 
         public bool IsDisplayingResults
@@ -684,39 +739,59 @@ namespace Eclipse.View
         /// game must not throw away the voice search results or the more-like-this set.
         /// </summary>
 
-        public bool DoUp(bool held)
+        /// <summary>
+        /// Runs before every input, whatever it is and whatever state is handling it.
+        ///
+        /// Each of the eight entry points below used to open with a bare "IsPlayingGame = false",
+        /// with nothing to say what that line was for. It is here because it is the one place
+        /// that knows the user is still at the controller - which is also exactly what dismisses
+        /// the "matched nothing" notice.
+        /// </summary>
+        private void OnUserInput()
         {
             IsPlayingGame = false;
+
+            // Acting on the notice is the dismissal - there is no message to acknowledge and
+            // nothing to press twice. The timer only exists for the user who does not act.
+            if (VoiceSearchPhase == VoiceSearchPhase.NoMatch)
+            {
+                LeaveVoiceSearch();
+            }
+        }
+
+        public bool DoUp(bool held)
+        {
+            OnUserInput();
             return EclipseStateContext.OnUp(held);
         }
 
         public bool DoDown(bool held)
         {
-            IsPlayingGame = false;
+            OnUserInput();
             return EclipseStateContext.OnDown(held);
         }
 
         public bool DoLeft(bool held)
         {
-            IsPlayingGame = false;
+            OnUserInput();
             return EclipseStateContext.OnLeft(held);
         }
 
         public bool DoRight(bool held)
         {
-            IsPlayingGame = false;
+            OnUserInput();
             return EclipseStateContext.OnRight(held);
         }
 
         public bool DoPageUp()
         {
-            IsPlayingGame = false;
+            OnUserInput();
             return EclipseStateContext.OnPageUp();
         }
 
         public bool DoPageDown()
         {
-            IsPlayingGame = false;
+            OnUserInput();
             return EclipseStateContext.OnPageDown();
         }
 
@@ -837,13 +912,13 @@ namespace Eclipse.View
 
         public bool DoEnter()
         {
-            IsPlayingGame = false;
+            OnUserInput();
             return EclipseStateContext.OnEnter();
         }
 
         public bool DoEscape()
         {
-            IsPlayingGame = false;
+            OnUserInput();
             return EclipseStateContext.OnEscape();
         }
 
@@ -897,7 +972,6 @@ namespace Eclipse.View
             }
         }
 
-        public Uri VoiceRecognitionGif { get; } = ResourceImages.VoiceRecognitionGif;
 
         public Uri SettingsIconGrey { get; } = ResourceImages.SettingsIconGrey;
 

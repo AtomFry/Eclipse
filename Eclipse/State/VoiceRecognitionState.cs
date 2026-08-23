@@ -161,19 +161,27 @@ namespace Eclipse.State
 
             attractModeService.RestartAttractMode();
 
-            if (!string.IsNullOrWhiteSpace(speechRecognizerResult.ErrorMessage))
+            switch (speechRecognizerResult.Outcome)
             {
-                // already worded for the screen - the recogniser's own message went to the log
-                Fail(speechRecognizerResult.ErrorMessage, TryAgainHint);
-                return;
-            }
+                // A cancelled recognition is not a search that found nothing - go back to
+                // browsing and leave the current lists exactly as they were.
+                case SpeechRecognitionOutcome.Cancelled:
+                    ReturnToBrowsing();
+                    return;
 
-            // a cancelled recognition is not a search that found nothing - go back to
-            // browsing and leave the current lists exactly as they were
-            if (speechRecognizerResult.Cancelled)
-            {
-                ReturnToBrowsing();
-                return;
+                // Saying nothing is not an error, and it used to be met with a screenful of
+                // black. It is the same kind of outcome as matching nothing - the search did not
+                // work out, the lists are untouched, and speaking again is the whole recovery -
+                // so it is said in the same place, the same way.
+                case SpeechRecognitionOutcome.HeardNothing:
+                    ShowNotice("Didn't hear anything");
+                    return;
+
+                // A real failure still takes the screen. Trying again will not help, so the user
+                // should not be left to discover that by trying.
+                case SpeechRecognitionOutcome.Failed:
+                    Fail("Something went wrong with voice search, please try again", TryAgainHint);
+                    return;
             }
 
             try
@@ -183,11 +191,10 @@ namespace Eclipse.State
                     VoiceSearchResultBuilder.Build(speechRecognizerResult?.RecognizedPhrases,
                                                    VoiceSearchIndex.Instance);
 
-                // nothing matched - say so and leave the current lists alone, rather than
-                // installing an empty result set that leaves nothing to navigate
+                // nothing matched - say so, and leave the lists alone
                 if (voiceRecognitionResults.Count == 0)
                 {
-                    Fail(NoMatchMessage(speechRecognizerResult), TryAgainHint);
+                    ShowNotice(NoMatchMessage(speechRecognizerResult));
                     return;
                 }
 
@@ -226,13 +233,28 @@ namespace Eclipse.State
             return $"Heard “{heard}” - no games matched";
         }
 
-        // Every way out of voice search goes through one of these two, so the screen cannot be
+        // Every way out of voice search goes through one of these three, so the screen cannot be
         // left half in it. The listening flag used to be reset by hand on each of the nine exit
         // paths, and none of them put back the overlay the search had covered up.
+        //
+        // The three differ in how much they interrupt, and that is the whole distinction:
+        // ReturnToBrowsing says nothing, ShowNotice says something without taking the screen, and
+        // Fail takes the screen. Only a failure the user cannot do anything about gets the last.
 
         private void ReturnToBrowsing()
         {
             EclipseStateContext.MainWindowViewModel.LeaveVoiceSearch();
+            EclipseStateContext.TransitionToState(EclipseStateContext.GetState(typeof(SelectingGameState)));
+        }
+
+        /// <summary>
+        /// A search that did not work out, said where the list heading goes rather than on a
+        /// screen of its own. The lists are untouched and input is live the moment this returns,
+        /// so there is nothing to dismiss - the user browses on, or speaks again.
+        /// </summary>
+        private void ShowNotice(string notice)
+        {
+            EclipseStateContext.MainWindowViewModel.ShowVoiceSearchNotice(notice);
             EclipseStateContext.TransitionToState(EclipseStateContext.GetState(typeof(SelectingGameState)));
         }
 

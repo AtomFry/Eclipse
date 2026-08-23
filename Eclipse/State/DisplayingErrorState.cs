@@ -10,8 +10,8 @@ namespace Eclipse.State
         public string ErrorMessage { get; set; }
 
         // What the user can do about it, or null where there is nothing to do. Set alongside
-        // ErrorMessage by callers that have a recovery to offer - "heard nothing" and "matched
-        // nothing" do, "voice search is not available on this PC" does not.
+        // ErrorMessage by callers that have a recovery to offer - "voice search is still getting
+        // ready" does, "voice search is not available on this PC" does not.
         public string ErrorHint { get; set; }
 
         public DisplayingErrorState()

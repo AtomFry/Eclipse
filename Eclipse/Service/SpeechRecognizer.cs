@@ -96,13 +96,11 @@ namespace Eclipse.Service
     public class SpeechRecognizerResult
     {
         public List<RecognizedPhrase> RecognizedPhrases { get; set; } = new List<RecognizedPhrase>();
-        public string ErrorMessage { get; set; }
 
-        // The engine reported the recognition as cancelled rather than finished. A session the
-        // caller cancelled never calls back at all, so this only reaches anyone when the engine
-        // cancelled for a reason we did not ask for. There is nothing to search for, and the
-        // caller must not treat it as a search that returned no games.
-        public bool Cancelled { get; set; }
+        // What happened, as something the caller can branch on. Deliberately not a message: what
+        // the user is told is a presentation decision, and it belongs with the rest of the copy
+        // in VoiceRecognitionState rather than being composed down here.
+        public SpeechRecognitionOutcome Outcome { get; set; } = SpeechRecognitionOutcome.Completed;
     }
 
     /// <summary>
@@ -357,10 +355,14 @@ namespace Eclipse.Service
                     return;
                 }
 
+                // Assigned in order of increasing precedence, which is the precedence the three
+                // sequential checks this replaced already had: a timeout beats an error, and an
+                // error beats a cancel.
+
                 // cancelling raises this event too, including the cancel below
                 if (e?.Cancelled == true)
                 {
-                    result.Cancelled = true;
+                    result.Outcome = SpeechRecognitionOutcome.Cancelled;
                 }
 
                 // save any error
@@ -370,15 +372,15 @@ namespace Eclipse.Service
 
                     // The SAPI message is for the log, not for someone reading a television.
                     LogHelper.LogException(e.Error, "recognize speech");
-                    result.ErrorMessage = "Something went wrong with voice search, please try again";
+                    result.Outcome = SpeechRecognitionOutcome.Failed;
                 }
 
-                // indicate time out error
+                // nothing said, or nothing that could be made out
                 if (e?.InitialSilenceTimeout == true || e?.BabbleTimeout == true)
                 {
                     owner.TryCancel();
 
-                    result.ErrorMessage = "Voice recognition could not hear anything, please try again";
+                    result.Outcome = SpeechRecognitionOutcome.HeardNothing;
                 }
 
                 // Everything past here - matching, scoring, ranking, presentation - is ordinary
