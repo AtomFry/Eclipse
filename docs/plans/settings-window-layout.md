@@ -7,13 +7,28 @@ the remaining five.**
 |---|---|
 | 1 — brushes and implicit styles | **Done.** 224 repeated literals gone; seven brushes named. |
 | 2 — section header | **Done.** Nine copies of the `Border`+`TextBlock` collapsed to two styles. |
-| 3 — row styles | **4 of 7 tabs: List settings, Other, Box margin, Screen saver.** Input and Versions remain; Custom lists keeps its `Grid` by design. Design corrected — see the note in the stage. |
+| 3 — row styles | **Done, all six list-shaped tabs.** Custom lists keeps its `Grid` by design — a `DataGrid` beside a button column is a real two-dimensional layout. Design corrected — see the note in the stage. |
 | 3b — `SliderRow` | **Done.** All 18 sliders. Added on top of the plan; see L7 and the slider notes. |
-| 4 — tab templating | Not started. |
+| 4 — tab templating | **Done.** Seven `DataTemplate`s and one `ContentControl`. |
 | 5 — documentation | Not started. |
 
-Row definitions are down from 161 to 68 and hand-written `Grid.Row` attributes from 100 to 48,
-with two tabs still to convert.
+| Measure | Before | After |
+|---|---|---|
+| XAML lines | 940 | 877 |
+| `RowDefinition` elements | 161 | 22 |
+| `ColumnDefinition` elements | 58 | 17 |
+| Hand-written `Grid.Row=` | 100 | 27 |
+| `<Style>` elements | 0 | 14 |
+| `EclipseSettingsViewModel` lines | 976 | 487 |
+
+The line count barely moved, which is the least interesting number here: about 250 lines of what
+remains is now reusable styles and templates, and the per-setting markup that replaced the rest
+carries no indices. What actually changed is the cost of an edit — a setting is one element in
+one place, and a tab is one `DataTemplate`.
+
+The view model halved across this plan and `settings-refactor.md` together: 45 delegating
+properties, a 44-line self-assigning initialiser, seven `Visibility` properties and a 32-line
+`UpdateTabVisibility` switch, all gone.
 
 Follows `settings-refactor.md`, which dealt with how settings are stored, saved and bound. This
 one deals with how the editor is *built*. No backlog item covers it; it came out of a question

@@ -213,9 +213,12 @@ namespace Eclipse.View.EclipseSettings
             set
             {
                 selectedTabPage = value;
-                OnPropertyChanged("SelectedTabPage");
 
-                UpdateTabVisibility();
+                // The tab panels are DataTemplates now, chosen by a trigger on this value, so
+                // this notification is the whole of switching tabs. It used to be followed by a
+                // call that set seven Visibility properties to Collapsed and then switched on
+                // this string to set one of them back.
+                OnPropertyChanged("SelectedTabPage");
             }
         }
 
@@ -303,126 +306,6 @@ namespace Eclipse.View.EclipseSettings
             {
                 defaultListTypes = value;
                 OnPropertyChanged("DefaultListTypes");
-            }
-        }
-
-        private void UpdateTabVisibility()
-        {
-            ListSettingsTabVisibility = Visibility.Collapsed;
-            InputTabVisibility = Visibility.Collapsed;
-            VersionsTabVisibility = Visibility.Collapsed;
-            OtherTabVisibility = Visibility.Collapsed;
-            CustomListsTabVisibility = Visibility.Collapsed;
-            BoxMarginTabVisibility = Visibility.Collapsed;
-            ScreenSaverTabVisibility = Visibility.Collapsed;
-
-            switch (SelectedTabPage)
-            {
-                case EclipseSettingsTabs.Lists:
-                    ListSettingsTabVisibility = Visibility.Visible;
-                    break;
-
-                case EclipseSettingsTabs.Inputs:
-                    InputTabVisibility = Visibility.Visible;
-                    break;
-
-                case EclipseSettingsTabs.Other:
-                    OtherTabVisibility = Visibility.Visible;
-                    break;
-
-                case EclipseSettingsTabs.Versions:
-                    VersionsTabVisibility = Visibility.Visible;
-                    break;
-
-                case EclipseSettingsTabs.CustomLists:
-                    CustomListsTabVisibility = Visibility.Visible;
-                    break;
-
-                case EclipseSettingsTabs.BoxMargin:
-                    BoxMarginTabVisibility = Visibility.Visible;
-                    break;
-
-                case EclipseSettingsTabs.ScreenSaver:
-                    ScreenSaverTabVisibility = Visibility.Visible;
-                    break;
-            }
-        }
-
-        private Visibility screenSaverTabVisibility;
-        public Visibility ScreenSaverTabVisibility
-        {
-            get => screenSaverTabVisibility;
-            set
-            {
-                screenSaverTabVisibility = value;
-                OnPropertyChanged("ScreenSaverTabVisibility");
-            }
-        }
-
-        private Visibility inputTabVisibility;
-        public Visibility InputTabVisibility
-        {
-            get => inputTabVisibility;
-            set
-            {
-                inputTabVisibility = value;
-                OnPropertyChanged("InputTabVisibility");
-            }
-        }
-
-        private Visibility versionsTabVisibility;
-        public Visibility VersionsTabVisibility
-        {
-            get => versionsTabVisibility;
-            set
-            {
-                versionsTabVisibility = value;
-                OnPropertyChanged("VersionsTabVisibility");
-            }
-        }
-
-        private Visibility otherTabVisibility;
-        public Visibility OtherTabVisibility
-        {
-            get => otherTabVisibility;
-            set
-            {
-                otherTabVisibility = value;
-                OnPropertyChanged("OtherTabVisibility");
-            }
-        }
-
-        private Visibility listSettingsTabVisibility;
-        public Visibility ListSettingsTabVisibility
-        {
-            get => listSettingsTabVisibility;
-            set
-            {
-                listSettingsTabVisibility = value;
-                OnPropertyChanged("ListSettingsTabVisibility");
-            }
-        }
-
-        private Visibility customListsTabVisibility;
-        public Visibility CustomListsTabVisibility
-        {
-            get => customListsTabVisibility;
-            set
-            {
-                customListsTabVisibility = value;
-                OnPropertyChanged("CustomListsTabVisibility");
-            }
-        }
-
-
-        private Visibility boxMarginTabVisibility;
-        public Visibility BoxMarginTabVisibility
-        {
-            get => boxMarginTabVisibility;
-            set
-            {
-                boxMarginTabVisibility = value;
-                OnPropertyChanged("BoxMarginTabVisibility");
             }
         }
 

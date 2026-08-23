@@ -408,6 +408,396 @@
             <ColumnDefinition Width="15"/>
         </Grid.ColumnDefinitions>
 
+        <!-- The seven tabs.
+
+             They used to be seven full-size Grids stacked in this cell, each gated on its own
+             Visibility property - so all seven were built and live at all times, six of them
+             Collapsed, and adding a tab meant editing a string constant, a collection, a
+             Visibility property, a thirty-two line switch and the panel. Four of those five were
+             bookkeeping.
+
+             As templates, only the selected tab is realised, and a tab is declared in one place.
+             Note that Content below is bound to the view model, not to the tab name: bind it to
+             the name and the DataContext inside every template becomes a string, and every
+             binding in the tab breaks without erroring. -->
+        <Grid.Resources>
+            <DataTemplate x:Key="ListSettingsTab">
+                <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <ContentControl Grid.Row="0" Style="{StaticResource SectionHeaderStyle}" Content="List settings"/>
+
+                <StackPanel Grid.Row="1">
+                    <HeaderedContentControl Style="{StaticResource SettingRowStyle}" Header="Default group">
+                        <ComboBox ToolTip="Specify which list category group to load by default on startup"
+                                  SelectedItem="{Binding Settings.DefaultListCategoryType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  ItemsSource="{Binding DefaultListTypes}"/>
+                    </HeaderedContentControl>
+
+                    <ContentControl Style="{StaticResource HalfWidthRowStyle}">
+                        <CheckBox IsChecked="{Binding Settings.ShowGameCountInList, Mode=TwoWay}"
+                                  ToolTip="Check this box to show the count of games after the list descriptions"
+                                  Content="Show game count in list description"/>
+                    </ContentControl>
+
+                    <ContentControl Style="{StaticResource HalfWidthRowStyle}">
+                        <CheckBox IsChecked="{Binding Settings.IncludeBrokenGames, Mode=TwoWay}"
+                                  ToolTip="Check this box to include games marked broken in lists"
+                                  Content="Include broken games"/>
+                    </ContentControl>
+
+                    <ContentControl Style="{StaticResource HalfWidthRowStyle}">
+                        <CheckBox IsChecked="{Binding Settings.IncludeHiddenGames, Mode=TwoWay}"
+                                  ToolTip="Check this box to include games marked hidden in lists"
+                                  Content="Include hidden games"/>
+                    </ContentControl>
+
+                    <ContentControl Style="{StaticResource HalfWidthRowStyle}">
+                        <CheckBox IsChecked="{Binding Settings.RepeatGamesToFillScreen, Mode=TwoWay}"
+                                  ToolTip="Check this box to make games repeat so that lists fill the screen"
+                                  Content="Repeat games to fill screen"/>
+                    </ContentControl>
+                </StackPanel>
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="InputSettingsTab">
+                <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <ContentControl Grid.Row="0" Style="{StaticResource SectionHeaderStyle}" Content="Input settings"/>
+
+                <StackPanel Grid.Row="1">
+                    <HeaderedContentControl Style="{StaticResource SettingRowStyle}" Header="Page up">
+                        <ComboBox ToolTip="Specify the functionality of the page up button"
+                                  SelectedItem="{Binding Settings.PageUpFunction, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  ItemsSource="{Binding Source={StaticResource PageFunctionEnum}}"/>
+                    </HeaderedContentControl>
+
+                    <HeaderedContentControl Style="{StaticResource SettingRowStyle}" Header="Page down">
+                        <ComboBox ToolTip="Specify the functionality of the page down button"
+                                  SelectedItem="{Binding Settings.PageDownFunction, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  ItemsSource="{Binding Source={StaticResource PageFunctionEnum}}"/>
+                    </HeaderedContentControl>
+
+                    <ContentControl Style="{StaticResource HalfWidthRowStyle}">
+                        <CheckBox IsChecked="{Binding Settings.EnableVoiceSearch, Mode=TwoWay}"
+                                  ToolTip="Check this box to enable voice search functionality"
+                                  Content="Enable voice search"/>
+                    </ContentControl>
+
+                    <ContentControl Style="{StaticResource HalfWidthRowStyle}">
+                        <CheckBox IsChecked="{Binding Settings.OpenSettingsPaneOnLeft, Mode=TwoWay}"
+                                  ToolTip="Check this box to allow the settings pane to open when you are on the first game in a list and you press left.  Note - escape also opens the settings pane."
+                                  Content="Open settings pane on left press"/>
+                    </ContentControl>
+
+                    <ContentControl Style="{StaticResource HalfWidthRowStyle}">
+                        <CheckBox IsChecked="{Binding Settings.BypassDetails, Mode=TwoWay}"
+                                  ToolTip="Check this box to bypass game details and start a game when selecting a game with the enter button"
+                                  Content="Bypass details"/>
+                    </ContentControl>
+                </StackPanel>
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="VersionSettingsTab">
+                <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <ContentControl Grid.Row="0" Style="{StaticResource SectionHeaderStyle}" Content="Game version settings"/>
+
+                <StackPanel Grid.Row="1">
+                    <ContentControl Style="{StaticResource HalfWidthRowStyle}">
+                        <CheckBox IsChecked="{Binding Settings.AdditionalVersionsEnable, Mode=TwoWay}"
+                                  ToolTip="Check this box to enable playing additional game versions that are combined with a game as additional applications from the game details screen"
+                                  Content="Enable additional versions"/>
+                    </ContentControl>
+
+                    <HeaderedContentControl Style="{StaticResource SettingRowStyle}" Header="Display field">
+                        <ComboBox ToolTip="Specify the additional application field to display for versions"
+                                  SelectedItem="{Binding Settings.AdditionalApplicationDisplayField, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  ItemsSource="{Binding Source={StaticResource AdditionalVersionDisplayFieldEnum}}"/>
+                    </HeaderedContentControl>
+
+                    <ContentControl Style="{StaticResource HalfWidthRowStyle}">
+                        <CheckBox IsChecked="{Binding Settings.AdditionalVersionsRemovePlayPrefix, Mode=TwoWay}"
+                                  ToolTip="Check this to remove &quot;Play&quot; from the start of the version description so that it does not repeat."
+                                  Content="Suppress &quot;Play&quot; from version description"/>
+                    </ContentControl>
+
+                    <ContentControl Style="{StaticResource HalfWidthRowStyle}">
+                        <CheckBox IsChecked="{Binding Settings.AdditionalVersionsRemoveVersionPostfix, Mode=TwoWay}"
+                                  ToolTip="Check this to remove &quot;Version...&quot; from the end of the version description."
+                                  Content="Suppress &quot;Version...&quot; from version description"/>
+                    </ContentControl>
+
+                    <ContentControl Style="{StaticResource HalfWidthRowStyle}">
+                        <CheckBox IsChecked="{Binding Settings.AdditionalVersionsOnlyEmulatorOrDosBox, Mode=TwoWay}"
+                                  ToolTip="Check this box to exclude additional apps that do not have an emulator or dos box path."
+                                  Content="Only additional versions with emulators"/>
+                    </ContentControl>
+
+                    <ContentControl Style="{StaticResource HalfWidthRowStyle}">
+                        <CheckBox IsChecked="{Binding Settings.AdditionalVersionsExcludeRunBefore, Mode=TwoWay}"
+                                  ToolTip="Check this box to exclude additional apps that are set to run before games launch."
+                                  Content="Exclude run before"/>
+                    </ContentControl>
+
+                    <ContentControl Style="{StaticResource HalfWidthRowStyle}">
+                        <CheckBox IsChecked="{Binding Settings.AdditionalVersionsExcludeRunAfter, Mode=TwoWay}"
+                                  ToolTip="Check this box to exclude additional apps that are set to run after games launch."
+                                  Content="Exclude run after"/>
+                    </ContentControl>
+                </StackPanel>
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="OtherSettingsTab">
+                <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <ContentControl Grid.Row="0" Style="{StaticResource SectionHeaderStyle}" Content="Other settings"/>
+
+                <StackPanel Grid.Row="1">
+                    <ContentControl Style="{StaticResource HalfWidthRowStyle}">
+                        <CheckBox IsChecked="{Binding Settings.DisableVideos, Mode=TwoWay}"
+                                  ToolTip="Check this box to disable game preview videos"
+                                  Content="Disable videos"/>
+                    </ContentControl>
+
+                    <local:SliderRow Label="Default video volume" ValueFormat="P0"
+                                     Minimum="0" Maximum="1" Step="0.05"
+                                     Value="{Binding Settings.DefaultVideoVolume, Mode=TwoWay}"
+                                     ToolTip="Volume for videos (default 50%)"/>
+
+                    <local:SliderRow Label="Video delay" Unit="ms"
+                                     Minimum="0" Maximum="10000" Step="250"
+                                     Value="{Binding Settings.VideoDelayInMilliseconds, Mode=TwoWay}"
+                                     ToolTip="Amount of time to delay after selecting a game before playing the video"/>
+
+                    <ContentControl Style="{StaticResource HalfWidthRowStyle}">
+                        <CheckBox IsChecked="{Binding Settings.ShowMatchPercent, Mode=TwoWay}"
+                                  ToolTip="Check this box to display the game match percent"
+                                  Content="Show match percent"/>
+                    </ContentControl>
+                    <ContentControl Style="{StaticResource HalfWidthRowStyle}">
+                        <CheckBox IsChecked="{Binding Settings.ShowReleaseYear, Mode=TwoWay}"
+                                  ToolTip="Check this box to display the game release year"
+                                  Content="Show release year"/>
+                    </ContentControl>
+                    <ContentControl Style="{StaticResource HalfWidthRowStyle}">
+                        <CheckBox IsChecked="{Binding Settings.ShowStarRating, Mode=TwoWay}"
+                                  ToolTip="Check this box to display the game star rating"
+                                  Content="Show star rating"/>
+                    </ContentControl>
+                    <ContentControl Style="{StaticResource HalfWidthRowStyle}">
+                        <CheckBox IsChecked="{Binding Settings.ShowPlayMode, Mode=TwoWay}"
+                                  ToolTip="Check this box to display the game play mode"
+                                  Content="Show play mode"/>
+                    </ContentControl>
+                    <ContentControl Style="{StaticResource HalfWidthRowStyle}">
+                        <CheckBox IsChecked="{Binding Settings.ShowPlatformLogo, Mode=TwoWay}"
+                                  ToolTip="Check this box to display the game platform logo"
+                                  Content="Show platform logo"/>
+                    </ContentControl>
+                    <ContentControl Style="{StaticResource HalfWidthRowStyle}">
+                        <CheckBox IsChecked="{Binding Settings.ShowOptionsIcon, Mode=TwoWay}"
+                                  ToolTip="Check this box to display the options icon"
+                                  Content="Show options icon"/>
+                    </ContentControl>
+                    <ContentControl Style="{StaticResource HalfWidthRowStyle}">
+                        <CheckBox IsChecked="{Binding Settings.DisplayFeaturedGame, Mode=TwoWay}"
+                                  ToolTip="Check this box to display the featured game"
+                                  Content="Display featured game"/>
+                    </ContentControl>
+                    <ContentControl Style="{StaticResource HalfWidthRowStyle}">
+                        <CheckBox IsChecked="{Binding Settings.DisplayOptionsOnEscape, Mode=TwoWay}"
+                                  ToolTip="Check this box to display eclipse options when you press escape"
+                                  Content="Display eclipse options on escape"/>
+                    </ContentControl>
+                </StackPanel>
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="CustomListsTab">
+                <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <ContentControl Grid.Row="0" Style="{StaticResource SectionHeaderStyle}" Content="Custom lists"/>
+                <Grid Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="100"/>
+                    </Grid.ColumnDefinitions>
+
+                    <DataGrid Grid.Row="0" Grid.Column="0" Margin="5,0"
+                        ItemsSource="{Binding CustomListDefinitions}"
+                        SelectedItem="{Binding SelectedCustomListDefinition, Mode=TwoWay}"
+                        RowBackground="{StaticResource FieldBackgroundBrush}"
+                        AutoGenerateColumns="False" 
+                        IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False" 
+                        RowHeaderWidth="0">
+                        <DataGrid.InputBindings>
+                            <MouseBinding Gesture="LeftDoubleClick" Command="{Binding EditCommand}"/>
+                        </DataGrid.InputBindings>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Description" Width="*" Binding="{Binding Description}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Left">
+                        <Button Content="Add" Width="75" Margin="5,0" Command="{Binding AddCommand}"/>
+                        <Button Content="Edit" Width="75" Margin="5,0" Command="{Binding EditCommand}"/>
+                        <Button Content="Delete" Width="75" Margin="5,0" Command="{Binding DeleteCommand}"/>
+                        <Button Content="Move up" Width="80" Height="30" Command="{Binding MoveUpCustomListCommand}" />
+                        <Button Content="Move down" Width="80" Height="30" Command="{Binding MoveDownCustomListCommand}" />
+                    </StackPanel>
+                </Grid>
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="BoxMarginTab">
+                <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <ContentControl Grid.Row="0" Style="{StaticResource SectionHeaderStyle}" Content="Box margins"/>
+
+                <StackPanel Grid.Row="1">
+                    <!-- These four bind to the view model rather than straight to Settings: their
+                         setters refresh the preview below, which is the only side effect left in
+                         the settings view model after the triplication was collapsed. -->
+                    <local:SliderRow Label="Left margin" Unit="px" Minimum="0" Maximum="100" Step="1"
+                                     Value="{Binding BoxFrontMarginLeft, Mode=TwoWay}"
+                                     ToolTip="Margin on left side of box front image"/>
+                    <local:SliderRow Label="Top margin" Unit="px" Minimum="0" Maximum="100" Step="1"
+                                     Value="{Binding BoxFrontMarginTop, Mode=TwoWay}"
+                                     ToolTip="Margin on top side of box front image"/>
+                    <local:SliderRow Label="Right margin" Unit="px" Minimum="0" Maximum="100" Step="1"
+                                     Value="{Binding BoxFrontMarginRight, Mode=TwoWay}"
+                                     ToolTip="Margin on right side of box front image"/>
+                    <local:SliderRow Label="Bottom margin" Unit="px" Minimum="0" Maximum="100" Step="1"
+                                     Value="{Binding BoxFrontMarginBottom, Mode=TwoWay}"
+                                     ToolTip="Margin on bottom side of box front image"/>
+
+                    <StackPanel Margin="10,2" HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
+                        <Rectangle Height="200" Width="200" Fill="{StaticResource WindowBackgroundBrush}" Margin="{Binding MarginSample}"/>
+                        <Rectangle Height="200" Width="200" Fill="{StaticResource WindowBackgroundBrush}" Margin="{Binding MarginSample}"/>
+                        <Rectangle Height="200" Width="200" Fill="{StaticResource WindowBackgroundBrush}" Margin="{Binding MarginSample}"/>
+                        <Rectangle Height="200" Width="200" Fill="{StaticResource WindowBackgroundBrush}" Margin="{Binding MarginSample}"/>
+                    </StackPanel>
+
+                    <local:SliderRow Label="Game details padding" Unit="px" Minimum="0" Maximum="100" Step="1"
+                                     Value="{Binding Settings.SelectedGameDetailsPadding, Mode=TwoWay}"
+                                     ToolTip="Game details padding"/>
+                </StackPanel>
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="ScreenSaverTab">
+                <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <ContentControl Grid.Row="0" Style="{StaticResource SectionHeaderStyle}" Content="Screen saver settings"/>
+
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <ContentControl Style="{StaticResource HalfWidthRowStyle}">
+                            <CheckBox IsChecked="{Binding Settings.EnableScreenSaver, Mode=TwoWay}"
+                                      ToolTip="Check this box to enable the screen saver"
+                                      Content="Enable screen saver"/>
+                        </ContentControl>
+
+                        <local:SliderRow Label="Start after" Unit="s" Minimum="10" Maximum="600" Step="5"
+                                         Value="{Binding Settings.ScreensaverDelayInSeconds, Mode=TwoWay}"
+                                         IsEnabled="{Binding Settings.EnableScreenSaver}"
+                                         ToolTip="How long Eclipse waits with no input before the screen saver starts"/>
+
+                        <ContentControl Style="{StaticResource SubSectionHeaderStyle}" Content="Slide sequence"/>
+
+                        <local:SliderRow Label="Delay between images" Unit="ms" Minimum="0" Maximum="15000" Step="250"
+                                         Value="{Binding Settings.ScreensaverDelayBetweenImagesMilliseconds, Mode=TwoWay}"
+                                         IsEnabled="{Binding Settings.EnableScreenSaver}"
+                                         ToolTip="How long from one game starting to fade out until the next one starts to fade in. This overlaps the background fade out, so the screen is only fully black for the remainder"/>
+
+                        <local:SliderRow Label="Background fade in" Unit="ms" Minimum="0" Maximum="10000" Step="250"
+                                         Value="{Binding Settings.ScreensaverBackgroundFadeInMilliseconds, Mode=TwoWay}"
+                                         IsEnabled="{Binding Settings.EnableScreenSaver}"
+                                         ToolTip="How long each game's background image takes to fade in from black"/>
+
+                        <local:SliderRow Label="Pan across screen" Unit="ms" Minimum="1000" Maximum="60000" Step="500"
+                                         Value="{Binding Settings.ScreensaverPanMilliseconds, Mode=TwoWay}"
+                                         IsEnabled="{Binding Settings.EnableScreenSaver}"
+                                         ToolTip="How long the background image takes to drift across the screen. Longer is slower and gentler. Set this longer than the time on each game so the image never appears to stop"/>
+
+                        <local:SliderRow Label="Logo appears after" Unit="ms" Minimum="0" Maximum="30000" Step="250"
+                                         Value="{Binding Settings.ScreensaverLogoDelayMilliseconds, Mode=TwoWay}"
+                                         IsEnabled="{Binding Settings.EnableScreenSaver}"
+                                         ToolTip="How long after the background image appears before the game's logo fades in. Keep this shorter than the time on each game"/>
+
+                        <local:SliderRow Label="Logo fade in" Unit="ms" Minimum="0" Maximum="5000" Step="100"
+                                         Value="{Binding Settings.ScreensaverLogoFadeInMilliseconds, Mode=TwoWay}"
+                                         IsEnabled="{Binding Settings.EnableScreenSaver}"
+                                         ToolTip="How long the game's logo takes to fade in"/>
+
+                        <local:SliderRow Label="Time on each game" Unit="ms" Minimum="2000" Maximum="120000" Step="500"
+                                         Value="{Binding Settings.ScreensaverGameDurationMilliseconds, Mode=TwoWay}"
+                                         IsEnabled="{Binding Settings.EnableScreenSaver}"
+                                         ToolTip="How long each game is shown before it fades out and the next one is chosen"/>
+
+                        <ContentControl Style="{StaticResource SubSectionHeaderStyle}" Content="Fades"/>
+
+                        <local:SliderRow Label="Background fade out" Unit="ms" Minimum="0" Maximum="10000" Step="250"
+                                         Value="{Binding Settings.ScreensaverBackgroundFadeOutMilliseconds, Mode=TwoWay}"
+                                         IsEnabled="{Binding Settings.EnableScreenSaver}"
+                                         ToolTip="How long the background image takes to fade out before the next game"/>
+
+                        <local:SliderRow Label="Logo fade out" Unit="ms" Minimum="0" Maximum="5000" Step="100"
+                                         Value="{Binding Settings.ScreensaverLogoFadeOutMilliseconds, Mode=TwoWay}"
+                                         IsEnabled="{Binding Settings.EnableScreenSaver}"
+                                         ToolTip="How long the game's logo takes to fade out before the next game"/>
+
+                        <local:SliderRow Label="Screen saver fade in" Unit="ms" Minimum="0" Maximum="5000" Step="100"
+                                         Value="{Binding Settings.ScreensaverFadeInMilliseconds, Mode=TwoWay}"
+                                         IsEnabled="{Binding Settings.EnableScreenSaver}"
+                                         ToolTip="How long the screen saver takes to fade in when it first starts"/>
+
+                        <local:SliderRow Label="Exit fade out" Unit="ms" Minimum="0" Maximum="3000" Step="100"
+                                         Value="{Binding Settings.ScreensaverExitFadeMilliseconds, Mode=TwoWay}"
+                                         IsEnabled="{Binding Settings.EnableScreenSaver}"
+                                         ToolTip="How quickly the screen saver disappears when you press a key"/>
+                    </StackPanel>
+                </ScrollViewer>
+                </Grid>
+            </DataTemplate>
+
+        </Grid.Resources>
+
         <!-- The margin used to be 15,10,15,25, which left 15px of a 50px row for content - and a
              Label needs about 29px once its default 5px padding is counted. The title overflowed
              the row and the panel rectangles below, declared later, painted over it. The icon is
@@ -447,438 +837,37 @@
         <Rectangle Grid.Row="1" Grid.Column="3" Fill="{StaticResource PanelBorderBrush}" Stretch="Fill" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
         <Rectangle Grid.Row="1" Grid.Column="3" Fill="{StaticResource PanelBackgroundBrush}" Stretch="Fill" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="1"/>
 
-        <Grid Name="ListSettingsGrid" Grid.Row="1" Grid.Column="3"  Visibility="{Binding ListSettingsTabVisibility}"
-              HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="50"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
 
-            <ContentControl Grid.Row="0" Style="{StaticResource SectionHeaderStyle}" Content="List settings"/>
-
-            <StackPanel Grid.Row="1">
-                <HeaderedContentControl Style="{StaticResource SettingRowStyle}" Header="Default group">
-                    <ComboBox ToolTip="Specify which list category group to load by default on startup"
-                              SelectedItem="{Binding Settings.DefaultListCategoryType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                              ItemsSource="{Binding DefaultListTypes}"/>
-                </HeaderedContentControl>
-
-                <ContentControl Style="{StaticResource HalfWidthRowStyle}">
-                    <CheckBox IsChecked="{Binding Settings.ShowGameCountInList, Mode=TwoWay}"
-                              ToolTip="Check this box to show the count of games after the list descriptions"
-                              Content="Show game count in list description"/>
-                </ContentControl>
-
-                <ContentControl Style="{StaticResource HalfWidthRowStyle}">
-                    <CheckBox IsChecked="{Binding Settings.IncludeBrokenGames, Mode=TwoWay}"
-                              ToolTip="Check this box to include games marked broken in lists"
-                              Content="Include broken games"/>
-                </ContentControl>
-
-                <ContentControl Style="{StaticResource HalfWidthRowStyle}">
-                    <CheckBox IsChecked="{Binding Settings.IncludeHiddenGames, Mode=TwoWay}"
-                              ToolTip="Check this box to include games marked hidden in lists"
-                              Content="Include hidden games"/>
-                </ContentControl>
-
-                <ContentControl Style="{StaticResource HalfWidthRowStyle}">
-                    <CheckBox IsChecked="{Binding Settings.RepeatGamesToFillScreen, Mode=TwoWay}"
-                              ToolTip="Check this box to make games repeat so that lists fill the screen"
-                              Content="Repeat games to fill screen"/>
-                </ContentControl>
-            </StackPanel>
-        </Grid>
-
-        <Grid Name="InputSettingsGrid" Grid.Row="1" Grid.Column="3"  Visibility="{Binding InputTabVisibility}"
-              HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="50"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
-            <ContentControl Grid.Row="0" Style="{StaticResource SectionHeaderStyle}" Content="Input settings"/>
-            <Grid Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <Label Grid.Row="0" Grid.Column="0" Content="Page up" 
-                       HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,2"/>
-                <ComboBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" 
-                          ToolTip="Specify the functionality of the page up button"
-                          SelectedItem="{Binding Settings.PageUpFunction, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                          ItemsSource="{Binding Source={StaticResource PageFunctionEnum}}"/>
-
-                <Label Grid.Row="1" Grid.Column="0" Content="Page down" 
-                       HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,2"/>
-                <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" 
-                          ToolTip="Specify the functionality of the page down button"
-                          SelectedItem="{Binding Settings.PageDownFunction, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                          ItemsSource="{Binding Source={StaticResource PageFunctionEnum}}"/>
-
-                <CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4"
-                          IsChecked="{Binding Settings.EnableVoiceSearch, Mode=TwoWay}"
-                          ToolTip="Check this box to enable voice search functionality"
-                          Content="Enable voice search"/>
-
-                <CheckBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4"
-                          IsChecked="{Binding Settings.OpenSettingsPaneOnLeft, Mode=TwoWay}"
-                          ToolTip="Check this box to allow the settings pane to open when you are on the first game in a list and you press left.  Note - escape also opens the settings pane."
-                          Content="Open settings pane on left press"/>
-
-                <CheckBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4"
-                          IsChecked="{Binding Settings.BypassDetails, Mode=TwoWay}"
-                          ToolTip="Check this box to bypass game details and start a game when selecting a game with the enter button"
-                          Content="Bypass details"/>
-            </Grid>
-        </Grid>
-
-        <Grid Name="VersionSettingsGrid" Grid.Row="1" Grid.Column="3"  Visibility="{Binding VersionsTabVisibility}"
-              HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="50"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
-            <ContentControl Grid.Row="0" Style="{StaticResource SectionHeaderStyle}" Content="Game version settings"/>
-            <Grid Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <CheckBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4"
-                          IsChecked="{Binding Settings.AdditionalVersionsEnable, Mode=TwoWay}"
-                          ToolTip="Check this box to enable playing additional game versions that are combined with a game as additional applications from the game details screen"
-                          Content="Enable additional versions"/>
-
-                <Label Grid.Row="1" Grid.Column="0" Content="Display field" 
-                       HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,2"/>
-                <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" 
-                          ToolTip="Specify the additional application field to display for versions"
-                          SelectedItem="{Binding Settings.AdditionalApplicationDisplayField, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                          ItemsSource="{Binding Source={StaticResource AdditionalVersionDisplayFieldEnum}}"/>
-
-                <CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4"
-                          IsChecked="{Binding Settings.AdditionalVersionsRemovePlayPrefix, Mode=TwoWay}"
-                          ToolTip="Check this to remove &quot;Play&quot; from the start of the version description so that it does not repeat."
-                          Content="Suppress &quot;Play&quot; from version description"/>
-
-                <CheckBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4"
-                          IsChecked="{Binding Settings.AdditionalVersionsRemoveVersionPostfix, Mode=TwoWay}"
-                          ToolTip="Check this to remove &quot;Version...&quot; from the end of the version description."
-                          Content="Suppress &quot;Version...&quot; from version description"/>
-
-
-                <CheckBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4"
-                          IsChecked="{Binding Settings.AdditionalVersionsOnlyEmulatorOrDosBox, Mode=TwoWay}"
-                          ToolTip="Check this box to exclude additional apps that do not have an emulator or dos box path."
-                          Content="Only additional versions with emulators"/>
-
-                <CheckBox Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="4"
-                          IsChecked="{Binding Settings.AdditionalVersionsExcludeRunBefore, Mode=TwoWay}"
-                          ToolTip="Check this box to exclude additional apps that are set to run before games launch."
-                          Content="Exclude run before"/>
-
-                <CheckBox Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="4"
-                          IsChecked="{Binding Settings.AdditionalVersionsExcludeRunAfter, Mode=TwoWay}"
-                          ToolTip="Check this box to exclude additional apps that are set to run after games launch."
-                          Content="Exclude run after"/>
-            </Grid>
-        </Grid>
-
-        <Grid Name="OtherSettingsGrid" Grid.Row="1" Grid.Column="3"  Visibility="{Binding OtherTabVisibility}"
-              HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="50"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
-            <ContentControl Grid.Row="0" Style="{StaticResource SectionHeaderStyle}" Content="Other settings"/>
-
-            <StackPanel Grid.Row="1">
-                <ContentControl Style="{StaticResource HalfWidthRowStyle}">
-                    <CheckBox IsChecked="{Binding Settings.DisableVideos, Mode=TwoWay}"
-                              ToolTip="Check this box to disable game preview videos"
-                              Content="Disable videos"/>
-                </ContentControl>
-
-                <local:SliderRow Label="Default video volume" ValueFormat="P0"
-                                 Minimum="0" Maximum="1" Step="0.05"
-                                 Value="{Binding Settings.DefaultVideoVolume, Mode=TwoWay}"
-                                 ToolTip="Volume for videos (default 50%)"/>
-
-                <local:SliderRow Label="Video delay" Unit="ms"
-                                 Minimum="0" Maximum="10000" Step="250"
-                                 Value="{Binding Settings.VideoDelayInMilliseconds, Mode=TwoWay}"
-                                 ToolTip="Amount of time to delay after selecting a game before playing the video"/>
-
-                <ContentControl Style="{StaticResource HalfWidthRowStyle}">
-                    <CheckBox IsChecked="{Binding Settings.ShowMatchPercent, Mode=TwoWay}"
-                              ToolTip="Check this box to display the game match percent"
-                              Content="Show match percent"/>
-                </ContentControl>
-                <ContentControl Style="{StaticResource HalfWidthRowStyle}">
-                    <CheckBox IsChecked="{Binding Settings.ShowReleaseYear, Mode=TwoWay}"
-                              ToolTip="Check this box to display the game release year"
-                              Content="Show release year"/>
-                </ContentControl>
-                <ContentControl Style="{StaticResource HalfWidthRowStyle}">
-                    <CheckBox IsChecked="{Binding Settings.ShowStarRating, Mode=TwoWay}"
-                              ToolTip="Check this box to display the game star rating"
-                              Content="Show star rating"/>
-                </ContentControl>
-                <ContentControl Style="{StaticResource HalfWidthRowStyle}">
-                    <CheckBox IsChecked="{Binding Settings.ShowPlayMode, Mode=TwoWay}"
-                              ToolTip="Check this box to display the game play mode"
-                              Content="Show play mode"/>
-                </ContentControl>
-                <ContentControl Style="{StaticResource HalfWidthRowStyle}">
-                    <CheckBox IsChecked="{Binding Settings.ShowPlatformLogo, Mode=TwoWay}"
-                              ToolTip="Check this box to display the game platform logo"
-                              Content="Show platform logo"/>
-                </ContentControl>
-                <ContentControl Style="{StaticResource HalfWidthRowStyle}">
-                    <CheckBox IsChecked="{Binding Settings.ShowOptionsIcon, Mode=TwoWay}"
-                              ToolTip="Check this box to display the options icon"
-                              Content="Show options icon"/>
-                </ContentControl>
-                <ContentControl Style="{StaticResource HalfWidthRowStyle}">
-                    <CheckBox IsChecked="{Binding Settings.DisplayFeaturedGame, Mode=TwoWay}"
-                              ToolTip="Check this box to display the featured game"
-                              Content="Display featured game"/>
-                </ContentControl>
-                <ContentControl Style="{StaticResource HalfWidthRowStyle}">
-                    <CheckBox IsChecked="{Binding Settings.DisplayOptionsOnEscape, Mode=TwoWay}"
-                              ToolTip="Check this box to display eclipse options when you press escape"
-                              Content="Display eclipse options on escape"/>
-                </ContentControl>
-            </StackPanel>
-        </Grid>
-
-        <Grid Name="CustomListsGrid" Grid.Row="1" Grid.Column="3"  Visibility="{Binding CustomListsTabVisibility}"
-              HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="50"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
-            <ContentControl Grid.Row="0" Style="{StaticResource SectionHeaderStyle}" Content="Custom lists"/>
-            <Grid Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="100"/>
-                </Grid.ColumnDefinitions>
-
-                <DataGrid Grid.Row="0" Grid.Column="0" Margin="5,0"
-                    ItemsSource="{Binding CustomListDefinitions}"
-                    SelectedItem="{Binding SelectedCustomListDefinition, Mode=TwoWay}"
-                    RowBackground="{StaticResource FieldBackgroundBrush}"
-                    AutoGenerateColumns="False" 
-                    IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False" 
-                    RowHeaderWidth="0">
-                    <DataGrid.InputBindings>
-                        <MouseBinding Gesture="LeftDoubleClick" Command="{Binding EditCommand}"/>
-                    </DataGrid.InputBindings>
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Description" Width="*" Binding="{Binding Description}"/>
-                    </DataGrid.Columns>
-                </DataGrid>
-                <StackPanel Grid.Column="1" HorizontalAlignment="Left">
-                    <Button Content="Add" Width="75" Margin="5,0" Command="{Binding AddCommand}"/>
-                    <Button Content="Edit" Width="75" Margin="5,0" Command="{Binding EditCommand}"/>
-                    <Button Content="Delete" Width="75" Margin="5,0" Command="{Binding DeleteCommand}"/>
-                    <Button Content="Move up" Width="80" Height="30" Command="{Binding MoveUpCustomListCommand}" />
-                    <Button Content="Move down" Width="80" Height="30" Command="{Binding MoveDownCustomListCommand}" />
-                </StackPanel>
-            </Grid>
-        </Grid>
-
-        <Grid Name="BoxMarginGrid" Grid.Row="1" Grid.Column="3"  Visibility="{Binding BoxMarginTabVisibility}"
-              HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="50"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
-            <ContentControl Grid.Row="0" Style="{StaticResource SectionHeaderStyle}" Content="Box margins"/>
-
-            <StackPanel Grid.Row="1">
-                <!-- These four bind to the view model rather than straight to Settings: their
-                     setters refresh the preview below, which is the only side effect left in
-                     the settings view model after the triplication was collapsed. -->
-                <local:SliderRow Label="Left margin" Unit="px" Minimum="0" Maximum="100" Step="1"
-                                 Value="{Binding BoxFrontMarginLeft, Mode=TwoWay}"
-                                 ToolTip="Margin on left side of box front image"/>
-                <local:SliderRow Label="Top margin" Unit="px" Minimum="0" Maximum="100" Step="1"
-                                 Value="{Binding BoxFrontMarginTop, Mode=TwoWay}"
-                                 ToolTip="Margin on top side of box front image"/>
-                <local:SliderRow Label="Right margin" Unit="px" Minimum="0" Maximum="100" Step="1"
-                                 Value="{Binding BoxFrontMarginRight, Mode=TwoWay}"
-                                 ToolTip="Margin on right side of box front image"/>
-                <local:SliderRow Label="Bottom margin" Unit="px" Minimum="0" Maximum="100" Step="1"
-                                 Value="{Binding BoxFrontMarginBottom, Mode=TwoWay}"
-                                 ToolTip="Margin on bottom side of box front image"/>
-
-                <StackPanel Margin="10,2" HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
-                    <Rectangle Height="200" Width="200" Fill="{StaticResource WindowBackgroundBrush}" Margin="{Binding MarginSample}"/>
-                    <Rectangle Height="200" Width="200" Fill="{StaticResource WindowBackgroundBrush}" Margin="{Binding MarginSample}"/>
-                    <Rectangle Height="200" Width="200" Fill="{StaticResource WindowBackgroundBrush}" Margin="{Binding MarginSample}"/>
-                    <Rectangle Height="200" Width="200" Fill="{StaticResource WindowBackgroundBrush}" Margin="{Binding MarginSample}"/>
-                </StackPanel>
-
-                <local:SliderRow Label="Game details padding" Unit="px" Minimum="0" Maximum="100" Step="1"
-                                 Value="{Binding Settings.SelectedGameDetailsPadding, Mode=TwoWay}"
-                                 ToolTip="Game details padding"/>
-            </StackPanel>
-        </Grid>
-
-        <Grid Name="ScreenSaverGrid" Grid.Row="1" Grid.Column="3"  Visibility="{Binding ScreenSaverTabVisibility}"
-              HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="50"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
-            <ContentControl Grid.Row="0" Style="{StaticResource SectionHeaderStyle}" Content="Screen saver settings"/>
-
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                <StackPanel>
-                    <ContentControl Style="{StaticResource HalfWidthRowStyle}">
-                        <CheckBox IsChecked="{Binding Settings.EnableScreenSaver, Mode=TwoWay}"
-                                  ToolTip="Check this box to enable the screen saver"
-                                  Content="Enable screen saver"/>
-                    </ContentControl>
-
-                    <local:SliderRow Label="Start after" Unit="s" Minimum="10" Maximum="600" Step="5"
-                                     Value="{Binding Settings.ScreensaverDelayInSeconds, Mode=TwoWay}"
-                                     IsEnabled="{Binding Settings.EnableScreenSaver}"
-                                     ToolTip="How long Eclipse waits with no input before the screen saver starts"/>
-
-                    <ContentControl Style="{StaticResource SubSectionHeaderStyle}" Content="Slide sequence"/>
-
-                    <local:SliderRow Label="Delay between images" Unit="ms" Minimum="0" Maximum="15000" Step="250"
-                                     Value="{Binding Settings.ScreensaverDelayBetweenImagesMilliseconds, Mode=TwoWay}"
-                                     IsEnabled="{Binding Settings.EnableScreenSaver}"
-                                     ToolTip="How long from one game starting to fade out until the next one starts to fade in. This overlaps the background fade out, so the screen is only fully black for the remainder"/>
-
-                    <local:SliderRow Label="Background fade in" Unit="ms" Minimum="0" Maximum="10000" Step="250"
-                                     Value="{Binding Settings.ScreensaverBackgroundFadeInMilliseconds, Mode=TwoWay}"
-                                     IsEnabled="{Binding Settings.EnableScreenSaver}"
-                                     ToolTip="How long each game's background image takes to fade in from black"/>
-
-                    <local:SliderRow Label="Pan across screen" Unit="ms" Minimum="1000" Maximum="60000" Step="500"
-                                     Value="{Binding Settings.ScreensaverPanMilliseconds, Mode=TwoWay}"
-                                     IsEnabled="{Binding Settings.EnableScreenSaver}"
-                                     ToolTip="How long the background image takes to drift across the screen. Longer is slower and gentler. Set this longer than the time on each game so the image never appears to stop"/>
-
-                    <local:SliderRow Label="Logo appears after" Unit="ms" Minimum="0" Maximum="30000" Step="250"
-                                     Value="{Binding Settings.ScreensaverLogoDelayMilliseconds, Mode=TwoWay}"
-                                     IsEnabled="{Binding Settings.EnableScreenSaver}"
-                                     ToolTip="How long after the background image appears before the game's logo fades in. Keep this shorter than the time on each game"/>
-
-                    <local:SliderRow Label="Logo fade in" Unit="ms" Minimum="0" Maximum="5000" Step="100"
-                                     Value="{Binding Settings.ScreensaverLogoFadeInMilliseconds, Mode=TwoWay}"
-                                     IsEnabled="{Binding Settings.EnableScreenSaver}"
-                                     ToolTip="How long the game's logo takes to fade in"/>
-
-                    <local:SliderRow Label="Time on each game" Unit="ms" Minimum="2000" Maximum="120000" Step="500"
-                                     Value="{Binding Settings.ScreensaverGameDurationMilliseconds, Mode=TwoWay}"
-                                     IsEnabled="{Binding Settings.EnableScreenSaver}"
-                                     ToolTip="How long each game is shown before it fades out and the next one is chosen"/>
-
-                    <ContentControl Style="{StaticResource SubSectionHeaderStyle}" Content="Fades"/>
-
-                    <local:SliderRow Label="Background fade out" Unit="ms" Minimum="0" Maximum="10000" Step="250"
-                                     Value="{Binding Settings.ScreensaverBackgroundFadeOutMilliseconds, Mode=TwoWay}"
-                                     IsEnabled="{Binding Settings.EnableScreenSaver}"
-                                     ToolTip="How long the background image takes to fade out before the next game"/>
-
-                    <local:SliderRow Label="Logo fade out" Unit="ms" Minimum="0" Maximum="5000" Step="100"
-                                     Value="{Binding Settings.ScreensaverLogoFadeOutMilliseconds, Mode=TwoWay}"
-                                     IsEnabled="{Binding Settings.EnableScreenSaver}"
-                                     ToolTip="How long the game's logo takes to fade out before the next game"/>
-
-                    <local:SliderRow Label="Screen saver fade in" Unit="ms" Minimum="0" Maximum="5000" Step="100"
-                                     Value="{Binding Settings.ScreensaverFadeInMilliseconds, Mode=TwoWay}"
-                                     IsEnabled="{Binding Settings.EnableScreenSaver}"
-                                     ToolTip="How long the screen saver takes to fade in when it first starts"/>
-
-                    <local:SliderRow Label="Exit fade out" Unit="ms" Minimum="0" Maximum="3000" Step="100"
-                                     Value="{Binding Settings.ScreensaverExitFadeMilliseconds, Mode=TwoWay}"
-                                     IsEnabled="{Binding Settings.EnableScreenSaver}"
-                                     ToolTip="How quickly the screen saver disappears when you press a key"/>
-                </StackPanel>
-            </ScrollViewer>
-        </Grid>
+        <ContentControl Grid.Row="1" Grid.Column="3" Content="{Binding}"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <ContentControl.Style>
+                <Style TargetType="ContentControl">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding SelectedTabPage}" Value="Lists">
+                            <Setter Property="ContentTemplate" Value="{StaticResource ListSettingsTab}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding SelectedTabPage}" Value="Inputs">
+                            <Setter Property="ContentTemplate" Value="{StaticResource InputSettingsTab}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding SelectedTabPage}" Value="Versions">
+                            <Setter Property="ContentTemplate" Value="{StaticResource VersionSettingsTab}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding SelectedTabPage}" Value="Other">
+                            <Setter Property="ContentTemplate" Value="{StaticResource OtherSettingsTab}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding SelectedTabPage}" Value="Custom lists">
+                            <Setter Property="ContentTemplate" Value="{StaticResource CustomListsTab}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding SelectedTabPage}" Value="Margin">
+                            <Setter Property="ContentTemplate" Value="{StaticResource BoxMarginTab}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding SelectedTabPage}" Value="Screen saver">
+                            <Setter Property="ContentTemplate" Value="{StaticResource ScreenSaverTab}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ContentControl.Style>
+        </ContentControl>
 
         <StackPanel Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Orientation="Horizontal" VerticalAlignment="Stretch" HorizontalAlignment="Right">
             <Button Content="Save" Width="80" Height="30" Command="{Binding SaveCommand}"
