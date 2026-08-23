@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Eclipse.Helpers;
 using Eclipse.Service;
 using Eclipse.Models;
 
@@ -8,7 +9,18 @@ namespace Eclipse.State
 {
     public class VoiceRecognitionState : EclipseState
     {
-        private SpeechRecognizer speechRecognizer;
+        // Offered wherever pressing something again is worth doing. Deliberately absent from the
+        // messages where it is not - a recogniser that could not be created will not be created
+        // by pressing a button.
+        private const string TryAgainHint = "Press any button to try again";
+
+        private ISpeechSessionSource sessionSource;
+
+        // The attempt currently listening, or null. This state object is cached and reused, so
+        // the field outlives a search - it is cleared on every way out so that a later Escape
+        // cannot cancel a session that has already finished.
+        private ISpeechSession speechSession;
+
         private EclipseStateContext EclipseStateContext;
         private readonly AttractModeService attractModeService;
 
@@ -30,35 +42,29 @@ namespace Eclipse.State
                 return;
             }
 
-            speechRecognizer = SpeechRecognizerService.Instance.GetRecognizer();
+            sessionSource = SpeechRecognizerService.Instance.GetSessionSource();
 
             DoRecognize();
         }
 
         private void ShowUnavailable(VoiceSearchAvailability availability)
         {
-            string message;
             switch (availability)
             {
                 case VoiceSearchAvailability.Preparing:
-                    message = "Voice search is still getting ready - please try again in a moment";
+                    Fail("Voice search is still getting ready", "Try again in a moment");
                     break;
 
                 case VoiceSearchAvailability.Failed:
-                    message = SpeechRecognizerService.Instance.FailureMessage ?? "Voice search is not available";
+                    // No hint: this one is not going to come right on a retry, and the service
+                    // only attempts it once. The reason is in the log.
+                    Fail(SpeechRecognizerService.Instance.FailureMessage ?? "Voice search is not available");
                     break;
 
                 default:
-                    message = "Voice search is turned off in the Eclipse settings";
+                    Fail("Voice search is turned off in the Eclipse settings");
                     break;
             }
-
-            EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
-
-            DisplayingErrorState displayingErrorState = EclipseStateContext.GetState(typeof(DisplayingErrorState)) as DisplayingErrorState;
-            displayingErrorState.ErrorMessage = message;
-
-            EclipseStateContext.TransitionToState(displayingErrorState);
         }
 
         public bool OnDown(EclipseStateContext eclipseStateContext, bool held)
@@ -73,9 +79,14 @@ namespace Eclipse.State
 
         public bool OnEscape(EclipseStateContext eclipseStateContext)
         {
-            speechRecognizer?.TryCancelRecognition();
-            EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
-            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
+            // Cancelling gives up on the result as well as stopping the microphone, so the
+            // transition below is the only one that happens. It used to be followed by a second
+            // one from the completion the cancel raised, which - if the user had already moved
+            // on - dragged them back out of wherever they had got to.
+            speechSession?.Cancel();
+            speechSession = null;
+
+            ReturnToBrowsing();
             return true;
         }
 
@@ -107,10 +118,9 @@ namespace Eclipse.State
         public void DoRecognize()
         {
             // bail out if the recognizer didn't get setup properly
-            if (speechRecognizer == null)
+            if (sessionSource == null)
             {
-                EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
-                EclipseStateContext.TransitionToState(EclipseStateContext.GetState(typeof(SelectingGameState)));
+                ReturnToBrowsing();
                 return;
             }
 
@@ -121,32 +131,40 @@ namespace Eclipse.State
                 // stop any video or animations
                 EclipseStateContext.MainWindowViewModel.CallStopVideoAndAnimationsFunction();
 
-                EclipseStateContext.MainWindowViewModel.IsRecognizing = true;
+                EclipseStateContext.MainWindowViewModel.EnterVoiceSearch();
 
-                speechRecognizer.DoSpeechRecognition(RecognizeCompleted);
+                speechSession = sessionSource.StartSession(
+                    EclipseStateContext.MainWindowViewModel.UiDispatcher,
+                    RecognizeCompleted,
+                    PhraseHeard);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
-
-                DisplayingErrorState displayingErrorState = EclipseStateContext.GetState(typeof(DisplayingErrorState)) as DisplayingErrorState;
-                displayingErrorState.ErrorMessage = ex.Message;
-
-                EclipseStateContext.TransitionToState(displayingErrorState);
+                LogHelper.LogException(ex, "start voice recognition");
+                Fail("Voice search could not start, please try again", TryAgainHint);
             }
+        }
+
+        // The recogniser's running guess, echoed on screen so the user can see what is being
+        // heard while they are still speaking - and so a search that finds nothing is not the
+        // first they know about a misheard phrase.
+        private void PhraseHeard(string phrase)
+        {
+            EclipseStateContext.MainWindowViewModel.HeardPhrase = phrase;
         }
 
         public void RecognizeCompleted(SpeechRecognizerResult speechRecognizerResult)
         {
+            // The session is finished with. Raised on the UI thread by the session itself, so
+            // everything below is ordinary single-threaded work like any other state transition.
+            speechSession = null;
+
             attractModeService.RestartAttractMode();
 
             if (!string.IsNullOrWhiteSpace(speechRecognizerResult.ErrorMessage))
             {
-                EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
-
-                DisplayingErrorState displayingErrorState = EclipseStateContext.GetState(typeof(DisplayingErrorState)) as DisplayingErrorState;
-                displayingErrorState.ErrorMessage = speechRecognizerResult.ErrorMessage;
-                EclipseStateContext.TransitionToState(displayingErrorState);
+                // already worded for the screen - the recogniser's own message went to the log
+                Fail(speechRecognizerResult.ErrorMessage, TryAgainHint);
                 return;
             }
 
@@ -154,59 +172,22 @@ namespace Eclipse.State
             // browsing and leave the current lists exactly as they were
             if (speechRecognizerResult.Cancelled)
             {
-                EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
-                EclipseStateContext.TransitionToState(EclipseStateContext.GetState(typeof(SelectingGameState)));
+                ReturnToBrowsing();
                 return;
             }
 
             try
             {
-                List<GameList> voiceRecognitionResults = new List<GameList>();
-
-                // speech hypothesized adds phrases that it heard to the TempGameLists collection
-                // for each phrase, get the set of matching games from the GameTitlePhrases dictionary
-                if (speechRecognizerResult?.RecognizedPhrases?.Count() > 0)
-                {
-                    // in case the same phrase was recognized multiple times, group by phrase and keep only the max confidence.
-                    // The phrase is the list's value as well as what it displays - these lists are named after what was
-                    // said rather than after a category - so it is set on both, and the phrase is read back from the value.
-                    List<GameList> distinctGameLists = speechRecognizerResult?.RecognizedPhrases
-                        .GroupBy(s => s.Phrase)
-                        .Select(s => new GameList { ListTypeValue = s.Key, ListDescription = s.Key, Confidence = s.Max(m => m.Confidence) }).ToList();
-
-                    // loop through the gamelists (one list for each hypothesized phrase)
-                    foreach (GameList gameList in distinctGameLists)
-                    {
-                        // get the games this phrase matches - already one entry per game,
-                        // carrying that game's best match type for the phrase
-                        IReadOnlyList<VoiceMatch> voiceMatches = VoiceSearchIndex.Instance.Lookup(gameList.ListTypeValue);
-
-                        if (voiceMatches.Count > 0)
-                        {
-                            List<GameMatch> matches = new List<GameMatch>(voiceMatches.Count);
-
-                            foreach (VoiceMatch voiceMatch in voiceMatches)
-                            {
-                                GameMatch match = GameMatch.CloneForVoiceResult(voiceMatch.Game, voiceMatch.MatchType, voiceMatch.ConvertedTitle);
-                                match.SetupVoiceMatchPercentage(gameList.Confidence, gameList.ListTypeValue);
-                                matches.Add(match);
-                            }
-
-                            gameList.MatchingGames = matches.OrderByDescending(match => match.MatchPercentage).ToList();
-                            voiceRecognitionResults.Add(gameList);
-                        }
-                    }
-                }
+                // matching, scoring and ranking are all in the builder - see the rules it names
+                List<GameList> voiceRecognitionResults =
+                    VoiceSearchResultBuilder.Build(speechRecognizerResult?.RecognizedPhrases,
+                                                   VoiceSearchIndex.Instance);
 
                 // nothing matched - say so and leave the current lists alone, rather than
                 // installing an empty result set that leaves nothing to navigate
                 if (voiceRecognitionResults.Count == 0)
                 {
-                    EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
-
-                    DisplayingErrorState noResultsState = EclipseStateContext.GetState(typeof(DisplayingErrorState)) as DisplayingErrorState;
-                    noResultsState.ErrorMessage = "No games matched what you said, please try again";
-                    EclipseStateContext.TransitionToState(noResultsState);
+                    Fail(NoMatchMessage(speechRecognizerResult), TryAgainHint);
                     return;
                 }
 
@@ -215,24 +196,55 @@ namespace Eclipse.State
                 {
                     ListCategoryType = ListCategoryType.VoiceSearch,
                     GameLists = voiceRecognitionResults
-                                    .OrderByDescending(list => list.MaxMatchPercentage)
-                                    .ThenByDescending(list => list.MaxTitleLength)
-                                    .ToList()
                 });
 
                 // display voice search results
                 EclipseStateContext.MainWindowViewModel.Navigator.ShowCategory(ListCategoryType.VoiceSearch);
-                EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
-                EclipseStateContext.TransitionToState(EclipseStateContext.GetState(typeof(SelectingGameState)));
+                ReturnToBrowsing();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                EclipseStateContext.MainWindowViewModel.IsRecognizing = false;
-                DisplayingErrorState displayingErrorState = EclipseStateContext.GetState(typeof(DisplayingErrorState)) as DisplayingErrorState;
-                displayingErrorState.ErrorMessage = ex.Message;
-                EclipseStateContext.TransitionToState(displayingErrorState);
-                return;
+                LogHelper.LogException(ex, "build voice search results");
+                Fail("Something went wrong with voice search, please try again", TryAgainHint);
             }
+        }
+
+        // Tell the user what was heard. "No games matched what you said" gave them nothing to
+        // correct against - if it heard "super mary" they had no way of finding that out.
+        private static string NoMatchMessage(SpeechRecognizerResult speechRecognizerResult)
+        {
+            string heard = speechRecognizerResult?.RecognizedPhrases?
+                .OrderByDescending(recognizedPhrase => recognizedPhrase.Confidence)
+                .ThenByDescending(recognizedPhrase => recognizedPhrase.Phrase?.Length ?? 0)
+                .FirstOrDefault()?.Phrase;
+
+            if (string.IsNullOrWhiteSpace(heard))
+            {
+                return "No games matched what you said";
+            }
+
+            return $"Heard “{heard}” - no games matched";
+        }
+
+        // Every way out of voice search goes through one of these two, so the screen cannot be
+        // left half in it. The listening flag used to be reset by hand on each of the nine exit
+        // paths, and none of them put back the overlay the search had covered up.
+
+        private void ReturnToBrowsing()
+        {
+            EclipseStateContext.MainWindowViewModel.LeaveVoiceSearch();
+            EclipseStateContext.TransitionToState(EclipseStateContext.GetState(typeof(SelectingGameState)));
+        }
+
+        private void Fail(string message, string hint = null)
+        {
+            EclipseStateContext.MainWindowViewModel.LeaveVoiceSearch();
+
+            DisplayingErrorState displayingErrorState = EclipseStateContext.GetState(typeof(DisplayingErrorState)) as DisplayingErrorState;
+            displayingErrorState.ErrorMessage = message;
+            displayingErrorState.ErrorHint = hint;
+
+            EclipseStateContext.TransitionToState(displayingErrorState);
         }
     }
 }

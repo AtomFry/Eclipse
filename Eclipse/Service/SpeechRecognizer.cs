@@ -4,7 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Speech.Recognition;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace Eclipse.Service
 {
@@ -55,18 +57,22 @@ namespace Eclipse.Service
                 // One attempt only. A recogniser that fails to initialise almost never
                 // succeeds on a retry, so record why and let the user be told, rather than
                 // retrying forever or failing silently.
-                failureMessage = $"Voice search could not start: {ex.Message}";
+                //
+                // The reason the user sees is deliberately not the exception's message - that
+                // is a SAPI string aimed at a developer, and this is read off a television. The
+                // detail is in the log above.
+                failureMessage = "Voice search could not start on this PC";
                 availability = VoiceSearchAvailability.Failed;
             }
         }
 
-        // The recogniser, or null when voice search is not ready.
-        public SpeechRecognizer GetRecognizer()
+        // Where voice searches come from, or null when voice search is not ready.
+        public ISpeechSessionSource GetSessionSource()
         {
             return availability == VoiceSearchAvailability.Ready ? speechRecognizer : null;
         }
 
-        #region singleton implementation 
+        #region singleton implementation
         public static SpeechRecognizerService Instance => instance;
 
         private static readonly SpeechRecognizerService instance = new SpeechRecognizerService();
@@ -92,20 +98,35 @@ namespace Eclipse.Service
         public List<RecognizedPhrase> RecognizedPhrases { get; set; } = new List<RecognizedPhrase>();
         public string ErrorMessage { get; set; }
 
-        // The recognition was cancelled rather than finishing - the user backed out, or a
-        // cancel raised a completion event. There is nothing to search for, and the caller
-        // must not treat it as a search that returned no games.
+        // The engine reported the recognition as cancelled rather than finished. A session the
+        // caller cancelled never calls back at all, so this only reaches anyone when the engine
+        // cancelled for a reason we did not ask for. There is nothing to search for, and the
+        // caller must not treat it as a search that returned no games.
         public bool Cancelled { get; set; }
     }
 
-    public delegate void RecognitionCompletedDelegate(SpeechRecognizerResult speechRecognizerResult);
-
-    public class SpeechRecognizer
+    /// <summary>
+    /// The speech engine and its grammar, and the source of the one-shot sessions that use them.
+    ///
+    /// The engine is expensive to build - the grammar holds every phrase in the library - so it
+    /// is created once and shared for the life of the process. What is <i>not</i> shared is the
+    /// attempt. Every engine event is attributed to the session that is listening at the time,
+    /// and a session that has been cancelled or superseded is dropped rather than delivered.
+    ///
+    /// Before this, the recogniser held one mutable callback and one mutable result, replaced on
+    /// each search and cleared on neither. Nothing distinguished the completion for the search
+    /// the user was waiting on from the completion for one they had escaped out of two seconds
+    /// earlier, and a late hypothesis landed in the next search's results.
+    /// </summary>
+    public class SpeechRecognizer : ISpeechSessionSource
     {
-        public RecognitionCompletedDelegate RecognitionCompletedDelegate { get; set; }
-        private SpeechRecognizerResult SpeechRecognizerResult;
+        private readonly SpeechRecognitionEngine recognizer;
 
-        private SpeechRecognitionEngine Recognizer { get; set; }
+        // The attempt currently listening, or null. The engine raises its events on a thread
+        // pool thread while the UI thread starts and cancels sessions, so this is genuinely
+        // cross-thread state and every access takes the lock.
+        private readonly object sessionLock = new object();
+        private Session activeSession;
 
         public SpeechRecognizer(List<string> grammarPhrases)
         {
@@ -122,85 +143,268 @@ namespace Eclipse.Service
             };
 
             // setup the recognizer
-            Recognizer = new SpeechRecognitionEngine();
-            Recognizer.InitialSilenceTimeout = TimeSpan.FromSeconds(5.0);
-            Recognizer.RecognizeCompleted += new EventHandler<RecognizeCompletedEventArgs>(RecognizeCompleted);
-            Recognizer.LoadGrammarAsync(grammar);
-            Recognizer.SpeechHypothesized += new EventHandler<SpeechHypothesizedEventArgs>(SpeechHypothesized);
-            Recognizer.SetInputToDefaultAudioDevice();
-            Recognizer.RecognizeAsyncCancel();
+            recognizer = new SpeechRecognitionEngine();
+            recognizer.InitialSilenceTimeout = TimeSpan.FromSeconds(5.0);
+            recognizer.RecognizeCompleted += new EventHandler<RecognizeCompletedEventArgs>(RecognizeCompleted);
+            recognizer.SpeechHypothesized += new EventHandler<SpeechHypothesizedEventArgs>(SpeechHypothesized);
+
+            // Load the grammar synchronously. This constructor already runs on a background
+            // thread, so there is nothing here to keep responsive - and the async load returned
+            // before the grammar was in place, which let the service publish itself as Ready
+            // while the recogniser still had nothing to listen for. A search started in that
+            // window heard nothing and the user was told no games matched.
+            recognizer.LoadGrammar(grammar);
+
+            recognizer.SetInputToDefaultAudioDevice();
         }
 
-        public void DoSpeechRecognition(RecognitionCompletedDelegate recognitionCompletedDelegate)
+        public ISpeechSession StartSession(Dispatcher dispatcher,
+                                           RecognitionCompletedDelegate onCompleted,
+                                           PhraseHeardDelegate onPhraseHeard)
         {
-            RecognitionCompletedDelegate = recognitionCompletedDelegate;
+            if (dispatcher == null)
+            {
+                throw new ArgumentNullException(nameof(dispatcher));
+            }
 
-            // reset the result
-            SpeechRecognizerResult = new SpeechRecognizerResult();
+            if (onCompleted == null)
+            {
+                throw new ArgumentNullException(nameof(onCompleted));
+            }
 
-            // kick off voice recognition 
-            Recognizer.RecognizeAsync(RecognizeMode.Single);
+            Session session = new Session(this, dispatcher, onCompleted, onPhraseHeard);
+
+            lock (sessionLock)
+            {
+                // An attempt still in flight cannot be the one the user is waiting for. Drop it
+                // rather than leaving it to call back later. Nothing reaches this today - the
+                // state machine will not start a second search while one is running - but the
+                // guarantee this type makes should not depend on that staying true.
+                activeSession?.Abandon();
+                activeSession = session;
+            }
+
+            try
+            {
+                recognizer.RecognizeAsync(RecognizeMode.Single);
+            }
+            catch
+            {
+                // The caller reports the failure; this only has to leave nothing listening.
+                AbandonSession(session);
+                throw;
+            }
+
+            return session;
         }
 
-        public void TryCancelRecognition()
+        // Stop listening. Failing to stop is not something the caller can act on - it is already
+        // on its way out of voice search - but the exception has to stop here.
+        private void TryCancel()
         {
             try
             {
-                Recognizer.RecognizeAsyncCancel();
+                recognizer.RecognizeAsyncCancel();
             }
-            finally
+            catch (Exception ex)
             {
-                // intentionally left blank
+                // Cancelling a recogniser that is not listening, or one whose audio device has
+                // gone away, throws. The guard here used to be a finally with an empty body,
+                // which swallows nothing, so this escaped through OnEscape into Big Box's key
+                // handler.
+                LogHelper.LogException(ex, "TryCancelRecognition");
             }
         }
 
-        void SpeechHypothesized(object sender, SpeechHypothesizedEventArgs e)
+        private void AbandonSession(Session session)
         {
-            // ignore noise words 
+            lock (sessionLock)
+            {
+                if (activeSession == session)
+                {
+                    activeSession = null;
+                }
+            }
+
+            session.Abandon();
+        }
+
+        private Session CurrentSession()
+        {
+            lock (sessionLock)
+            {
+                return activeSession;
+            }
+        }
+
+        // The listening session, handed over so nothing else can complete it. A second
+        // completion for the same attempt - the cancel below raises one - finds nothing here.
+        private Session TakeCurrentSession()
+        {
+            lock (sessionLock)
+            {
+                Session session = activeSession;
+                activeSession = null;
+                return session;
+            }
+        }
+
+        private void SpeechHypothesized(object sender, SpeechHypothesizedEventArgs e)
+        {
+            // ignore noise words
             if (GameTitleGrammar.IsNoiseWord(e.Result.Text))
             {
                 return;
             }
 
-            // add the phrase to the 
-            SpeechRecognizerResult.RecognizedPhrases.Add(new RecognizedPhrase()
-            {
-                Confidence = e.Result.Confidence,
-                Phrase = e.Result.Text
-            });
+            // A hypothesis raised after the attempt it belongs to has finished has nowhere to go.
+            // It used to land in whichever result object was current, which meant the next
+            // search's.
+            CurrentSession()?.AddPhrase(e.Result.Text, e.Result.Confidence);
         }
 
-        void RecognizeCompleted(object sender, RecognizeCompletedEventArgs e)
+        private void RecognizeCompleted(object sender, RecognizeCompletedEventArgs e)
         {
-            // cancelling raises this event too, including the cancel the timeout below issues
-            if (e?.Cancelled == true)
+            Session session = TakeCurrentSession();
+
+            // Cancelling raises this event too, and so does the cancel issued below - and an
+            // attempt the caller has given up on has nobody waiting for it.
+            session?.Complete(e);
+        }
+
+        /// <summary>
+        /// One recognition attempt: the result being accumulated, and the promise of exactly one
+        /// callback on the caller's thread.
+        /// </summary>
+        private sealed class Session : ISpeechSession
+        {
+            private readonly SpeechRecognizer owner;
+            private readonly Dispatcher dispatcher;
+            private readonly SpeechRecognizerResult result = new SpeechRecognizerResult();
+            private readonly RecognitionCompletedDelegate onCompleted;
+            private readonly PhraseHeardDelegate onPhraseHeard;
+
+            // 0 while the callback is still owed, 1 once it has been handed over or given up on.
+            private int settled;
+
+            // Set when the caller gives up. Checked again at delivery, not only when the engine
+            // raises the event: a cancel can land in between, because the engine raises on a
+            // thread pool thread and delivery is a post back to the UI one.
+            private volatile bool abandoned;
+
+            internal Session(SpeechRecognizer owner,
+                             Dispatcher dispatcher,
+                             RecognitionCompletedDelegate onCompleted,
+                             PhraseHeardDelegate onPhraseHeard)
             {
-                SpeechRecognizerResult.Cancelled = true;
+                this.owner = owner;
+                this.dispatcher = dispatcher;
+                this.onCompleted = onCompleted;
+                this.onPhraseHeard = onPhraseHeard;
             }
 
-            // save any error
-            if (e?.Error != null)
+            public void Cancel()
             {
-                if (Recognizer != null)
+                owner.AbandonSession(this);
+                owner.TryCancel();
+            }
+
+            internal void AddPhrase(string phrase, float confidence)
+            {
+                if (abandoned)
                 {
-                    Recognizer.RecognizeAsyncCancel();
+                    return;
                 }
-                SpeechRecognizerResult.ErrorMessage = e.Error.Message;
-            }
 
-            // indicate time out error 
-            if (e?.InitialSilenceTimeout == true || e?.BabbleTimeout == true)
-            {
-                if (Recognizer != null)
+                lock (result)
                 {
-                    Recognizer.RecognizeAsyncCancel();
+                    result.RecognizedPhrases.Add(new RecognizedPhrase
+                    {
+                        Confidence = confidence,
+                        Phrase = phrase
+                    });
                 }
 
-                SpeechRecognizerResult.ErrorMessage = "Voice recognition could not hear anything, please try again";
+                PhraseHeardDelegate heard = onPhraseHeard;
+                if (heard != null)
+                {
+                    OnDispatcher(() =>
+                    {
+                        if (!abandoned)
+                        {
+                            heard(phrase);
+                        }
+                    });
+                }
             }
 
-            // trigger delegate to pass results to the caller
-            RecognitionCompletedDelegate(SpeechRecognizerResult);
+            // Give up on this attempt without calling back.
+            internal void Abandon()
+            {
+                abandoned = true;
+                Interlocked.Exchange(ref settled, 1);
+            }
+
+            internal void Complete(RecognizeCompletedEventArgs e)
+            {
+                if (Interlocked.Exchange(ref settled, 1) != 0)
+                {
+                    return;
+                }
+
+                if (abandoned)
+                {
+                    return;
+                }
+
+                // cancelling raises this event too, including the cancel below
+                if (e?.Cancelled == true)
+                {
+                    result.Cancelled = true;
+                }
+
+                // save any error
+                if (e?.Error != null)
+                {
+                    owner.TryCancel();
+
+                    // The SAPI message is for the log, not for someone reading a television.
+                    LogHelper.LogException(e.Error, "recognize speech");
+                    result.ErrorMessage = "Something went wrong with voice search, please try again";
+                }
+
+                // indicate time out error
+                if (e?.InitialSilenceTimeout == true || e?.BabbleTimeout == true)
+                {
+                    owner.TryCancel();
+
+                    result.ErrorMessage = "Voice recognition could not hear anything, please try again";
+                }
+
+                // Everything past here - matching, scoring, ranking, presentation - is ordinary
+                // single-threaded UI work, and the engine raised this on a thread pool thread.
+                // The boundary between the two is crossed exactly here, once, rather than being
+                // left to each leaf downstream to marshal for itself.
+                OnDispatcher(() =>
+                {
+                    if (!abandoned)
+                    {
+                        onCompleted(result);
+                    }
+                });
+            }
+
+            private void OnDispatcher(Action action)
+            {
+                if (dispatcher.CheckAccess())
+                {
+                    action();
+                }
+                else
+                {
+                    dispatcher.InvokeAsync(action);
+                }
+            }
         }
     }
 }

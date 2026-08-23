@@ -253,17 +253,39 @@
                 </Rectangle.OpacityMask>
             </Rectangle>            
             
-            <TextBlock Text="{Binding ErrorMessage}"
-                       IsHitTestVisible="False"
-                    Grid.Row="2"
-                    Grid.RowSpan="1"                       
-                   Foreground="GhostWhite"
-                   FontFamily="Calibri"
-                   FontSize="48"
-                   Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
-                   TextAlignment="Center"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"/>
+            <StackPanel Grid.Row="2"
+                        Grid.RowSpan="1"
+                        IsHitTestVisible="False"
+                        Orientation="Vertical"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+
+                <TextBlock Text="{Binding ErrorMessage}"
+                           IsHitTestVisible="False"
+                       Foreground="GhostWhite"
+                       FontFamily="Calibri"
+                       FontSize="48"
+                       TextWrapping="Wrap"
+                       Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
+                       TextAlignment="Center"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+
+                <!-- What to do about it, where there is something to do. Collapsed otherwise, so
+                     a message with no way forward does not pretend to offer one. -->
+                <TextBlock Text="{Binding ErrorHint}"
+                           Visibility="{Binding ErrorHint, Converter={StaticResource StringLengthVisibilityConverter}}"
+                           IsHitTestVisible="False"
+                       Margin="0,16,0,0"
+                       Foreground="DarkGray"
+                       FontFamily="Calibri"
+                       FontSize="28"
+                       TextWrapping="Wrap"
+                       Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
+                       TextAlignment="Center"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+            </StackPanel>
         </Grid>
         <!-- END DISPLAY ERROR -->
 
@@ -1100,20 +1122,44 @@
         <!-- END DISPLAYING RESULTS -->
 
         <!-- RECOGNIZING -->
+        <!-- Explicit z-index: the error overlay is 1000 and attract mode is 900, and this used to
+             sit above them both only because it happens to be last in the canvas. -->
         <Grid   Background="Transparent"
                 IsHitTestVisible="False"
                 VerticalAlignment="Stretch"
                 HorizontalAlignment="Stretch"
+                Panel.ZIndex="950"
                 Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
-                Height="{Binding ActualHeight, ElementName=MainWindowUserControl}"
-                Visibility="{Binding IsRecognizing, Converter={StaticResource BoolToVis}}">
+                Height="{Binding ActualHeight, ElementName=MainWindowUserControl}">
+            <Grid.Style>
+                <!-- A trigger on the phase rather than a converter over a bool: the same shape
+                     the game detail options use, and it extends to a new phase without one. -->
+                <Style TargetType="Grid">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding VoiceSearchPhase}" Value="Listening">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>                
+                <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
+
+            <!-- Hold the browse row back while listening. It used to stay at full brightness
+                 behind the indicator, so the screen did not read as having changed state. -->
+            <Rectangle  Grid.Row="0"
+                        Grid.RowSpan="5"
+                        IsHitTestVisible="False"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Fill="Black"
+                        Opacity="0.7"/>
 
             <Image Name="Image_Listening"
                    IsHitTestVisible="False"
@@ -1132,6 +1178,25 @@
                     </RadialGradientBrush>
                 </Image.OpacityMask>
             </Image>
+
+            <!-- What the recogniser thinks it is hearing, so a misheard phrase is visible while
+                 the user is still speaking rather than only after a search finds nothing.
+                 Collapsed until something has been heard. -->
+            <TextBlock  Name="TextBlock_HeardPhrase"
+                        Text="{Binding HeardPhrase}"
+                        Visibility="{Binding HeardPhrase, Converter={StaticResource StringLengthVisibilityConverter}}"
+                        IsHitTestVisible="False"
+                        Grid.Row="3"
+                        Grid.RowSpan="1"
+                        Margin="0,20,0,0"
+                        Foreground="GhostWhite"
+                        FontFamily="Calibri"
+                        FontSize="44"
+                        TextTrimming="CharacterEllipsis"
+                        Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
+                        TextAlignment="Center"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Top"/>
         </Grid>
         <!-- END RECOGNIZING -->
 

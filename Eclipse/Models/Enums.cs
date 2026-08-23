@@ -26,6 +26,24 @@ namespace Eclipse.Models
         Failed
     }
 
+    // How far a voice search has got, and therefore what is on screen.
+    //
+    // This replaces a bool that every way out of VoiceRecognitionState had to reset by hand -
+    // nine assignments, one per exit path, with nothing to say that a tenth exit would need a
+    // tenth reset. Entering and leaving are one call each on the view model now.
+    //
+    // Two phases exist because two are visible. Recognition finishing and the results being
+    // assembled happen in one synchronous block, so a Matching phase would never be rendered;
+    // it belongs here only if that ever stops being true.
+    public enum VoiceSearchPhase
+    {
+        // No voice search is running.
+        Inactive,
+
+        // Listening for an utterance, with the indicator on screen.
+        Listening
+    }
+
     public enum BezelType
     {
         Game,

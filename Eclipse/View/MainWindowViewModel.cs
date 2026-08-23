@@ -11,6 +11,7 @@ using System.Threading;
 using Eclipse.State;
 using Eclipse.State.GameDetailOptions;
 using Eclipse.Service;
+using System.Windows.Threading;
 
 namespace Eclipse.View
 {
@@ -27,6 +28,17 @@ namespace Eclipse.View
         /// </summary>
         public GameListNavigator Navigator { get; } = new GameListNavigator();
 
+        /// <summary>
+        /// The UI thread, for the one place that has to come back to it from somewhere else.
+        ///
+        /// WPF constructs this view model from the &lt;local:MainWindowViewModel/&gt; element in
+        /// MainWindowView.xaml, so the constructor runs on the dispatcher thread and this is it.
+        /// Voice recognition is the only part of Eclipse that starts on the UI thread and
+        /// finishes on a thread pool one; it needs somewhere to marshal back to, and this is the
+        /// only object in that call path guaranteed to have been built here.
+        /// </summary>
+        public Dispatcher UiDispatcher { get; } = Dispatcher.CurrentDispatcher;
+
         /// <summary>The options in the game detail overlay. Driven by GameDetailOptionsState.</summary>
         public GameDetailOptionList GameDetailOptions { get; } = new GameDetailOptionList();
 
@@ -37,7 +49,8 @@ namespace Eclipse.View
         private bool isPickingCategory;
         private bool isDisplayingFeature;
         private bool isDisplayingAttractMode;
-        private bool isRecognizing;
+        private VoiceSearchPhase voiceSearchPhase;
+        private string heardPhrase;
         private bool isDisplayingResults;
         private bool isDisplayingMoreInfo;
         private bool isDisplayingError;
@@ -49,6 +62,7 @@ namespace Eclipse.View
         private double videoVolume;
 
         private string errorMessage;
+        private string errorHint;
 
         public EclipseStateContext EclipseStateContext { get; set; }
 
@@ -240,17 +254,64 @@ namespace Eclipse.View
             }
         }
 
-        public bool IsRecognizing
+        public VoiceSearchPhase VoiceSearchPhase
         {
-            get => isRecognizing;
-            set
+            get => voiceSearchPhase;
+            private set
             {
-                if (isRecognizing != value)
+                if (voiceSearchPhase != value)
                 {
-                    isRecognizing = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("IsRecognizing"));
+                    voiceSearchPhase = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("VoiceSearchPhase"));
                 }
             }
+        }
+
+        /// <summary>
+        /// The recogniser's best guess so far, echoed under the listening indicator. Null when
+        /// nothing has been heard yet. It changes as the user speaks and it may well be wrong -
+        /// that is the point of showing it, because it is what the search will be run against.
+        /// </summary>
+        public string HeardPhrase
+        {
+            get => heardPhrase;
+            set
+            {
+                if (heardPhrase != value)
+                {
+                    heardPhrase = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("HeardPhrase"));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Puts the screen into voice search.
+        ///
+        /// The screen the search was started from has to get out of the way, and nothing used to
+        /// do that: starting from the detail overlay left Play / Favourite / More like this
+        /// sitting behind the listening indicator for the whole session, and starting from the
+        /// category picker left the picker there until the search finished. Both were only
+        /// cleared afterwards, on the way back into browsing.
+        /// </summary>
+        public void EnterVoiceSearch()
+        {
+            IsDisplayingFeature = false;
+            IsDisplayingMoreInfo = false;
+            IsPickingCategory = false;
+
+            HeardPhrase = null;
+            VoiceSearchPhase = VoiceSearchPhase.Listening;
+        }
+
+        /// <summary>
+        /// Takes the screen back out of voice search. Every way out goes through here - finished,
+        /// cancelled, heard nothing, matched nothing, failed - so none of them can half-do it.
+        /// </summary>
+        public void LeaveVoiceSearch()
+        {
+            VoiceSearchPhase = VoiceSearchPhase.Inactive;
+            HeardPhrase = null;
         }
 
         public bool IsDisplayingResults
@@ -327,6 +388,23 @@ namespace Eclipse.View
                 {
                     errorMessage = value;
                     PropertyChanged(this, new PropertyChangedEventArgs("ErrorMessage"));
+                }
+            }
+        }
+
+        /// <summary>
+        /// What the user can do about the message above, shown underneath it. Null where there is
+        /// nothing to do - a message with no way forward should not pretend to offer one.
+        /// </summary>
+        public string ErrorHint
+        {
+            get => errorHint;
+            set
+            {
+                if (errorHint != value)
+                {
+                    errorHint = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("ErrorHint"));
                 }
             }
         }

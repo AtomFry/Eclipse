@@ -26,12 +26,23 @@ namespace Eclipse.Service
         public string ConvertedTitle { get; }
     }
 
+    // What turning recognised speech into results needs from the index, and nothing else.
+    //
+    // Deliberately narrow, for the same reason IGameCatalogSource is: it lets
+    // VoiceSearchResultBuilder be exercised against a handful of made-up phrases instead of a
+    // real library behind a real Big Box.
+    public interface IVoicePhraseIndex
+    {
+        // The games a recognised phrase matches, or an empty list. Never null.
+        IReadOnlyList<VoiceMatch> Lookup(string phrase);
+    }
+
     // Maps every recognisable phrase to the games it can match.
     //
     // This replaces the voice half of the old game bag, where each phrase-game pair was a
     // full GameMatch clone sitting in one flat collection that had to be scanned. A phrase
     // is now a dictionary key, and the per-phrase list is already deduplicated by game.
-    public sealed class VoiceSearchIndex
+    public sealed class VoiceSearchIndex : IVoicePhraseIndex
     {
         private static readonly IReadOnlyList<VoiceMatch> NoMatches = new VoiceMatch[0];
 
