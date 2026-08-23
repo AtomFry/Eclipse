@@ -182,13 +182,20 @@ games. **Resolve by:** product decision.
 **Why it matters:** `B-26` may make settings live, changing this incidentally.
 **Resolve by:** product decision; note as an intended change if pursued.
 
-### OQ-017 — Should deleting a custom list respect Cancel?
-**Feature:** FEAT-CONFIG-003 · **Evidence:** `RULE-CONFIG-009` vs `RULE-CONFIG-010`
-Reordering is only persisted on Save, but deletion writes immediately. **Interpretations:**
-(a) deletion is intentionally immediate and irreversible; (b) inconsistency.
-**Why it matters:** a user who deletes then cancels loses the list. **Resolve by:**
-product decision. Note commit `202c8bc` fixed a related bug where saving or deleting
-reloaded settings and discarded pending changes — this area has a history.
+### ~~OQ-017~~ — Should deleting a custom list respect Cancel? — **resolved: yes**
+**Feature:** FEAT-CONFIG-003 · **Evidence:** `RULE-CONFIG-009`, `RULE-CONFIG-010`
+It was (b), inconsistency — and worse than the question recorded. There were **three**
+disagreeing save moments, not two: reorder deferred to Save, delete wrote immediately, and the
+editor mutated the settings window's own object as the user typed, so a cancelled edit could
+still reach disk if the user reordered afterwards and saved.
+
+**Resolved by product decision (`settings-cleanup.md` D1, option A):** every change to custom
+lists is held in the settings window and written only when it is saved. The editor works on a
+copy and hands it back. Cancel means the same thing everywhere in the window.
+
+The note about commit `202c8bc` was the right instinct — this area had a history of things
+committing at moments nobody chose. There is now one write path for custom lists:
+`CustomListDefinitionDataService.SaveCustomListDefinitionsAsync`, writing the list whole.
 
 ### OQ-018 — Why does shipping a manifest suppress the Tools menu item?
 **Feature:** FEAT-INTEGRATE-002 · **Evidence:** `RULE-INTEGRATE-012`; established

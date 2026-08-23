@@ -13,7 +13,6 @@ namespace Eclipse.View.EclipseSettings
 {
     public class CustomListDefinitionEditViewModel : ViewModelBase
     {
-        private readonly CustomListDefinitionDataProvider eclipseSettingsDataProvider;
         private readonly CustomListDefinition customListDefinition;
 
         private FilterExpression selectedFilterExpression;
@@ -43,9 +42,9 @@ namespace Eclipse.View.EclipseSettings
 
         public CustomListDefinitionEditViewModel(CustomListDefinition customList)
         {
-            customListDefinition = customList;
-
-            eclipseSettingsDataProvider = new CustomListDefinitionDataProvider();
+            // A detached copy. The editor used to be handed the settings window's own instance and
+            // write through to it, so Cancel reverted nothing - see CustomListDefinition.Copy.
+            customListDefinition = customList.Copy();
 
             InitializeFilterExpressions();
             InitializeSortExpressions();
@@ -231,22 +230,10 @@ namespace Eclipse.View.EclipseSettings
                 return;
             }
 
-            try
-            {
-                await eclipseSettingsDataProvider.SaveCustomListDefinitionAsync(customListDefinition);
-            }
-            catch (Exception ex)
-            {
-                LogHelper.LogException(ex, "save a custom list definition");
-
-                // Leave the window open so the edits survive and the user can retry.
-                MessageDialogHelper.ShowOKDialog(
-                    $"This custom list could not be saved.\n\n{ex.Message}\n\nThe window has been left open so you can try again.",
-                    "Save failed");
-                return;
-            }
-
-            SettingsEvents.RaiseCustomListDefinitionSaved(customListDefinition.Id);
+            // Nothing is written to disk here any more. The edited copy goes back to the settings
+            // window, which holds it until the user saves - so this window's Save and the settings
+            // window's Cancel no longer disagree about what happened.
+            SettingsEvents.RaiseCustomListDefinitionSaved(customListDefinition);
             SettingsEvents.RaiseCustomListDefinitionEditClose();
         }
 

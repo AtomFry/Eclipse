@@ -544,7 +544,7 @@ namespace Eclipse.View
             // deserialised from disk inside every category's build - eight file reads per
             // rebuild, and a rebuild happens on every favourite, rating change and game launch.
             IReadOnlyList<CustomListDefinition> customListDefinitions =
-                new CustomListDefinitionDataProvider().GetAllCustomListDefinitions().ToList();
+                CustomListDefinitionDataService.Instance.GetAllCustomListDefinitions().ToList();
 
             // Setting the catalog up is what populates the playlist service, and until now the
             // playlist dictionary was read part-way through building the platform set - always

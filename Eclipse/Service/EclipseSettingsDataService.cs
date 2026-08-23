@@ -67,14 +67,6 @@ namespace Eclipse.Service
             return eclipseSettings;
         }
 
-        private async Task<EclipseSettings> ReadFromFileAsync()
-        {
-            return await Task.Run(() =>
-            {
-                return ReadFromFile();
-            });
-        }
-
         private EclipseSettings GetDefaultSettings()
         {
             // Used only when no settings file exists yet. Every property on EclipseSettings

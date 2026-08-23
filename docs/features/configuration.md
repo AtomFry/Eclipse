@@ -107,8 +107,8 @@ about a value.
 | RULE-CONFIG-006 | Each save first copies the previous file into a timestamped backup, and the ten most recent are kept. A file that will not parse is recovered from the newest backup that does, then from defaults. | Bounded, and the backups are now actually read. |
 | RULE-CONFIG-007 | Custom list definitions are identified by a GUID assigned on first save. | Reordering and editing rely on it. |
 | RULE-CONFIG-008 | The categories a custom list may appear in exclude *More like this*, *Random* and *Voice search*. | Those sets are generated, not browsed by category. |
-| RULE-CONFIG-009 | Reordering custom lists is only persisted when the settings window is saved, not when the move is made. | Cancelling discards reordering. |
-| RULE-CONFIG-010 | Deleting a custom list writes the file immediately, independent of Save/Cancel. | Asymmetric with `RULE-CONFIG-009` — see `OQ-017`. |
+| RULE-CONFIG-009 | Every change to custom lists - edit, add, delete, reorder - is held in the settings window and written only when it is saved. | One rule for the whole window: Cancel discards all four. |
+| RULE-CONFIG-010 | The custom-list editor works on a copy. Its Save hands the copy back to the settings window; its Cancel discards it. | The editor no longer writes to the object the settings window is showing. Closes `OQ-017`. |
 
 ---
 
@@ -118,7 +118,8 @@ about a value.
 |---|---|
 | Settings model & defaults | `Models/EclipseSettings.cs`; `Service/EclipseSettingsDataService.cs` — `GetDefaultSettings` |
 | Custom list model | `Models/EclipseSettings.cs` — `CustomListDefinition`, `FilterExpression`, `SortExpression`, `GameFieldEnum` |
-| Persistence | `Service/EclipseSettingsDataService.cs`, `Service/CustomListDefinitionDataService.cs`, both over `Helpers/JsonFileStore.cs` |
+| Persistence | `Service/EclipseSettingsDataService.cs`, `Service/CustomListDefinitionDataService.cs`, both over `Helpers/JsonFileStore.cs`. The custom-list file is written whole; there is no per-item write path. |
+| Settings for the running plugin | `Service/EclipseSettingsDataProvider.cs` — the cached, read-only instance the other 26 call sites share |
 | Default custom lists | `Service/CustomListDefinitionDataService.cs` — `GetDefaultCustomLists` |
 | File locations | `Helpers/DirectoryInfoHelper.cs` — `EclipseSettingsFile`, `CustomListsFile`, `SettingsBackupPath` |
 | Settings window | `View/EclipseSettings/EclipseSettingsView.xaml(.cs)`, `EclipseSettingsViewModel.cs` |

@@ -26,7 +26,7 @@ namespace Eclipse.View.EclipseSettings
         {
             InitializeComponent();
 
-            SettingsEvents.CustomListDefinitionEditClose += OnPatcherEditClose;
+            SettingsEvents.CustomListDefinitionEditClose += OnEditWindowCloseRequested;
 
             DataContext = customListDefinitionEditViewModel;
 
@@ -39,7 +39,7 @@ namespace Eclipse.View.EclipseSettings
         // left attached keeps this closed window alive and still receiving events.
         private void CustomListDefinitionEditView_Closed(object sender, EventArgs e)
         {
-            SettingsEvents.CustomListDefinitionEditClose -= OnPatcherEditClose;
+            SettingsEvents.CustomListDefinitionEditClose -= OnEditWindowCloseRequested;
 
             Closing -= CustomListDefinitionEditView_Closing;
             PreviewKeyDown -= CustomListDefinitionEditView_PreviewKeyDown;
@@ -59,7 +59,7 @@ namespace Eclipse.View.EclipseSettings
             SettingsEvents.RaiseCustomListDefinitionEditClosing();
         }
 
-        private void OnPatcherEditClose()
+        private void OnEditWindowCloseRequested()
         {
             SettingsEvents.RaiseCustomListDefinitionEditClosing();
             Close();

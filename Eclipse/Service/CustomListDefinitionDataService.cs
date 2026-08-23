@@ -13,49 +13,11 @@ namespace Eclipse.Service
     {
         private readonly string CustomListsFile = DirectoryInfoHelper.Instance.CustomListsFile;
 
-        public async Task<CustomListDefinition> GetCustomListDefinitionByIdAsync(string id)
-        {
-            List<CustomListDefinition> customListDefinitions = await ReadFromFileAsync();
-            return customListDefinitions.Single(f => f.Id == id);
-        }
-
-        public async Task SaveCustomListDefinitionAsync(CustomListDefinition customListDefinition)
-        {
-            if (string.IsNullOrWhiteSpace(customListDefinition.Id))
-            {
-                await InsertCustomListDefinitionAsync(customListDefinition);
-            }
-            else
-            {
-                await UpdateCustomListDefinitionAsync(customListDefinition);
-            }
-        }
-
-        public async Task DeleteCustomListDefinitionAsync(string id)
-        {
-            List<CustomListDefinition> customListDefinitions = await ReadFromFileAsync();
-            CustomListDefinition existing = customListDefinitions.Single(f => f.Id == id);
-            customListDefinitions.Remove(existing);
-            await SaveToFileAsync(customListDefinitions);
-        }
-
-        private async Task UpdateCustomListDefinitionAsync(CustomListDefinition customListDefinition)
-        {
-            List<CustomListDefinition> customListDefinitions = await ReadFromFileAsync();
-            CustomListDefinition existing = customListDefinitions.SingleOrDefault(f => f.Id == customListDefinition.Id);
-            int indexOfExisting = customListDefinitions.IndexOf(existing);
-            customListDefinitions.Insert(indexOfExisting, customListDefinition);
-            customListDefinitions.Remove(existing);
-            await SaveToFileAsync(customListDefinitions);
-        }
-
-        private async Task InsertCustomListDefinitionAsync(CustomListDefinition customListDefinition)
-        {
-            List<CustomListDefinition> customListDefinitions = await ReadFromFileAsync();
-            customListDefinition.Id = Guid.NewGuid().ToString();
-            customListDefinitions.Add(customListDefinition);
-            await SaveToFileAsync(customListDefinitions);
-        }
+        // Per-item add, update and delete used to live here, each reading the whole file,
+        // editing the list and writing it back - an unsynchronised read-modify-write, and the
+        // update pair threw on an id that was not in the file. The settings window now owns the
+        // list while it is open and writes it whole, so there is one write path and no read step
+        // to race.
 
         public IEnumerable<CustomListDefinition> GetAllCustomListDefinitions()
         {
@@ -111,14 +73,6 @@ namespace Eclipse.Service
             return customListDefinitions;
         }
 
-
-        private async Task<List<CustomListDefinition>> ReadFromFileAsync()
-        {
-            return await Task.Run(() =>
-            {
-                return ReadFromFile();
-            });
-        }
 
         private List<CustomListDefinition> GetDefaultCustomLists()
         {

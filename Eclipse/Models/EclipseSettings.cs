@@ -228,6 +228,51 @@ namespace Eclipse.Models
             FilterExpressions = new List<FilterExpression>();
             ListCategoryTypes = new List<ListCategoryType>();
         }
+
+        /// <summary>
+        /// A detached copy, for the editor to work on.
+        ///
+        /// The editor used to be handed the very instance the settings window was showing, and it
+        /// wrote through to it - scalars from its property setters, and the three collections
+        /// from CollectionChanged handlers, so every keystroke and every added filter landed on
+        /// the shared object immediately. Cancel reverted nothing, and a cancelled edit could
+        /// still reach disk if the user reordered afterwards and saved.
+        ///
+        /// The expressions are copied too, not just the lists holding them: the editor's rows are
+        /// bound to those objects and edit them in place.
+        /// </summary>
+        public CustomListDefinition Copy()
+        {
+            CustomListDefinition copy = new CustomListDefinition
+            {
+                Id = Id,
+                Description = Description,
+                MaxGamesInList = MaxGamesInList
+            };
+
+            foreach (FilterExpression filterExpression in FilterExpressions)
+            {
+                copy.FilterExpressions.Add(new FilterExpression
+                {
+                    GameFieldEnum = filterExpression.GameFieldEnum,
+                    FilterFieldOperator = filterExpression.FilterFieldOperator,
+                    FilterFieldValue = filterExpression.FilterFieldValue
+                });
+            }
+
+            foreach (SortExpression sortExpression in SortExpressions)
+            {
+                copy.SortExpressions.Add(new SortExpression
+                {
+                    GameFieldEnum = sortExpression.GameFieldEnum,
+                    SortDirection = sortExpression.SortDirection
+                });
+            }
+
+            copy.ListCategoryTypes.AddRange(ListCategoryTypes);
+
+            return copy;
+        }
     }
 
     public class FilterExpression

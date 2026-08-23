@@ -381,7 +381,6 @@
         </Style>
 
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
-        <converters:MillisecondsToSecondsConverter x:Key="MsToSeconds"/>
         <ObjectDataProvider x:Key="PageFunctionEnum" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
             <ObjectDataProvider.MethodParameters>
                 <x:Type TypeName="models:PageFunction"/>

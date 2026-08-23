@@ -1,3 +1,4 @@
+using Eclipse.Models;
 using System;
 
 namespace Eclipse.Event
@@ -20,8 +21,13 @@ namespace Eclipse.Event
         /// <summary>The settings window should close.</summary>
         public static event Action EclipseSettingsClose;
 
-        /// <summary>A custom list was saved, carrying its id.</summary>
-        public static event Action<string> CustomListDefinitionSaved;
+        /// <summary>
+        /// The editor accepted an edit, carrying the edited copy for the settings window to take
+        /// into its list. It used to carry only an id, because the editor had already written to
+        /// disk and the settings window reloaded from there; nothing reaches disk until the
+        /// settings window is saved now, so the object itself is the message.
+        /// </summary>
+        public static event Action<CustomListDefinition> CustomListDefinitionSaved;
 
         /// <summary>The custom list editor is closing, by whatever route.</summary>
         public static event Action CustomListDefinitionEditClosing;
@@ -34,9 +40,9 @@ namespace Eclipse.Event
             EclipseSettingsClose?.Invoke();
         }
 
-        public static void RaiseCustomListDefinitionSaved(string id)
+        public static void RaiseCustomListDefinitionSaved(CustomListDefinition customListDefinition)
         {
-            CustomListDefinitionSaved?.Invoke(id);
+            CustomListDefinitionSaved?.Invoke(customListDefinition);
         }
 
         public static void RaiseCustomListDefinitionEditClosing()

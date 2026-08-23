@@ -16,8 +16,12 @@ namespace Eclipse.View.EclipseSettings
 {
     public class EclipseSettingsViewModel : ViewModelBase
     {
-        private CustomListDefinitionDataProvider customListDefinitionDataProvider;
         public ObservableCollection<CustomListDefinition> CustomListDefinitions { get; }
+
+        // Whether the list above differs from what is on disk - set by an edit, an add, a delete
+        // or a reorder, and cleared when the window saves. All four used to commit at different
+        // moments; this is what makes them agree.
+        private bool customListsChanged;
         public ICommand EditCommand { get; }
         public ICommand AddCommand { get; }
         public ICommand DeleteCommand { get; }
@@ -51,18 +55,16 @@ namespace Eclipse.View.EclipseSettings
 
             CustomListDefinitions = new ObservableCollection<CustomListDefinition>();
 
-            customListDefinitionDataProvider = new CustomListDefinitionDataProvider();
-
             EditCommand = new RelayCommand(OnEditExecute, OnEditCanExecute);
             AddCommand = new RelayCommand(OnAddExecute, OnAddCanExecute);
-            DeleteCommand = new RelayCommand(OnDeleteExecuteAsync, OnDeleteCanExecute);
+            DeleteCommand = new RelayCommand(OnDeleteExecute, OnDeleteCanExecute);
             CloseCommand = new RelayCommand(OnCloseExecute);
             MoveUpCustomListCommand = new RelayCommand(OnMoveUpCustomListExecute);
             MoveDownCustomListCommand = new RelayCommand(OnMoveDownCustomListExecute);
             SaveCommand = new RelayCommand(OnSaveExecute);
             CancelCommand = new RelayCommand(OnCancelExecute);
 
-            SettingsEvents.CustomListDefinitionSaved += OnCustomListDefinitionSavedSavedAsync;
+            SettingsEvents.CustomListDefinitionSaved += OnCustomListDefinitionSaved;
             SettingsEvents.CustomListDefinitionEditClosing += OnCustomListDefinitionEditClosed;
         }
 
@@ -73,7 +75,7 @@ namespace Eclipse.View.EclipseSettings
         /// </summary>
         public void Detach()
         {
-            SettingsEvents.CustomListDefinitionSaved -= OnCustomListDefinitionSavedSavedAsync;
+            SettingsEvents.CustomListDefinitionSaved -= OnCustomListDefinitionSaved;
             SettingsEvents.CustomListDefinitionEditClosing -= OnCustomListDefinitionEditClosed;
         }
 
@@ -94,7 +96,7 @@ namespace Eclipse.View.EclipseSettings
                 // could close with the custom-list write still in flight.
                 await SaveCustomListsIfChangedAsync();
 
-                await EclipseSettingsDataProvider.Instance.SaveEclipseSettingsAsync(eclipseSettings);
+                await EclipseSettingsDataService.Instance.SaveEclipseSettingsAsync(eclipseSettings);
             }
             catch (Exception ex)
             {
@@ -113,26 +115,10 @@ namespace Eclipse.View.EclipseSettings
 
         private async Task SaveCustomListsIfChangedAsync()
         {
-            if (listOrderChanged == true)
+            if (customListsChanged)
             {
-                listOrderChanged = false;
-                await customListDefinitionDataProvider.SaveCustomListDefinitionsAsync(CustomListDefinitions.ToList());
-            }
-        }
-
-        /// <summary>
-        /// The same write, for callers whose own failure reporting would be misleading - opening
-        /// the add or edit window is not a save, and a modal there would be noise. Logged only.
-        /// </summary>
-        private async Task TrySaveCustomListsIfChangedAsync()
-        {
-            try
-            {
-                await SaveCustomListsIfChangedAsync();
-            }
-            catch (Exception ex)
-            {
-                LogHelper.LogException(ex, "save the custom list order");
+                customListsChanged = false;
+                await CustomListDefinitionDataService.Instance.SaveCustomListDefinitionsAsync(CustomListDefinitions.ToList());
             }
         }
 
@@ -154,10 +140,8 @@ namespace Eclipse.View.EclipseSettings
 
             SelectedCustomListDefinition = currentCustomListDefinition;
 
-            listOrderChanged = true;
+            customListsChanged = true;
         }
-
-        private bool? listOrderChanged;
 
         private void OnMoveUpCustomListExecute()
         {
@@ -177,7 +161,7 @@ namespace Eclipse.View.EclipseSettings
 
             SelectedCustomListDefinition = currentCustomListDefinition;
 
-            listOrderChanged = true;
+            customListsChanged = true;
         }
 
         private void InitializeListTypes()
@@ -316,25 +300,51 @@ namespace Eclipse.View.EclipseSettings
             customListDefinitionEditViewModel = null;
         }
 
-        // An event handler, so void is forced. Reloading the list after a child window saved is
-        // not something the user asked for directly, so a failure is logged rather than shown -
-        // but it must not escape onto the dispatcher.
-        private async void OnCustomListDefinitionSavedSavedAsync(string id)
+        /// <summary>
+        /// The editor accepted an edit. Take its copy into the list, in place if it is one we
+        /// already have and at the end if it is new.
+        ///
+        /// This used to reload the whole list from disk, because the editor had already written
+        /// there. Nothing has been written yet - the user has to save this window - so the edit
+        /// lives here until they do, and Cancel discards it by simply not writing.
+        /// </summary>
+        private void OnCustomListDefinitionSaved(CustomListDefinition edited)
         {
-            try
+            if (string.IsNullOrWhiteSpace(edited.Id))
             {
-                await InitializeCustomListsAsync();
-
-                CustomListDefinition customListDefinition = CustomListDefinitions.SingleOrDefault(l => l.Id == id);
-                if (customListDefinition != null)
+                // new list - the id is assigned here rather than on the way to disk, because
+                // there is no longer a trip to disk to assign it on
+                edited.Id = Guid.NewGuid().ToString();
+                CustomListDefinitions.Add(edited);
+            }
+            else
+            {
+                int index = IndexOfCustomList(edited.Id);
+                if (index < 0)
                 {
-                    SelectedCustomListDefinition = customListDefinition;
+                    CustomListDefinitions.Add(edited);
+                }
+                else
+                {
+                    CustomListDefinitions[index] = edited;
                 }
             }
-            catch (Exception ex)
+
+            customListsChanged = true;
+            SelectedCustomListDefinition = edited;
+        }
+
+        private int IndexOfCustomList(string id)
+        {
+            for (int index = 0; index < CustomListDefinitions.Count; index++)
             {
-                LogHelper.LogException(ex, "reload custom lists after a save");
+                if (CustomListDefinitions[index].Id == id)
+                {
+                    return index;
+                }
             }
+
+            return -1;
         }
 
         private void OnCloseExecute()
@@ -342,50 +352,44 @@ namespace Eclipse.View.EclipseSettings
             SettingsEvents.RaiseEclipseSettingsClose();
         }
 
-        private async void OnDeleteExecuteAsync()
+        /// <summary>
+        /// Removes the selected list from the window's own collection. Nothing is written until
+        /// the user saves.
+        ///
+        /// Delete used to go straight to disk, independent of Save and Cancel - which is what
+        /// `OQ-017` recorded, and which meant the window's Cancel button undid a reorder but not
+        /// a deletion. All three - edit, reorder, delete - now commit at the same moment.
+        /// </summary>
+        private void OnDeleteExecute()
         {
-            string customListName = string.IsNullOrWhiteSpace(SelectedCustomListDefinition?.Description) ? "list" : SelectedCustomListDefinition.Description;
-
-            try
+            CustomListDefinition selected = SelectedCustomListDefinition;
+            if (selected == null)
             {
-                // Unchanged in order: a pending reorder is written whether or not the delete goes
-                // ahead. What has changed is that it is awaited, so the write completes before
-                // the dialog rather than racing it.
-                await SaveCustomListsIfChangedAsync();
-
-                MessageDialogResult messageDialogResult = MessageDialogHelper.ShowOKCancelDialog($"Delete {customListName}?", "Delete custom list");
-                if (messageDialogResult == MessageDialogResult.OK)
-                {
-                    await customListDefinitionDataProvider.DeleteCustomListDefinition(SelectedCustomListDefinition.Id);
-
-                    await InitializeCustomListsAsync();
-                }
+                return;
             }
-            catch (Exception ex)
+
+            string customListName = string.IsNullOrWhiteSpace(selected.Description) ? "list" : selected.Description;
+
+            MessageDialogResult messageDialogResult = MessageDialogHelper.ShowOKCancelDialog($"Delete {customListName}?", "Delete custom list");
+            if (messageDialogResult != MessageDialogResult.OK)
             {
-                LogHelper.LogException(ex, $"delete custom list {customListName}");
-
-                MessageDialogHelper.ShowOKDialog(
-                    $"“{customListName}” could not be deleted.\n\n{ex.Message}",
-                    "Delete failed");
+                return;
             }
+
+            CustomListDefinitions.Remove(selected);
+            customListsChanged = true;
 
             SelectedCustomListDefinition = null;
         }
 
         private bool OnDeleteCanExecute()
         {
-            // if the window is closed (null) and a patcher is selected (not null)
+            // enabled only when the editor is closed and a list is selected
             return (customListDefinitionEditView == null) && (SelectedCustomListDefinition != null);
         }
 
-        // async void because a command handler has to be. The pending reorder is awaited rather
-        // than fired and forgotten, so the write finishes before the child window opens on top
-        // of it. A failure here is logged rather than shown - the user asked to open a window,
-        // not to save, and a modal in that flow would be noise.
-        private async void OnAddExecute()
+        private void OnAddExecute()
         {
-            await TrySaveCustomListsIfChangedAsync();
 
             if (customListDefinitionEditView != null)
             {
@@ -406,9 +410,8 @@ namespace Eclipse.View.EclipseSettings
             return customListDefinitionEditView == null;
         }
 
-        private async void OnEditExecute()
+        private void OnEditExecute()
         {
-            await TrySaveCustomListsIfChangedAsync();
 
             if (customListDefinitionEditView != null)
             {
@@ -424,7 +427,7 @@ namespace Eclipse.View.EclipseSettings
 
         private bool OnEditCanExecute()
         {
-            // if the window is closed (null) and a patcher is selected (not null)
+            // enabled only when the editor is closed and a list is selected
             return (customListDefinitionEditView == null) && (SelectedCustomListDefinition != null);
         }
 
@@ -439,7 +442,7 @@ namespace Eclipse.View.EclipseSettings
         {
             CustomListDefinitions.Clear();
 
-            IEnumerable<CustomListDefinition> customListDefinitions = await customListDefinitionDataProvider.GetAllCustomListDefinitionsAsync();
+            IEnumerable<CustomListDefinition> customListDefinitions = await CustomListDefinitionDataService.Instance.GetAllCustomListDefinitionsAsync();
 
             foreach (CustomListDefinition customListDefinition in customListDefinitions)
             {
@@ -451,7 +454,7 @@ namespace Eclipse.View.EclipseSettings
 
         public async Task InitializeEclipseSettingsAsync()
         {
-            eclipseSettings = await EclipseSettingsDataProvider.Instance.GetEclipseSettingsAsync();
+            eclipseSettings = await EclipseSettingsDataService.Instance.GetEclipseSettingsAsync();
 
             // One notification for the whole object, instead of forty-four lines that read each
             // value off the model and wrote it straight back through a property whose getter
