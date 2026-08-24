@@ -112,6 +112,71 @@ namespace Eclipse.View
             attractModeService.MainWindowViewModel = mainWindowViewModel;
             attractModeService.Presenter = AttractModeView_Control;
 
+            // The theme is composed on a 32 x 18 grid whose cells are square at 16:9. Which
+            // rows are held to that square unit and which absorb a taller display's surplus is
+            // decided in ApplyStageGeometry, and it has to run whenever the host resizes us.
+            SizeChanged += (sender, args) => ApplyStageGeometry();
+        }
+
+        /// <summary>
+        /// Holds the 16:9 composition still, and gives a taller display's surplus height to the
+        /// game list underneath it.
+        ///
+        /// The theme is composed on a 32 x 18 grid whose cells are square at 16:9 - 60 x 60 at
+        /// 1080p. Rows 0-17 are given that square unit outright, so everything placed in them -
+        /// the background artwork, the video and its bezel, the clear logo, the game details -
+        /// keeps its 16:9 size and position on any display. The nineteenth row is star sized and
+        /// takes whatever is left: nothing at 16:9, 120px at 1920x1200. Only the game list and
+        /// the full screen overlays reach into it.
+        ///
+        /// The current list band is then held to its own 16:9 height, so the surplus arrives in
+        /// the next-list teaser below it rather than making the box art bigger. That matters
+        /// beyond appearance: box art is pre-scaled on disk to the height it is rendered at, and
+        /// ImageScaler sizes it from the same LayoutGeometry expression used here.
+        ///
+        /// On a 16:9 display width/32 and height/18 are the same number, so every value assigned
+        /// here equals what the star sizing it replaces already produced, at any resolution.
+        /// </summary>
+        private void ApplyStageGeometry()
+        {
+            double unit = LayoutGeometry.Unit(ActualWidth, ActualHeight);
+            if (unit <= 0)
+            {
+                // no size yet - SizeChanged will bring us back
+                return;
+            }
+
+            GridLength stageRow = new GridLength(unit);
+            PinDesignStageRows(Grid_DisplayingResults, stageRow);
+            PinDesignStageRows(Grid_VoiceSearch, stageRow);
+
+            // The voice search overlay re-declares this layout so the heard phrase lands on the
+            // list heading it is about to become (see the note above it in the markup). It is
+            // driven from the same numbers here rather than being kept in step by hand.
+            GridLength listBand = new GridLength(LayoutGeometry.CurrentListBandHeight(unit));
+            SetRowHeight(GameListGrid, 0, listBand);
+            SetRowHeight(Grid_VoiceSearchListArea, 0, listBand);
+        }
+
+        // Rows 0..17 are the design stage. The row after them is left star sized to collect the
+        // surplus, which is why this stops short of the collection's end.
+        private static void PinDesignStageRows(Grid grid, GridLength stageRow)
+        {
+            int rows = Math.Min(LayoutGeometry.DesignRows, grid.RowDefinitions.Count);
+
+            for (int row = 0; row < rows; row++)
+            {
+                SetRowHeight(grid, row, stageRow);
+            }
+        }
+
+        // Assigning a height invalidates the grid's layout, so only assign one that changed.
+        private static void SetRowHeight(Grid grid, int row, GridLength height)
+        {
+            if (row < grid.RowDefinitions.Count && grid.RowDefinitions[row].Height != height)
+            {
+                grid.RowDefinitions[row].Height = height;
+            }
         }
 
 

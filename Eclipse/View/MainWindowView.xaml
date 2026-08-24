@@ -289,14 +289,25 @@
         <!-- END DISPLAY ERROR -->
 
         <!-- DISPLAYING RESULTS -->
-        <Grid   Background="Transparent"
+        <Grid   Name="Grid_DisplayingResults"
+                Background="Transparent"
                 IsHitTestVisible="False"
                 VerticalAlignment="Stretch"
                 HorizontalAlignment="Stretch"
                 Width="{Binding ActualWidth, ElementName=MainWindowUserControl}"
                 Height="{Binding ActualHeight, ElementName=MainWindowUserControl}"
                 Visibility="{Binding IsDisplayingResults, Converter={StaticResource BoolToVis}}">
-            <!-- 18 rows -->
+            <!-- 19 rows: the 18 row design stage, plus one row that only exists on a display
+                 taller than 16:9.
+
+                 The theme is composed on a 32 x 18 grid whose cells are square at 16:9 - 60 x 60
+                 at 1080p. ApplyStageGeometry in the code behind gives rows 0-17 an absolute
+                 height of one of those square units, so the whole composition keeps its 16:9
+                 size and position whatever the display does. Row 18 is star sized and takes
+                 whatever is left over: nothing at all at 16:9, 120px at 1920x1200.
+
+                 Only GameListGrid and the full screen overlays reach into row 18. Everything
+                 else spans rows 0-17 exactly as it always did. -->
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*"/>
                 <RowDefinition Height="1*"/>
@@ -315,6 +326,8 @@
                 <RowDefinition Height="1*"/>
                 <RowDefinition Height="1*"/>
                 <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <!-- the surplus row - zero high at 16:9 -->
                 <RowDefinition Height="1*"/>
             </Grid.RowDefinitions>
             <!-- 32 columns -->
@@ -379,7 +392,7 @@
             <!-- Picking Category -->
             <Grid Name="Grid_PickingOptions"
                   IsHitTestVisible="False"
-                  Grid.Row="0" Grid.RowSpan="18"
+                  Grid.Row="0" Grid.RowSpan="19"
                   Grid.Column="0" Grid.ColumnSpan="32"
                   Panel.ZIndex="900"
                   Visibility="{Binding IsPickingCategory, Converter={StaticResource BoolToVis}}">
@@ -451,7 +464,7 @@
             </Grid>
 
             <!-- Darken the background when displaying feature and more info (helps with text visibility) -->
-            <Rectangle Grid.Row="0" Grid.RowSpan="18" Grid.Column="0" Grid.ColumnSpan="32" Fill="Black" Opacity="0.1" 
+            <Rectangle Grid.Row="0" Grid.RowSpan="19" Grid.Column="0" Grid.ColumnSpan="32" Fill="Black" Opacity="0.1" 
                        Panel.ZIndex="499"
                        IsHitTestVisible="False"
                        Visibility="{Binding IsDisplayingFeature, Converter={StaticResource BoolToVis}}">
@@ -815,7 +828,7 @@
             
             <!-- Zoomed Box -->
             <!-- Darken the background when displaying the zoomed box -->
-            <Rectangle Grid.Row="0" Grid.RowSpan="18"
+            <Rectangle Grid.Row="0" Grid.RowSpan="19"
                        Grid.Column="0" Grid.ColumnSpan="32"
                        IsHitTestVisible="False"
                        Fill="Black"  Opacity="0.85"
@@ -825,7 +838,7 @@
 
             <Image Name="Image_ZoomedBox"
                 Panel.ZIndex="702"
-                Grid.Row="0" Grid.RowSpan="18"
+                Grid.Row="0" Grid.RowSpan="19"
                 Grid.Column="0" Grid.ColumnSpan="32"
                 IsHitTestVisible="False"
                 Source="{Binding CurrentGameList.SelectedGame.GameFiles.BigFrontImage}"
@@ -839,7 +852,7 @@
             <Grid Name="GameListGrid"
                   IsHitTestVisible="False"
                   Grid.Row="8"
-                  Grid.RowSpan="10"
+                  Grid.RowSpan="11"
                   Grid.Column="0"
                   Grid.ColumnSpan="32"
                   HorizontalAlignment="Stretch"
@@ -1153,7 +1166,8 @@
              Explicit z-index: the error overlay is 1000 and attract mode is 900, and this used to
              sit above them both only because it happens to be last in the canvas.
         -->
-        <Grid   Background="Transparent"
+        <Grid   Name="Grid_VoiceSearch"
+                Background="Transparent"
                 IsHitTestVisible="False"
                 VerticalAlignment="Stretch"
                 HorizontalAlignment="Stretch"
@@ -1201,8 +1215,9 @@
                 </Style>
             </Grid.Style>
 
-            <!-- mirrors the DISPLAYING RESULTS grid: 18 rows, and the 1/31 column split that
-                 GameListGrid uses to indent the row from the settings icon -->
+            <!-- mirrors the DISPLAYING RESULTS grid: the 18 row design stage plus the surplus
+                 row, and the 1/31 column split that GameListGrid uses to indent the row from
+                 the settings icon. ApplyStageGeometry sizes both grids from one place. -->
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*"/>
                 <RowDefinition Height="1*"/>
@@ -1222,6 +1237,8 @@
                 <RowDefinition Height="1*"/>
                 <RowDefinition Height="1*"/>
                 <RowDefinition Height="1*"/>
+                <!-- the surplus row - zero high at 16:9 -->
+                <RowDefinition Height="1*"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*"/>
@@ -1232,7 +1249,7 @@
                  brightness behind the indicator, so the screen did not read as having changed
                  state - and then at 0.7 it read as a modal takeover instead. -->
             <Rectangle  Grid.Row="0"
-                        Grid.RowSpan="18"
+                        Grid.RowSpan="19"
                         Grid.Column="0"
                         Grid.ColumnSpan="2"
                         IsHitTestVisible="False"
@@ -1254,9 +1271,11 @@
                 </Rectangle.Style>
             </Rectangle>
 
-            <!-- mirrors GameListGrid: rows 8-17, of which the current list takes two thirds -->
-            <Grid   Grid.Row="8"
-                    Grid.RowSpan="10"
+            <!-- mirrors GameListGrid: row 8 to the bottom of the grid, of which the current
+                 list band takes its 16:9 height and the next list teaser takes the rest -->
+            <Grid   Name="Grid_VoiceSearchListArea"
+                    Grid.Row="8"
+                    Grid.RowSpan="11"
                     Grid.Column="1"
                     Grid.ColumnSpan="1"
                     IsHitTestVisible="False"

@@ -51,22 +51,30 @@ namespace Eclipse.Service
         public static int GetDesiredHeight()
         {
             /*
-             *                                      = (5/18)*Height - 4         =Height / 2         =(4/18)*Height
-             * Resolution	Width	Height	        Game Front Height	        Background Height	Logo Height
-                Laptop	    1366	768	            209.3333333	                384	                170.6666667
-                1080	    1920	1080	        296	                        540	                240
-                1440	    2560	1440	        396	                        720	                320
-                4K	        3840	2160	        596	                        1080	            480
+             * Pre-scaled box height, for the displays this is likely to meet.
+             *
+             *   Display       Aspect   Unit u   Box row (100u/18)   Cached height (-4)
+             *   1366 x  768    16:9    42.667        237.04                233
+             *   1920 x 1080    16:9    60.000        333.33                329
+             *   1920 x 1200    16:10   60.000        333.33                329
+             *   2560 x 1440    16:9    80.000        444.44                440
+             *   2560 x 1600    16:10   80.000        444.44                440
+             *   3840 x 2160    16:9   120.000        666.67                662
+             *
+             * The two 16:10 rows share their cache size with the 16:9 display of the same width,
+             * which is the point: the box row is held to its 16:9 height on a taller display, so
+             * the artwork is the same size on both and neither has to be regenerated.
              */
-            // pick up the monitor from the big box settings file and determine it's height
-            // then set the desired size of box images to 5/18 -4 of that size
-            // front end UI has 18 rows.  The boxes scale to fit 5 rows and have a 2 pixel border on all sides 
-            // so the scaled image height should be = (monitor height * 5/18) - 4
-
-            // not sure at what point I changed the xaml layout but 5/18 - 4 is not correct (if it ever was)
-            // the scaling should be (10/18) * (2/3) * (5/6) = 100 / 324
-            // the -4 is for the 2 pixel margin
-            return (int)(GetMonitorHeight() * 100 / 324) - 4;
+            // The box row is five sixths of the current list band, which is two thirds of the
+            // ten rows the game list occupies: (10/18) * (2/3) * (5/6) = 100/324 of the design
+            // stage. The -4 is the box's two pixel margin, top and bottom.
+            //
+            // This used to read the monitor height directly, which is the same number only while
+            // the display is 16:9. LayoutGeometry derives it from the square design unit the
+            // layout is actually built on, so the height artwork is pre-scaled to and the height
+            // it is rendered at come from one expression and cannot drift apart. On any 16:9
+            // display the two agree exactly, at every resolution - asserted in LayoutGeometryTests.
+            return LayoutGeometry.BoxArtCacheHeight(GetMonitorWidth(), GetMonitorHeight());
         }
 
         public static List<FileInfo> GetMissingPlatformClearLogoFiles()
@@ -413,43 +421,17 @@ namespace Eclipse.Service
             }
         }
 
-        // gets the index of the monitor from the big box settings file and returns it's height
-        // defaults to 1440 if anything goes wrong
-        // this height is used for prescaling images to the right size
+        // The display Eclipse is running on. DisplayInfoHelper reads it once and is also what
+        // names the resolution specific cache folder, so the artwork's size and the folder it is
+        // filed under can no longer come from two different monitors.
         public static int GetMonitorHeight()
         {
-            int defaultHeight = 1440;
-            int monitorHeight;
-            try
-            {
-                monitorHeight = Screen.FromHandle(System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle).Bounds.Height;
-            }
-            catch (Exception ex)
-            {
-                LogHelper.LogException(ex, "GetMonitorHeight");
-                LogHelper.Log($"Monitor height not found - defaulting to {defaultHeight}");
-                monitorHeight = defaultHeight;
-            }
-
-            return monitorHeight;
+            return DisplayInfoHelper.Instance.displayHeight;
         }
 
         public static int GetMonitorWidth()
         {
-            int defaultWidth = 2560;
-            int monitorWidth;
-            try
-            {
-                monitorWidth = Screen.FromHandle(System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle).Bounds.Width;
-            }
-            catch (Exception ex)
-            {
-                LogHelper.LogException(ex, "GetMonitorWidth");
-                LogHelper.Log($"Monitor width not found - defaulting to {defaultWidth}");
-                monitorWidth = defaultWidth;
-            }
-
-            return monitorWidth;
+            return DisplayInfoHelper.Instance.displayWidth;
         }
 
         public static string[] GetClearLogoFolders()
