@@ -14,6 +14,38 @@
         <local:MainWindowViewModel/>
     </UserControl.DataContext>
     <UserControl.Resources>
+        <!-- The horizontal fade that carries the selected game's artwork, video and bezel out of
+             the black the logo and details sit on.
+
+             Eased rather than linear. A two stop ramp puts a kink in the alpha curve at each end,
+             and the eye finds those immediately - it reads as a soft edged band rather than a
+             falloff. These stops walk a smoothstep, so the curve leaves black and arrives at the
+             artwork without a corner at either end.
+
+             Longer, too: the ramp used to reach full opacity at 0.2 of the media cell - 256px on
+             a 2560 wide display, about a tenth of the screen. Netflix, which is the reference,
+             runs its equivalent across roughly a third of the frame.
+
+             Shared by both background layers deliberately. They used to carry a copy each and the
+             copies had drifted: the displayed layer faded out at the right edge and the active
+             layer did not, so the right edge of the artwork darkened every time the crossfade
+             handed over. The 0.8 to 1 stops below are the displayed layer's, unchanged.
+
+             The video and bezel use OpacityBrushHelper rather than this - same idea, but it is
+             applied from code when a bezel resolves, and left alone here. -->
+        <LinearGradientBrush x:Key="BackgroundFadeMask" StartPoint="0,0.5" EndPoint="1,0.5">
+            <LinearGradientBrush.GradientStops>
+                <GradientStop Offset="0.00" Color="#00000000"/>
+                <GradientStop Offset="0.09" Color="#1B000000"/>
+                <GradientStop Offset="0.18" Color="#5A000000"/>
+                <GradientStop Offset="0.27" Color="#A5000000"/>
+                <GradientStop Offset="0.36" Color="#E4000000"/>
+                <GradientStop Offset="0.45" Color="#FF000000"/>
+                <GradientStop Offset="0.80" Color="#FF000000"/>
+                <GradientStop Offset="1.00" Color="#00000000"/>
+            </LinearGradientBrush.GradientStops>
+        </LinearGradientBrush>
+
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <myconverters:AddThenDivideByNegative1Converter x:Key="PreviousGameOffset"/>
         <myconverters:DivideByConverter x:Key="DivideBy3" A="3"/>
@@ -750,18 +782,8 @@
                        ClipToBounds="True"
                        MaxHeight="{Binding ActualHeight, ElementName=Grid_Selected_Game_Background}"
                        MaxWidth="{Binding ActualWidth, ElementName=Grid_Selected_Game_Background}"
-                       RenderOptions.BitmapScalingMode="HighQuality" >
-                    <Image.OpacityMask>
-                        <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
-                            <LinearGradientBrush.GradientStops>
-                                <GradientStop Offset="0" Color="Transparent"/>
-                                <GradientStop Offset="0.2" Color="Black"/>
-                                <GradientStop Offset="0.8" Color="Black"/>
-                                <GradientStop Offset="1" Color="Transparent"/>
-                            </LinearGradientBrush.GradientStops>
-                        </LinearGradientBrush>
-                    </Image.OpacityMask>
-                </Image>
+                       RenderOptions.BitmapScalingMode="HighQuality"
+                       OpacityMask="{StaticResource BackgroundFadeMask}"/>
 
                 <Image Name="Image_Active_BackgroundImage"
                        HorizontalAlignment="Center" 
@@ -773,18 +795,95 @@
                        ClipToBounds="True"
                        MaxHeight="{Binding ActualHeight, ElementName=Grid_Selected_Game_Background}"
                        MaxWidth="{Binding ActualWidth, ElementName=Grid_Selected_Game_Background}"
-                       RenderOptions.BitmapScalingMode="HighQuality" >
-                    <Image.OpacityMask>
-                        <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                       RenderOptions.BitmapScalingMode="HighQuality"
+                       OpacityMask="{StaticResource BackgroundFadeMask}"/>
+
+
+                <!-- The bottom fade, in two parts.
+
+                     Everything else in this region fades sideways; nothing faded downwards, so
+                     the artwork ended in a dead straight horizontal line at the bottom of the
+                     media cell, a few pixels above the box row. On dark artwork that is hard to
+                     see. On bright artwork - a white box scan, a sketch background - it is the
+                     most obvious seam on the screen.
+
+                     Scrims rather than more opacity masks: an element takes one OpacityMask, and
+                     these have to combine with the horizontal fade on the images rather than
+                     replace it. Painted on top, they multiply where they meet, and the corner
+                     falls off diagonally instead of in a straight line.
+
+                     Both cover the video and the bezel as well, which are drawn in a grid below
+                     this one: they reach the bottom of the same cell and had the same hard edge,
+                     and fading only the artwork would put the seam back the moment a video
+                     started.
+
+                     ONE - the hem. Full width, shallow, and solid black at the very bottom row,
+                     so the seam is covered everywhere no matter what the taper below does. -->
+                <Rectangle Name="Rectangle_BackgroundBottomFade"
+                           IsHitTestVisible="False"
+                           HorizontalAlignment="Stretch"
+                           VerticalAlignment="Stretch"
+                           Panel.ZIndex="240">
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0.5,1" EndPoint="0.5,0">
                             <LinearGradientBrush.GradientStops>
-                                <GradientStop Offset="0" Color="Transparent"/>
-                                <GradientStop Offset="0.2" Color="Black"/>
-                                <GradientStop Offset="0.8" Color="Black"/>
-                                <GradientStop Offset="1" Color="Black"/>
+                                <GradientStop Offset="0.000" Color="#FF000000"/>
+                                <GradientStop Offset="0.020" Color="#E4000000"/>
+                                <GradientStop Offset="0.040" Color="#A5000000"/>
+                                <GradientStop Offset="0.060" Color="#5A000000"/>
+                                <GradientStop Offset="0.080" Color="#1B000000"/>
+                                <GradientStop Offset="0.100" Color="#00000000"/>
                             </LinearGradientBrush.GradientStops>
                         </LinearGradientBrush>
-                    </Image.OpacityMask>
-                </Image>
+                    </Rectangle.Fill>
+                </Rectangle>
+
+                <!-- TWO - the corner. The same eased fade but several times as deep, tapering away
+                     to nothing across the width so the black climbs highest where the artwork
+                     first emerges from the horizontal fade and thins to nothing by the right
+                     edge of the screen.
+
+                     Fill carries the vertical shape; OpacityMask carries the horizontal taper.
+                     An OpacityMask multiplies the element's alpha rather than compositing over
+                     it, so the two combine as a product - which is the one thing stacking a
+                     second rectangle could not do, since alpha-over would darken the right hand
+                     side rather than let it fade out.
+
+                     The taper starts early - 0.18 - so the falloff reads as one diagonal sweep
+                     from the bottom left of the visible artwork up towards the right, rather than
+                     as a bloom sitting in the corner. Everything left of 0.45 is already black
+                     from the images' own horizontal fade, so the taper there costs nothing. -->
+                <Rectangle Name="Rectangle_BackgroundCornerFade"
+                           IsHitTestVisible="False"
+                           HorizontalAlignment="Stretch"
+                           VerticalAlignment="Stretch"
+                           Panel.ZIndex="241">
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0.5,1" EndPoint="0.5,0">
+                            <LinearGradientBrush.GradientStops>
+                                <GradientStop Offset="0.000" Color="#FF000000"/>
+                                <GradientStop Offset="0.072" Color="#E4000000"/>
+                                <GradientStop Offset="0.144" Color="#A5000000"/>
+                                <GradientStop Offset="0.216" Color="#5A000000"/>
+                                <GradientStop Offset="0.288" Color="#1B000000"/>
+                                <GradientStop Offset="0.360" Color="#00000000"/>
+                            </LinearGradientBrush.GradientStops>
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                    <Rectangle.OpacityMask>
+                        <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                            <LinearGradientBrush.GradientStops>
+                                <GradientStop Offset="0.000" Color="#FF000000"/>
+                                <GradientStop Offset="0.180" Color="#FF000000"/>
+                                <GradientStop Offset="0.344" Color="#E4000000"/>
+                                <GradientStop Offset="0.508" Color="#A5000000"/>
+                                <GradientStop Offset="0.672" Color="#5A000000"/>
+                                <GradientStop Offset="0.836" Color="#1B000000"/>
+                                <GradientStop Offset="1.000" Color="#00000000"/>
+                            </LinearGradientBrush.GradientStops>
+                        </LinearGradientBrush>
+                    </Rectangle.OpacityMask>
+                </Rectangle>
             </Grid>
 
             <!-- Selected game video -->
