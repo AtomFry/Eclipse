@@ -459,6 +459,10 @@ namespace Eclipse.View
             BrowsePerformanceMonitor.Instance.PumpFinished(
                 gameFilesBag?.Count(gameFiles => gameFiles.IsSetup) ?? 0,
                 GameFilesCount ?? 0);
+
+            // The pump is the last piece of startup work to finish, so this is where the startup
+            // timeline is complete enough to be worth writing out.
+            StartupPerformanceMonitor.Instance.Report("media pump finished");
         }
 
         // The pump's "has this one been done already" test, counted. Every call site below used
@@ -470,62 +474,90 @@ namespace Eclipse.View
             return !gameFiles.IsSetup;
         }
 
+        // The first game in a sequence whose media has not been resolved yet, or null if they
+        // all have. Slot sequences carry nulls where the row is not full, so the game itself is
+        // checked as well as its media.
+        private static GameMatch FirstNeedingSetup(IEnumerable<GameMatch> games)
+        {
+            return games.FirstOrDefault(game => (game?.GameFiles != null) && NeedsSetup(game.GameFiles));
+        }
+
         private async Task<bool> SetupNextGameFiles()
         {
             bool moreGameFiles = false;
+
+            // The pump ran far longer than the hydration inside it accounted for, so the gap
+            // between asking for a thread pool thread and getting one is measured here too.
+            long queuedTicks = StartupPerformanceMonitor.Instance.Ticks();
 
             try
             {
                 await Task.Run(async () =>
                 {
+                    StartupPerformanceMonitor.Instance.Work("pump: waited for a thread pool thread", queuedTicks);
+
+                    // The lists and the media bag all reference the same GameFiles object per
+                    // game, so whichever of the three passes below reaches the selected game is
+                    // the one that hydrates it. The refresh used to be raised from the current
+                    // list pass alone, which meant a selected game the "any game" pass got to
+                    // first was hydrated without the view being told: its video, clear logo and
+                    // bezel stayed as they were until the user moved off the game and back.
+                    GameFiles selectedGameFiles = CurrentGameList?.SelectedGame?.GameFiles;
+                    bool hydratedSelectedGame = false;
+
                     // setup a game in the current list 
                     if (CurrentGameList != null && CurrentGameList.MatchingGames != null)
                     {
-                        IEnumerable<GameMatch> currentListQuery = CurrentGameList.MatchingGames.Where(g => NeedsSetup(g.GameFiles));
-                        if (currentListQuery.Any())
-                        {
-                            GameMatch gameMatchCurrentList = currentListQuery.FirstOrDefault();
-                            if (gameMatchCurrentList?.GameFiles != null)
-                            {
-                                moreGameFiles = true;
-                                await gameMatchCurrentList.GameFiles.SetupFiles();
+                        // The row's own window first, then the rest of the list. Taking the
+                        // first un-hydrated game in list order meant a user sitting at game 500
+                        // of 1000 had the 500 games above them hydrated before any of the
+                        // thirteen actually on screen - and until a game is hydrated its box
+                        // art is still the placeholder.
+                        GameMatch gameMatchCurrentList =
+                            FirstNeedingSetup(CurrentGameList.SlotGamesInHydrationOrder())
+                            ?? FirstNeedingSetup(CurrentGameList.MatchingGames);
 
-                                if (gameMatchCurrentList?.GameFiles?.Game?.Id == currentGameList?.SelectedGame?.Game?.Id)
-                                {
-                                    CallGameChangeFunction();
-                                }
-                            }
+                        if (gameMatchCurrentList?.GameFiles != null)
+                        {
+                            moreGameFiles = true;
+                            await gameMatchCurrentList.GameFiles.SetupFiles();
+
+                            hydratedSelectedGame |= ReferenceEquals(gameMatchCurrentList.GameFiles, selectedGameFiles);
                         }
                     }
 
                     // setup a game in the next list
                     if (NextGameList != null && NextGameList.MatchingGames != null)
                     {
-                        IEnumerable<GameMatch> nextListQuery = NextGameList.MatchingGames.Where(g => NeedsSetup(g.GameFiles));
-                        if (nextListQuery.Any())
+                        GameMatch gameMatchNextList =
+                            FirstNeedingSetup(NextGameList.SlotGamesInHydrationOrder())
+                            ?? FirstNeedingSetup(NextGameList.MatchingGames);
+
+                        if (gameMatchNextList?.GameFiles != null)
                         {
-                            GameMatch gameMatchNextList = nextListQuery.FirstOrDefault();
-                            if (gameMatchNextList?.GameFiles != null)
-                            {
-                                moreGameFiles = true;
-                                await gameMatchNextList.GameFiles.SetupFiles();
-                            }
+                            moreGameFiles = true;
+                            await gameMatchNextList.GameFiles.SetupFiles();
+
+                            hydratedSelectedGame |= ReferenceEquals(gameMatchNextList.GameFiles, selectedGameFiles);
                         }
                     }
 
                     // setup any game that still needs to be setup
                     if (gameFilesBag != null)
                     {
-                        IEnumerable<GameFiles> anyGameQuery = gameFilesBag.Where(gf => NeedsSetup(gf));
-                        if (anyGameQuery.Any())
+                        GameFiles anyGameFiles = gameFilesBag.FirstOrDefault(gf => NeedsSetup(gf));
+                        if (anyGameFiles != null)
                         {
-                            GameFiles anyGameFiles = anyGameQuery.FirstOrDefault();
-                            if (anyGameFiles != null)
-                            {
-                                moreGameFiles = true;
-                                await anyGameFiles.SetupFiles();
-                            }
+                            moreGameFiles = true;
+                            await anyGameFiles.SetupFiles();
+
+                            hydratedSelectedGame |= ReferenceEquals(anyGameFiles, selectedGameFiles);
                         }
+                    }
+
+                    if (hydratedSelectedGame)
+                    {
+                        CallGameChangeFunction();
                     }
                 });
 

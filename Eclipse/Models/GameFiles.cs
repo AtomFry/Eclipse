@@ -302,6 +302,14 @@ namespace Eclipse.Models
         /// </summary>
         public bool FrontImageDecodePending { get; set; }
 
+        /// <summary>
+        /// Set when FrontImage is reassigned while a decode is in flight. The decode cannot be
+        /// requeued while it is pending, so this is how it is told to go round again for the new
+        /// path instead of discarding its result and leaving the game with no artwork at all.
+        /// Read and written under the decoder's lock.
+        /// </summary>
+        public bool FrontImageDecodeStale { get; set; }
+
         private Uri bigFrontImage;
         public Uri BigFrontImage
         {
@@ -434,29 +442,60 @@ namespace Eclipse.Models
 
         public async Task SetupFiles()
         {
+            long queuedTicks = StartupPerformanceMonitor.Instance.Ticks();
+
             await Task.Run(() =>
             {
+                StartupPerformanceMonitor.Instance.Work("hydrate: waited for a thread pool thread", queuedTicks);
+
                 if (IsSetup == false)
                 {
                     IsSetup = true;
+
+                    // Hydration runs once per game across the whole library while the first
+                    // screen is coming up, so where its time goes is split out rather than
+                    // totalled. Every one of these is off unless MeasureBrowsePerformance is set.
+                    StartupPerformanceMonitor startupMonitor = StartupPerformanceMonitor.Instance;
+                    long hydrateTicks = startupMonitor.Ticks();
 
                     lbFrontImagePath = game?.FrontImagePath;
                     lbBackImagePath = game?.BackImagePath;
 
                     BigFrontImage = ResolveBigFrontImage();
                     BigBackImage = ResolveBigBackImage();
+
+                    // These two scale the image on disk the first time a game is seen, so on a
+                    // run that has just had games added they are doing real image processing.
+                    long ticks = startupMonitor.Ticks();
                     FrontImage = ResolveGameFrontImage();
                     BackImage = ResolveGameBackImage();
+                    startupMonitor.Work("hydrate: resolve box art (scales on first sight)", ticks);
 
+                    ticks = startupMonitor.Ticks();
                     ClearLogo = ResolveClearLogoPath(game);
+                    startupMonitor.Work("hydrate: resolve clear logo (crops on first sight)", ticks);
+
                     PlayModeImage = ResolvePlayModePath(game);
                     BackgroundImage = ResolveBackgroundImagePath(game);
                     PlatformClearLogoImage = ResolvePlatformLogoPath(game);
-                    VideoPath = ResolveVideoPath(game);
-                    TitleToFileName = ResolveGameTitleFileName(game);
-                    GameBezelImage = ResolveBezelPath(game, TitleToFileName);
 
+                    ticks = startupMonitor.Ticks();
+                    VideoPath = ResolveVideoPath(game);
+                    startupMonitor.Work("hydrate: resolve video path", ticks);
+
+                    TitleToFileName = ResolveGameTitleFileName(game);
+
+                    // A recursive directory enumeration per game, plus a LaunchBox emulator
+                    // lookup - see ResolveBezelPath.
+                    ticks = startupMonitor.Ticks();
+                    GameBezelImage = ResolveBezelPath(game, TitleToFileName);
+                    startupMonitor.Work("hydrate: resolve bezel (recursive folder scan)", ticks);
+
+                    ticks = startupMonitor.Ticks();
                     GameVersionList = ResolveAdditionalGameVersionList(game);
+                    startupMonitor.Work("hydrate: resolve additional versions", ticks);
+
+                    startupMonitor.Work("hydrate: whole game", hydrateTicks);
                 }
             });
         }

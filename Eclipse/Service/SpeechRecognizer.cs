@@ -41,10 +41,21 @@ namespace Eclipse.Service
         {
             try
             {
-                // the distinct set of phrases that can be used with voice recognition
-                List<string> titleElements = VoiceSearchIndex.Instance.Phrases.ToList();
+                StartupPerformanceMonitor startupMonitor = StartupPerformanceMonitor.Instance;
 
-                speechRecognizer = new SpeechRecognizer(titleElements);
+                // the distinct set of phrases that can be used with voice recognition
+                List<string> titleElements;
+                using (startupMonitor.Phase("voice search: build phrase index"))
+                {
+                    titleElements = VoiceSearchIndex.Instance.Phrases.ToList();
+                }
+
+                // Building the SAPI grammar is the expensive half and it grows with the library,
+                // so it is measured apart from the index it is built from.
+                using (startupMonitor.Phase($"voice search: build recogniser from {titleElements.Count} phrases"))
+                {
+                    speechRecognizer = new SpeechRecognizer(titleElements);
+                }
 
                 // assign the recogniser before publishing the status - availability is
                 // volatile, so a reader that sees Ready is guaranteed to see the recogniser

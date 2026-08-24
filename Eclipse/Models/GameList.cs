@@ -236,6 +236,29 @@ namespace Eclipse.Models
         }
 
         /// <summary>
+        /// The games this list currently has on screen, in the order the media pump should
+        /// hydrate them: the selected game first, because its video, clear logo and bezel are
+        /// what the user is actually looking at, then the row ahead of it, then the single slot
+        /// behind it.
+        ///
+        /// Entries can be null - the slot behind the selection is empty at the top of a list,
+        /// and a list shorter than the row leaves gaps unless repeat-to-fill is on.
+        /// </summary>
+        public IReadOnlyList<GameMatch> SlotGamesInHydrationOrder()
+        {
+            GameMatch[] slots = SnapshotSlots();
+            List<GameMatch> ordered = new List<GameMatch>(SlotCount);
+
+            for (int slot = 1; slot < SlotCount; slot++)
+            {
+                ordered.Add(slots[slot]);
+            }
+            ordered.Add(slots[0]);
+
+            return ordered;
+        }
+
+        /// <summary>
         /// The game for a slot, or null where the list is too short to fill it. Repeat-to-fill
         /// wraps the list round instead of leaving a gap (RULE-BROWSE-016).
         /// </summary>

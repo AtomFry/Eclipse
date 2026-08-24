@@ -82,46 +82,69 @@ namespace Eclipse.Service
 
         private void Setup()
         {
-            List<IGame> allGames = DataService.GetGames();
+            StartupPerformanceMonitor startupMonitor = StartupPerformanceMonitor.Instance;
+
+            List<IGame> allGames;
+            using (startupMonitor.Phase("catalog: read games from LaunchBox"))
+            {
+                allGames = DataService.GetGames();
+            }
 
             // One pass over the playlist records instead of scanning them once per game.
-            ILookup<string, PlaylistGame> playlistsByGameId =
-                PlaylistGameService.Instance.PlaylistGames.ToLookup(playlistGame => playlistGame.GameId);
+            ILookup<string, PlaylistGame> playlistsByGameId;
+            using (startupMonitor.Phase("catalog: index playlist records"))
+            {
+                playlistsByGameId =
+                    PlaylistGameService.Instance.PlaylistGames.ToLookup(playlistGame => playlistGame.GameId);
+            }
 
-            PrescaleImages();
+            using (startupMonitor.Phase("catalog: pre-scale images"))
+            {
+                PrescaleImages();
+            }
 
             bool includeBroken = EclipseSettingsDataProvider.Instance.EclipseSettings.IncludeBrokenGames;
             bool includeHidden = EclipseSettingsDataProvider.Instance.EclipseSettings.IncludeHiddenGames;
 
             ConcurrentBag<GameMatch> builtGames = new ConcurrentBag<GameMatch>();
 
-            Parallel.ForEach(allGames, (game) =>
+            using (startupMonitor.Phase($"catalog: build {allGames.Count} game matches (Parallel.ForEach)"))
             {
-                if (game.Broken && !includeBroken)
+                Parallel.ForEach(allGames, (game) =>
                 {
-                    return;
-                }
+                    if (game.Broken && !includeBroken)
+                    {
+                        return;
+                    }
 
-                if (game.Hide && !includeHidden)
-                {
-                    return;
-                }
+                    if (game.Hide && !includeHidden)
+                    {
+                        return;
+                    }
 
-                builtGames.Add(new GameMatch(game, new GameFiles(game)));
-            });
+                    builtGames.Add(new GameMatch(game, new GameFiles(game)));
+                });
+            }
 
             // Parallel.ForEach fills the bag in whatever order the threads finish, and every
             // sort downstream is a stable LINQ sort - so without a deterministic order here,
             // games that tie on a sort key come out in a different sequence on every run.
             // Ordering by the dominant sort key, then by id, makes the whole pipeline
             // reproducible.
-            games = builtGames
-                .OrderBy(gameMatch => gameMatch.Game.SortTitleOrTitle)
-                .ThenBy(gameMatch => gameMatch.Game.Id, StringComparer.Ordinal)
-                .ToList();
+            using (startupMonitor.Phase("catalog: sort games"))
+            {
+                games = builtGames
+                    .OrderBy(gameMatch => gameMatch.Game.SortTitleOrTitle)
+                    .ThenBy(gameMatch => gameMatch.Game.Id, StringComparer.Ordinal)
+                    .ToList();
+            }
 
             mediaEntries = games.Select(gameMatch => gameMatch.GameFiles).ToList();
-            categoryIndex = BuildCategoryIndex(games, playlistsByGameId);
+
+            using (startupMonitor.Phase("catalog: build category index"))
+            {
+                categoryIndex = BuildCategoryIndex(games, playlistsByGameId);
+            }
 
             isSetup = true;
         }
@@ -157,9 +180,27 @@ namespace Eclipse.Service
         // so the loading screen can show progress while it happens.
         private static void PrescaleImages()
         {
-            List<FileInfo> gameFrontFilesToProcess = ImageScaler.GetMissingGameFrontImageFiles();
-            List<FileInfo> platformLogosToProcess = ImageScaler.GetMissingPlatformClearLogoFiles();
-            List<FileInfo> gameClearLogosToProcess = ImageScaler.GetMissingGameClearLogoFiles();
+            StartupPerformanceMonitor startupMonitor = StartupPerformanceMonitor.Instance;
+
+            List<FileInfo> gameFrontFilesToProcess;
+            List<FileInfo> platformLogosToProcess;
+            List<FileInfo> gameClearLogosToProcess;
+
+            using (startupMonitor.Phase("catalog: scan for un-scaled game front images"))
+            {
+                gameFrontFilesToProcess = ImageScaler.GetMissingGameFrontImageFiles();
+            }
+
+            using (startupMonitor.Phase("catalog: scan for un-cropped platform logos"))
+            {
+                platformLogosToProcess = ImageScaler.GetMissingPlatformClearLogoFiles();
+            }
+
+            using (startupMonitor.Phase("catalog: scan for un-cropped game clear logos"))
+            {
+                gameClearLogosToProcess = ImageScaler.GetMissingGameClearLogoFiles();
+            }
+
             bool scaleDefaultBoxFrontImage = !ImageScaler.DefaultBoxFrontExists();
 
             // get the desired height of pre-scaled box images based on the monitor's resolution
@@ -180,10 +221,20 @@ namespace Eclipse.Service
             }
 
             // crop platform clear logos
-            foreach (FileInfo fileInfo in platformLogosToProcess)
+            using (startupMonitor.Phase($"catalog: crop {platformLogosToProcess.Count} platform logos"))
             {
-                ImageScaler.CropImage(fileInfo);
+                foreach (FileInfo fileInfo in platformLogosToProcess)
+                {
+                    ImageScaler.CropImage(fileInfo);
+                }
             }
+
+            // The other two scans above are not processed here - game front images and clear
+            // logos are scaled lazily, one game at a time, as the media pump hydrates them. The
+            // counts are the interesting part: they say how much of that lazy work this run has
+            // ahead of it.
+            startupMonitor.Mark($"catalog: {gameFrontFilesToProcess.Count} box fronts and "
+                                + $"{gameClearLogosToProcess.Count} clear logos still to be scaled lazily");
         }
 
         #region singleton implementation

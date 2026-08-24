@@ -2,6 +2,7 @@ using Eclipse.Helpers;
 using Eclipse.Models;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
 
@@ -97,40 +98,106 @@ namespace Eclipse.Service
 
         private async void DecodeAsync(GameFiles gameFiles)
         {
+            // Where this is started from decides where every continuation below runs. Started on
+            // the UI thread there is a SynchronizationContext to capture, so each await posts
+            // back to the dispatcher and the decode competes with rendering; started on a pool
+            // thread there is not, and the continuations stay off the UI thread.
+            StartupPerformanceMonitor.Instance.Count(SynchronizationContext.Current != null
+                ? "decode started where continuations post back to a SynchronizationContext"
+                : "decode started on a plain pool thread");
+
+            // Whether the pending flag has been handed back. It is given up inside the same
+            // lock that confirms the decode was not superseded, so there is no moment where an
+            // Invalidate can mark a decode stale that has already stopped looking.
+            bool released = false;
+
             try
             {
-                Uri source = gameFiles.FrontImage;
-                ImageSource image = await FrozenImageLoader.LoadAsync(source);
-
-                // Flip box swaps FrontImage while this is in flight. Decoding the old file and
-                // assigning it would show the wrong side of the box, so drop the result and let
-                // the swap request its own decode.
-                if (!ReferenceEquals(source, gameFiles.FrontImage))
+                // FrontImageDecodePending stays set for as long as this loop runs, so Warm
+                // cannot start a second decode for the same game. That is why Invalidate does
+                // not requeue while a decode is in flight - it marks the decode stale and this
+                // loop goes round again for whatever FrontImage now points at.
+                while (true)
                 {
-                    return;
-                }
+                    Uri source;
 
-                gameFiles.FrontImageSource = image;
-
-                GameFiles evicted = null;
-
-                lock (cacheLock)
-                {
-                    decoded.AddFirst(gameFiles);
-
-                    if (decoded.Count > MaxDecodedImages)
+                    lock (cacheLock)
                     {
-                        evicted = decoded.Last.Value;
-                        decoded.RemoveLast();
+                        gameFiles.FrontImageDecodeStale = false;
+                        source = gameFiles.FrontImage;
                     }
-                }
 
-                // Released outside the lock: this raises PropertyChanged, which the binding
-                // engine marshals to the dispatcher, and holding a lock across that is asking
-                // for trouble.
-                if (evicted != null)
-                {
-                    evicted.FrontImageSource = null;
+                    long decodeTicks = StartupPerformanceMonitor.Instance.Ticks();
+                    // ConfigureAwait(false) so the rest of this loop - the lock, the cache
+                    // bookkeeping, the assignment - never resumes on the UI thread. Warm is
+                    // called from navigation, so two thirds of these were started there, and
+                    // every continuation that came back was queued ahead of rendering.
+                    ImageSource image = await FrozenImageLoader.LoadAsync(source).ConfigureAwait(false);
+                    StartupPerformanceMonitor.Instance.Work("decode one row image", decodeTicks);
+
+                    GameFiles evicted = null;
+                    bool superseded;
+
+                    lock (cacheLock)
+                    {
+                        // Two things reassign FrontImage: flipping the box swaps front for
+                        // back, and the media pump replaces a placeholder with the game's real
+                        // artwork once it hydrates. Either way the file just decoded is no
+                        // longer the one this game shows.
+                        superseded = gameFiles.FrontImageDecodeStale
+                                     || !ReferenceEquals(source, gameFiles.FrontImage);
+
+                        if (!superseded)
+                        {
+                            decoded.AddFirst(gameFiles);
+
+                            if (decoded.Count > MaxDecodedImages)
+                            {
+                                evicted = decoded.Last.Value;
+                                decoded.RemoveLast();
+                            }
+                        }
+                    }
+
+                    if (superseded)
+                    {
+                        StartupPerformanceMonitor.Instance.Count("decode superseded before publishing, retried");
+                        continue;
+                    }
+
+                    // Assigned outside the lock: this raises PropertyChanged, which the binding
+                    // engine marshals to the dispatcher, and holding a lock across that is
+                    // asking for trouble.
+                    gameFiles.FrontImageSource = image;
+
+                    if (evicted != null)
+                    {
+                        evicted.FrontImageSource = null;
+                    }
+
+                    // An Invalidate that landed while the two assignments above were running
+                    // could not requeue either, so honour it before giving the flag up.
+                    lock (cacheLock)
+                    {
+                        superseded = gameFiles.FrontImageDecodeStale;
+
+                        if (superseded)
+                        {
+                            decoded.Remove(gameFiles);
+                        }
+                        else
+                        {
+                            gameFiles.FrontImageDecodePending = false;
+                            released = true;
+                        }
+                    }
+
+                    if (released)
+                    {
+                        break;
+                    }
+
+                    StartupPerformanceMonitor.Instance.Count("decode superseded after publishing, retried");
                 }
             }
             catch (Exception ex)
@@ -139,7 +206,16 @@ namespace Eclipse.Service
             }
             finally
             {
-                gameFiles.FrontImageDecodePending = false;
+                // Only reached without the handoff above if the loop threw. Whatever it left
+                // behind, the game must not be stuck looking like a decode is still running.
+                if (!released)
+                {
+                    lock (cacheLock)
+                    {
+                        gameFiles.FrontImageDecodeStale = false;
+                        gameFiles.FrontImageDecodePending = false;
+                    }
+                }
             }
         }
 
@@ -163,6 +239,21 @@ namespace Eclipse.Service
 
             lock (cacheLock)
             {
+                // A decode for the path this call has just replaced is still running. Warm
+                // cannot start a second one - it would see the pending flag and do nothing - so
+                // the decode in flight is told to go round again for the new path instead.
+                //
+                // This is the case that used to leave a game showing nothing at all: the media
+                // pump hydrates a game whose placeholder is still being decoded, the decode
+                // lands, finds FrontImage no longer points at what it read, and drops its result
+                // - and no Warm ever came to replace it, so FrontImageSource stayed null until
+                // the next navigation happened to warm that index again.
+                if (gameFiles.FrontImageDecodePending)
+                {
+                    gameFiles.FrontImageDecodeStale = true;
+                    return;
+                }
+
                 LinkedListNode<GameFiles> existing = decoded.Find(gameFiles);
                 wasDecoded = existing != null;
 
