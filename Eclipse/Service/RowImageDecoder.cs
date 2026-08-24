@@ -2,7 +2,6 @@ using Eclipse.Helpers;
 using Eclipse.Models;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
 
@@ -98,14 +97,6 @@ namespace Eclipse.Service
 
         private async void DecodeAsync(GameFiles gameFiles)
         {
-            // Where this is started from decides where every continuation below runs. Started on
-            // the UI thread there is a SynchronizationContext to capture, so each await posts
-            // back to the dispatcher and the decode competes with rendering; started on a pool
-            // thread there is not, and the continuations stay off the UI thread.
-            StartupPerformanceMonitor.Instance.Count(SynchronizationContext.Current != null
-                ? "decode started where continuations post back to a SynchronizationContext"
-                : "decode started on a plain pool thread");
-
             // Whether the pending flag has been handed back. It is given up inside the same
             // lock that confirms the decode was not superseded, so there is no moment where an
             // Invalidate can mark a decode stale that has already stopped looking.
@@ -127,13 +118,11 @@ namespace Eclipse.Service
                         source = gameFiles.FrontImage;
                     }
 
-                    long decodeTicks = StartupPerformanceMonitor.Instance.Ticks();
                     // ConfigureAwait(false) so the rest of this loop - the lock, the cache
                     // bookkeeping, the assignment - never resumes on the UI thread. Warm is
-                    // called from navigation, so two thirds of these were started there, and
+                    // called from navigation, so most decodes are started on the UI thread, and
                     // every continuation that came back was queued ahead of rendering.
                     ImageSource image = await FrozenImageLoader.LoadAsync(source).ConfigureAwait(false);
-                    StartupPerformanceMonitor.Instance.Work("decode one row image", decodeTicks);
 
                     GameFiles evicted = null;
                     bool superseded;
@@ -161,7 +150,6 @@ namespace Eclipse.Service
 
                     if (superseded)
                     {
-                        StartupPerformanceMonitor.Instance.Count("decode superseded before publishing, retried");
                         continue;
                     }
 
@@ -196,8 +184,6 @@ namespace Eclipse.Service
                     {
                         break;
                     }
-
-                    StartupPerformanceMonitor.Instance.Count("decode superseded after publishing, retried");
                 }
             }
             catch (Exception ex)

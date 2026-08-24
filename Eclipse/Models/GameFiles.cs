@@ -442,60 +442,38 @@ namespace Eclipse.Models
 
         public async Task SetupFiles()
         {
-            long queuedTicks = StartupPerformanceMonitor.Instance.Ticks();
-
             await Task.Run(() =>
             {
-                StartupPerformanceMonitor.Instance.Work("hydrate: waited for a thread pool thread", queuedTicks);
-
                 if (IsSetup == false)
                 {
                     IsSetup = true;
 
-                    // Hydration runs once per game across the whole library while the first
-                    // screen is coming up, so where its time goes is split out rather than
-                    // totalled. Every one of these is off unless MeasureBrowsePerformance is set.
-                    StartupPerformanceMonitor startupMonitor = StartupPerformanceMonitor.Instance;
-                    long hydrateTicks = startupMonitor.Ticks();
-
+                    // Measured over a 1474 game library: this whole method costs 12.6 seconds,
+                    // and 99.3% of that is the six LaunchBox image and video path properties
+                    // below - roughly 2-3ms per property, per game. Everything Eclipse itself
+                    // does here, the bezel folder scan included, comes to 48ms in total.
+                    //
+                    // Only FrontImagePath and ResolveGameFrontImage feed the box art row; they
+                    // are 33% of the cost. The rest is read for whichever single game is
+                    // selected (46%) or only when the box is flipped (21%), so resolving it for
+                    // every game up front is what makes the pump take as long as it does.
                     lbFrontImagePath = game?.FrontImagePath;
                     lbBackImagePath = game?.BackImagePath;
 
                     BigFrontImage = ResolveBigFrontImage();
                     BigBackImage = ResolveBigBackImage();
-
-                    // These two scale the image on disk the first time a game is seen, so on a
-                    // run that has just had games added they are doing real image processing.
-                    long ticks = startupMonitor.Ticks();
                     FrontImage = ResolveGameFrontImage();
                     BackImage = ResolveGameBackImage();
-                    startupMonitor.Work("hydrate: resolve box art (scales on first sight)", ticks);
 
-                    ticks = startupMonitor.Ticks();
                     ClearLogo = ResolveClearLogoPath(game);
-                    startupMonitor.Work("hydrate: resolve clear logo (crops on first sight)", ticks);
-
                     PlayModeImage = ResolvePlayModePath(game);
                     BackgroundImage = ResolveBackgroundImagePath(game);
                     PlatformClearLogoImage = ResolvePlatformLogoPath(game);
-
-                    ticks = startupMonitor.Ticks();
                     VideoPath = ResolveVideoPath(game);
-                    startupMonitor.Work("hydrate: resolve video path", ticks);
-
                     TitleToFileName = ResolveGameTitleFileName(game);
-
-                    // A recursive directory enumeration per game, plus a LaunchBox emulator
-                    // lookup - see ResolveBezelPath.
-                    ticks = startupMonitor.Ticks();
                     GameBezelImage = ResolveBezelPath(game, TitleToFileName);
-                    startupMonitor.Work("hydrate: resolve bezel (recursive folder scan)", ticks);
 
-                    ticks = startupMonitor.Ticks();
                     GameVersionList = ResolveAdditionalGameVersionList(game);
-                    startupMonitor.Work("hydrate: resolve additional versions", ticks);
-
-                    startupMonitor.Work("hydrate: whole game", hydrateTicks);
                 }
             });
         }

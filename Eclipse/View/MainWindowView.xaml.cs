@@ -116,11 +116,6 @@ namespace Eclipse.View
             // rows are held to that square unit and which absorb a taller display's surplus is
             // decided in ApplyStageGeometry, and it has to run whenever the host resizes us.
             SizeChanged += (sender, args) => ApplyStageGeometry();
-
-            // Watches for gaps in a dispatcher heartbeat while startup work is going on, so the
-            // freeze the user sees can be lined up against the phases that caused it. No-op
-            // unless MeasureBrowsePerformance is set.
-            StartupPerformanceMonitor.Instance.StartUiStallWatch(Dispatcher);
         }
 
         /// <summary>

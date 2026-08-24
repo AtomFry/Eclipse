@@ -459,10 +459,6 @@ namespace Eclipse.View
             BrowsePerformanceMonitor.Instance.PumpFinished(
                 gameFilesBag?.Count(gameFiles => gameFiles.IsSetup) ?? 0,
                 GameFilesCount ?? 0);
-
-            // The pump is the last piece of startup work to finish, so this is where the startup
-            // timeline is complete enough to be worth writing out.
-            StartupPerformanceMonitor.Instance.Report("media pump finished");
         }
 
         // The pump's "has this one been done already" test, counted. Every call site below used
@@ -486,16 +482,10 @@ namespace Eclipse.View
         {
             bool moreGameFiles = false;
 
-            // The pump ran far longer than the hydration inside it accounted for, so the gap
-            // between asking for a thread pool thread and getting one is measured here too.
-            long queuedTicks = StartupPerformanceMonitor.Instance.Ticks();
-
             try
             {
                 await Task.Run(async () =>
                 {
-                    StartupPerformanceMonitor.Instance.Work("pump: waited for a thread pool thread", queuedTicks);
-
                     // The lists and the media bag all reference the same GameFiles object per
                     // game, so whichever of the three passes below reaches the selected game is
                     // the one that hydrates it. The refresh used to be raised from the current

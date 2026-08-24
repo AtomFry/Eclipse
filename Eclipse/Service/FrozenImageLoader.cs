@@ -47,54 +47,37 @@ namespace Eclipse.Service
                 return null;
             }
 
-            // Split deliberately: the time from here to the moment the work item actually starts
-            // is time spent waiting for a thread pool thread, and is a completely different
-            // problem from the decode being slow once it gets one.
-            StartupPerformanceMonitor startupMonitor = StartupPerformanceMonitor.Instance;
-            long queuedTicks = startupMonitor.Ticks();
-
             // Awaited rather than held across a thread pool thread: a caller queued behind the
             // gate has no business occupying a worker while it waits. ConfigureAwait(false)
-            // throughout keeps every continuation off the UI thread - two thirds of the decodes
-            // measured were started from it, and each one that resumes there competes with
-            // rendering for the dispatcher.
+            // throughout keeps every continuation off the UI thread - most decodes are started
+            // from it, and each one that resumes there competes with rendering for the
+            // dispatcher.
             await decodeGate.WaitAsync().ConfigureAwait(false);
 
             try
             {
                 return await Task.Run<ImageSource>(() =>
                 {
-                    startupMonitor.Work("image: waited for a thread pool thread", queuedTicks);
-
-                    long decodeTicks = startupMonitor.Ticks();
-
-                    using (startupMonitor.Concurrency("image decodes"))
+                    try
                     {
-                        try
-                        {
-                            BitmapImage image = new BitmapImage();
+                        BitmapImage image = new BitmapImage();
 
-                            image.BeginInit();
-                            image.UriSource = uri;
+                        image.BeginInit();
+                        image.UriSource = uri;
 
-                            // decode now, on this thread, and stop holding the file open
-                            image.CacheOption = BitmapCacheOption.OnLoad;
-                            image.EndInit();
+                        // decode now, on this thread, and stop holding the file open
+                        image.CacheOption = BitmapCacheOption.OnLoad;
+                        image.EndInit();
 
-                            // required before another thread may touch it
-                            image.Freeze();
+                        // required before another thread may touch it
+                        image.Freeze();
 
-                            return image;
-                        }
-                        catch (Exception ex)
-                        {
-                            LogHelper.LogException(ex, $"load the image at {uri}");
-                            return null;
-                        }
-                        finally
-                        {
-                            startupMonitor.Work("image: the decode itself", decodeTicks);
-                        }
+                        return image;
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.LogException(ex, $"load the image at {uri}");
+                        return null;
                     }
                 }).ConfigureAwait(false);
             }
