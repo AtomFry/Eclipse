@@ -12,8 +12,8 @@ modernization backlog (`B-NN`).
 |---|---|
 | EPIC-BROWSE | S-1, S-2, S-3, S-8, S-9, S-10, C-2 |
 | EPIC-SEARCH | M-5, M-6, S-2, S-8, S-14 |
-| EPIC-PRESENT | M-4, M-8, S-3, S-4, S-11, C-1, C-3, C-5 |
-| EPIC-MEDIA | M-1, M-2, M-3, M-4, M-9, S-4, S-7 |
+| EPIC-PRESENT | M-4, M-8 (partly), S-3, ~~S-4~~ resolved, S-11, C-1, C-3, ~~C-5~~ resolved |
+| EPIC-MEDIA | ~~M-1, M-2, M-3~~ resolved, M-4, M-9, ~~S-4~~ resolved, ~~S-7~~ closed |
 | EPIC-LAUNCH | S-1, S-2, S-9, S-12 |
 | EPIC-CURATE | M-4, S-1, S-2, S-9 |
 | EPIC-ATTRACT | ~~M-4, M-8, S-4, C-5~~ — all four **closed for this epic** |
@@ -28,22 +28,22 @@ feature-specific regression coverage.
 
 | Finding | Affected capabilities | User-visible? | Nature | Safe without feature coverage? |
 |---|---|---|---|---|
-| M-1 resolve-once race | EPIC-MEDIA (FEAT-MEDIA-011) | Rarely — duplicate scaling | Correctness | **Yes** — localised, testable in isolation |
-| M-2 bitmap leak | EPIC-MEDIA (FEAT-MEDIA-010) | No | Resource | **Yes** |
-| M-3 stream leak | EPIC-MEDIA (FEAT-MEDIA-013) | No | Resource | **Yes** |
+| ~~M-1~~ resolve-once race | EPIC-MEDIA (FEAT-MEDIA-011) | Rarely — duplicate scaling, and attract mode showing the placeholder background | Correctness | **RESOLVED** — see `B-05`. The "localised, testable in isolation" call was right in spirit but not in detail: `GameFiles` itself is not constructible in a test, so the invariant moved to `Helpers/RunOnce`, which is. |
+| ~~M-2~~ bitmap leak | EPIC-MEDIA (FEAT-MEDIA-010) | No | Resource | **RESOLVED** — normal paths by `B-06`, the failure paths in `A4`. |
+| ~~M-3~~ stream leak | EPIC-MEDIA (FEAT-MEDIA-013) | No | Resource | **RESOLVED** by `B-06`. |
 | M-4 subscription/disposal asymmetry | EPIC-PRESENT, EPIC-MEDIA, ~~EPIC-ATTRACT~~, EPIC-CURATE, EPIC-CONFIG | No, until it does | Resource | **No** — removing a live subscription silently kills a feature |
-| M-5 cached recogniser failure | EPIC-SEARCH | **Yes** — feature dead until restart | Correctness | **Yes** |
+| ~~M-5~~ cached recogniser failure | EPIC-SEARCH | **Yes** — feature dead until restart | Correctness | **RESOLVED** — failure is no longer a silent permanent latch; see `B-03` |
 | M-6 silent no-op failures | EPIC-SEARCH, and any catch site | **Yes** — keypress does nothing | Correctness / UX | **Decision needed** — changes what the user sees |
 | M-7 log destination | EPIC-INTEGRATE | No | Infrastructure | **Yes** |
-| M-8 view held by state/services | ~~EPIC-ATTRACT~~, EPIC-PRESENT, EPIC-INPUT | No | Structural | **Done for ATTRACT** via `IAttractModePresenter`; still **No** for the rest |
+| M-8 view held by state/services | ~~EPIC-ATTRACT~~, ~~EPIC-PRESENT~~, EPIC-INPUT | No | Structural | **Done for ATTRACT** via `IAttractModePresenter` and for **PRESENT** via `ISelectedGamePresenter`. What is left is `AttractModeService.MainWindowViewModel` - a view *model* reference, which belongs with `B-09` |
 | M-9 async void loading pump | EPIC-MEDIA, EPIC-INTEGRATE | No — failures are invisible | Correctness | **Yes**, but expect new (real) errors to surface |
 | S-1 god view model | BROWSE, SEARCH, LAUNCH, CURATE, PRESENT, INPUT | No | Structural | **No** — touches six capabilities |
 | S-2 no LaunchBox boundary | BROWSE, SEARCH, MEDIA, LAUNCH, CURATE, INTEGRATE | No | Structural | **No** |
 | S-3 fixed 13-slot window | EPIC-PRESENT, EPIC-BROWSE | Yes if wrong | Structural | **Not debt** — `B-28` measured it at 1.7 ms/keypress, flat over 1,000 moves. The slot *boilerplate* is gone (`PreviousGame`/`SelectedGame`/`UpcomingGames`); the window itself stays. See `B-31`. |
-| S-4 logic in code-behind | EPIC-PRESENT, EPIC-MEDIA, ~~EPIC-ATTRACT~~ | No | Structural | **No** |
+| ~~S-4~~ logic in code-behind | ~~EPIC-PRESENT, EPIC-MEDIA, EPIC-ATTRACT~~ | No | Structural | **RESOLVED.** Attract mode first, then the selected-game sequence, its timings, the video failure policy and the bezel choice. The "No" was right about the risk and wrong about the remedy: the answer was not feature-wide regression coverage but four seams, each testable on its own. |
 | S-5 triplicated settings | EPIC-CONFIG + every epic it parameterises | Yes if live/restart semantics change | Structural | **No** — needs the live-vs-restart table |
 | S-6 unsafe persistence | EPIC-CONFIG | Only on corruption | Correctness | **Yes** |
-| S-7 per-pixel crop | EPIC-MEDIA | Startup time only | Performance | **Yes**, with golden-file output equivalence |
+| ~~S-7~~ per-pixel crop | EPIC-MEDIA | Startup time only | Performance | **CLOSED by measurement.** Wrong about where (first-run hydration, not startup) and wrong about how much (the scan is 10% of image work; reading and re-encoding files is 71%). See `B-29`. |
 | S-8 index fan-out | EPIC-BROWSE, EPIC-SEARCH | Startup/memory only | Performance | **No** — changes the substrate of two epics |
 | S-9 full rebuild on mutation | EPIC-CURATE, EPIC-LAUNCH, EPIC-BROWSE | Latency only | Performance | **No** — membership must be proven equivalent |
 | S-10 LINQ per read | EPIC-BROWSE | No | Performance | **Not worth doing** for `MatchCount` — see `B-07`, closed. Any other instance still stands. |
@@ -73,12 +73,12 @@ naming a constant changes nothing, provided the value is preserved exactly.
 |---|---|
 | EPIC-BROWSE | ~~B-07~~ closed, B-12, B-14, ~~B-15a~~ delivered, ~~B-15b~~ delivered, B-16, B-17, B-30, B-35 |
 | EPIC-SEARCH | B-03, B-04, B-12, B-30 |
-| EPIC-PRESENT | B-18, B-19, B-21, B-31, B-32, B-33, B-35 |
-| EPIC-MEDIA | B-05, B-06, B-20, B-22, ~~B-28~~ delivered, B-29 |
+| EPIC-PRESENT | ~~B-18~~ delivered, ~~B-19~~ delivered, B-21, ~~B-31~~ closed, B-32, B-33, B-35 |
+| EPIC-MEDIA | ~~B-05~~ delivered, ~~B-06~~ delivered, ~~B-20~~ delivered, B-22, ~~B-28~~ delivered, ~~B-29~~ closed |
 | EPIC-LAUNCH | B-11, B-12, B-16, B-24 |
 | EPIC-CURATE | B-11, B-12, B-14, B-16 |
 | EPIC-ATTRACT | ~~B-18~~ delivered, ~~B-23~~ satisfied |
-| EPIC-INPUT | B-18, B-19, B-26 |
+| EPIC-INPUT | ~~B-18~~ delivered, ~~B-19~~ delivered, ~~B-26~~ delivered |
 | EPIC-CONFIG | B-10, B-13, B-23, B-25, B-26, B-27 |
 | EPIC-INTEGRATE | B-02, B-11, B-13, B-22 |
 
@@ -86,12 +86,12 @@ naming a constant changes nothing, provided the value is preserved exactly.
 
 | Item | Capability affected | Enabling? | Behaviour at risk | Required verification |
 |---|---|---|---|---|
-| B-01 test project | none | **Yes** | none | suite runs; plugin output unchanged |
+| ~~B-01~~ test project | none | **Yes** | none | **Partly delivered.** `Eclipse.Tests` exists (xunit, `net10.0-windows`) and is green at 72 tests, but it arrived with the 16:10 layout work and covers layout geometry only. The project is no longer a prerequisite for anything; writing the characterization tests still is. |
 | B-02 logging | EPIC-INTEGRATE | **Yes** | log location changes | VER-INTEGRATE-005 |
-| B-03 recogniser retry | EPIC-SEARCH | no | voice search recovery | VER-SEARCH-004 |
+| ~~B-03~~ recogniser retry | EPIC-SEARCH | no | voice search recovery | **Delivered.** `SpeechRecognizerService` publishes a `VoiceSearchAvailability` and records why it failed, instead of latching dead until restart. Closes `M-5`. |
 | B-04 surface failures | all | no | **what the user sees on failure** | VER-INTEGRATE-005; needs a product decision |
-| B-05 resolve-once race | EPIC-MEDIA | no | duplicate scaling | unit test on concurrent resolve |
-| B-06 GDI+ leaks | EPIC-MEDIA | no | none | VER-MEDIA-002 |
+| ~~B-05~~ resolve-once race | EPIC-MEDIA | no | duplicate scaling | **Delivered.** The flag was set before the work, so a caller arriving mid-hydration was told "done" and found nulls - which is why attract mode showed the placeholder background for games that had one. Now a `Helpers/RunOnce` task handle: callers wait for the run in flight. Six tests; two fail against the old design. |
+| ~~B-06~~ GDI+ leaks | EPIC-MEDIA | no | none | **Delivered, and now complete.** Every `Bitmap` and the placeholder stream are inside `using` blocks; the residual — `ResizeImage` and `Crop` leaking their result if the draw threw — was fixed in `A4` alongside the crop bounds. |
 | ~~B-07~~ memoise count | EPIC-BROWSE | no | row slot population | **Closed, not done.** `MatchCount` returns `MatchingGames.Count()`, and `Enumerable.Count()` takes the `ICollection<T>` fast path on a `List<T>` - it is already `O(1)`. Memoising would add an invalidation obligation (`MatchingGames` is publicly settable and is replaced on every curation rebuild) in exchange for nothing. `VER-BROWSE-007` stands on its own - it verifies repeat-to-fill slot population, not the count. |
 | B-08 dead code | none | no | none | build + visual sweep |
 | B-09 DI | all | **Yes** | initialisation order | init-order trace before/after |
@@ -105,8 +105,8 @@ naming a constant changes nothing, provided the value is preserved exactly.
 | B-16 incremental rebuild | EPIC-CURATE, EPIC-LAUNCH | no | stale lists after curation | VER-CURATE-001; equivalence vs full rebuild |
 | B-17 picker switch | EPIC-BROWSE | no | category selection | VER-BROWSE-001 |
 | B-18 attract presenter | ~~EPIC-ATTRACT~~ **delivered**, EPIC-PRESENT | **Yes** | **attract timing** | VER-ATTRACT-001 — now writable against the presenter seam, blocked only on `B-01` |
-| B-19 view delegates | EPIC-PRESENT, EPIC-INPUT | **Yes** | fade/animation dispatch | VER-PRESENT-001 |
-| B-20 bezel consolidation | EPIC-MEDIA | no | which bezel is chosen | VER-MEDIA-001 — enumerate chain first |
+| ~~B-19~~ view delegates | EPIC-PRESENT, EPIC-INPUT | **Yes** | fade/animation dispatch | **Delivered.** Two settable delegate properties and two forwarders became two events the view subscribes to. Three delegate types deleted, one already dead. VER-PRESENT-001 still wanted manually. |
+| ~~B-20~~ bezel consolidation | EPIC-MEDIA | no | which bezel is chosen | **Delivered.** Five levels enumerated in `media.md` first, then `BezelService.ResolveBezel` became the single entry point; the decision itself is in `BezelRules`, unit tested. Old and new agree over a ~200,000 case sweep. Corrected `RULE-MEDIA-024`: the widescreen cutoff never applied to game-specific bezels. |
 | B-21 brush off model | EPIC-PRESENT | no | none if dead | confirm `DEAD-005` |
 | B-22 loading pipeline | EPIC-MEDIA, EPIC-INTEGRATE | no | loading completion signalling | VER-INTEGRATE-005 |
 | B-23 disposal symmetry | PRESENT, MEDIA, ~~ATTRACT~~, ~~CONFIG~~ | no | **a removed subscription kills a feature** | open/close settings ×20; 30 min idle soak |
@@ -114,13 +114,13 @@ naming a constant changes nothing, provided the value is preserved exactly.
 | ~~B-25~~ async void commands | EPIC-CONFIG | no | save/delete failure reporting | **delivered** - all six report or log; also fixed an unawaited custom-list write |
 | ~~B-26~~ settings consolidation | EPIC-CONFIG + all | no | **live vs restart semantics** | **delivered** - `OQ-011` answered from the code: nothing is live, so there were no semantics to preserve |
 | ~~B-27~~ safe persistence | EPIC-CONFIG | no | settings loading | **delivered** - `Helpers/JsonFileStore`; VER-CONFIG-006..008 added |
-| ~~B-28~~ instrumentation | EPIC-MEDIA, EPIC-BROWSE | **Yes** | none | **delivered** — `BrowsePerformanceMonitor`, off unless `MeasureBrowsePerformance` is set. Baseline recorded in `docs/plans/box-art-row-refactor.md`. Removal is `B-34`. |
-| B-29 crop rewrite | EPIC-MEDIA | no | cropped image output | VER-MEDIA-003 golden files |
+| ~~B-28~~ instrumentation | EPIC-MEDIA, EPIC-BROWSE | **Yes** | none | **delivered, and since removed** by `B-34`. Baselines recorded in `docs/plans/box-art-row-refactor.md`. |
+| ~~B-29~~ crop rewrite | EPIC-MEDIA | no | cropped image output | **Closed, not done** — the third item closed by measurement, after `B-07` and `B-31`. The `LockBits` rewrite would save ~25 s of an eight-minute background job. The bounds *defect* it would have carried is being fixed on its own as `A4` of `docs/plans/media-and-presentation-refactor.md`, which also takes `B-06`'s failure-path residual. |
 | B-30 index fan-out | EPIC-BROWSE, EPIC-SEARCH | no | **list membership + voice results** | VER-BROWSE-006, VER-SEARCH-003 |
 | B-31 slot window | EPIC-PRESENT | no | **layout and navigation latency** | VER-PRESENT-004; latency vs baseline. **The `B-28` data it was gated on now exists and does not support it** — see the note below. |
 | B-32 PropertyChanged | EPIC-PRESENT | no | notification semantics | VER-PRESENT-006 |
 | B-33 converters | EPIC-PRESENT | no | bindings | binding-error trace clean |
-| B-34 remove browse instrumentation | none | no | none | `BrowsePerformanceMonitor`, the `MeasureBrowsePerformance` setting and its call sites in `GameList`, `MainWindowView.xaml.cs` and `MainWindowViewModel` are scaffolding from `B-28`, kept deliberately while the look-ahead image decoder beds in. Remove once a few long sessions have passed without a surprise. Build + a browse sweep |
+| ~~B-34~~ remove browse instrumentation | none | no | none | **Delivered.** `BrowsePerformanceMonitor`, the `MeasureBrowsePerformance` setting and all eight call sites are gone; `RefreshGames`/`RefreshGamesCore` collapsed back into one method and `CountChangedSlots` went with them. The baselines it produced are in `docs/plans/box-art-row-refactor.md`. Same call `d63dabb` made for `StartupPerformanceMonitor`. |
 | B-35 navigation odds and ends | EPIC-BROWSE, EPIC-PRESENT | no | none expected | Two small things noticed during the navigation refactor and deliberately left alone. (a) `GameList.ListCategoryType` is **never assigned** anywhere, so every list carries the default and the `list.ListCategoryType == rememberedListCategory` half of the position-restoration match always passes — either populate it when lists are built or drop it from the match. (b) `EclipseConstants.GamesToPage` is a public mutable static in a class whose own comment reads "todo: rework this…this is hacky as shit"; the page size is arguably a setting. Verify with `VER-BROWSE-004`, `VER-BROWSE-005` |
 
 ---
@@ -160,9 +160,13 @@ together are "make the game catalogue substitutable".
   is already dead. Confirm `DEAD-005` during `B-08` and `B-21` may disappear.
 * `B-13` (Prism removal) and `B-32` (CommunityToolkit generators) — both are "change the
   MVVM dependency". Doing `B-13` first may make `B-32` unnecessary or trivial.
-* `B-06` (GDI+ leaks) and `B-29` (crop rewrite) touch the same method. If `B-29` is going
-  to happen, `B-06` may be absorbed — though `B-06` should still be done first because it
-  is safe now and `B-29` is gated on measurement.
+* ~~`B-06` (GDI+ leaks) and `B-29` (crop rewrite) touch the same method.~~ **Both resolved,
+  and the note's instinct was right for a reason it did not anticipate.** `B-06` was done
+  first and independently, which was correct — and just as well, because `B-29` then failed
+  its measurement gate and never happened. Had they been bundled, a safe fix would have
+  been thrown away with an unjustified one. **Generalisable: when a cheap safe fix is
+  bundled with an expensive gated one, do the safe one separately, because the gate may
+  fail.**
 
 ### Items lacking functional verification
 
@@ -172,19 +176,19 @@ implementation-level check, not a behavioural one; it should be paired with a fu
 capability sweep. `B-19` changes the mechanism by which every animation is triggered and
 has only `VER-PRESENT-001` behind it.
 
-### Recommended first capability
+### ~~Recommended first capability~~ — spent
 
-**Voice Search.** Not because it is the most valuable, but because it is the only
-capability where the entire chain already lines up:
+This section recommended **Voice Search** as the first capability, on the grounds that it
+was the only one whose chain already lined up: two characterization tests writable with no
+prerequisites, a known user-facing defect (`M-5`/`B-03`), and a narrow blast radius.
 
-* Two characterization tests can be written **today** with no prerequisites
-  (`VER-SEARCH-001`, `VER-SEARCH-003`) — pure string and arithmetic functions.
-* It has a known, understood defect (`M-5`/`B-03`) that is a genuine user-facing fix.
-* It is narrow: five files, one epic, no shared substrate beyond the index.
-* Success produces the template — characterize, fix, verify — for every capability after
-  it.
+**It was done** — `51364db` and `997377f` — and the recommendation is therefore retired
+rather than deleted, because the reasoning held up and is worth reusing. What it did *not*
+produce was the "characterize, fix, verify" template it promised: the fix landed, the
+characterization tests did not, and `VER-SEARCH-001`/`003` are still unwritten against a
+`GameTitleGrammar` that is pure string handling and could be tested today.
 
-The alternative, **Game Browsing**, is higher value but its characterization work
-(`VER-BROWSE-005`, `006`) is blocked behind `B-11`/`B-12`, which is the riskiest work in
-the programme. Voice Search proves the process before betting the browsing experience on
-it.
+**Read that as the lesson.** Choosing a capability whose tests are writable does not cause
+the tests to be written. The order that follows — see
+`docs/plans/media-and-presentation-refactor.md` — puts the provable work first *and* makes
+each stage's test part of the stage rather than a follow-up.

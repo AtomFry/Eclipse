@@ -4,7 +4,7 @@ using System.Timers;
 
 namespace Eclipse.Service
 {
-    public sealed class AttractModeService
+    public sealed class AttractModeService : IAttractModeTimer
     {
         public IAttractModePresenter Presenter { get; set; }
         public MainWindowViewModel MainWindowViewModel { get; set; }

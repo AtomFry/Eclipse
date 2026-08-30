@@ -15,10 +15,6 @@ using System.Windows.Threading;
 
 namespace Eclipse.View
 {
-    public delegate void AnimateGameChangeFunction();
-    public delegate void IncrementLoadingProgressFunction();
-    public delegate void StopVideoAndAnimations();
-
     public class MainWindowViewModel : INotifyPropertyChanged
     {
         /// <summary>
@@ -413,8 +409,25 @@ namespace Eclipse.View
             }
         }
 
-        public AnimateGameChangeFunction GameChangeFunction { get; set; }
-        public StopVideoAndAnimations StopVideoAndAnimationsFunction { get; set; }
+        /// <summary>
+        /// The selected game changed and the screen should follow it.
+        ///
+        /// An event rather than a delegate the view assigns into. Two settable properties used
+        /// to point back into <c>MainWindowView</c>, which meant this class could only work if
+        /// something had remembered to fill them in, and the compiler could not say who. The
+        /// view now listens; nothing here depends on it doing so.
+        ///
+        /// Raised from whatever thread moved the selection - the media pump raises it from a
+        /// background thread - so the handler is responsible for getting onto the UI thread.
+        /// </summary>
+        public event EventHandler SelectedGameChanged;
+
+        /// <summary>
+        /// Something is taking the screen: a game is launching, or voice recognition has
+        /// started. Whatever is playing or animating should stop and the selected game's
+        /// artwork should go back on screen.
+        /// </summary>
+        public event EventHandler PresentationInterrupted;
 
         private OptionList optionList;
         public OptionList OptionList
@@ -435,16 +448,12 @@ namespace Eclipse.View
             int? GameFilesCount = gameFilesBag?.Count;
             int processedCount = 0;
 
-            BrowsePerformanceMonitor.Instance.PumpStarted(GameFilesCount ?? 0);
-
             await Task.Run(async () =>
             {
                 Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
 
                 while (await SetupNextGameFiles())
                 {
-                    BrowsePerformanceMonitor.Instance.PumpIterationCompleted();
-
                     // just to be safe and avoid an infinite loop
                     // check how many times we've been through the loop and stop after we have
                     // processed enough to go through all game files
@@ -455,18 +464,12 @@ namespace Eclipse.View
                     }
                 }
             });
-
-            BrowsePerformanceMonitor.Instance.PumpFinished(
-                gameFilesBag?.Count(gameFiles => gameFiles.IsSetup) ?? 0,
-                GameFilesCount ?? 0);
         }
 
-        // The pump's "has this one been done already" test, counted. Every call site below used
-        // to be a bare lambda; routing them through here is what makes the quadratic re-scan
-        // visible as a number rather than as a suspicion.
+        // The pump's "has this one been done already" test. Kept as a method rather than a bare
+        // lambda at each call site because what "already set up" means is about to change.
         private static bool NeedsSetup(GameFiles gameFiles)
         {
-            BrowsePerformanceMonitor.Instance.PumpPredicateEvaluated();
             return !gameFiles.IsSetup;
         }
 
@@ -547,7 +550,7 @@ namespace Eclipse.View
 
                     if (hydratedSelectedGame)
                     {
-                        CallGameChangeFunction();
+                        NotifySelectedGameChanged();
                     }
                 });
 
@@ -605,7 +608,7 @@ namespace Eclipse.View
                 IsDisplayingResults = true;
                 IsDisplayingFeature = false;
                 IsDisplayingMoreInfo = false;
-                CallGameChangeFunction();
+                NotifySelectedGameChanged();
             }
         }
 
@@ -642,7 +645,7 @@ namespace Eclipse.View
             CurrentGameList?.WarmRowImages();
             NextGameList?.WarmRowImages();
 
-            CallGameChangeFunction();
+            NotifySelectedGameChanged();
         }
 
         private void OnNavigationFailed(object sender, EventArgs e)
@@ -676,14 +679,14 @@ namespace Eclipse.View
             Navigator.RestorePosition();
         }
 
-        public void CallGameChangeFunction()
+        public void NotifySelectedGameChanged()
         {
-            GameChangeFunction?.Invoke();
+            SelectedGameChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        public void CallStopVideoAndAnimationsFunction()
+        public void NotifyPresentationInterrupted()
         {
-            StopVideoAndAnimationsFunction?.Invoke();
+            PresentationInterrupted?.Invoke(this, EventArgs.Empty);
         }
         public void AdjustVideoVolume(double increment)
         {
@@ -784,7 +787,7 @@ namespace Eclipse.View
                 CheckResetGameLists();
 
                 // stop everything in the UI
-                CallStopVideoAndAnimationsFunction();
+                NotifyPresentationInterrupted();
 
                 IsPlayingGame = true;
 

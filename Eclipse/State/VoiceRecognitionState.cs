@@ -129,7 +129,7 @@ namespace Eclipse.State
                 attractModeService.StopAttractMode();
 
                 // stop any video or animations
-                EclipseStateContext.MainWindowViewModel.CallStopVideoAndAnimationsFunction();
+                EclipseStateContext.MainWindowViewModel.NotifyPresentationInterrupted();
 
                 EclipseStateContext.MainWindowViewModel.EnterVoiceSearch();
 

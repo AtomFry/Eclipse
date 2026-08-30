@@ -61,6 +61,39 @@ namespace Eclipse.Service
             }
         }
 
+        /// <summary>
+        /// The bezel to frame a video with, or null for none - the whole five-level chain
+        /// behind one call.
+        ///
+        /// Levels 1-3 are resolved during hydration and arrive here as
+        /// <paramref name="gameBezel"/>, because they depend only on the game. Levels 4 and 5
+        /// cannot be: they depend on the video's dimensions, which are not known until the
+        /// player raises MediaOpened (RULE-MEDIA-021). That is a real constraint and this does
+        /// not try to remove it - what it removes is the view having to know the rule.
+        /// </summary>
+        /// <param name="gameBezel">What levels 1-3 found for this game, or null.</param>
+        /// <param name="platformName">The game's platform, for the level 4 lookup.</param>
+        /// <param name="videoWidth">The video's natural width, or 0 if not known yet.</param>
+        /// <param name="videoHeight">The video's natural height, or 0 if not known yet.</param>
+        public Uri ResolveBezel(Uri gameBezel, string platformName, int videoWidth, int videoHeight)
+        {
+            BezelSelection selection = BezelRules.Choose(gameBezel != null, videoWidth, videoHeight);
+
+            switch (selection.Source)
+            {
+                case BezelSource.GameSpecific:
+                    return gameBezel;
+
+                case BezelSource.Default:
+                    // GetDefaultBezel is levels 4 and 5 together - the platform's bezel, then
+                    // the global one if the platform has none.
+                    return GetDefaultBezel(BezelType.PlatformDefault, selection.Orientation, platformName);
+
+                default:
+                    return null;
+            }
+        }
+
         public Uri GetDefaultBezel(BezelType bezelType, BezelOrientation bezelOrientation, string platformName)
         {
             // get platform default bezel

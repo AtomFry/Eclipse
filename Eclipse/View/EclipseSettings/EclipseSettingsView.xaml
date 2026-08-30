@@ -561,6 +561,60 @@
                 </Grid>
             </DataTemplate>
 
+            <!-- The selected game sequence, in the order it happens: the dim, the settle, the
+                 fades, then the video. Video delay lived on Other settings until these five
+                 joined it, at which point the sequence was described in two places. -->
+            <DataTemplate x:Key="PresentationSettingsTab">
+                <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <ContentControl Grid.Row="0" Style="{StaticResource SectionHeaderStyle}" Content="Presentation settings"/>
+
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <ContentControl Style="{StaticResource SubSectionHeaderStyle}" Content="Changing game"/>
+
+                        <local:SliderRow Label="Selection settles after" Unit="ms"
+                                         Minimum="0" Maximum="5000" Step="50"
+                                         Value="{Binding Settings.SelectionSettleMilliseconds, Mode=TwoWay}"
+                                         ToolTip="How long the selection has to be still before the game's artwork and details are loaded and shown. Longer means less happens while you scroll through a list"/>
+
+                        <local:SliderRow Label="Dim outgoing game" Unit="ms"
+                                         Minimum="0" Maximum="1000" Step="25"
+                                         Value="{Binding Settings.SelectionDimMilliseconds, Mode=TwoWay}"
+                                         ToolTip="How quickly the previous game's background and details dim when you move. Short on purpose - this is the instant feedback that the selection changed"/>
+
+                        <ContentControl Style="{StaticResource SubSectionHeaderStyle}" Content="Fades"/>
+
+                        <local:SliderRow Label="Game details fade in" Unit="ms"
+                                         Minimum="0" Maximum="5000" Step="50"
+                                         Value="{Binding Settings.SelectionDetailsFadeInMilliseconds, Mode=TwoWay}"
+                                         ToolTip="How long the clear logo, game title and details take to fade in once the selection has settled"/>
+
+                        <local:SliderRow Label="Background fade in" Unit="ms"
+                                         Minimum="0" Maximum="5000" Step="50"
+                                         Value="{Binding Settings.SelectionBackgroundFadeInMilliseconds, Mode=TwoWay}"
+                                         ToolTip="How long the background artwork takes to fade in - both when a new game settles and when it returns after a video preview ends"/>
+
+                        <local:SliderRow Label="Background fade out" Unit="ms"
+                                         Minimum="0" Maximum="10000" Step="250"
+                                         Value="{Binding Settings.SelectionBackgroundFadeOutMilliseconds, Mode=TwoWay}"
+                                         ToolTip="How long the background artwork takes to fade out behind a video preview"/>
+
+                        <ContentControl Style="{StaticResource SubSectionHeaderStyle}" Content="Video preview"/>
+
+                        <local:SliderRow Label="Video delay" Unit="ms"
+                                         Minimum="0" Maximum="10000" Step="250"
+                                         Value="{Binding Settings.VideoDelayInMilliseconds, Mode=TwoWay}"
+                                         ToolTip="How long the new game's artwork holds the screen before the video preview takes over. Zero starts the video as soon as the artwork is loaded, without the background fade in"/>
+                    </StackPanel>
+                </ScrollViewer>
+                </Grid>
+            </DataTemplate>
+
             <DataTemplate x:Key="OtherSettingsTab">
                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <Grid.RowDefinitions>
@@ -581,11 +635,6 @@
                                      Minimum="0" Maximum="1" Step="0.05"
                                      Value="{Binding Settings.DefaultVideoVolume, Mode=TwoWay}"
                                      ToolTip="Volume for videos (default 50%)"/>
-
-                    <local:SliderRow Label="Video delay" Unit="ms"
-                                     Minimum="0" Maximum="10000" Step="250"
-                                     Value="{Binding Settings.VideoDelayInMilliseconds, Mode=TwoWay}"
-                                     ToolTip="Amount of time to delay after selecting a game before playing the video"/>
 
                     <ContentControl Style="{StaticResource HalfWidthRowStyle}">
                         <CheckBox IsChecked="{Binding Settings.ShowMatchPercent, Mode=TwoWay}"
@@ -850,6 +899,9 @@
                         </DataTrigger>
                         <DataTrigger Binding="{Binding SelectedTabPage}" Value="Versions">
                             <Setter Property="ContentTemplate" Value="{StaticResource VersionSettingsTab}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding SelectedTabPage}" Value="Presentation">
+                            <Setter Property="ContentTemplate" Value="{StaticResource PresentationSettingsTab}"/>
                         </DataTrigger>
                         <DataTrigger Binding="{Binding SelectedTabPage}" Value="Other">
                             <Setter Property="ContentTemplate" Value="{StaticResource OtherSettingsTab}"/>

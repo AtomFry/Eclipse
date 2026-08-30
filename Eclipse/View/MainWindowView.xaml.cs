@@ -2,58 +2,36 @@
 using Eclipse.Models;
 using Eclipse.Service;
 using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Unbroken.LaunchBox.Plugins;
 using Unbroken.LaunchBox.Plugins.Data;
 
 namespace Eclipse.View
 {
-    public partial class MainWindowView : UserControl, IBigBoxThemeElementPlugin
+    public partial class MainWindowView : UserControl, IBigBoxThemeElementPlugin, ISelectedGamePresenter
     {
         private readonly AttractModeService attractModeService;
         private readonly MainWindowViewModel mainWindowViewModel;
 
-        // How long the selection has to be still before its media is loaded and shown, and how
-        // long the background artwork takes to fade in behind the details and out behind a video.
-        private const int SettleDelayMilliseconds = 1000;
-        private const int BackgroundFadeInMilliseconds = 500;
-        private const int BackgroundFadeOutMilliseconds = 1000;
+        // Every duration in the selection sequence, from settings. Taken once at construction
+        // rather than per game change: nothing in Eclipse applies settings live, and a sequence
+        // whose steps disagreed about a duration part-way through would be worse than one that
+        // needs a restart.
+        private readonly SelectionTimings timings;
 
-        // Cancels the selection sequence in flight. Everything from the settle delay to the
-        // video runs as one sequence per selection, so a new selection - or a game launching -
-        // cancels the whole thing rather than trying to catch it a step at a time.
-        private CancellationTokenSource selectionCancellation;
+        // The sequence that runs on every game change: settle, load, show, then video. It owns
+        // the ordering and the cancellation; this class owns only what appears on screen.
+        private readonly SelectedGameSequence selectedGameSequence;
 
-        // 0 or less means no pause between the artwork and the video.
-        private readonly int videoDelayMilliseconds;
-
-        // Decoded artwork for the game the selection settled on, and the paths it came from.
-        // The paths are captured on every game change because reading them is free; the decode
-        // waits for the settle and happens off the UI thread. It used to run synchronously on
-        // the UI thread for every game scrolled past - five files per keypress, all discarded.
-        private ImageSource activeBackgroundImage;
-        private ImageSource activeClearLogo;
-        private ImageSource activePlayModeImage;
-        private ImageSource activePlatformLogoImage;
-        private ImageSource activeGameBezelImage;
-
-        private Uri activeBackgroundUri;
-        private Uri activeClearLogoUri;
-        private Uri activePlayModeUri;
-        private Uri activePlatformLogoUri;
-        private Uri activeGameBezelUri;
-
-        private string activeMatchPercentageText;
-        private string activeReleaseYearText;
-        private string activeGameTitleText;
+        // What ShowGameDetails last put on screen, so StopAndRestore can put it back without
+        // asking the sequence for it again.
+        private DecodedGameMedia shownMedia;
 
         // The video file for the game the selection has settled on. Held here rather than read
         // back off the player, because MediaElement.Source no longer tracks the selected game -
@@ -68,11 +46,6 @@ namespace Eclipse.View
         private bool videoIsOpen;
         private bool videoPlayRequested;
 
-        // One missed playback check is not proof of anything. A run of them with nothing playing
-        // in between is, and ten in a row means the media stack is not coming back.
-        private const int RecoveryFailureThreshold = 3;
-        private const int AbandonFailureThreshold = 10;
-
         // Fires shortly after Play() to check whether playback actually began. A DispatcherTimer
         // rather than System.Timers.Timer: this only ever touches the player and runs on the UI
         // thread already.
@@ -86,8 +59,7 @@ namespace Eclipse.View
         {
             InitializeComponent();
 
-            // how long the new game's artwork holds the screen before the video takes over
-            videoDelayMilliseconds = EclipseSettingsDataProvider.Instance?.EclipseSettings?.VideoDelayInMilliseconds ?? 0;
+            timings = SelectionTimings.Current;
 
             playbackStartCheck = new DispatcherTimer
             {
@@ -101,16 +73,31 @@ namespace Eclipse.View
             // get handle on the view model 
             mainWindowViewModel = DataContext as MainWindowViewModel;
 
-            // pass in the animation function that can be called whenever a game changes
-            mainWindowViewModel.GameChangeFunction = DoAnimateGameChange;
-
-            // pass in a function that will stop animations and videos when games are started or voice recognition is happening
-            mainWindowViewModel.StopVideoAndAnimationsFunction = StopVideoAndAnimations;
+            // The view listens; the view model does not hold a delegate pointing back here. Both
+            // are raised from whatever thread moved the selection - the media pump raises the
+            // first from a background thread - so both handlers marshal to the UI thread.
+            //
+            // Never detached, deliberately: this control is the plugin's entry point and the view
+            // model is its DataContext, so the two are created together and live until Big Box
+            // exits. There is no point at which one outlives the other to leak from.
+            mainWindowViewModel.SelectedGameChanged += (sender, args) => DoAnimateGameChange();
+            mainWindowViewModel.PresentationInterrupted += (sender, args) => StopVideoAndAnimations();
 
 
             attractModeService = AttractModeService.Instance;
             attractModeService.MainWindowViewModel = mainWindowViewModel;
             attractModeService.Presenter = AttractModeView_Control;
+
+            // Task.Delay and FrozenImageLoader in production; in tests the sequence is handed
+            // something that records what it was asked to wait for and returns immediately.
+            selectedGameSequence = new SelectedGameSequence(
+                this,
+                timings,
+                attractModeService,
+                CaptureSelectedGame,
+                FrozenImageLoader.LoadAsync,
+                Task.Delay,
+                () => mainWindowViewModel?.IsPlayingGame == true);
 
             // The theme is composed on a 32 x 18 grid whose cells are square at 16:9. Which
             // rows are held to that square unit and which absorb a taller display's surplus is
@@ -234,7 +221,7 @@ namespace Eclipse.View
         /// read off MediaElement.Source, which only worked because Source was bound to the
         /// selected game - the very binding that made every scrolled-past game open a file.
         /// </summary>
-        private bool HasVideoForSettledGame =>
+        public bool CanPlayVideo =>
             !disableVideos
             && !videoAbandonedForSession
             && !string.IsNullOrWhiteSpace(activeVideoPath);
@@ -247,8 +234,12 @@ namespace Eclipse.View
         /// Assigning Source does not load anything. LoadedBehavior is Manual, so the file is not
         /// opened until Play() is called and MediaOpened arrives after that, not before it.
         /// </summary>
-        private void OpenVideo(string videoPath)
+        public void OpenVideo(string videoPath)
         {
+            // Recorded before the early return, because CanPlayVideo is asked about the game the
+            // selection settled on rather than about the state of the player.
+            activeVideoPath = videoPath;
+
             if (Video_SelectedGame == null)
             {
                 return;
@@ -326,50 +317,44 @@ namespace Eclipse.View
         }
 
         /// <summary>
-        /// Decides what a failure is worth. Every one is logged, because the log is the only
-        /// witness to a bug that takes hours to appear - but nothing is done about a failure on
-        /// its own. Only a run of them with no playback in between is evidence that the media
-        /// stack itself is in trouble, and any successful playback clears the run.
+        /// Carries out whatever <see cref="VideoFailurePolicy"/> decides a run of failures is
+        /// worth. The decision is separate from the effect: what counts as enough failures is
+        /// arithmetic and is unit tested, while closing the player is something only the view
+        /// can do.
         /// </summary>
         private void ApplyFailurePolicy()
         {
-            if (videoAbandonedForSession)
+            VideoFailureAction action =
+                VideoFailurePolicy.Decide(videoMonitor.ConsecutiveFailures, videoAbandonedForSession);
+
+            switch (action)
             {
-                return;
-            }
+                case VideoFailureAction.Abandon:
+                    videoAbandonedForSession = true;
+                    videoMonitor.RecoveryAbandoned();
+                    break;
 
-            int consecutiveFailures = videoMonitor.ConsecutiveFailures;
+                case VideoFailureAction.Recover:
+                    videoMonitor.RecoveryAttempted();
 
-            if (consecutiveFailures >= AbandonFailureThreshold)
-            {
-                videoAbandonedForSession = true;
-                videoMonitor.RecoveryAbandoned();
-                return;
-            }
+                    videoIsOpen = false;
+                    videoPlayRequested = false;
 
-            if (consecutiveFailures < RecoveryFailureThreshold)
-            {
-                return;
-            }
+                    Video_SelectedGame?.Close();
 
-            videoMonitor.RecoveryAttempted();
-
-            videoIsOpen = false;
-            videoPlayRequested = false;
-
-            Video_SelectedGame?.Close();
-
-            if (Video_SelectedGame != null)
-            {
-                Video_SelectedGame.Source = null;
+                    if (Video_SelectedGame != null)
+                    {
+                        Video_SelectedGame.Source = null;
+                    }
+                    break;
             }
         }
 
         private void DimBackground()
         {
-            FadeFrameworkElementOpacity(Image_Displayed_BackgroundImage, 0.25, 25);
-            FadeFrameworkElementOpacity(Image_Selected_Background_Black, 1, 25);
-            FadeFrameworkElementOpacity(Image_Active_BackgroundImage, 0, 25);
+            FadeFrameworkElementOpacity(Image_Displayed_BackgroundImage, 0.25, timings.Dim.TotalMilliseconds);
+            FadeFrameworkElementOpacity(Image_Selected_Background_Black, 1, timings.Dim.TotalMilliseconds);
+            FadeFrameworkElementOpacity(Image_Active_BackgroundImage, 0, timings.Dim.TotalMilliseconds);
         }
 
         /// <summary>
@@ -401,239 +386,168 @@ namespace Eclipse.View
             element.Opacity = opacity;
         }
 
+        /// <summary>
+        /// The view model's hook for "the selected game changed". Marshals to the UI thread and
+        /// hands over to the sequence, which owns everything that follows.
+        /// </summary>
         private void DoAnimateGameChange()
         {
             Dispatcher.Invoke(() =>
             {
-                BrowsePerformanceMonitor monitor = BrowsePerformanceMonitor.Instance;
-                Stopwatch animateTimer = monitor.IsEnabled ? Stopwatch.StartNew() : null;
-
                 try
                 {
-                    if(mainWindowViewModel.IsDisplayingResults)
+                    if (mainWindowViewModel.IsDisplayingResults)
                     {
-                        // stop animations
-                        StopEverything();
-
-                        // StopEverything also switches off the idle timer. That is right when
-                        // a game is launching, but changing the selected game is ordinary
-                        // browsing, so re-arm it. Previously the timer was left stopped here
-                        // and only a video's MediaEnded turned it back on - so for a game with
-                        // no preview video the screen saver never started at all.
-                        attractModeService.RestartAttractMode();
-
-                        // dim background image
-                        DimBackground();
-
-                        // dim logo image
-                        Image_Displayed_GameClearLogo.Opacity = 0.15;
-                        FadeFrameworkElementOpacity(Image_Displayed_GameClearLogo, 0.15, 25);
-
-                        // dim game title text all the way to 0 
-                        // this is a backup for missing logo image
-                        TextBlock_Displayed_GameTitle.Opacity = 0;
-                        FadeFrameworkElementOpacity(TextBlock_Displayed_GameTitle, 0.00, 25);
-
-                        // dim game details
-                        Grid_SelectedGameDetails.Opacity = 0.15;
-                        FadeFrameworkElementOpacity(Grid_SelectedGameDetails, 0.15, 25);
-
-                        // Note what the selected game's media is, but do not load any of it yet.
-                        // Reading paths and text off the view model is free; decoding five images
-                        // is not, and it used to happen here - on the UI thread, for every game
-                        // scrolled past, all of it discarded by the next keypress. The decode now
-                        // waits for the settle and runs off the UI thread - see
-                        // LoadSettledGameMediaAsync.
-                        GameMatch settledGame = mainWindowViewModel?.CurrentGameList?.SelectedGame;
-                        GameFiles settledFiles = settledGame?.GameFiles;
-
-                        activeBackgroundUri = settledFiles?.BackgroundImage;
-                        activeClearLogoUri = settledFiles?.ClearLogo;
-                        activePlayModeUri = settledFiles?.PlayModeImage;
-                        activePlatformLogoUri = settledFiles?.PlatformClearLogoImage;
-                        activeGameBezelUri = settledFiles?.GameBezelImage;
-                        activeVideoPath = settledFiles?.VideoPath;
-
-                        // get a handle on the active game's details
-                        activeGameTitleText = settledGame?.Game?.Title;
-                        activeMatchPercentageText = settledGame?.MatchDescription;
-                        activeReleaseYearText = settledGame?.ReleaseYear;
-
-                        // hand the rest of the change over to the selection sequence - it waits
-                        // for the inputs to be idle for a second before loading or showing
-                        // anything, so holding left or right does not update the game details
-                        // and images for every game passed on the way
-                        ShowSelectedGameAsync();
+                        selectedGameSequence.GameChanged();
                     }
                 }
                 catch (Exception ex)
                 {
                     LogHelper.LogException(ex, "MainWindowView.xaml.cs.DoAnimateGameChange");
                 }
-
-                if (animateTimer != null)
-                {
-                    monitor.AnimateGameChangeCompleted(animateTimer.Elapsed.TotalMilliseconds);
-
-                    // Loaded runs after the dispatcher has finished the layout and render pass
-                    // this change caused, so it is the closest thing to "the user can see it" -
-                    // and it is where a synchronous image decode would show up.
-                    Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(monitor.RenderCompleted));
-                }
             });
         }
 
         /// <summary>
-        /// Everything that happens once a game is selected, as one sequence: wait for the
-        /// selection to settle, load the media, show the artwork, then hand the screen over to
-        /// the video. A new selection cancels the sequence in flight.
+        /// Dims the outgoing game. The change is acknowledged on screen straight away, before
+        /// anything has been loaded - the fade back in waits for the settle (RULE-PRESENT-002).
         ///
-        /// This replaces two thread-pool timers whose steps were chained together by animation
-        /// Completed callbacks. Those callbacks could not be cancelled, so a step could run for
-        /// a game that was no longer selected - and because the fade helper skips an animation
-        /// whose target opacity is already in place, a skipped fade meant a Completed callback
-        /// that never fired and a video that never played.
+        /// The opacities are set outright as well as animated: a finished WPF animation keeps
+        /// ownership of the value it ended on, so a plain assignment on its own is silently
+        /// ignored.
         /// </summary>
-        private async void ShowSelectedGameAsync()
+        public void DimForGameChange()
         {
-            CancellationTokenSource cancellation = new CancellationTokenSource();
-            CancellationTokenSource previousSelection = Interlocked.Exchange(ref selectionCancellation, cancellation);
-            previousSelection?.Cancel();
+            DimBackground();
 
-            CancellationToken cancellationToken = cancellation.Token;
+            // dim logo image
+            Image_Displayed_GameClearLogo.Opacity = 0.15;
+            FadeFrameworkElementOpacity(Image_Displayed_GameClearLogo, 0.15, timings.Dim.TotalMilliseconds);
 
-            try
-            {
-                // The debounce. Nothing is read from disk and nothing is shown until the
-                // selection has been still, so holding a direction through fifty games costs
-                // one pass of the work below rather than fifty.
-                await Task.Delay(SettleDelayMilliseconds, cancellationToken);
+            // dim game title text all the way to 0
+            // this is a backup for missing logo image
+            TextBlock_Displayed_GameTitle.Opacity = 0;
+            FadeFrameworkElementOpacity(TextBlock_Displayed_GameTitle, 0.00, timings.Dim.TotalMilliseconds);
 
-                await LoadSettledGameMediaAsync(cancellationToken);
-
-                // the selection settled here, so this is the first point worth opening a file
-                OpenVideo(activeVideoPath);
-
-                FadeInCurrentGameDetails();
-
-                if (HasVideoForSettledGame && (videoDelayMilliseconds <= 0))
-                {
-                    // no pause configured, so the artwork never gets its moment on screen
-                    await PlaySettledGameVideoAsync(cancellationToken);
-                    return;
-                }
-
-                // fade the new artwork in over the outgoing game's dimmed artwork
-                FadeFrameworkElementOpacity(Image_Active_BackgroundImage, 1, BackgroundFadeInMilliseconds);
-                await Task.Delay(BackgroundFadeInMilliseconds, cancellationToken);
-
-                SettleBackgroundImage();
-
-                if (!HasVideoForSettledGame)
-                {
-                    return;
-                }
-
-                await Task.Delay(videoDelayMilliseconds, cancellationToken);
-
-                await PlaySettledGameVideoAsync(cancellationToken);
-            }
-            catch (OperationCanceledException)
-            {
-                // a newer selection took over, or a game is launching - either way this one is
-                // no longer the game on screen and has nothing left to do
-            }
-            catch (Exception ex)
-            {
-                LogHelper.LogException(ex, "MainWindowView.xaml.cs.ShowSelectedGameAsync");
-            }
-            finally
-            {
-                Interlocked.CompareExchange(ref selectionCancellation, null, cancellation);
-                cancellation.Dispose();
-            }
+            // dim game details
+            Grid_SelectedGameDetails.Opacity = 0.15;
+            FadeFrameworkElementOpacity(Grid_SelectedGameDetails, 0.15, timings.Dim.TotalMilliseconds);
         }
 
         /// <summary>
-        /// Decodes the settled game's artwork away from the UI thread, then hands it over -
-        /// unless the selection moved on while the files were being read, in which case this
-        /// artwork belongs to a game that is no longer on screen.
+        /// The media paths and text for whichever game is selected right now. Reading these is
+        /// free; decoding the images they point at is not, which is why only the paths are taken
+        /// here and the decode waits for the settle.
         /// </summary>
-        private async Task LoadSettledGameMediaAsync(CancellationToken cancellationToken)
+        private SelectedGameMedia CaptureSelectedGame()
         {
-            ImageSource background = await FrozenImageLoader.LoadAsync(activeBackgroundUri);
-            ImageSource clearLogo = await FrozenImageLoader.LoadAsync(activeClearLogoUri);
-            ImageSource playMode = await FrozenImageLoader.LoadAsync(activePlayModeUri);
-            ImageSource platformLogo = await FrozenImageLoader.LoadAsync(activePlatformLogoUri);
-            ImageSource gameBezel = await FrozenImageLoader.LoadAsync(activeGameBezelUri);
+            GameMatch settledGame = mainWindowViewModel?.CurrentGameList?.SelectedGame;
+            GameFiles settledFiles = settledGame?.GameFiles;
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            activeBackgroundImage = background;
-            activeClearLogo = clearLogo;
-            activePlayModeImage = playMode;
-            activePlatformLogoImage = platformLogo;
-            activeGameBezelImage = gameBezel;
-        }
-
-        /// <summary>
-        /// Hands the screen over to the video: the screen saver's idle timer stops, playback
-        /// starts, and the background artwork fades out behind it.
-        /// </summary>
-        private async Task PlaySettledGameVideoAsync(CancellationToken cancellationToken)
-        {
-            // Only hand the idle timer over to the video if one is actually going to play.
-            // Nothing but MediaEnded turns it back on, so stopping it when there is no video
-            // left the screen saver switched off until the next keypress.
-            if (disableVideos
-                || !HasVideoForSettledGame
-                || mainWindowViewModel.IsPlayingGame)
+            return new SelectedGameMedia
             {
-                attractModeService.RestartAttractMode();
-                return;
-            }
+                Background = settledFiles?.BackgroundImage,
+                ClearLogo = settledFiles?.ClearLogo,
+                PlayMode = settledFiles?.PlayModeImage,
+                PlatformLogo = settledFiles?.PlatformClearLogoImage,
+                GameBezel = settledFiles?.GameBezelImage,
+                VideoPath = settledFiles?.VideoPath,
 
-            attractModeService.StopAttractMode();
-
-            PlayVideo(Video_SelectedGame);
-
-            // fade background images while the video plays
-            FadeFrameworkElementOpacity(Image_Displayed_BackgroundImage, 0, BackgroundFadeOutMilliseconds);
-            FadeFrameworkElementOpacity(Image_Active_BackgroundImage, 0, BackgroundFadeOutMilliseconds);
-            FadeFrameworkElementOpacity(Image_Selected_Background_Black, 0, BackgroundFadeOutMilliseconds);
-
-            await Task.Delay(BackgroundFadeOutMilliseconds, cancellationToken);
-
-            SwapBackgroundImages();
+                Title = settledGame?.Game?.Title,
+                MatchDescription = settledGame?.MatchDescription,
+                ReleaseYear = settledGame?.ReleaseYear
+            };
         }
 
-        private void FadeInCurrentGameDetails()
+        public void ShowGameDetails(DecodedGameMedia media)
         {
+            // held so StopAndRestore can put the same game back on screen without the sequence
+            shownMedia = media;
+
             if (Image_Active_BackgroundImage != null)
             {
                 // outright, not a plain assignment - the fade that follows is skipped when the
                 // opacity is already 1, and a held animation would keep it there
                 SetOpacity(Image_Active_BackgroundImage, 0);
-                Image_Active_BackgroundImage.Source = activeBackgroundImage;
+                Image_Active_BackgroundImage.Source = media?.Background;
             }
 
             // fade in the active clear logo
-            Image_Displayed_GameClearLogo.Source = activeClearLogo;
-            FadeFrameworkElementOpacity(Image_Displayed_GameClearLogo, 1, 500);
+            Image_Displayed_GameClearLogo.Source = media?.ClearLogo;
+            FadeFrameworkElementOpacity(Image_Displayed_GameClearLogo, 1, timings.DetailsFadeIn.TotalMilliseconds);
 
-            // fade in the game title 
-            TextBlock_Displayed_GameTitle.Text = activeGameTitleText;
-            FadeFrameworkElementOpacity(TextBlock_Displayed_GameTitle, 1, 500);
+            // fade in the game title
+            TextBlock_Displayed_GameTitle.Text = media?.Title;
+            FadeFrameworkElementOpacity(TextBlock_Displayed_GameTitle, 1, timings.DetailsFadeIn.TotalMilliseconds);
 
-            // fade in the active game details 
-            Image_Playmode.Source = activePlayModeImage;
-            TextBlock_MatchPercentage.Text = activeMatchPercentageText;
-            TextBlock_ReleaseYear.Text = activeReleaseYearText;
-            Image_PlatformLogo.Source = activePlatformLogoImage;
-            Image_Bezel.Source = activeGameBezelImage;
+            // fade in the active game details
+            Image_Playmode.Source = media?.PlayMode;
+            TextBlock_MatchPercentage.Text = media?.MatchDescription;
+            TextBlock_ReleaseYear.Text = media?.ReleaseYear;
+            Image_PlatformLogo.Source = media?.PlatformLogo;
+            Image_Bezel.Source = media?.GameBezel;
 
-            // fade in the game details 
-            FadeFrameworkElementOpacity(Grid_SelectedGameDetails, 1, 500);
+            // fade in the game details
+            FadeFrameworkElementOpacity(Grid_SelectedGameDetails, 1, timings.DetailsFadeIn.TotalMilliseconds);
+        }
+
+        public void FadeInBackground()
+        {
+            FadeFrameworkElementOpacity(Image_Active_BackgroundImage, 1, timings.BackgroundFadeIn.TotalMilliseconds);
+        }
+
+        /// <summary>
+        /// Ends the artwork change: the displayed layer takes the picture the active layer just
+        /// faded in, at full brightness.
+        ///
+        /// Both layers are showing the same picture here, so the handover itself is invisible -
+        /// what matters is the undim. The displayed layer has been at 0.25 since the game change
+        /// began, so hiding the active layer without restoring it drops the background straight
+        /// back to dim the moment the fade-in finishes.
+        /// </summary>
+        public void SettleBackground()
+        {
+            Image_Displayed_BackgroundImage.Source = Image_Active_BackgroundImage.Source;
+
+            SetOpacity(Image_Displayed_BackgroundImage, 1);
+            SetOpacity(Image_Active_BackgroundImage, 0);
+        }
+
+        public void PlayVideoAndFadeOutBackground()
+        {
+            PlayVideo(Video_SelectedGame);
+
+            // fade background images while the video plays
+            FadeFrameworkElementOpacity(Image_Displayed_BackgroundImage, 0, timings.BackgroundFadeOut.TotalMilliseconds);
+            FadeFrameworkElementOpacity(Image_Active_BackgroundImage, 0, timings.BackgroundFadeOut.TotalMilliseconds);
+            FadeFrameworkElementOpacity(Image_Selected_Background_Black, 0, timings.BackgroundFadeOut.TotalMilliseconds);
+        }
+
+        public void SwapBackgroundLayers()
+        {
+            SwapBackgroundImages();
+        }
+
+        /// <summary>
+        /// Stops the player and the check on whether playback started. Not a fade - just a halt,
+        /// for when the selection moves or the screen is about to belong to something else.
+        /// </summary>
+        public void StopPlayback()
+        {
+            // the check must not outlive the playback attempt it was measuring
+            playbackStartCheck?.Stop();
+
+            PauseVideo(Video_SelectedGame);
+        }
+
+        /// <summary>
+        /// Puts the selected game's artwork back on screen. Called when a game is launching or
+        /// voice recognition starts, after the sequence has been stopped.
+        /// </summary>
+        public void StopAndRestore()
+        {
+            ShowGameDetails(shownMedia);
+            FadeInBackgroundImages();
         }
 
         private void SwapBackgroundImages()
@@ -715,8 +629,8 @@ namespace Eclipse.View
                     SwapBackgroundImages();
 
                     // fade in background image
-                    FadeFrameworkElementOpacity(Image_Selected_Background_Black, 1, 500);
-                    FadeFrameworkElementOpacity(Image_Displayed_BackgroundImage, 1, 500);
+                    FadeFrameworkElementOpacity(Image_Selected_Background_Black, 1, timings.BackgroundFadeIn.TotalMilliseconds);
+                    FadeFrameworkElementOpacity(Image_Displayed_BackgroundImage, 1, timings.BackgroundFadeIn.TotalMilliseconds);
                 });
             }
             catch (Exception ex)
@@ -727,8 +641,25 @@ namespace Eclipse.View
 
 
 
-        // setup fallback bezels once the media opens so we can identify whether we need the horizontal or veritical bezel
-        private void Video_SelectedGame_MediaOpened(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// The player has the file open, so its dimensions are known and the bezel can be chosen.
+        ///
+        /// `async void` because this is an event handler, which is the one place it is correct -
+        /// but it means nothing observes a failure, hence the catch.
+        /// </summary>
+        private async void Video_SelectedGame_MediaOpened(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                await ShowBezelForOpenedVideoAsync();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.LogException(ex, "Video_SelectedGame_MediaOpened");
+            }
+        }
+
+        private async Task ShowBezelForOpenedVideoAsync()
         {
             videoMonitor.OpenCompleted();
 
@@ -741,49 +672,49 @@ namespace Eclipse.View
                 StartPlaybackStartCheck();
             }
 
-            Uri gameBezelUri = mainWindowViewModel?.CurrentGameList?.SelectedGame?.GameFiles?.GameBezelImage;
+            // Which bezel, and which way round, is BezelService's decision - the view only
+            // supplies what the player can tell it. The five-level chain, the widescreen cutoff
+            // and the orientation used to be written out here; see RULE-MEDIA-020 to 027.
+            GameMatch settledGame = mainWindowViewModel?.CurrentGameList?.SelectedGame;
+
+            Uri gameBezelUri = BezelService.Instance.ResolveBezel(
+                settledGame?.GameFiles?.GameBezelImage,
+                settledGame?.Game?.Platform,
+                Video_SelectedGame.NaturalVideoWidth,
+                Video_SelectedGame.NaturalVideoHeight);
+
+            // The mask depends only on *whether* there is a bezel, which is known now, so it is
+            // set before the picture rather than after it (RULE-MEDIA-026).
             if (gameBezelUri == null)
             {
-                // fall back to platform or default bezel if no game bezel, based on height/width of game video if(width >= height) use horizontal, else use vertical
-                // do not load bezel if aspect ratio  16:9 (width/height > 1.7)
-                if (Video_SelectedGame.NaturalVideoHeight != 0)
-                {
-                    if ((float)((float)(Video_SelectedGame.NaturalVideoWidth / (float)Video_SelectedGame.NaturalVideoHeight)) < 1.7)
-                    {
-                        BezelOrientation defaultBezelOrientation = BezelOrientation.Horizontal;
-                        if (Video_SelectedGame.NaturalVideoWidth < Video_SelectedGame.NaturalVideoHeight)
-                        {
-                            defaultBezelOrientation = BezelOrientation.Vertical;
-                        }
-
-                        gameBezelUri = BezelService.Instance.GetDefaultBezel(BezelType.PlatformDefault, defaultBezelOrientation, mainWindowViewModel.CurrentGameList.SelectedGame.Game.Platform);
-                    }
-                }
-            }
-
-            if (gameBezelUri != null)
-            {
-                activeGameBezelImage = new BitmapImage(gameBezelUri);
-            }
-
-            // The fallback bezel can only be chosen once the video's dimensions are known, which
-            // is here, after the artwork has already been put on screen - so this has to set the
-            // source itself. It used to get away without doing that: the Source binding opened
-            // the media as soon as the selection changed, so this ran a second before the settle
-            // and FadeInCurrentGameDetails picked the field up afterwards.
-            Image_Bezel.Source = activeGameBezelImage;
-
-            // set the opacity mask on the bezel if it's setup or on the video if no bezel
-            if (activeGameBezelImage != null)
-            {
-                Image_Bezel.OpacityMask = OpacityBrushHelper.Instance.OpacityBrush;
-                Video_SelectedGame.OpacityMask = null;
-            }
-            else
-            {
+                Image_Bezel.Source = null;
                 Image_Bezel.OpacityMask = null;
                 Video_SelectedGame.OpacityMask = OpacityBrushHelper.Instance.OpacityBrush;
+                return;
             }
+
+            Image_Bezel.OpacityMask = OpacityBrushHelper.Instance.OpacityBrush;
+            Video_SelectedGame.OpacityMask = null;
+
+            // The default bezel can only be chosen once the video's dimensions are known, which
+            // is here, after the artwork has already been put on screen - so this sets the source
+            // itself rather than leaving it to ShowGameDetails, which has already run.
+            //
+            // Decoded off the UI thread like every other image. It used to be a synchronous
+            // `new BitmapImage(uri)`, which was the last one in the product that was not - and a
+            // bezel is a full-screen overlay, so it is not a small decode to do on the dispatcher.
+            Uri videoThisBezelIsFor = Video_SelectedGame.Source;
+
+            ImageSource bezelImage = await FrozenImageLoader.LoadAsync(gameBezelUri);
+
+            // A new game can settle and open its own video while this one is decoding. Assigning
+            // then would frame the new video with the old game's bezel.
+            if (!Equals(Video_SelectedGame.Source, videoThisBezelIsFor))
+            {
+                return;
+            }
+
+            Image_Bezel.Source = bezelImage;
         }
 
         /// <summary>
@@ -797,37 +728,27 @@ namespace Eclipse.View
         /// </summary>
         private void StopVideoAndAnimations()
         {
+            // Marshalled here rather than inside the two calls: voice recognition raises
+            // PresentationInterrupted from a thread pool thread, and both Stop and StopAndRestore
+            // reach WPF elements. Every ISelectedGamePresenter member assumes the UI thread, so
+            // the entry points are where getting onto it belongs.
             Dispatcher.Invoke(() =>
             {
                 try
                 {
-                    StopEverything();
+                    // Stop is the sequence's: it turns off the idle countdown, halts the player
+                    // and abandons the sequence in flight - otherwise that would carry on and
+                    // start the video again a moment later. Putting the artwork back is this
+                    // class's.
+                    selectedGameSequence.Stop();
 
-                    // reset everything to the active game
-                    FadeInCurrentGameDetails();
-                    FadeInBackgroundImages();
+                    StopAndRestore();
                 }
                 catch (Exception ex)
                 {
                     LogHelper.LogException(ex, "StopVideoAndAnimations");
                 }
             });
-        }
-
-        // maybe only in certain cases like launching into a game or escaping to settings menu
-        private void StopEverything()
-        {
-            AttractModeService.Instance.StopAttractMode();
-
-            // the check must not outlive the playback attempt it was measuring
-            playbackStartCheck?.Stop();
-
-            // pause the video
-            PauseVideo(Video_SelectedGame);
-
-            // abandon the selection sequence in flight - otherwise it carries on and starts the
-            // video again a moment later
-            selectionCancellation?.Cancel();
         }
     }
 }

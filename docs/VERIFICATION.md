@@ -9,18 +9,26 @@ begins.
 
 ## Current coverage
 
-**There is no test project and no automated tests of any kind.** All verification to date
-has been manual play-testing. This is the single largest risk to the modernization
-programme: every planned change is behaviour-preserving, and the only mechanism for
-proving preservation is a human remembering what the product used to do.
+**A test project exists and is green.** `Eclipse.Tests` (xunit, `net10.0-windows`) runs
+140 passing tests. It arrived with the 16:10 layout work rather than as `B-01`, and for a
+while covered only layout geometry; the media and presentation refactor added six more
+suites - image cropping, the bezel choice, the video failure policy, the selection timings,
+the once-only hydration guard, and the selected-game sequence.
+
+That still leaves most of the product verified only by manual play-testing, which remains
+the largest risk to the modernization programme: every planned change is
+behaviour-preserving, and for most capabilities the only mechanism for proving
+preservation is a human remembering what the product used to do. **What has changed is
+that there is now somewhere to put a test**, so the remaining gap is coverage rather than
+infrastructure.
 
 | Layer | Status |
 |---|---|
-| Unit tests | none |
+| Unit tests | 140 — layout geometry, image cropping, bezel choice, video failure policy, selection timings, once-only hydration, selected-game sequencing |
 | Integration tests | none |
 | Host-dependent tests | none |
 | Manual regression script | none written down (the plugin README documents usage, not verification) |
-| Performance baseline | none |
+| Performance baseline | browse and startup measured under `B-28`; recorded in `docs/plans/box-art-row-refactor.md`. The instrumentation that produced it has since been removed (`B-34`) |
 
 ## What is testable, and when
 
@@ -31,9 +39,11 @@ model — see `S-2` and backlog item `B-12`.
 |---|---|---|
 | Testable **now** | Title decomposition, match scoring, list-window cycling, dynamic filter/sort expression building | Immediately |
 | Testable after `B-11`/`B-12` | Position restoration, alternate-version filtering, media path resolution | After the adapter and game model exist |
-| Testable now | List construction and custom-list membership - `GameListBuilder` takes an `IGameCatalogSource` since `B-15a`, and `IGame` is an interface in a vendored assembly, so a fixture needs a hand-written fake rather than the full game model | Needs `B-01` only |
+| Testable **now** | List construction and custom-list membership - `GameListBuilder` takes an `IGameCatalogSource` since `B-15a`, and `IGame` is an interface in a vendored assembly, so a fixture needs a hand-written fake rather than the full game model | The project exists; the `IGame` fake does not yet |
 | Testable **now** (was `B-18`) | Attract-mode sequencing and presenter call ordering — `IAttractModePresenter` exists and `AttractModeSlideshow` takes it plus its timings by constructor | Immediately |
-| Testable after `B-19` | State machine transitions, presentation presenter call ordering | After the rest of the view is behind an interface |
+| Testable **now** | Image cropping and scaling — `ImageScaler` is static and file-to-file, so a fixture image and an expected rectangle are the whole test | Immediately |
+| Testable **now** (was `B-19`) | Selected-game sequencing and presenter call ordering — `ISelectedGamePresenter` exists and `SelectedGameSequence` takes it, its timings and its waits by constructor | Immediately; fourteen such tests exist |
+| Testable **now** | The video failure escalation (`VideoFailurePolicy`) and the bezel choice (`BezelRules`) — both pure functions | Immediately |
 | Host-dependent, manual only | Plugin registration, theme hosting, menu item, game launching, video playback, speech recognition | Always |
 
 ---
@@ -75,6 +85,9 @@ Each scenario is written so a developer can execute it without reading the code.
 | VER-PRESENT-004 | Move to the first game in a list; confirm the slot to its left is empty rather than showing the last game. | Manual | RULE-PRESENT-004 |
 | VER-PRESENT-005 | Enable featured game. Press Up from the first list; confirm the featured view rather than wrapping. Disable it; confirm wrapping. | Manual | RULE-PRESENT-007, RULE-INPUT-006 |
 | VER-PRESENT-006 | Toggle each detail-visibility setting; confirm exactly the corresponding element disappears. | Manual | FEAT-PRESENT-009 |
+| VER-PRESENT-007 | Change each of the five selection timings on the **Presentation** tab, save, restart Big Box, and confirm the corresponding delay or fade changes and nothing else does. | Manual | RULE-PRESENT-001, 002 |
+| VER-PRESENT-008 | Selected-game sequence: the call order, the four durations, the debounce, cancellation by a newer selection *and* by a slow decode, a zero video delay skipping the fade-in, a game with no video, videos disabled, and a game already running. | **Unit** — `SelectedGameSequenceTests`, 14 tests | RULE-PRESENT-001, 002; RULE-MEDIA-030…033 |
+| VER-PRESENT-009 | Video failure escalation: nothing below three consecutive failures, reopen at three, abandon for the session at ten, nothing further once abandoned. | **Unit** — `VideoFailurePolicyTests` | FEAT-MEDIA-007 |
 
 ### EPIC-MEDIA
 
@@ -88,6 +101,10 @@ Each scenario is written so a developer can execute it without reading the code.
 | VER-MEDIA-006 | Disable videos. Confirm the background image remains and no video plays. | Manual | RULE-MEDIA-035 |
 | VER-MEDIA-007 | Select a game with no box art. Confirm the placeholder appears rather than a blank slot. | Manual | FEAT-MEDIA-001, 013 |
 | VER-MEDIA-008 | Start cold with an empty cache on a large library; record time to first interaction and peak memory. | **Performance baseline** | backlog B-28 |
+| VER-MEDIA-009 | Delete the resolution-specific media folder and start Big Box. Artwork populates as you browse and browsing stays smooth. Repeat warm and confirm nothing is regenerated. | Manual | FEAT-MEDIA-009, 011 |
+| VER-MEDIA-010 | Crop bounds, per fixture: transparent border, no border, border on one side only, fully transparent, 1×1, an internal transparent row, a partly transparent pixel. Exact expected rectangle asserted. | **Unit** — `ImageCropTests`, 10 tests | FEAT-MEDIA-010 |
+| VER-MEDIA-012 | Bezel choice: game bezel beats everything at any aspect ratio; the widescreen cutoff either side of 1.7; orientation from the video; unknown dimensions. | **Unit** — `BezelRulesTests`, 12 tests | RULE-MEDIA-020…027 |
+| VER-MEDIA-013 | Two callers ask for the same game's media at once: it is resolved once, and the second caller waits rather than seeing it as resolved with nothing populated. | **Unit** — `RunOnceTests` | RULE-MEDIA-009 |
 
 ### EPIC-LAUNCH
 

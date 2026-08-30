@@ -184,6 +184,7 @@ namespace Eclipse.View.EclipseSettings
             TabPages.Add(EclipseSettingsTabs.Lists);
             TabPages.Add(EclipseSettingsTabs.Inputs);
             TabPages.Add(EclipseSettingsTabs.Versions);
+            TabPages.Add(EclipseSettingsTabs.Presentation);
             TabPages.Add(EclipseSettingsTabs.Other);
             TabPages.Add(EclipseSettingsTabs.CustomLists);
             TabPages.Add(EclipseSettingsTabs.BoxMargin);
@@ -484,6 +485,7 @@ namespace Eclipse.View.EclipseSettings
         public const string Inputs = "Inputs";
         public const string Versions = "Versions";
         public const string CustomLists = "Custom lists";
+        public const string Presentation = "Presentation";
         public const string Other = "Other";
         public const string BoxMargin = "Margin";
         public const string ScreenSaver = "Screen saver";

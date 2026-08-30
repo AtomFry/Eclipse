@@ -61,7 +61,7 @@ available.
 
 | ID | Rule | Why it matters |
 |---|---|---|
-| RULE-PRESENT-001 | Changing the selected game does not immediately swap the background and details. A 1-second idle delay elapses first; holding a direction restarts the delay. | Prevents thrashing while scrolling. Directly shapes the browsing feel. |
+| RULE-PRESENT-001 | Changing the selected game does not immediately swap the background and details. An idle delay elapses first; holding a direction restarts it. The delay defaults to 1 second and is configurable as `SelectionSettleMilliseconds` (`OQ-007`, answered). | Prevents thrashing while scrolling. Directly shapes the browsing feel. |
 | RULE-PRESENT-002 | On selection change, the background, logo and details are dimmed immediately; they fade back in when the idle delay elapses. | The dim is instant feedback; the fade-in is deferred. |
 | RULE-PRESENT-003 | The game title text is a fallback for a missing clear logo — the logo fades to 0.15 opacity while the title fades to 0. | Both are always present; opacity decides which is seen. |
 | RULE-PRESENT-004 | The slot behind the selection is blanked when the selection is at index 0 of the list. | Avoids showing a wrapped game as "previous" at the start. |
@@ -80,7 +80,11 @@ available.
 | Concern | Location |
 |---|---|
 | Layout and bindings | `View/MainWindowView.xaml` — 1,756 lines, 165 bindings, 97 converter references, 30 multi-bindings |
-| Animation, fades, timing | `View/MainWindowView.xaml.cs` — `DoAnimateGameChange`, `FadeInCurrentGame`, `FadeForMovie`, `FadeFrameworkElementOpacity` |
+| Selection sequence | `Service/SelectedGameSequence.cs` — the ordering and cancellation, unit tested against a fake presenter; `Service/ISelectedGamePresenter.cs` is what it may ask the screen to do; `Service/SelectionTimings.cs` holds every duration |
+| Animation and fades | `View/MainWindowView.xaml.cs` — the presenter implementation: `DimForGameChange`, `ShowGameDetails`, `FadeInBackground`, `SettleBackground`, `PlayVideoAndFadeOutBackground`, `SwapBackgroundLayers`, `StopAndRestore`, plus `FadeFrameworkElementOpacity` and `SetOpacity` |
+| View ↔ view model | `MainWindowViewModel.SelectedGameChanged` and `PresentationInterrupted` events; the view subscribes and marshals to the UI thread. The two settable delegate properties are gone (`B-19`) |
+| Stage geometry | `View/MainWindowView.xaml.cs` — `ApplyStageGeometry`; `Helpers/LayoutGeometry.cs`. The 32×18 design grid is pinned to a square unit so a 16:10 display's surplus height goes to the game list, not the artwork |
+| Off-thread image decoding | `Service/FrozenImageLoader.cs`; `Service/RowImageDecoder.cs` — box art is decoded ahead of the window on the thread pool, not on the UI thread during a keypress |
 | View-state flags | `View/MainWindowViewModel.cs` — `IsDisplayingResults`, `IsDisplayingFeature`, `IsDisplayingMoreInfo`, `IsPickingCategory`, `IsZoomingBox`, `IsRatingGame`, `IsRecognizing`, `IsInitializing`, `IsDisplayingError` |
 | Row slots | `Models/GameList.cs` — `PreviousGame`, `SelectedGame`, `UpcomingGames`, `RefreshGames()`; bound as two `ItemsControl`s in `View/MainWindowView.xaml` |
 | Row artwork decoding | `Service/RowImageDecoder.cs` — decoded off the UI thread ahead of the window; `GameFiles.FrontImageSource` |
@@ -96,21 +100,21 @@ available.
 
 | Finding | Effect |
 |---|---|
-| S-4 | Animation sequencing and presentation decisions live in 684 lines of code-behind. |
-| S-3 | The 13-slot window is 13 hard-coded properties and 68 XAML references. |
-| M-8 | The state machine and a service hold the concrete view, so presentation cannot be substituted. |
+| ~~S-4~~ | **Resolved for this epic.** Every decision the finding named has left the view: the sequence and its cancellation (`SelectedGameSequence`), the timings (`SelectionTimings`, now settings), the video failure escalation (`VideoFailurePolicy`) and the bezel choice (`BezelRules`). All four are unit tested. What remains in the code-behind is element manipulation — `Source`, `Text`, `BeginAnimation`, `OpacityMask` — plus the stage geometry, which is a layout concern and belongs there. |
+| S-3 | The 13-slot window is 13 hard-coded properties and 68 XAML references. **Not debt** — see `B-31`. |
+| M-8 | The state machine and a service hold the concrete view, so presentation cannot be substituted. **Done for attract mode** via `IAttractModePresenter` and for the selected game via `ISelectedGamePresenter`. **What is left is `AttractModeService.MainWindowViewModel`** — a view *model* reference rather than a view one, which belongs with `B-09`. |
 | S-11 | A WPF `Brush` is exposed from a model type. |
 | C-1 | 73 magic-string `PropertyChanged` raises drive these bindings. |
 | C-3 | Near-duplicate converters. |
-| C-5 | Layout constants are unexplained magic numbers. |
-| M-4 | Timers and handlers driving fades are never detached. |
+| ~~C-5~~ | **Resolved for this epic.** The stage geometry is derived in `LayoutGeometry` and asserted by tests; the selection sequence's three constants and eleven literals are now five settings behind `SelectionTimings`. What is left is the dim *opacities* (0.25, 0.15, 0) — deliberately constants, because `RULE-PRESENT-003` depends on the relationship between two of them. |
+| M-4 | Timers and handlers driving fades are never detached. **Reduced** — the two thread-pool timers are gone; `playbackStartCheck` is a `DispatcherTimer` that is stopped but never detached, and the view subscribes to two view model events it never unsubscribes from. Both are deliberate: the view is the plugin entry point and outlives nothing. |
 
 ## Modernization backlog
 
 | Item | Relationship |
 |---|---|
 | B-18 | Removes the concrete view from state/services (attract-mode presenter). |
-| B-19 | Replaces the view↔viewmodel callback delegates. |
+| ~~B-19~~ | **Delivered.** Two settable delegate properties and their two forwarder methods became two events the view subscribes to; three delegate types deleted, one of which (`IncrementLoadingProgressFunction`) had already been dead since the loading progress bar was removed. |
 | B-31 | Replaces the fixed 13-slot window. **Measure navigation latency first** — the fixed slots may be a deliberate performance choice. |
 | B-32 | Removes `PropertyChanged` boilerplate — must preserve setters that deliberately notify without an equality check. |
 | B-33 | Consolidates converters. |

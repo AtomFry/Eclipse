@@ -223,7 +223,7 @@ namespace Eclipse.Models
 
         public GameFiles(IGame game)
         {
-            IsSetup = false;
+            hydration = new RunOnce(ResolveAllFiles);
             Game = game;
             FrontImage = ResourceImages.GameFrontDummy;
             BackImage = ResourceImages.GameFrontDummy;
@@ -438,44 +438,69 @@ namespace Eclipse.Models
             }
         }
 
-        public bool IsSetup { get; set; }
+        /// <summary>
+        /// True once this game's media has been resolved. Set *after* the work, never before -
+        /// a reader that sees true can rely on the paths below being populated.
+        ///
+        /// It used to be set before resolution began, so a second caller arriving mid-hydration
+        /// was told the game was ready and found every path still null. See <see cref="RunOnce"/>.
+        /// </summary>
+        public bool IsSetup => hydration.HasCompleted;
 
-        public async Task SetupFiles()
+        private readonly RunOnce hydration;
+
+        /// <summary>
+        /// Resolves every media location for this game, once. Callers arriving while it is
+        /// already running wait for it rather than being told it is finished.
+        /// </summary>
+        public Task SetupFiles()
         {
-            await Task.Run(() =>
+            return hydration.RunAsync();
+        }
+
+        private void ResolveAllFiles()
+        {
+            try
             {
-                if (IsSetup == false)
-                {
-                    IsSetup = true;
+                // Measured over a 1474 game library: this whole method costs 12.6 seconds,
+                // and 99.3% of that is the six LaunchBox image and video path properties
+                // below - roughly 2-3ms per property, per game. Everything Eclipse itself
+                // does here, the bezel folder scan included, comes to 48ms in total.
+                //
+                // That measurement was taken warm. On a cold cache the scaling and cropping
+                // this triggers dominates instead: about 320ms per game, roughly 8 minutes to
+                // rebuild the cache for the same library.
+                //
+                // Only FrontImagePath and ResolveGameFrontImage feed the box art row; they
+                // are 33% of the cost. The rest is read for whichever single game is
+                // selected (46%) or only when the box is flipped (21%), so resolving it for
+                // every game up front is what makes the pump take as long as it does.
+                lbFrontImagePath = game?.FrontImagePath;
+                lbBackImagePath = game?.BackImagePath;
 
-                    // Measured over a 1474 game library: this whole method costs 12.6 seconds,
-                    // and 99.3% of that is the six LaunchBox image and video path properties
-                    // below - roughly 2-3ms per property, per game. Everything Eclipse itself
-                    // does here, the bezel folder scan included, comes to 48ms in total.
-                    //
-                    // Only FrontImagePath and ResolveGameFrontImage feed the box art row; they
-                    // are 33% of the cost. The rest is read for whichever single game is
-                    // selected (46%) or only when the box is flipped (21%), so resolving it for
-                    // every game up front is what makes the pump take as long as it does.
-                    lbFrontImagePath = game?.FrontImagePath;
-                    lbBackImagePath = game?.BackImagePath;
+                BigFrontImage = ResolveBigFrontImage();
+                BigBackImage = ResolveBigBackImage();
+                FrontImage = ResolveGameFrontImage();
+                BackImage = ResolveGameBackImage();
 
-                    BigFrontImage = ResolveBigFrontImage();
-                    BigBackImage = ResolveBigBackImage();
-                    FrontImage = ResolveGameFrontImage();
-                    BackImage = ResolveGameBackImage();
+                ClearLogo = ResolveClearLogoPath(game);
+                PlayModeImage = ResolvePlayModePath(game);
+                BackgroundImage = ResolveBackgroundImagePath(game);
+                PlatformClearLogoImage = ResolvePlatformLogoPath(game);
+                VideoPath = ResolveVideoPath(game);
+                TitleToFileName = ResolveGameTitleFileName(game);
+                GameBezelImage = ResolveBezelPath(game, TitleToFileName);
 
-                    ClearLogo = ResolveClearLogoPath(game);
-                    PlayModeImage = ResolvePlayModePath(game);
-                    BackgroundImage = ResolveBackgroundImagePath(game);
-                    PlatformClearLogoImage = ResolvePlatformLogoPath(game);
-                    VideoPath = ResolveVideoPath(game);
-                    TitleToFileName = ResolveGameTitleFileName(game);
-                    GameBezelImage = ResolveBezelPath(game, TitleToFileName);
-
-                    GameVersionList = ResolveAdditionalGameVersionList(game);
-                }
-            });
+                GameVersionList = ResolveAdditionalGameVersionList(game);
+            }
+            catch (Exception ex)
+            {
+                // Logged here rather than left to fault the task. A game whose media cannot be
+                // resolved should cost that game its artwork, not the rest of the pump's pass -
+                // and the previous form, which set the flag first, had the same effect of
+                // marking the game done and moving on. This makes that deliberate and visible.
+                LogHelper.LogException(ex, $"resolve media for {game?.Title}");
+            }
         }
 
         private GameVersionList ResolveAdditionalGameVersionList(IGame game)

@@ -129,9 +129,10 @@ namespace Eclipse.Service
                 await game.GameFiles.SetupFiles();
             }
 
-            // GameFiles.SetupFiles sets IsSetup before it populates, so a game already being
-            // hydrated elsewhere returns immediately with its Uris still null. Keep the
-            // fallback: a placeholder background beats a slide with nothing on it.
+            // SetupFiles now waits for a hydration already in flight rather than returning
+            // straight away with the Uris still null, so this no longer covers a game the pump
+            // happened to reach first - it covers a game that genuinely has no background.
+            // A placeholder background still beats a slide with nothing on it.
             Uri backgroundUri = game?.GameFiles?.BackgroundImage;
 
             if (backgroundUri == null)

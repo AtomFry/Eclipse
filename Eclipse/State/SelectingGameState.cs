@@ -20,7 +20,7 @@ namespace Eclipse.State
             eclipseStateContext.MainWindowViewModel.IsDisplayingFeature = false;
             eclipseStateContext.MainWindowViewModel.IsDisplayingMoreInfo = false;
             eclipseStateContext.MainWindowViewModel.IsDisplayingResults = true;
-            eclipseStateContext.MainWindowViewModel.CallGameChangeFunction();
+            eclipseStateContext.MainWindowViewModel.NotifySelectedGameChanged();
         }
 
         public bool OnDown(EclipseStateContext eclipseStateContext, bool held)

@@ -142,6 +142,57 @@ namespace Eclipse.Models
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public int VideoDelayInMilliseconds { get; set; }
 
+        // The selection sequence's timings. These defaults are the values that were hardcoded
+        // in MainWindowView, so an existing settings file - which has none of these keys -
+        // behaves exactly as it did before they became settings.
+        //
+        // The sequence for one game change:
+        //
+        //   dim what is on screen (SelectionDimMilliseconds)
+        //   -> wait for the selection to stop moving (SelectionSettleMilliseconds)
+        //   -> load the media, fade the details in (SelectionDetailsFadeInMilliseconds)
+        //      and the background in (SelectionBackgroundFadeInMilliseconds)
+        //   -> wait (VideoDelayInMilliseconds), then play the video and fade the background
+        //      out behind it (SelectionBackgroundFadeOutMilliseconds)
+
+        /// <summary>
+        /// How long the selection has to be still before the game's artwork and details are
+        /// loaded and shown. This is the debounce that stops fifty games' worth of media being
+        /// read while a direction is held.
+        /// </summary>
+        [DefaultValue(1000)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public int SelectionSettleMilliseconds { get; set; }
+
+        /// <summary>
+        /// How quickly the outgoing game dims when the selection moves. Short on purpose - it
+        /// is the instant feedback that something happened, ahead of the settle.
+        /// </summary>
+        [DefaultValue(25)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public int SelectionDimMilliseconds { get; set; }
+
+        /// <summary>
+        /// How long the background artwork takes to fade in - both when a new game settles and
+        /// when it returns after a video preview ends.
+        /// </summary>
+        [DefaultValue(500)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public int SelectionBackgroundFadeInMilliseconds { get; set; }
+
+        /// <summary>How long the background takes to fade out behind a video preview.</summary>
+        [DefaultValue(1000)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public int SelectionBackgroundFadeOutMilliseconds { get; set; }
+
+        /// <summary>
+        /// How long the clear logo, title and game details take to fade in once the selection
+        /// has settled.
+        /// </summary>
+        [DefaultValue(500)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public int SelectionDetailsFadeInMilliseconds { get; set; }
+
         [DefaultValue(false)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public bool BypassDetails { get; set; }
@@ -203,14 +254,6 @@ namespace Eclipse.Models
         [DefaultValue(0)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public double SelectedGameDetailsPadding { get; set; }
-
-        // Development tool, deliberately not in the settings UI. Times the box art row's
-        // response to a keypress and counts what the background media pump does, so the row
-        // refactor can be measured rather than guessed at. See
-        // Eclipse.Service.BrowsePerformanceMonitor. Costs nothing when off.
-        [DefaultValue(false)]
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
-        public bool MeasureBrowsePerformance { get; set; }
     }
 
     public class CustomListDefinition

@@ -19,7 +19,7 @@ search, and a random-game feature.
 | **Launching** | Launch a game, or choose between alternate versions when a game has additional applications configured. |
 | **Favourites & ratings** | Mark favourites and set star ratings without leaving Big Box; changes are written back to LaunchBox. |
 | **Attract mode** | An idle screensaver that cycles random games with slow pans and fades. |
-| **Configuration** | 45 settings and a custom-list editor, available from the LaunchBox desktop app under **Tools → Manage eclipse**. |
+| **Configuration** | 49 settings and a custom-list editor, available from the LaunchBox desktop app under **Tools → Manage eclipse**. |
 
 ## Controls
 
@@ -52,6 +52,13 @@ requires Windows Speech Recognition.
 * Voice search is the only search modality — there is no text search.
 * Scaled artwork is cached per display resolution and is not invalidated if you later
   replace the artwork in LaunchBox (see `OQ-010`).
+* **Clear logos cached before the crop fix keep one extra transparent row and column** on
+  their top and left edges. Cropping used to leave them there; it no longer does, but the
+  cache is keyed by path alone, so logos already on disk are not regenerated and logos
+  cached from now on will differ from them by a pixel. To bring an existing installation
+  fully onto the new crop, delete the `Clear Logo` folders under
+  `LaunchBox\Plugins\Eclipse\Media\<width>x<height>\Images\` — Eclipse rebuilds them in the
+  background as you browse.
 * Most settings take effect on restart rather than immediately (see `OQ-011`).
 * Eclipse appears under **Tools → Manage eclipse** in desktop LaunchBox; it is
   deliberately not listed in the LaunchBox Plugin Manager (see `OQ-018`).

@@ -124,7 +124,6 @@ namespace Eclipse.Models
 
         public void CycleForward()
         {
-            BrowsePerformanceMonitor.Instance.MoveStarted();
             gameCycle.CycleForward();
             RefreshGames();
             WarmRowImages();
@@ -132,31 +131,9 @@ namespace Eclipse.Models
 
         public void CycleBackward()
         {
-            BrowsePerformanceMonitor.Instance.MoveStarted();
             gameCycle.CycleBackward();
             RefreshGames();
             WarmRowImages();
-        }
-
-        private void RefreshGames()
-        {
-            // The window advances by one game, so exactly one game enters it - but the slots
-            // shift, so every slot takes a new value. Counting how many actually changed is the
-            // measurement the row refactor is aiming at: it should be the window size today.
-            BrowsePerformanceMonitor monitor = BrowsePerformanceMonitor.Instance;
-            GameMatch[] slotsBefore = monitor.IsEnabled ? SnapshotSlots() : null;
-
-            RefreshGamesCore();
-
-            if (slotsBefore != null)
-            {
-                monitor.SlotsAssigned(CountChangedSlots(slotsBefore), slotsBefore.Length);
-
-                foreach (GameMatch slot in SnapshotSlots())
-                {
-                    monitor.RowImageShown(slot?.GameFiles?.FrontImage);
-                }
-            }
         }
 
         private GameMatch[] SnapshotSlots()
@@ -170,28 +147,12 @@ namespace Eclipse.Models
             return slots;
         }
 
-        private int CountChangedSlots(GameMatch[] slotsBefore)
-        {
-            GameMatch[] slotsAfter = SnapshotSlots();
-
-            int changed = 0;
-            for (int slot = 0; slot < slotsAfter.Length; slot++)
-            {
-                if (slotsBefore[slot] != slotsAfter[slot])
-                {
-                    changed++;
-                }
-            }
-
-            return changed;
-        }
-
         // The cycle supplies thirteen slots: one behind the selection, the selection, and eleven
         // ahead of it.
         private const int SlotCount = 13;
         private const int UpcomingSlotCount = SlotCount - 2;
 
-        private void RefreshGamesCore()
+        private void RefreshGames()
         {
             // at the start of the list, reset the previous game at index 0 to null
             if (gameCycle.GetIndexValue(1) == 0)

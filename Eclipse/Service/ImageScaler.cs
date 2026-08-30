@@ -7,7 +7,6 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using System.Xml.Linq;
 
 // pre-scale images so that we dont incur the cost of scaling while moving around in the front end
 // see formula below for logic 
@@ -104,100 +103,40 @@ namespace Eclipse.Service
             return filesToProcess;
         }
 
-        public static List<FileInfo> GetMissingGameFrontImageFiles()
-        {
-            // enumerate platform directories 
-            IEnumerable<string> platformImageDirectories = Directory.EnumerateDirectories(DirectoryInfoHelper.Instance.LaunchboxImagesPath);
-            List<string> foldersToProcess = new List<string>();
-            List<FileInfo> filesToProcess = new List<FileInfo>();
-            string[] imageFolders = GetFrontImageFolders();
-
-            // loop through platform folders
-            foreach (string platformImageDirectory in platformImageDirectories)
-            {
-                // loop through box front image folders 
-                foreach(string imageFolder in imageFolders)
-                {
-                    string path = Path.Combine(platformImageDirectory, imageFolder);
-                    if(Directory.Exists(path))
-                    {
-                        IEnumerable<string> folders = Directory.EnumerateDirectories(path);
-                        foreach (string folder in folders)
-                        {
-                            foldersToProcess.Add(folder);
-                        }
-                        foldersToProcess.Add(path);
-                    }
-                }
-            }
-
-            // get the list of files that are in the launchbox image folders but not in the plug-in image folders
-            foreach(string folder in foldersToProcess)
-            {
-                filesToProcess.AddRange(GetMissingFilesInFolder(folder));
-            }
-
-            return filesToProcess;
-        }
-
-        public static List<FileInfo> GetMissingGameClearLogoFiles()
-        {
-            // enumerate platform directories 
-            IEnumerable<string> platformImageDirectories = Directory.EnumerateDirectories(DirectoryInfoHelper.Instance.LaunchboxImagesPath);
-            List<string> foldersToProcess = new List<string>();
-            List<FileInfo> filesToProcess = new List<FileInfo>();
-            string[] imageFolders = GetClearLogoFolders();
-
-            // loop through platform folders
-            foreach (string platformImageDirectory in platformImageDirectories)
-            {
-                // loop through clear logo image folders 
-                foreach (string imageFolder in imageFolders)
-                {
-                    string path = Path.Combine(platformImageDirectory, imageFolder);
-                    if (Directory.Exists(path))
-                    {
-                        IEnumerable<string> folders = Directory.EnumerateDirectories(path);
-                        foreach (string folder in folders)
-                        {
-                            foldersToProcess.Add(folder);
-                        }
-                        foldersToProcess.Add(path);
-                    }
-                }
-            }
-
-            // get the list of files that are in the launchbox image folders but not in the plug-in image folders
-            foreach (string folder in foldersToProcess)
-            {
-                filesToProcess.AddRange(GetMissingFilesInFolder(folder));
-            }
-
-            return filesToProcess;
-        }
-
         public static Bitmap ResizeImage(Image image, int width, int height)
         {
             var destRect = new Rectangle(0, 0, width, height);
             var destImage = new Bitmap(width, height);
 
-            destImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
-
-            using (var graphics = Graphics.FromImage(destImage))
+            // The bitmap exists before anything is drawn into it, so a failure part-way has to
+            // release it - the caller never receives it and has nothing to dispose. This was the
+            // residual left behind by B-06, whose using blocks covered every path but this one.
+            try
             {
-                graphics.CompositingMode = CompositingMode.SourceCopy;
-                graphics.CompositingQuality = CompositingQuality.HighQuality;
-                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                graphics.SmoothingMode = SmoothingMode.HighQuality;
-                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                destImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
 
-                using (var wrapMode = new ImageAttributes())
+                using (var graphics = Graphics.FromImage(destImage))
                 {
-                    wrapMode.SetWrapMode(WrapMode.TileFlipXY);
-                    graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
+                    graphics.CompositingMode = CompositingMode.SourceCopy;
+                    graphics.CompositingQuality = CompositingQuality.HighQuality;
+                    graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                    graphics.SmoothingMode = SmoothingMode.HighQuality;
+                    graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                    using (var wrapMode = new ImageAttributes())
+                    {
+                        wrapMode.SetWrapMode(WrapMode.TileFlipXY);
+                        graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
+                    }
                 }
+
+                return destImage;
             }
-            return destImage;
+            catch
+            {
+                destImage.Dispose();
+                throw;
+            }
         }
 
         public static IEnumerable<FileInfo> GetMissingFilesInFolder(string directory)
@@ -386,41 +325,6 @@ namespace Eclipse.Service
             }
         }
 
-        public static void ScaleImage(FileInfo fileInfo, int desiredHeight)
-        {
-            try
-            {
-                string file = fileInfo.FullName;
-                int originalHeight, originalWidth, desiredWidth;
-                double scale;
-
-                using (Image originalImage = Image.FromFile(file))
-                {
-                    originalHeight = originalImage.Height;
-                    originalWidth = originalImage.Width;
-                    
-                    scale = (double)((double)desiredHeight / (double)originalHeight);
-                    desiredWidth = (int)(originalWidth * scale);
-
-                    using (Bitmap newBitmap = ResizeImage(originalImage, desiredWidth, desiredHeight))
-                    {
-                        string newFileName = file.Replace(DirectoryInfoHelper.Instance.ApplicationPath, DirectoryInfoHelper.Instance.MediaResolutionSpecificFolder);
-                        string newFolder = Path.GetDirectoryName(newFileName);
-
-                        if (!Directory.Exists(newFolder))
-                        {
-                            Directory.CreateDirectory(newFolder);
-                        }
-                        newBitmap.Save(newFileName);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.LogException(ex, "ScaleImage");
-            }
-        }
-
         // The display Eclipse is running on. DisplayInfoHelper reads it once and is also what
         // names the resolution specific cache folder, so the artwork's size and the folder it is
         // filed under can no longer come from two different monitors.
@@ -439,56 +343,31 @@ namespace Eclipse.Service
             return new string[] { DirectoryInfoHelper.Instance.ClearLogoFolder };
         }
 
-        public static string[] GetFrontImageFolders()
-        {
-            string[] imageFrontFolders;
-            try
-            {
-                // get the index from the big box xml file
-                var launchBoxSettingsDocument = XDocument.Load(DirectoryInfoHelper.Instance.LaunchBoxSettingsFile);
-                var setting = from xmlElement in launchBoxSettingsDocument.Root.Descendants("Settings")
-                              select xmlElement.Element("FrontImageTypePriorities").Value;
-                string value = setting.FirstOrDefault();
-
-                string[] splitter = new string[] { "," };
-                imageFrontFolders = value.Split(splitter, StringSplitOptions.RemoveEmptyEntries);
-            }
-            catch (Exception ex)
-            {
-                LogHelper.LogException(ex, "GetFrontImageFolders");
-
-                // default folders 
-                imageFrontFolders = new string[]
-                {
-                    "GOG Poster",
-                    "Steam Poster",
-                    "Epic Games Poster",
-                    "Box - Front",
-                    "Box - Front - Reconstructed",
-                    "Advertisement Flyer - Front",
-                    "Origin Poster",
-                    "Uplay Thumbnail",
-                    "Fanart - Box - Front",
-                    "Steam Banner"
-                };
-            }
-
-            return imageFrontFolders;
-        }
-
+        /// <summary>
+        /// The image trimmed to the bounds of its visible pixels - the transparent border a
+        /// clear logo is usually shipped with, removed before it is cached.
+        ///
+        /// A row or column counts as border only while it is *entirely* transparent, and only
+        /// from the outside in: the scan stops at the first row that holds anything, so a fully
+        /// transparent row inside the picture is part of the picture and is kept.
+        ///
+        /// This used to keep one transparent row at the top and one column at the left. The
+        /// scans recorded the last *empty* row rather than the first *occupied* one, while the
+        /// bottom and right scans recorded an exclusive bound and were correct - so every logo
+        /// with a border came out one pixel off centre, on two sides only. Cropped output
+        /// therefore changed when this was fixed; see the note in
+        /// docs/plans/media-and-presentation-refactor.md A4.
+        /// </summary>
         public static Bitmap Crop(Bitmap bmp)
         {
             int w = bmp.Width;
             int h = bmp.Height;
 
-            Func<int, bool> allWhiteRow = row =>
+            Func<int, bool> rowIsEmpty = row =>
             {
                 for (int i = 0; i < w; ++i)
                 {
-                    Color color = bmp.GetPixel(i, row);
-                    byte aValue = color.A;
-
-                    if(aValue != 0)
+                    if (bmp.GetPixel(i, row).A != 0)
                     {
                         return false;
                     }
@@ -496,14 +375,11 @@ namespace Eclipse.Service
                 return true;
             };
 
-            Func<int, bool> allWhiteColumn = col =>
+            Func<int, bool> columnIsEmpty = col =>
             {
                 for (int i = 0; i < h; ++i)
                 {
-                    Color color = bmp.GetPixel(col, i);
-                    byte aValue = color.A;
-
-                    if(aValue != 0)
+                    if (bmp.GetPixel(col, i).A != 0)
                     {
                         return false;
                     }
@@ -511,78 +387,76 @@ namespace Eclipse.Service
                 return true;
             };
 
+            // the first row holding anything
             int topmost = 0;
-            for (int row = 0; row < h; ++row)
+            while ((topmost < h) && rowIsEmpty(topmost))
             {
-                if (allWhiteRow(row))
-                    topmost = row;
-                else break;
+                topmost++;
             }
 
-            int bottommost = 0;
-            for (int row = h - 1; row >= 0; --row)
+            if (topmost == h)
             {
-                if (allWhiteRow(row))
-                    bottommost = row;
-                else break;
+                // Nothing visible anywhere, so there are no bounds to crop to and the whole
+                // image is kept. The old code produced a 1x1 sliver here, which was not a
+                // decision - it was the same off-by-one arriving at a degenerate input.
+                return CopyRegion(bmp, 0, 0, w, h);
             }
 
-            int leftmost = 0, rightmost = 0;
-            for (int col = 0; col < w; ++col)
+            // one past the last row holding anything
+            int bottommost = h;
+            while ((bottommost > topmost) && rowIsEmpty(bottommost - 1))
             {
-                if (allWhiteColumn(col))
-                    leftmost = col;
-                else
-                    break;
+                bottommost--;
             }
 
-            for (int col = w - 1; col >= 0; --col)
+            int leftmost = 0;
+            while ((leftmost < w) && columnIsEmpty(leftmost))
             {
-                if (allWhiteColumn(col))
-                    rightmost = col;
-                else
-                    break;
+                leftmost++;
             }
 
-            if (rightmost == 0) rightmost = w; // As reached left
-            if (bottommost == 0) bottommost = h; // As reached top.
-
-            int croppedWidth = rightmost - leftmost;
-            int croppedHeight = bottommost - topmost;
-
-            if (croppedWidth == 0) // No border on left or right
+            int rightmost = w;
+            while ((rightmost > leftmost) && columnIsEmpty(rightmost - 1))
             {
-                leftmost = 0;
-                croppedWidth = w;
+                rightmost--;
             }
 
-            if (croppedHeight == 0) // No border on top or bottom
-            {
-                topmost = 0;
-                croppedHeight = h;
-            }
+            return CopyRegion(bmp, leftmost, topmost, rightmost - leftmost, bottommost - topmost);
+        }
+
+        /// <summary>
+        /// A new bitmap holding one rectangle of another.
+        ///
+        /// The target is created before it is drawn into, so a failure part-way has to release
+        /// it - the caller never receives it and has nothing to dispose. That was the residual
+        /// left behind by B-06.
+        /// </summary>
+        private static Bitmap CopyRegion(Bitmap source, int x, int y, int width, int height)
+        {
+            Bitmap target = new Bitmap(width, height);
 
             try
             {
-                var target = new Bitmap(croppedWidth, croppedHeight);
                 using (Graphics g = Graphics.FromImage(target))
                 {
-                    g.DrawImage(bmp,
-                      new RectangleF(0, 0, croppedWidth, croppedHeight),
-                      new RectangleF(leftmost, topmost, croppedWidth, croppedHeight),
+                    g.DrawImage(source,
+                      new RectangleF(0, 0, width, height),
+                      new RectangleF(x, y, width, height),
                       GraphicsUnit.Pixel);
                 }
+
                 return target;
             }
             catch (Exception ex)
             {
+                target.Dispose();
+
                 throw new Exception(
-                  string.Format("Values are topmost={0} btm={1} left={2} right={3} croppedWidth={4} croppedHeight={5}", topmost, bottommost, leftmost, rightmost, croppedWidth, croppedHeight),
+                  string.Format("Values are x={0} y={1} width={2} height={3} source={4}x{5}", x, y, width, height, source.Width, source.Height),
                   ex);
             }
         }
     }
-
 
     // This implementation defines a very simple comparison  
     // between two FileInfo objects. It only compares the name  

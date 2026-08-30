@@ -11,7 +11,7 @@ edit them, the custom-list definition editor, and how both are persisted.
 
 ### Features
 
-**FEAT-CONFIG-001 — Settings model.** 45 settings covering the default browse category,
+**FEAT-CONFIG-001 — Settings model.** 49 settings covering the default browse category,
 voice search, attract mode, video, layout, detail visibility, alternate versions and
 navigation. Every setting has a default, and a missing setting in a saved file takes its
 default.
@@ -57,9 +57,37 @@ mirrored so the theme XAML had a binding target, and nothing ever set them after
 | Navigation | `PageUpFunction`, `PageDownFunction`, `OpenSettingsPaneOnLeft`, `DisplayOptionsOnEscape`, `BypassDetails` |
 | Voice | `EnableVoiceSearch` |
 | Attract mode | `EnableScreenSaver`, `ScreensaverDelayInSeconds`, and the ten slideshow timings below |
-| Video | `DisableVideos`, `VideoDelayInMilliseconds`, `DefaultVideoVolume` |
+| Video | `DisableVideos`, `DefaultVideoVolume`, and `VideoDelayInMilliseconds` — which now sits on the **Presentation** tab with the rest of the sequence rather than on *Other settings* |
+| Selection sequence | `SelectionSettleMilliseconds`, `SelectionDimMilliseconds`, `SelectionBackgroundFadeInMilliseconds`, `SelectionBackgroundFadeOutMilliseconds`, `SelectionDetailsFadeInMilliseconds` — see below |
 | Presentation | `DisplayFeaturedGame`, `ShowMatchPercent`, `ShowReleaseYear`, `ShowStarRating`, `ShowPlayMode`, `ShowPlatformLogo`, `ShowOptionsIcon`, `SelectedGameDetailsPadding`, `BoxFrontMargin{Left,Right,Top,Bottom}` |
 | Alternate versions | `AdditionalVersionsEnable`, `AdditionalVersionsExcludeRunBefore`, `AdditionalVersionsExcludeRunAfter`, `AdditionalVersionsOnlyEmulatorOrDosBox`, `AdditionalApplicationDisplayField`, `AdditionalVersionsRemovePlayPrefix`, `AdditionalVersionsRemoveVersionPostfix` |
+
+#### Selection sequence timings
+
+Every duration in the selected-game sequence is a setting, on its own **Presentation** tab,
+gathered behind `Service/SelectionTimings.cs`. Each default is the value that was previously
+compiled into `MainWindowView`, so an existing installation — whose settings file has none
+of these keys — behaves exactly as it did before. `OQ-007` asked whether the settle delay
+should be tunable; this is the answer.
+
+| Property | Default | Label on the tab |
+|---|---|---|
+| `SelectionSettleMilliseconds` | 1000 | Selection settles after |
+| `SelectionDimMilliseconds` | 25 | Dim outgoing game |
+| `SelectionDetailsFadeInMilliseconds` | 500 | Game details fade in |
+| `SelectionBackgroundFadeInMilliseconds` | 500 | Background fade in |
+| `SelectionBackgroundFadeOutMilliseconds` | 1000 | Background fade out |
+| `VideoDelayInMilliseconds` | 2000 | Video delay |
+
+`SelectionBackgroundFadeInMilliseconds` covers both background fade-ins — a new game
+settling, and the background returning after a video ends. They were separate literals that
+happened to share a value; they are one setting now, deliberately.
+
+**Deliberately not settings:** the two video failure thresholds and the 1500 ms playback
+start check. They decide when Eclipse gives up on video previews for the rest of a session
+after repeated playback failures. Nothing in the UI reports what they did — it is log-only —
+so their effect cannot be observed, and a wrong value silently disables previews with no
+visible cause. They are named constants in the view instead.
 
 #### Screen saver slideshow timings
 
@@ -127,7 +155,7 @@ about a value.
 | Window entry point | `Plugins/EclipseSettingsMenuItem.cs` |
 | Editor messaging | `Event/Event.cs` — the static `SettingsEvents`; commands are `Helpers/RelayCommand.cs`. No framework dependency. |
 | Window palette & control styles | `EclipseSettingsView.xaml` — `Window.Resources`: seven brushes, styles for the field types, and templates for `ComboBox`, `CheckBox` and `Slider` |
-| Tab layout | `EclipseSettingsView.xaml` — seven `DataTemplate`s in `Grid.Resources`, selected by triggers on `SelectedTabPage` |
+| Tab layout | `EclipseSettingsView.xaml` — eight `DataTemplate`s in `Grid.Resources`, selected by triggers on `SelectedTabPage` |
 | One setting row | `SettingRowStyle` / `HalfWidthRowStyle`; sliders are `View/EclipseSettings/SliderRow.cs` |
 
 Files on disk: `<LaunchBox>/Plugins/Eclipse/Settings/EclipseSettings.json`,

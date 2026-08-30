@@ -95,11 +95,18 @@ The list includes `b`, which is unusual, and omits common words like `for` and `
 **Why it matters:** changing it changes recognition results. **Resolve by:** treat as
 frozen and characterize (`VER-SEARCH-001`); revisit only with recognition data.
 
-### OQ-007 — Is the 1-second selection settle delay tunable?
-**Feature:** FEAT-PRESENT-002 · **Evidence:** hard-coded `new Timer(1000)`
-Video delay is configurable but this is not. **Interpretations:** (a) deliberate constant;
-(b) simply never exposed. **Why it matters:** it is the single biggest contributor to
-perceived responsiveness. **Resolve by:** product decision on whether to expose it.
+### ~~OQ-007~~ — Is the 1-second selection settle delay tunable? **ANSWERED: yes.**
+**Feature:** FEAT-PRESENT-002 · **Evidence:** was a hard-coded constant in `MainWindowView`
+Interpretation (b) was right — never exposed rather than deliberately fixed. The product
+decision was taken to expose it, and it is now `SelectionSettleMilliseconds` on the
+**Presentation** tab, defaulting to the 1000 ms it was compiled with. Four sibling
+durations went with it: the dim, the two background fades and the details fade.
+
+**Not** exposed, and deliberately: the video failure thresholds and the playback start
+check. They are diagnostics rather than presentation — nothing in the UI reports what they
+did, so a user cannot observe the effect of changing them, and a wrong value silently
+disables video previews. See B1 and D3 in
+[plans/media-and-presentation-refactor.md](plans/media-and-presentation-refactor.md).
 
 ### OQ-008 — Should flip-box state persist across navigation?
 **Feature:** FEAT-PRESENT-005 · **Evidence:** `KeyStrategyFlipBox` mutates the game's media
