@@ -59,6 +59,10 @@ namespace Eclipse.State.KeyStrategy
                     keyStrategy = new KeyStrategyVoiceSearch();
                     break;
 
+                case PageFunction.TextSearch:
+                    keyStrategy = new KeyStrategyTextSearch();
+                    break;
+
                 case PageFunction.FlipBox:
                     keyStrategy = new KeyStrategyFlipBox();
                     break;

@@ -51,6 +51,19 @@ namespace Eclipse.Models
         Cancelled
     }
 
+    // Whether a text search can be started right now.
+    //
+    // Mirrors VoiceSearchAvailability, and for the same reason: the index is built in the
+    // background after startup, so there is a window where the feature exists but is not usable
+    // yet. A keypress that appears to do nothing is what M-6 was about.
+    public enum SearchAvailability
+    {
+        Disabled,
+        Preparing,
+        Ready,
+        Failed
+    }
+
     // How far a voice search has got, and therefore what is on screen.
     //
     // This replaces a bool that every way out of VoiceRecognitionState had to reset by hand -
@@ -72,6 +85,16 @@ namespace Eclipse.Models
         // are left exactly as they were, so this is a phase the user browses straight out of
         // rather than a screen they have to dismiss.
         NoMatch
+    }
+
+    // Which arrangement of keys the search screen's on-screen keyboard shows.
+    public enum SearchKeyboardLayout
+    {
+        // A to Z then 0 to 9, six to a row. Navigable without knowing the layout in advance.
+        Alphabetical,
+
+        // The familiar arrangement, in its real ragged shape rather than forced into a grid.
+        Qwerty
     }
 
     public enum BezelType
@@ -123,6 +146,10 @@ namespace Eclipse.Models
         VolumeUp,
         VolumeDown,
         DisplayDetails,
-        PlayGame
+        PlayGame,
+
+        // Appended, never inserted: PageFunction is persisted in EclipseSettings.json as an
+        // integer, so reordering these would silently repoint every existing user's page keys.
+        TextSearch
     }
 }

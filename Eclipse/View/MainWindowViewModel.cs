@@ -38,6 +38,20 @@ namespace Eclipse.View
         /// <summary>The options in the game detail overlay. Driven by GameDetailOptionsState.</summary>
         public GameDetailOptionList GameDetailOptions { get; } = new GameDetailOptionList();
 
+        /// <summary>
+        /// The text search screen: its session, and everything the screen draws.
+        ///
+        /// One property rather than a dozen, deliberately. This class is already the god view
+        /// model S-1 describes, and search brings a query, a keyboard, a result window, a
+        /// selection and a status line - all of which belong together and none of which the rest
+        /// of the theme has any use for.
+        ///
+        /// Built once and kept for the life of the session, which is what makes RULE-SEARCH-035
+        /// work: leaving the search screen keeps the query and the cursor, so an accidental
+        /// Escape costs nothing.
+        /// </summary>
+        public SearchViewModel Search { get; private set; }
+
         public GameCatalog gameCatalog;
         public IReadOnlyList<GameFiles> gameFilesBag;
 
@@ -86,6 +100,18 @@ namespace Eclipse.View
             noticeExpiry.Tick += (sender, args) => LeaveVoiceSearch();
 
             InitializeEclipseSettings();
+
+            // Built here, on the UI thread, for the same reason UiDispatcher is taken here: the
+            // view model that owns a DispatcherTimer has to be constructed on the thread the
+            // timer will run on. Reaching for the singletons rather than being handed them is
+            // what every service in Eclipse does today - B-09 is the item that changes that, and
+            // it is explicitly not a prerequisite for search.
+            //
+            // GameCatalog.Instance does not build the catalog; only touching its Games does, and
+            // nothing here does that until a search has produced results.
+            Search = new SearchViewModel(
+                new Service.Search.SearchSession(Service.Search.SearchIndexService.Instance,
+                                                 eclipseSettings?.SearchKeyboardLayout ?? Models.SearchKeyboardLayout.Alphabetical));
 
             EclipseStateContext = new EclipseStateContext(this);
         }

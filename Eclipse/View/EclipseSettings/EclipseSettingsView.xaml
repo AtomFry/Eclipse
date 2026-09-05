@@ -386,6 +386,11 @@
                 <x:Type TypeName="models:PageFunction"/>
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
+        <ObjectDataProvider x:Key="SearchKeyboardLayoutEnum" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="models:SearchKeyboardLayout"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
         <ObjectDataProvider x:Key="AdditionalVersionDisplayFieldEnum" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
             <ObjectDataProvider.MethodParameters>
                 <x:Type TypeName="models:AdditionalApplicationDisplayField"/>
@@ -483,6 +488,18 @@
                         <ComboBox ToolTip="Specify the functionality of the page down button"
                                   SelectedItem="{Binding Settings.PageDownFunction, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                   ItemsSource="{Binding Source={StaticResource PageFunctionEnum}}"/>
+                    </HeaderedContentControl>
+
+                    <ContentControl Style="{StaticResource HalfWidthRowStyle}">
+                        <CheckBox IsChecked="{Binding Settings.EnableTextSearch, Mode=TwoWay}"
+                                  ToolTip="Check this box to enable searching for games with an on-screen keyboard"
+                                  Content="Enable search"/>
+                    </ContentControl>
+
+                    <HeaderedContentControl Style="{StaticResource SettingRowStyle}" Header="Keyboard layout">
+                        <ComboBox ToolTip="Which on-screen keyboard the search screen shows. Alphabetical is easier to navigate without knowing the layout in advance"
+                                  SelectedItem="{Binding Settings.SearchKeyboardLayout, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  ItemsSource="{Binding Source={StaticResource SearchKeyboardLayoutEnum}}"/>
                     </HeaderedContentControl>
 
                     <ContentControl Style="{StaticResource HalfWidthRowStyle}">

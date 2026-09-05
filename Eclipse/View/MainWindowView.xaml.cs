@@ -224,7 +224,21 @@ namespace Eclipse.View
         public bool CanPlayVideo =>
             !disableVideos
             && !videoAbandonedForSession
+            && !TypingInSearch
             && !string.IsNullOrWhiteSpace(activeVideoPath);
+
+        /// <summary>
+        /// Whether the user is typing rather than looking at results.
+        ///
+        /// The search results are an ordinary list, so moving through them settles and plays a
+        /// video exactly as browsing does - which is what we want once the user is in the row.
+        /// While they are still on the keyboard the selection changes on every keystroke, and a
+        /// video starting up behind the keyboard on each one is noise rather than preview. The
+        /// artwork still follows the selection either way; only the video waits.
+        /// </summary>
+        private bool TypingInSearch =>
+            mainWindowViewModel?.IsDisplayingSearch == true
+            && mainWindowViewModel.Search?.IsOnKeyboard == true;
 
         /// <summary>
         /// Hands a file to the player. Close() first: MediaElement is a wrapper over the legacy

@@ -83,5 +83,18 @@ namespace Eclipse.State
                 TransitionToState(GetState(typeof(VoiceRecognitionState)));
             }
         }
+
+        /// <summary>
+        /// Opens the text search screen. Unlike voice search this needs nothing to be ready - a
+        /// user can type while the index is still building, and the screen says so rather than
+        /// refusing to open.
+        /// </summary>
+        public void DoTextSearch()
+        {
+            if (EclipseSettingsDataProvider.Instance.EclipseSettings.EnableTextSearch)
+            {
+                TransitionToState(GetState(typeof(TextSearchState)));
+            }
+        }
     }
 }

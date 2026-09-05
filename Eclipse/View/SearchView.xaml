@@ -1,0 +1,218 @@
+<UserControl x:Class="Eclipse.View.SearchView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:myconverters="clr-namespace:Eclipse.Converters"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="800"
+             IsHitTestVisible="False"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch"
+             Name="SearchUserControl">
+
+    <!--
+        The search panel: a query line, a status line and the on-screen keyboard.
+
+        NOT the whole screen. The results are an ordinary Eclipse GameList installed by
+        TextSearchState, so the box art row, the selection box, the background artwork, the video
+        preview and the selected game's details are all drawn by the browsing surface underneath
+        this - unchanged, and behaving exactly as they do anywhere else. This control occupies
+        the upper left, where the clear logo and game details normally sit; the host hides those
+        while search is open.
+
+        DataContext is the SearchViewModel, assigned by the host in MainWindowView, so every
+        binding here is against search state rather than the whole theme's view model.
+    -->
+
+    <UserControl.Resources>
+        <myconverters:StringLengthToVisibilityConverter x:Key="EmptyQueryVisibility" Empty="Visible" NonEmpty="Collapsed"/>
+    </UserControl.Resources>
+
+    <!-- The 32 x 18 design stage, so this lands in the same coordinate space as everything else
+         in the theme. Only the upper left of it is used. -->
+    <Grid Name="Grid_Search" IsHitTestVisible="False">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- A soft backing behind the panel only, so the keyboard reads over whatever artwork is
+             on the right without blacking the artwork out. Fades away to the right so there is
+             no hard edge across the middle of the screen. -->
+        <Rectangle Grid.Row="0" Grid.RowSpan="8" Grid.Column="0" Grid.ColumnSpan="17"
+                   IsHitTestVisible="False"
+                   Fill="Black">
+            <Rectangle.OpacityMask>
+                <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                    <GradientStop Offset="0" Color="#E6000000"/>
+                    <GradientStop Offset="0.72" Color="#E6000000"/>
+                    <GradientStop Offset="1" Color="Transparent"/>
+                </LinearGradientBrush>
+            </Rectangle.OpacityMask>
+        </Rectangle>
+
+        <!-- ===================== QUERY LINE ===================== -->
+
+        <Grid Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Grid.ColumnSpan="14"
+              IsHitTestVisible="False">
+            <TextBlock Text="{Binding Query}"
+                       IsHitTestVisible="False"
+                       FontFamily="Calibri" FontWeight="Normal" FontSize="48"
+                       Foreground="GhostWhite"
+                       VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis"/>
+
+            <TextBlock Text="Search for a game"
+                       IsHitTestVisible="False"
+                       FontFamily="Calibri" FontWeight="Light" FontSize="48"
+                       Foreground="#40FFFFFF"
+                       VerticalAlignment="Center"
+                       Visibility="{Binding Query, Converter={StaticResource EmptyQueryVisibility}}"/>
+        </Grid>
+
+        <!-- The status line, which is mostly the live result count. It is the most useful thing
+             on the panel: it says whether the next character will help or whether the user has
+             already over-narrowed. -->
+        <TextBlock Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="14"
+                   Text="{Binding Status}"
+                   IsHitTestVisible="False"
+                   FontFamily="Calibri" FontWeight="Light" FontSize="22"
+                   Foreground="DimGray"
+                   VerticalAlignment="Top"/>
+
+        <!-- ===================== KEYBOARD ===================== -->
+
+        <!-- Nested rather than one flat grid, because the rows are ragged: UniformGrid Rows="1"
+             makes the keys of a row share that row's width, so the function row's three keys are
+             wide and a QWERTY row of seven is wider per key than the number row of ten. Nothing
+             has to compute a span. -->
+        <ItemsControl Grid.Row="3" Grid.RowSpan="5" Grid.Column="1" Grid.ColumnSpan="14"
+                      ItemsSource="{Binding Keyboard.Rows}"
+                      IsHitTestVisible="False"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Columns="1"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <ItemsControl ItemsSource="{Binding}"
+                                  IsHitTestVisible="False"
+                                  HorizontalAlignment="Stretch"
+                                  VerticalAlignment="Stretch">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Rows="1"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <!-- Three states, and the third is the one that matters:
+                                     unselected, selected-and-taking-input, and selected-but-the
+                                     -cursor-is-in-the-results. Without the last, a key stays lit
+                                     while the user is browsing results and looks like it is
+                                     still active. -->
+                                <Border Name="KeyTile"
+                                        Margin="3"
+                                        CornerRadius="4"
+                                        IsHitTestVisible="False"
+                                        BorderThickness="2"
+                                        BorderBrush="Transparent"
+                                        Background="#18FFFFFF">
+                                    <TextBlock Name="KeyLabel"
+                                               Text="{Binding Label}"
+                                               IsHitTestVisible="False"
+                                               FontFamily="Calibri"
+                                               FontSize="24"
+                                               FontWeight="Normal"
+                                               Foreground="#B0FFFFFF"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                </Border>
+
+                                <DataTemplate.Triggers>
+                                    <!-- Selected, and the keyboard has the cursor: a filled tile
+                                         with dark text on it. -->
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding Selected}" Value="True"/>
+                                            <Condition Binding="{Binding DataContext.IsOnKeyboard, ElementName=SearchUserControl}" Value="True"/>
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter TargetName="KeyTile" Property="Background" Value="GhostWhite"/>
+                                        <Setter TargetName="KeyLabel" Property="Foreground" Value="Black"/>
+                                        <Setter TargetName="KeyLabel" Property="FontWeight" Value="UltraBlack"/>
+                                    </MultiDataTrigger>
+
+                                    <!-- Selected, but the cursor has moved to the results: keep
+                                         the place with an outline, not a fill. -->
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding Selected}" Value="True"/>
+                                            <Condition Binding="{Binding DataContext.IsOnKeyboard, ElementName=SearchUserControl}" Value="False"/>
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter TargetName="KeyTile" Property="BorderBrush" Value="#66FFFFFF"/>
+                                        <Setter TargetName="KeyLabel" Property="Foreground" Value="GhostWhite"/>
+                                    </MultiDataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Grid>
+</UserControl>

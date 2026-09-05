@@ -1,6 +1,7 @@
 ﻿using Eclipse.Helpers;
 using Eclipse.Models;
 using Eclipse.Service;
+using Eclipse.Service.Search;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -91,6 +92,13 @@ namespace Eclipse.State
                 // hold up the first screen. Voice search reports itself as still preparing
                 // until this finishes.
                 SpeechRecognizerService.Instance.PrepareInBackground();
+
+                // The text search index builds in the background for the same reason, and
+                // reports itself as preparing until it is done. Started here rather than after
+                // the lists are built so that both search features are getting ready while the
+                // first screen is assembled; GameCatalog guards its own setup, so arriving from
+                // this thread and the background one at once waits rather than building twice.
+                SearchIndexService.Instance.PrepareInBackground();
 
                 // populate the lists of games by different categories
                 EclipseStateContext.MainWindowViewModel.CreateGameLists();

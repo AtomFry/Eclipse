@@ -31,9 +31,14 @@ namespace Eclipse.Service
                         new Option<ListCategoryType> { Name = "Random", EnumOption = ListCategoryType.RandomGame, SortOrder = 9, ShortDescription = "Random", LongDescription = "Random game", Default = false },
                     };
 
+                    if (eclipseSettings.EnableTextSearch)
+                    {
+                        options.Add(new Option<ListCategoryType> { Name = "Search", EnumOption = ListCategoryType.TextSearch, SortOrder = 10, ShortDescription = "Search", LongDescription = "Search", Default = false });
+                    }
+
                     if (eclipseSettings.EnableVoiceSearch)
                     {
-                        options.Add(new Option<ListCategoryType> { Name = "Voice search", EnumOption = ListCategoryType.VoiceSearch, SortOrder = 10, ShortDescription = "Voice", LongDescription = "Voice search", Default = false });
+                        options.Add(new Option<ListCategoryType> { Name = "Voice search", EnumOption = ListCategoryType.VoiceSearch, SortOrder = 11, ShortDescription = "Voice", LongDescription = "Voice search", Default = false });
                     }
 
                     IOrderedEnumerable<Option<ListCategoryType>> orderedOptions = options.OrderByDescending(opt => opt.Default).ThenBy(opt => opt.SortOrder);

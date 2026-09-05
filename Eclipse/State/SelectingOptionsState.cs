@@ -40,6 +40,10 @@ namespace Eclipse.State
             {
                 eclipseStateContext.DoVoiceSearch();
             }
+            else if (category == ListCategoryType.TextSearch)
+            {
+                eclipseStateContext.DoTextSearch();
+            }
             else if (category == ListCategoryType.RandomGame)
             {
                 eclipseStateContext.MainWindowViewModel.Navigator.MoveToRandomGame();

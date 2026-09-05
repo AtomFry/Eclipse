@@ -16,6 +16,7 @@ namespace Eclipse.Models
                 case ListCategoryType.MoreLikeThis:
                 case ListCategoryType.RandomGame:
                 case ListCategoryType.VoiceSearch:
+                case ListCategoryType.TextSearch:
                     isValid = false;
                     break;
 
@@ -40,7 +41,13 @@ namespace Eclipse.Models
         PlayMode,
         Developer,
         Publisher,
-        MoreLikeThis
+        MoreLikeThis,
+
+        // Appended, never inserted: ListCategoryType is persisted as an integer in both
+        // EclipseSettings.json (DefaultListCategoryType) and CustomLists.json
+        // (CustomListDefinition.ListCategoryTypes), so reordering these would silently change
+        // what every existing user's saved values mean.
+        TextSearch
     }
 
     public class OptionList : INotifyPropertyChanged

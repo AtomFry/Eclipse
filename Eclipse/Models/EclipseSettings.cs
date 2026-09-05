@@ -55,6 +55,53 @@ namespace Eclipse.Models
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public bool EnableVoiceSearch { get; set; }
 
+        /// <summary>
+        /// Whether text search is available. Gates the background index build and the picker
+        /// entry, exactly as EnableVoiceSearch does for voice.
+        /// </summary>
+        [DefaultValue(true)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public bool EnableTextSearch { get; set; }
+
+        /// <summary>
+        /// Which on-screen keyboard the search screen shows.
+        ///
+        /// Alphabetical by default. It is what Netflix and tvOS use on exactly this input
+        /// device, and it is the layout someone can navigate without knowing the layout in
+        /// advance - which is one of the requests text search exists to answer. QWERTY is faster
+        /// for anyone who already knows where the letters are, so it is offered rather than
+        /// argued about.
+        /// </summary>
+        [DefaultValue(SearchKeyboardLayout.Alphabetical)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public SearchKeyboardLayout SearchKeyboardLayout { get; set; }
+
+        /// <summary>
+        /// Whether a mistyped word can still find a game. Stage 3 of the text search plan; the
+        /// setting ships now so the schema changes once rather than once per stage. Nothing
+        /// reads it yet.
+        /// </summary>
+        [DefaultValue(true)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public bool SearchFuzzyMatching { get; set; }
+
+        /// <summary>
+        /// How many metadata filter suggestions the search screen offers at once. Stage 4;
+        /// see the note on SearchFuzzyMatching. Nothing reads it yet.
+        /// </summary>
+        [DefaultValue(8)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public int SearchMaxSuggestions { get; set; }
+
+        /// <summary>
+        /// How many rows a committed search produces once results are grouped by facet. Stage 5;
+        /// see the note on SearchFuzzyMatching. Nothing reads it yet - stage 2 commits to a
+        /// single ranked list.
+        /// </summary>
+        [DefaultValue(6)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public int SearchCommitRowCount { get; set; }
+
         [DefaultValue(true)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public bool EnableScreenSaver { get; set; }
