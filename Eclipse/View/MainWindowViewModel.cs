@@ -660,10 +660,26 @@ namespace Eclipse.View
 
             return games[random.Next(games.Count)];
         }
+        /// <summary>
+        /// Whether the next-list teaser is showing a different list from the current one.
+        ///
+        /// A set with only one list in it has nothing to tease: the list cycle's window is two
+        /// wide, so both slots wrap round to the same list and the row is drawn twice, identical,
+        /// one above the other. That has always been true of any single-list set - a voice search
+        /// that recognised one phrase, a platform set on a single-platform install - it was just
+        /// rare enough not to be noticed until text search made it the normal case.
+        /// </summary>
+        public bool HasDistinctNextList =>
+            NextGameList != null && !ReferenceEquals(NextGameList, CurrentGameList);
+
         private void OnSelectionChanged(object sender, EventArgs e)
         {
             CurrentGameList = Navigator.CurrentList;
             NextGameList = Navigator.NextList;
+
+            // Derived from both of the above, so it is announced after both have been assigned
+            // rather than from either setter.
+            PropertyChanged(this, new PropertyChangedEventArgs("HasDistinctNextList"));
 
             // These two lists are the only ones on screen, so they are the only ones whose
             // artwork is worth decoding ahead. Moving between lists brings a row that has never

@@ -136,23 +136,33 @@ namespace Eclipse.Tests.Search
         // Ranking.
         // ------------------------------------------------------------------
 
+        /// <summary>
+        /// All three match "sonic" equally well and none has a rating, so the order is decided
+        /// by brevity first and position only after it.
+        ///
+        /// Note what that means for the last two: "Adventures of Sonic" beats the long
+        /// collection despite not starting with the word, because a three word title beats a
+        /// seven word one and position is the weakest signal there is. That is the deliberate
+        /// consequence of the ranking rework - the same ordering that stops "Zelda II" beating
+        /// "The Legend of Zelda".
+        /// </summary>
         [Fact]
         public void Results_come_back_best_first()
         {
             TitleIndex index = IndexOf(
-                "Sonic the Hedgehog 2 Special Edition Collection",   // 0 - long
-                "Sonic the Hedgehog",                                // 1 - short
-                "Adventures of Sonic");                              // 2 - matches late
+                "Sonic the Hedgehog 2 Special Edition Collection",   // 0 - seven words
+                "Sonic the Hedgehog",                                // 1 - three, starts with it
+                "Adventures of Sonic");                              // 2 - three, matches late
 
             int[] found = Search(index, "sonic");
 
             Assert.Equal(1, found[0]);
-            Assert.Equal(0, found[1]);
-            Assert.Equal(2, found[2]);
+            Assert.Equal(2, found[1]);
+            Assert.Equal(0, found[2]);
         }
 
         [Fact]
-        public void Scores_descend_through_the_result_list()
+        public void Ranks_descend_through_the_result_list()
         {
             TitleIndex index = IndexOf("Sonic the Hedgehog", "Sonic Adventure Collection Special Edition", "Sonata");
 
@@ -160,8 +170,18 @@ namespace Eclipse.Tests.Search
 
             for (int index2 = 1; index2 < hits.Count; index2++)
             {
-                Assert.True(hits[index2 - 1].Score >= hits[index2].Score);
+                Assert.True(hits[index2 - 1].Rank.CompareTo(hits[index2].Rank) >= 0);
             }
+        }
+
+        [Fact]
+        public void Every_result_carries_the_rank_that_put_it_there()
+        {
+            TitleIndex index = IndexOf("Sonic the Hedgehog", "Sonic Adventure");
+
+            IReadOnlyList<SearchHit> hits = SearchEngine.Search(SearchQuery.Parse("son"), index);
+
+            Assert.All(hits, hit => Assert.True(hit.Rank.IsMatch));
         }
 
         /// <summary>

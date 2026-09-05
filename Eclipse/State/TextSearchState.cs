@@ -166,22 +166,17 @@ namespace Eclipse.State
         }
 
         /// <summary>
-        /// RULE-SEARCH-042 - Page Down closes the search panel and leaves the user browsing the
-        /// results, without having to walk down to the row first.
+        /// Page Down does nothing here.
+        ///
+        /// It used to commit the search - install the results and close the panel. That made
+        /// sense while the results were a preview of a list that did not exist yet; under the
+        /// overlay design they are already the live list, so there is nothing to commit. The
+        /// input is still swallowed rather than declined, because handing Page Down to Big Box
+        /// from inside the search screen would drop the user somewhere unrelated.
         /// </summary>
         public bool OnPageDown(EclipseStateContext eclipseStateContext)
         {
             attractModeService.RestartAttractMode();
-
-            if (!Session(eclipseStateContext).HasResults)
-            {
-                // Nothing to hand over. Stay put rather than dumping the user into an empty
-                // library - they are mid-search and the query is still there to edit.
-                return true;
-            }
-
-            CloseSearch(eclipseStateContext, keepResults: true);
-            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
             return true;
         }
 

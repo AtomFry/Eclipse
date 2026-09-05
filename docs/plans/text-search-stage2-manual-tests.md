@@ -1,7 +1,7 @@
 # Stage 2 — manual validation checklist
 
 Everything in stage 2 of [text-search.md](text-search.md) that a person has to look at, in the
-order it is quickest to work through. 435 automated tests already cover the engine, the
+order it is quickest to work through. 445 automated tests already cover the engine, the
 keyboard cursor and the session state machine; **nothing below repeats those**. What is here is
 what only eyes and a controller can answer: does it look right, does it feel right, and does it
 still leave the rest of Eclipse alone.
@@ -16,7 +16,7 @@ Report failures by number (`T4.3 failed: …`).
 | 🟡 | Worth real attention — integration points, or things I fixed late. |
 | ⚪ | Confirmation. Expected to pass; cheap to check. |
 
-**If you only have twenty minutes**, do §0, §3, §7, §10 and §16.
+**If you only have twenty minutes**, do §0, §7, §8b, §8c and §10.
 
 ---
 
@@ -159,13 +159,29 @@ row does, this row now does — because it *is* that row.
 
 ## §8 — Page Up / Page Down inside search 🟡
 
-These are hard-coded inside the search screen regardless of your mapping.
-
 | | Step | Expected |
 |---|---|---|
 | T8.1 | 🟡 Type a few characters. Press **Page Up**. | Acts as backspace — one character removed. |
 | T8.2 | 🟡 Press **Page Up** repeatedly until the query is empty, then once more. | Nothing breaks; query stays empty. |
-| T8.3 | 🟡 Type a query with results. Press **Page Down**. | The panel closes and you are browsing the results (which were already on screen). No detail overlay opens. |
+| T8.3 | 🟡 Type a query with results. Press **Page Down**. | **Nothing happens.** It used to commit the search; under the overlay design the results are already the live list, so there is nothing to commit. The press is swallowed rather than passed to Big Box. |
+| T8.4 | 🟡 With a page key mapped to `TextSearch`, open search with it, then press it again. | Nothing. Escape is the way out. Tell me if a toggle would feel better — it is a one-liner. |
+
+## §8b — The duplicate row is gone 🔴 *(new)*
+
+| | Step | Expected |
+|---|---|---|
+| T8b.1 | 🔴 Search for something with results. | **One** row of box art, not two identical ones stacked. |
+| T8b.2 | 🔴 Leave search and browse a normal category. | The next-list teaser is still there below the current row, showing a *different* list, exactly as before. |
+| T8b.3 | 🟡 Run a voice search that matches a single phrase. | Also shows one row rather than two — the fix is general, not search-specific. |
+
+## §8c — Ranking 🔴 *(new)*
+
+| | Step | Expected |
+|---|---|---|
+| T8c.1 | 🔴 Type `zel` or `zelda`. | **The Legend of Zelda is first**, not Zelda II. This is the case the rework was for — compare against your screenshot. |
+| T8c.2 | 🔴 Type a few franchise names you own — `mario`, `sonic`, `final fantasy`, `castlevania`. | The game you'd expect is at or near the top. Ratings drive this, so a franchise where you have not rated anything falls back to shortest title first. |
+| T8c.3 | 🟡 Find a game with a "Special Edition" or "Collection" variant. | The plain game outranks the long variant. |
+| T8c.4 | 🟡 Watch the order as you type the last letter of a word. | It should not lurch — completing a word does not change the ranking. |
 
 ---
 
@@ -191,7 +207,7 @@ These are hard-coded inside the search screen regardless of your mapping.
 | T10.5 | 🟡 Press **Up/Down**. | The list set has only one list, so it wraps back to itself. Expected for stage 2 — faceted rows are stage 5. |
 | T10.6 | 🟡 Play a game from the search results. Exit the game. | Returns normally; History/Favorites lists update as usual. |
 | T10.7 | 🟡 Turn on **"bypass game details"** in settings, restart, repeat T10.1. | The game **launches directly** instead of opening the overlay — matching what Enter does while browsing. |
-| T10.8 | ⚪ Open search, type something matching nothing, press **Page Down**. | Nothing happens — you stay in search with your query intact, rather than being dumped into an empty list. |
+| T10.8 | ⚪ Open search, type something matching nothing. | You stay in search with your query intact — the browsing surface is hidden rather than showing a stale row. |
 
 ---
 

@@ -163,7 +163,7 @@ Focus opens on `Keyboard` and returns there whenever the zone it was in disappea
 | RULE-SEARCH-036 | Left never opens the options pane inside the search screen, whatever `OpenSettingsPaneOnLeft` says. | RULE-INPUT-002 is a browsing rule. Falling into the options pane from the leftmost key of the keyboard would be indefensible. |
 | RULE-SEARCH-037 | Holding a direction repeats the move. Held movement never crosses a zone boundary. | Lets the user travel across the key grid quickly without shooting past it into the results. |
 | RULE-SEARCH-038 | The `clear` key is context-sensitive: it clears the query buffer while there is text, and clears **all applied filters** when the buffer is empty and chips exist. Its label changes to say which it will do. | With eight inputs there is no room for a separate "clear filters" key, and a user who has over-narrowed needs one press to start again rather than one press per chip. The changing label is what stops a context-sensitive destructive key from being a surprise — it is part of the rule, not decoration. |
-| RULE-SEARCH-042 | Inside the search screen, Page Up is Backspace and Page Down is *commit and browse*, regardless of how the user has mapped them. **Hard-coded in v1**; making them settings is deferred to `OQ-024`. | Their configured browse functions have no meaning here; two free buttons make text entry materially faster. |
+| RULE-SEARCH-042 | Inside the search screen, Page Up is Backspace, regardless of how the user has mapped it. Page Down does nothing. **Hard-coded**; making it a setting is deferred to `OQ-024`. | Its configured browse function has no meaning here, and one free button makes text entry materially faster — on QWERTY, reaching the `delete` key and coming back costs about eight presses against one. Page Down originally committed the search; under the overlay design (§6) the results are already the live list, so there is nothing left to commit. |
 
 ### 4.3 Keyboard layout
 
@@ -334,25 +334,47 @@ machinery earns little here and costs predictability. A fixed additive table is 
 easier to explain, and easy to unit test — and it lives in one place rather than being spread
 across the scorer the way the voice percentages currently are.
 
-**These are initial constants, not a ranking model.** They are a starting point chosen to be
-reasonable and, more importantly, to be *tunable with evidence* — the architecture exists so
-that changing them is cheap and so that a test says what changed. Expect several of them to be
-wrong on a real library: exact match may prove too dominant, the first-token bonus too strong,
-brevity may do odd things to collections and compilations, and popularity may turn out not to
-belong in a search ranking at all. None of that is a design failure; discovering it is the
-point of the golden corpus (§12).
+> **Revised after stage 2, on evidence.** This section originally specified a single additive
+> score. It was built that way, shipped, and the golden corpus immediately caught the problem
+> the section itself predicted — see "Why not one number" below. What follows is the design as
+> it now stands.
 
-| Component | Initial value | Rationale |
+**Rank by comparing signals in order of authority, not by adding them up.** Match quality
+decides; the softer signals only break ties beneath it. A weak signal can never outvote a strong
+one, because they are never summed.
+
+| Order | Signal | Value |
 |---|---|---|
-| Exact term match | 100 | |
-| Prefix match | 80 + 20 × (query length ÷ term length) | a longer prefix of a term is a better match |
-| Fuzzy match, 1 edit | 55 | below any prefix match |
-| Fuzzy match, 2 edits | 40 | |
-| Phonetic match | 45 | stage 5 |
-| First-token bonus | +15 | `Sonic the Hedgehog` beats `Dr. Robotnik's Mean Bean Machine` for `sonic` |
-| Coverage | +10 × (query terms matched ÷ query terms) | all query terms must match; this rewards matching them well |
-| Brevity | +5 × (1 − min(1, title tokens ÷ 8)) | `Sonic the Hedgehog` beats `Sonic the Hedgehog 2 Special Edition Collection` |
-| Popularity | 0-5 from play count and star rating | tiebreak only |
+| 1 | **Match quality**, averaged across query terms | exact 100; prefix 80 + 20 × (query length ÷ term length); fuzzy 1 edit 55, 2 edits 40; phonetic 45 (stage 5) |
+| 2 | **Popularity** | 0–5 from star rating and play count |
+| 3 | **Brevity** | 5 × (1 − min(1, title tokens ÷ 8)) |
+| 4 | **Matched the first token** | boolean |
+| 5 | **Catalog index** | ascending — deterministic, and it is sort-title order |
+
+All query terms must match (AND). Two terms narrow; they never widen.
+
+**Why not one number.** The numbers were the problem. A flat +15 for matching a title's first
+word is larger than the entire popularity range plus the entire brevity range combined, so it
+silently decided every result where match quality tied. For `zelda` it put *Zelda II: The
+Adventure of Link* above *The Legend of Zelda* — the sequel starts with the word, the original
+has it fourth behind an article. No choice of weights fixes that class of problem in general;
+they only move which case is wrong. Ordering removes the possibility.
+
+**Why popularity, and why second.** Nothing in the *text* distinguishes those two Zelda titles —
+both contain the word exactly, and the sequel has the better textual claim. What separates them
+is which one is famous, and the only evidence of that available here is the rating and the play
+count. The plan originally guessed popularity "may turn out not to belong in a search ranking at
+all"; the evidence says the opposite. It belongs, and it was being shouted over.
+
+**Why this is robust without ratings.** On a library where nothing is rated, popularity ties at
+zero everywhere and brevity decides — and brevity points the same way: four words beats six.
+The answer is right either way, which is what makes it safe to ship to libraries we cannot see.
+
+The values in the table are still initial constants. What is no longer up for tuning is whether
+a weak signal can outvote a strong one — it cannot, by construction.
+
+The **coverage** term from the original table is gone. It was `+10 × (matched ÷ total)`, which is
+constant at 1.0 under strict AND, and in an ordered comparison a constant cannot break a tie.
 
 **All query terms must match** (AND). Two terms narrow; they never widen. This is the behaviour
 every user expects from a search box, and it is the opposite of what the voice path does, where
@@ -400,7 +422,14 @@ shifting set of rows obscures.
 
 ### 6.2 On commit: the ordinary browsing surface, several rows
 
-Pressing Enter on the results row (or Page Down, RULE-SEARCH-042) installs the results as a
+> **Superseded in part by the stage 2 overlay rework.** There is no longer a commit step: the
+> results are installed as a `GameListSet` under `ListCategoryType.TextSearch` and shown *live*,
+> on every keystroke, so the browsing surface is already displaying them while the user types.
+> Enter on a result closes the panel and opens the game; Escape closes it and restores the
+> user's previous position. What survives from this section is the shape of the installed set —
+> which is still one ranked list, with the faceted rows below still belonging to stage 5.
+
+Pressing Enter on the results row installs the results as a
 `GameListSet` under a new `ListCategoryType.TextSearch` and closes the search screen. The user
 lands in the normal browsing UI with:
 

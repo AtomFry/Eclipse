@@ -6,21 +6,21 @@ namespace Eclipse.Service.Search
     /// <summary>One game a query matched, and how well. A value, not an object.</summary>
     public readonly struct SearchHit
     {
-        public SearchHit(int catalogIndex, double score)
+        public SearchHit(int catalogIndex, SearchRank rank)
         {
             CatalogIndex = catalogIndex;
-            Score = score;
+            Rank = rank;
         }
 
         /// <summary>The game's position in GameCatalog.Games.</summary>
         public int CatalogIndex { get; }
 
-        /// <summary>From SearchScoring. Carried so ranking can be seen and tested.</summary>
-        public double Score { get; }
+        /// <summary>Why it ranked where it did. Carried so ranking can be seen and tested.</summary>
+        public SearchRank Rank { get; }
 
         public override string ToString()
         {
-            return $"{CatalogIndex} ({Score:0.###})";
+            return $"{CatalogIndex} ({Rank})";
         }
     }
 
@@ -78,20 +78,20 @@ namespace Eclipse.Service.Search
                     continue;
                 }
 
-                double score = SearchScoring.Score(game, query);
+                SearchRank rank = SearchScoring.Rank(game, query);
 
-                // The index said this game carries every term, so a zero here means the two
+                // The index said this game carries every term, so a non-match here means the two
                 // disagree - a game whose posting was written by a term its title cannot be
                 // scored against. Skipped rather than ranked last, because a result the user
                 // cannot see the reason for is worse than one that is missing.
-                if (score > 0)
+                if (rank.IsMatch)
                 {
-                    hits.Add(new SearchHit(catalogIndex, score));
+                    hits.Add(new SearchHit(catalogIndex, rank));
                 }
             }
 
             // Best first, then by catalog index - which is the library's own sort-title order,
-            // so games that score identically come out in a stable, meaningful sequence rather
+            // so games that rank identically come out in a stable, meaningful sequence rather
             // than in whatever order the intersection produced.
             hits.Sort(CompareHits);
 
@@ -103,10 +103,13 @@ namespace Eclipse.Service.Search
             return hits;
         }
 
+        // Rank descending - SearchRank compares with greater meaning better - then catalog index
+        // ascending, so a pair that ties on every ranking signal is still ordered the same way
+        // every time.
         private static int CompareHits(SearchHit left, SearchHit right)
         {
-            int byScore = right.Score.CompareTo(left.Score);
-            return byScore != 0 ? byScore : left.CatalogIndex.CompareTo(right.CatalogIndex);
+            int byRank = right.Rank.CompareTo(left.Rank);
+            return byRank != 0 ? byRank : left.CatalogIndex.CompareTo(right.CatalogIndex);
         }
 
         /// <summary>

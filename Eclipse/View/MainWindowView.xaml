@@ -1140,7 +1140,10 @@
                     </StackPanel>
                 </Grid>
 
-                <!-- Next list game images -->
+                <!-- Next list game images.
+                     Hidden when the next list is the same object as the current one, which is
+                     what a set with only one list in it produces - the cycle's two-wide window
+                     wraps round to the same list and the row would be drawn twice, identical. -->
                 <Grid Name="NextListGrid"
                       IsHitTestVisible="False"
                   Grid.Row="0"
@@ -1148,7 +1151,8 @@
                   Grid.Column="1"
                   Grid.ColumnSpan="1"
                   HorizontalAlignment="Stretch"
-                  VerticalAlignment="Stretch">
+                  VerticalAlignment="Stretch"
+                  Visibility="{Binding HasDistinctNextList, Converter={StaticResource BoolToVis}}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="1*"/>
                         <RowDefinition Height="5*"/>
@@ -1219,7 +1223,7 @@
                     </StackPanel>
                 </Grid>
 
-                <!-- Previous game in current list -->
+                <!-- Previous game in the next list. Hidden with the row it belongs to. -->
                 <Grid Name="NextListPrev1GameGrid"
                       IsHitTestVisible="False"
                       Grid.Row="0"
@@ -1227,7 +1231,8 @@
                       Grid.Column="1"
                       Grid.ColumnSpan="1"
                       HorizontalAlignment="Stretch"
-                      VerticalAlignment="Stretch">
+                      VerticalAlignment="Stretch"
+                      Visibility="{Binding HasDistinctNextList, Converter={StaticResource BoolToVis}}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="1*"/>
                         <RowDefinition Height="5*"/>

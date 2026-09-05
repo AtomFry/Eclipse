@@ -267,28 +267,59 @@ namespace Eclipse.Tests.Search
         // ------------------------------------------------------------------
 
         /// <summary>
-        /// RANKING OBSERVATION - the first-token bonus outweighs everything else.
+        /// The case the ranking rework exists for.
         ///
-        /// Searching "zelda" puts "Zelda II: The Adventure of Link" above "The Legend of Zelda",
-        /// because the sequel starts with the word and the original has it fourth, behind an
-        /// article. Fifteen points for matching the first token is more than the whole
-        /// popularity range (five) plus the whole brevity range (five) combined, so nothing can
-        /// outvote it.
+        /// "zelda" matches both "The Legend of Zelda" and "Zelda II: The Adventure of Link"
+        /// exactly, and nothing in the *text* says which one the user meant - the sequel even
+        /// has the better claim, since it starts with the word while the original has it fourth,
+        /// behind an article.
         ///
-        /// This is very likely not what a user wants, and it is exactly the outcome
-        /// docs/plans/text-search.md 5.5 predicts ("the first-token bonus too strong"). It is
-        /// left alone deliberately: the fix is a tuning decision that wants a real library
-        /// behind it, and possibly a rule about leading articles rather than a smaller constant.
+        /// Under the original additive score the sequel won, because matching the first token
+        /// was worth a flat fifteen points - more than the whole popularity range and the whole
+        /// brevity range combined, so nothing could outvote it. The fix was not a better weight
+        /// but a different shape: signals are compared in order of authority, so match quality
+        /// decides first, then popularity, then brevity, and position only breaks a complete
+        /// tie.
         ///
-        /// When that decision is taken, this test changes. That is its job.
+        /// Both of the lower signals point the right way here, which is why the answer is robust:
+        /// popularity picks the original on a rated library, and brevity picks it on one with no
+        /// ratings at all.
         /// </summary>
         [Fact]
-        public void Ranking_observation_the_first_token_bonus_currently_beats_a_better_known_game()
+        public void The_famous_game_wins_over_the_sequel_that_starts_with_the_word()
         {
             IReadOnlyList<string> found = Search("zelda");
 
-            Assert.Equal("Zelda II: The Adventure of Link", found[0]);
-            Assert.Equal("The Legend of Zelda", found[1]);
+            Assert.Equal("The Legend of Zelda", found[0]);
+            Assert.Equal("Zelda II: The Adventure of Link", found[found.Count - 1]);
+        }
+
+        /// <summary>
+        /// And the same while the word is still being typed, so the ordering does not lurch on
+        /// the keystroke that completes it.
+        /// </summary>
+        [Fact]
+        public void The_partial_query_ranks_the_same_way_as_the_finished_one()
+        {
+            Assert.Equal(Search("zel"), Search("zelda"));
+        }
+
+        /// <summary>
+        /// The whole Zelda family in order: the original, then the other five-star entries by
+        /// title length, then the four-star, then the three-star sequel. Popularity leads,
+        /// brevity breaks its ties.
+        /// </summary>
+        [Fact]
+        public void The_zelda_family_ranks_by_popularity_then_brevity()
+        {
+            Assert.Equal(new[]
+            {
+                "The Legend of Zelda",
+                "The Legend of Zelda: Ocarina of Time",
+                "The Legend of Zelda: A Link to the Past",
+                "The Legend of Zelda: Majora's Mask",
+                "Zelda II: The Adventure of Link"
+            }, Search("zelda"));
         }
 
         /// <summary>
