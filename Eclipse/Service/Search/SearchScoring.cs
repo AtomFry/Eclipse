@@ -18,6 +18,13 @@ namespace Eclipse.Service.Search
         /// <summary>A game that did not match every term. Ranks below everything that did.</summary>
         public static SearchRank NoMatch => default;
 
+        /// <summary>
+        /// A game reached by filters rather than by matching text - there is no query to have
+        /// matched, so every signal ties and the order falls through to catalog order, which is
+        /// the library's own sort-title order.
+        /// </summary>
+        public static SearchRank Browsed { get; } = new SearchRank(0, 0, 0, false);
+
         public SearchRank(double termScore, int popularity, double brevity, bool matchedFirstToken)
         {
             IsMatch = true;

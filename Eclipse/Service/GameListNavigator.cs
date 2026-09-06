@@ -218,7 +218,6 @@ namespace Eclipse.Service
         #region surviving a rebuild
 
         private ListCategoryType rememberedSetCategory;
-        private ListCategoryType rememberedListCategory;
         private string rememberedListValue;
         private string rememberedGameId;
         private int rememberedGameIndex;
@@ -230,9 +229,6 @@ namespace Eclipse.Service
         public void RememberPosition()
         {
             rememberedSetCategory = CurrentSet.ListCategoryType;
-
-            // generally matches the list set unless it's favorites
-            rememberedListCategory = CurrentList.ListCategoryType;
 
             // identifies which list we are in within the set - would be better as a guid. This
             // has to be the list's value and not its description: the description carries the
@@ -253,8 +249,11 @@ namespace Eclipse.Service
         {
             ShowCategory(rememberedSetCategory);
 
+            // By value alone. This used to also compare a per-list category, which no code ever
+            // assigned - so it was a constant against itself and always passed. See the note in
+            // GameList where it lived (B-35a).
             int listIndex = CurrentSet.GameLists.FindIndex(
-                list => list.ListCategoryType == rememberedListCategory && list.ListTypeValue == rememberedListValue);
+                list => list.ListTypeValue == rememberedListValue);
 
             if (listIndex < 0)
             {

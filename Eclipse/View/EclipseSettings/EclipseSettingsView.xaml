@@ -502,6 +502,11 @@
                                   ItemsSource="{Binding Source={StaticResource SearchKeyboardLayoutEnum}}"/>
                     </HeaderedContentControl>
 
+                    <HeaderedContentControl Style="{StaticResource SettingRowStyle}" Header="Search suggestions">
+                        <TextBox Text="{Binding Settings.SearchMaxSuggestions, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 ToolTip="How many metadata filter suggestions the search screen offers at once. Zero turns suggestions off."/>
+                    </HeaderedContentControl>
+
                     <ContentControl Style="{StaticResource HalfWidthRowStyle}">
                         <CheckBox IsChecked="{Binding Settings.EnableVoiceSearch, Mode=TwoWay}"
                                   ToolTip="Check this box to enable voice search functionality"

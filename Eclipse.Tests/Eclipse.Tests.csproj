@@ -14,6 +14,24 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
   </ItemGroup>
 
+  <!-- The LaunchBox plugin contract, for tests only.
+
+       The Eclipse project references this with Private=false so the host's own copy is the only
+       one in the process - shipping a second identity breaks the interface cast and Eclipse
+       fails to load at all (RULE-INTEGRATE-011). That rule is about the *deployed plugin
+       folder*: this copy lands in Eclipse.Tests\bin and is never staged or deployed, because
+       StageEclipsePayload copies from the Eclipse project's own output alone.
+
+       It is here because IGame is the domain model (S-2), so the highest-value uncovered
+       behaviour in the product - position restoration, custom list membership, the two voice
+       decomposition rules that need a whole game rather than a title - cannot be reached
+       without it. -->
+  <ItemGroup>
+    <Reference Include="Unbroken.LaunchBox.Plugins">
+      <HintPath>..\Eclipse\lib\LaunchBox14\Unbroken.LaunchBox.Plugins.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Eclipse\Eclipse.csproj" />
   </ItemGroup>

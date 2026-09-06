@@ -144,6 +144,12 @@ namespace Eclipse.Models
         public bool IsOnLastRow => row == rows.Count - 1;
 
         /// <summary>
+        /// Whether the cursor is on the last key of its row - so a caller knows Right would
+        /// wrap, and can send it to the zone beside the keyboard instead.
+        /// </summary>
+        public bool IsAtEndOfRow => column == rows[row].Count - 1;
+
+        /// <summary>
         /// Moves left, wrapping within the row.
         ///
         /// Wraps because in stage 2 no zone sits beside the keyboard. RULE-SEARCH-030 says

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel;
 using Eclipse.Models;
 using Eclipse.Service.Search;
@@ -43,6 +44,56 @@ namespace Eclipse.View
         public string Query => Session?.Query ?? string.Empty;
 
         public bool HasResults => Session?.HasResults == true;
+
+        /// <summary>The metadata terms currently offered, for the suggestion column.</summary>
+        public IReadOnlyList<Suggestion> Suggestions =>
+            Session?.Suggestions ?? (IReadOnlyList<Suggestion>)new Suggestion[0];
+
+        public bool HasSuggestions => Session?.HasSuggestions == true;
+
+        /// <summary>
+        /// The applied filters as the chip row draws them, each carrying the word that joins it
+        /// to the one before.
+        /// </summary>
+        public IReadOnlyList<AppliedFilter> Chips =>
+            Session?.Chips ?? (IReadOnlyList<AppliedFilter>)new AppliedFilter[0];
+
+        public bool HasFilters => Session?.HasFilters == true;
+
+        /// <summary>True while the cursor is in the chip row, so it can draw as focused.</summary>
+        public bool IsOnChips => Session?.IsOnChips == true;
+
+        /// <summary>Which chip is highlighted, so the row can mark it.</summary>
+        public int SelectedChipIndex => Session?.SelectedChipIndex ?? 0;
+
+        /// <summary>
+        /// Whether the clear key would remove the filters rather than the query. The key reads
+        /// itself from this - a context-sensitive destructive key that does not say which of the
+        /// two it will do is a surprise waiting to happen.
+        /// </summary>
+        public bool ClearsFilters => Session?.ClearsFilters == true;
+
+        /// <summary>True while the cursor is in the suggestion column, so it can draw as focused.</summary>
+        public bool IsOnSuggestions => Session?.IsOnSuggestions == true;
+
+        /// <summary>
+        /// True while the cursor is in the box art row - which is to say, while the user has
+        /// stopped typing and is choosing.
+        ///
+        /// The panel has no job at that moment, so it gives its space back - all of it, backing
+        /// and query line and chips included - and the selected game's own identity fades in
+        /// underneath: clear logo, year, rating, platform, artwork, video, exactly as they are
+        /// anywhere else in Eclipse. Fading only the keys was tried first and was worse; a query
+        /// line and a chip row floating over a dimmed logo read as clutter covering the game
+        /// rather than as a search. Half a swap is worse than either whole one.
+        ///
+        /// Nothing is lost by the chips going, because the list heading spells the search out in
+        /// full while the panel is away - see TextSearchState.DescribeSearch.
+        /// </summary>
+        public bool IsOnResults => Session?.IsOnResults == true;
+
+        /// <summary>Which suggestion is highlighted, so the list can mark it.</summary>
+        public int SelectedSuggestionIndex => Session?.SelectedSuggestionIndex ?? 0;
 
         /// <summary>
         /// True while the cursor is on the keyboard.
@@ -104,6 +155,16 @@ namespace Eclipse.View
             Notify("HasResults");
             Notify("IsOnKeyboard");
             Notify("Status");
+            Notify("Suggestions");
+            Notify("HasSuggestions");
+            Notify("IsOnSuggestions");
+            Notify("IsOnResults");
+            Notify("SelectedSuggestionIndex");
+            Notify("Chips");
+            Notify("HasFilters");
+            Notify("IsOnChips");
+            Notify("SelectedChipIndex");
+            Notify("ClearsFilters");
         }
 
         private void Notify(string propertyName)

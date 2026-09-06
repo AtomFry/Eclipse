@@ -97,7 +97,7 @@ namespace Eclipse.State
                 return true;
             }
 
-            Session(eclipseStateContext).MoveKeyboardLeft();
+            Session(eclipseStateContext).MoveLeft(held);
             return true;
         }
 
@@ -111,7 +111,7 @@ namespace Eclipse.State
                 return true;
             }
 
-            Session(eclipseStateContext).MoveKeyboardRight();
+            Session(eclipseStateContext).MoveRight(held);
             return true;
         }
 
@@ -129,6 +129,20 @@ namespace Eclipse.State
             {
                 CloseSearch(eclipseStateContext, keepResults: true);
                 OpenSelectedGame(eclipseStateContext);
+                return true;
+            }
+
+            if (session.IsOnSuggestions)
+            {
+                session.ApplySelectedSuggestion();
+                PublishResults(eclipseStateContext, restoreRememberedPlace: false);
+                return true;
+            }
+
+            if (session.IsOnChips)
+            {
+                session.RemoveSelectedChip();
+                PublishResults(eclipseStateContext, restoreRememberedPlace: false);
                 return true;
             }
 
@@ -210,7 +224,7 @@ namespace Eclipse.State
                 return;
             }
 
-            string listName = string.IsNullOrWhiteSpace(session.Query) ? "Search" : session.Query;
+            string listName = DescribeSearch(session);
 
             viewModel.Navigator.InstallSet(new GameListSet
             {
@@ -234,6 +248,35 @@ namespace Eclipse.State
             }
 
             viewModel.IsDisplayingResults = true;
+        }
+
+        /// <summary>
+        /// What the results list is called - the search, said in one line.
+        ///
+        /// This is not decoration. The search panel fades out while the cursor is down in the box
+        /// art row, so that the selected game's clear logo, details, artwork and video have the
+        /// screen to themselves; the list heading is then the only thing left saying what the
+        /// user searched for. It has to carry the query <em>and</em> the filters, because the
+        /// chips have faded with everything else.
+        ///
+        /// It is also the name position restoration matches a list by, and the name the list
+        /// keeps once the user commits and browses on.
+        /// </summary>
+        private static string DescribeSearch(SearchSession session)
+        {
+            List<string> parts = new List<string>();
+
+            if (session.HasQuery)
+            {
+                parts.Add(session.Query);
+            }
+
+            foreach (SearchFilter filter in session.Filters)
+            {
+                parts.Add(filter.Value);
+            }
+
+            return parts.Count == 0 ? "Search" : "Search: " + string.Join(" · ", parts);
         }
 
         /// <summary>

@@ -1,7 +1,7 @@
 # Stage 2 — manual validation checklist
 
 Everything in stage 2 of [text-search.md](text-search.md) that a person has to look at, in the
-order it is quickest to work through. 445 automated tests already cover the engine, the
+order it is quickest to work through. 588 automated tests already cover the engine, the
 keyboard cursor and the session state machine; **nothing below repeats those**. What is here is
 what only eyes and a controller can answer: does it look right, does it feel right, and does it
 still leave the rest of Eclipse alone.
@@ -336,3 +336,104 @@ All four are layout or one-condition changes.
 - **Page Up / Page Down (§8)** — you said you weren't sure about these. Under the overlay design
   Page Down does less than it used to: the results are already the live list, so it only closes
   the panel. Worth deciding what, if anything, those two buttons should do now.
+
+---
+
+## §18 — Metadata filter suggestions (stage 4c) 🔴 *new*
+
+The first visible increment of the filter feature: suggestions appear beside the keyboard, and
+selecting one applies it. The chips are visible but **not yet focusable or removable** — that is
+stage 4d, so the only way to take a filter off in this build is to search for it again and
+select it a second time.
+
+| | Step | Expected |
+|---|---|---|
+| T18.1 | 🔴 Open search and type one character. | No suggestions yet. |
+| T18.2 | 🔴 Type a second character. | A column of suggestions appears to the **right of the keyboard**, and the dark panel behind widens to hold it — the artwork on the far right should still be visible. |
+| T18.3 | 🔴 Read a suggestion row. | Three things: the **value** on the left, its **facet** in the middle ("genre", "platform", "publisher", "series", "developer", "play mode", "year"), and a **count** on the right. |
+| T18.4 | 🔴 Type a franchise you own, e.g. `son`, `mari`, `zel`. | The series and any matching developer/publisher are offered. Counts look right against your library. |
+| T18.5 | 🟡 Press **Right** repeatedly from the left of a keyboard row. | The cursor walks to the end of the row, and the *next* press moves into the suggestion column. It does **not** jump straight across from the middle of the row. |
+| T18.6 | 🟡 **Hold** Right. | Wraps within the keyboard row and never crosses into the suggestions. |
+| T18.7 | 🔴 With the cursor in the suggestions, look at the keyboard. | The last selected key is an **outline**, not a filled tile — the same affordance as when you are in the results row. |
+| T18.8 | 🟡 Press **Up** / **Down** in the suggestion list. | Moves through it, wrapping at the top. |
+| T18.9 | 🟡 Press **Down** from the last suggestion. | Moves into the results row. |
+| T18.10 | 🟡 Press **Left** from the suggestions. | Back to the keyboard. |
+| T18.11 | 🔴 Press **Enter** on a suggestion. | The filter is applied: a **chip** appears under the query, the **query line clears**, the cursor returns to the keyboard, and the results narrow to that filter. |
+| T18.12 | 🔴 Look at the result count after applying. | It matches the count the suggestion promised before you selected it. *(This is the invariant the whole design rests on — tell me if it ever disagrees.)* |
+| T18.13 | 🔴 With a filter applied, type another term and select a second suggestion. | Two chips. Results narrow further. This is the stacking the feature was asked for. |
+| T18.14 | 🔴 Apply a genre, then search a term whose only matches lie outside it. | Those terms are **not offered at all** — you should never be able to select a suggestion that leads to an empty screen. |
+| T18.15 | 🟡 Apply two platforms. | Widens rather than narrows — a game has one platform, so requiring both could never match. Two genres, by contrast, narrow. |
+| T18.16 | 🟡 Search for a filter you already applied. | It is offered again, underlined to show it is on. Selecting it **removes** it. |
+| T18.17 | 🟡 Type a broad two letters like `sp` on a big library. | No one facet fills the whole list — at most a few developers, leaving room for genres and platforms. |
+| T18.18 | 🟡 Apply a filter, then press **Escape**. | Back to where you were browsing. Re-open search: the filter is still applied. |
+| T18.19 | 🔴 Watch for lag while typing with filters applied. | Suggestions and counts recompute on every keystroke; it should still feel instant. |
+
+### Known for this stage
+
+* Chips cannot be removed by pointing at them — 4d adds that. Re-selecting the term is the way.
+* Playlists are not offered as a filter at all. Deliberate; see `features/search.md`.
+* `clear` still only clears the query. Clearing all filters at once arrives with 4d.
+
+---
+
+## §19 — The filter row (stage 4d) 🔴 *new*
+
+The chips are now focusable and removable, they say how they combine, and `clear` takes them all
+off. This completes the script the feature was asked for: apply, stack, and back out.
+
+| | Step | Expected |
+|---|---|---|
+| T19.1 | 🔴 Apply a filter, then press **Up** from the top row of the keyboard. | The cursor moves to the chip row; the selected chip fills white and the keyboard key it left drops to an outline. |
+| T19.2 | 🟡 With **no** filters applied, press Up from the top keyboard row. | Goes to the results (or wraps within the keyboard if there are none). There is no empty chip row to get stuck in. |
+| T19.3 | 🟡 Press **Down** from the chip row. | Back to the top row of the keyboard. |
+| T19.4 | 🔴 **Hold** Up on the keyboard. | Wraps within the keyboard. It must never land in the chip row. |
+| T19.5 | 🟡 Apply two filters, then move into the chips and press **Left/Right**. | Moves between them, wrapping at both ends. |
+| T19.6 | 🔴 Press **Enter** on a chip. | That filter is removed and the results widen immediately — **nothing retyped**. This is step 5 of the original request. |
+| T19.7 | 🔴 Remove the last remaining chip. | The row disappears and the cursor returns to the keyboard rather than being stranded. |
+| T19.8 | 🟡 Type a query, apply a filter, then remove the chip. | The query is untouched and still filtering. |
+| T19.9 | 🔴 Apply two **genres**. | The row reads `Sports` **and** `Football` — and results require both. |
+| T19.10 | 🔴 Apply two **platforms**. | The row reads `Genesis` **or** `SNES` — and results widen rather than narrow. This is the rule that would otherwise be invisible. |
+| T19.11 | 🔴 Apply a platform, then a genre, then a *second* platform. | The two platforms sit **together** with `or` between them, and the genre follows with `and`. The second platform does not go on the end of the row. |
+| T19.12 | 🔴 With filters applied and nothing typed, look at the `clear` key. | It reads **"clear filters"**. |
+| T19.13 | 🔴 Press it. | Every filter comes off at once. |
+| T19.14 | 🟡 Now type something and look at the key again. | Back to **"clear"** — and pressing it clears only the text, leaving the filters on. |
+| T19.15 | 🟡 With text *and* filters, press `clear` twice. | First press clears the text, second removes the filters. |
+| T19.16 | 🟡 Apply filters, press **Escape**, re-open search. | The filters are still applied and the row is still there. |
+
+### Still open after this stage
+
+* Suggestion threshold is two characters — say if that feels wrong on your library.
+* Playlists are still not offered as a filter.
+* A search still produces **one** ranked list. Grouping results into a row per facet is stage 5.
+
+---
+
+## §20 — Stage 4e
+
+Mostly tuning, and most of it needs your library rather than a test. The one new control is the
+suggestion count.
+
+| | Step | Expected |
+|---|---|---|
+| T20.1 | ⚪ Settings → Inputs. | A new **"Search suggestions"** box, showing 8. |
+| T20.2 | 🟡 Set it to 3, restart, and type a broad two letters. | At most three suggestions are offered. |
+| T20.3 | 🟡 Set it to 0, restart, type. | No suggestions at all — a legitimate way to turn the filter feature off. Title search still works. Put it back to 8. |
+| T20.4 | 🔴 On your real library, type two letters and read the suggestions. | Do they look useful, or arbitrary? This is the question the threshold decision rests on. |
+| T20.5 | 🔴 **Type a single letter and read what is offered.** | Suggestions appear from the first character — this is the trial. Are they useful, or eight arbitrary high-count values? That is the whole question, and it is the one thing that changes code. |
+| T20.6 | 🔴 Apply two or three filters and keep typing. | Suggestions and counts still keep up. This is the path that was 60 ms on a synthetic worst case before the intersection fix. |
+| T20.7 | 🟡 Search for something with many matching developers or publishers. | The list stays a cross-section rather than filling with one facet. |
+
+### Settled in 4e
+
+Answered and recorded in the code, so they are not re-litigated:
+
+* **Suggestion ordering** — good as it stands. Match quality first, then count.
+* **Release year and play mode** — useful, staying in `Facets.Filterable`.
+* **Playlist filtering** — not wanted. Stays out of the projection.
+* **Eight suggestions** — right for a television.
+
+### The one still open
+
+**The threshold, now on trial at one character (T20.5).** Everything else in 4e is done. If one
+character is useful it stays at one; if it is noise it goes back to two. Either way it is a
+one-line change, and the tests are written against the constant rather than the number.

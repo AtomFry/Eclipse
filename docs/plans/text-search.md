@@ -422,6 +422,13 @@ shifting set of rows obscures.
 
 ### 6.2 On commit: the ordinary browsing surface, several rows
 
+> **Superseded twice over. The rows described below are not being built** - stage 5
+> derives its rows from the applied constraints instead, which is deterministic, names
+> every row for free, and works in the case that actually hurts: a result set collapsed
+> to two games has no variety left to group by. See
+> [text-search-faceted-rows.md](text-search-faceted-rows.md), which replaces everything
+> below this note about what the rows contain.
+
 > **Superseded in part by the stage 2 overlay rework.** There is no longer a commit step: the
 > results are installed as a `GameListSet` under `ListCategoryType.TextSearch` and shown *live*,
 > on every keystroke, so the browsing surface is already displaying them while the user types.

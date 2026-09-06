@@ -11,7 +11,7 @@ modernization backlog (`B-NN`).
 | Epic | Debt affecting it |
 |---|---|
 | EPIC-BROWSE | S-1, S-2, S-3, S-8, S-9, S-10, C-2 |
-| EPIC-SEARCH | M-5, M-6, S-2, S-8, S-14 |
+| EPIC-SEARCH | ~~M-5~~, ~~M-6~~, S-2, S-8, ~~S-14~~, ~~B-35(a)~~ |
 | EPIC-PRESENT | M-4, M-8 (partly), S-3, ~~S-4~~ resolved, S-11, C-1, C-3, ~~C-5~~ resolved |
 | EPIC-MEDIA | ~~M-1, M-2, M-3~~ resolved, M-4, M-9, ~~S-4~~ resolved, ~~S-7~~ closed |
 | EPIC-LAUNCH | S-1, S-2, S-9, S-12 |
@@ -72,7 +72,7 @@ naming a constant changes nothing, provided the value is preserved exactly.
 | Epic | Backlog items |
 |---|---|
 | EPIC-BROWSE | ~~B-07~~ closed, B-12, B-14, ~~B-15a~~ delivered, ~~B-15b~~ delivered, B-16, B-17, B-30, B-35 |
-| EPIC-SEARCH | B-03, B-04, B-12, B-30 |
+| EPIC-SEARCH | ~~B-03~~ delivered, ~~B-04~~ delivered, B-12 (partial), B-30 |
 | EPIC-PRESENT | ~~B-18~~ delivered, ~~B-19~~ delivered, B-21, ~~B-31~~ closed, B-32, B-33, B-35 |
 | EPIC-MEDIA | ~~B-05~~ delivered, ~~B-06~~ delivered, ~~B-20~~ delivered, B-22, ~~B-28~~ delivered, ~~B-29~~ closed |
 | EPIC-LAUNCH | B-11, B-12, B-16, B-24 |

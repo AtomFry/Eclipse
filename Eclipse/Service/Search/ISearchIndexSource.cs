@@ -21,5 +21,12 @@ namespace Eclipse.Service.Search
 
         /// <summary>The index, or null unless Availability is Ready.</summary>
         ISearchIndex Index { get; }
+
+        /// <summary>
+        /// The metadata index the filters work over. Never null - an unbuilt one answers as
+        /// empty, so a caller filtering before the index is ready gets no terms rather than a
+        /// null check at every use.
+        /// </summary>
+        FacetIndex Facets { get; }
     }
 }

@@ -250,7 +250,7 @@ action key and it behaves differently per row. **Resolve by:** product decision.
 | Suspected dead items | 12 (`DEAD-001` … `DEAD-012`) |
 | — high confidence, safe to remove after a grep | 5 |
 | — requires investigation first | 7 |
-| Open questions | 22 (`OQ-001` … `OQ-022`), of which 2 resolved (`OQ-012`, `OQ-022`) |
+| Open questions | 32 (`OQ-001` … `OQ-032`), of which 2 resolved (`OQ-012`, `OQ-022`) |
 | — product decisions | 13 |
 | — research/experiment tasks | 4 (`OQ-012` resolved) |
 | — external (LaunchBox) questions | 1 |
@@ -283,3 +283,56 @@ them off, so nothing needs a stored position, and `ListSetStartIndex`, `ListSetE
 the loop that wrote them are deleted.
 
 Not fixed — made unreachable. There is no derived state on a shared `GameList` left to corrupt.
+
+---
+
+## Text search open questions
+
+Raised while designing and building text search (stages 1 and 2). None blocks anything; each is
+recorded so the decision is visible rather than implied by the code.
+
+### OQ-023 — Should search be Eclipse's startup surface?
+**Feature:** FEAT-SEARCH-010 · **Evidence:** `LoadingState.InitializationCompleted`
+Eclipse always opens on the browsing surface. On a cabinet whose owner searches far more often
+than they browse, opening straight into the keyboard would be the better default. It is one
+transition and one setting; the question is whether anyone wants it.
+
+### OQ-024 — Should the page keys be configurable inside the search screen?
+**Feature:** FEAT-SEARCH-010 · **Evidence:** `TextSearchState.OnPageUp`, `RULE-SEARCH-042`
+Page Up is hard-coded to Backspace inside search, whatever the user mapped it to, because
+reaching the `delete` key on QWERTY and returning costs about eight presses against one. Page
+Down does nothing. Both are deliberate; neither is a setting. A toggle — the key that opened
+search closing it — is the other obvious candidate.
+
+### OQ-025 — Should a search survive a game launch?
+**Feature:** FEAT-SEARCH-017 · **Evidence:** `SearchSession`, `Navigator.RestorePosition`
+The session is kept for the Big Box session, so leaving and re-entering the search screen
+restores everything. Launching a game from the results and returning leaves the user browsing
+the results, which is probably right — but nothing decides deliberately what should happen to
+the *query* at that point.
+
+### OQ-026 — Should search look beyond titles?
+**Feature:** FEAT-SEARCH-011 · **Evidence:** `SearchableGameProjection.From`
+Only the display title is indexed. Notes, alternate titles, the sort title and the ROM file name
+are all available and all cheap to add. Each widens what a search finds, and each changes what
+"no games found" means — so this is a precision question, not a capacity one.
+
+### OQ-027 — Should there be a literal search?
+**Feature:** FEAT-SEARCH-011 · **Evidence:** `SearchScoring.Rank`
+Everything typed is interpreted — folded, tokenized, ranked. A user who wants the exact string
+they typed, in the order they typed it, has no way to ask for it. Probably nobody wants this on
+a d-pad; recorded because it is the standard escape hatch every other search box has.
+
+### OQ-028 — Should same-facet filters AND or OR?
+**Feature:** FEAT-SEARCH-014 · **Evidence:**
+[plans/text-search-metadata-filters.md](plans/text-search-metadata-filters.md) §3
+Settled for the first implementation — multi-valued facets AND, single-valued facets OR — and
+deliberately not to be revisited until the filters have been used. Retail convention ORs
+everything; the request that motivated the feature wants "sports AND football".
+
+### OQ-029 … OQ-032 — metadata filter interaction questions
+**Feature:** FEAT-SEARCH-013/014/015
+Undo of a filter selection; whether committed filters stay visible while browsing; whether
+unused facets should be suppressible; whether a filter should be creatable from the game
+currently selected while browsing. All specified in the sub-feature plan, none built. See that
+document's *Open questions*.

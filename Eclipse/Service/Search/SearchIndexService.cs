@@ -35,6 +35,7 @@ namespace Eclipse.Service.Search
         // Written before availability is set to Ready. availability is volatile, so a reader
         // that sees Ready is guaranteed to see a fully built index.
         private TitleIndex index;
+        private FacetIndex facets = FacetIndex.Empty;
 
         private long buildMilliseconds;
         private int indexedGameCount;
@@ -44,6 +45,12 @@ namespace Eclipse.Service.Search
 
         /// <summary>The index, or null unless Availability is Ready.</summary>
         public ISearchIndex Index => availability == SearchAvailability.Ready ? index : null;
+
+        /// <summary>
+        /// The metadata index. Empty rather than null until the build finishes, so filtering
+        /// before it is ready finds no terms instead of throwing.
+        /// </summary>
+        public FacetIndex Facets => availability == SearchAvailability.Ready ? facets : FacetIndex.Empty;
 
         /// <summary>How long the build took. Zero until it has finished.</summary>
         public long BuildMilliseconds => buildMilliseconds;
@@ -93,16 +100,20 @@ namespace Eclipse.Service.Search
                 IReadOnlyList<SearchableGame> games = SearchableGameProjection.FromCatalog(catalog);
                 TitleIndex built = TitleIndex.Build(games);
 
+                FacetIndex builtFacets = FacetIndex.Build(SearchableGameProjection.FacetsFromCatalog(catalog));
+
                 stopwatch.Stop();
 
-                // Assign before publishing the status, so a reader that sees Ready sees the
-                // whole index.
+                // Assign before publishing the status, so a reader that sees Ready sees both
+                // indexes whole.
                 index = built;
+                facets = builtFacets;
                 buildMilliseconds = stopwatch.ElapsedMilliseconds;
                 indexedGameCount = games.Count;
                 availability = SearchAvailability.Ready;
 
-                LogHelper.Log($"Text search index built: {games.Count} games, {built.TermCount} terms, {buildMilliseconds}ms");
+                LogHelper.Log($"Text search index built: {games.Count} games, {built.TermCount} title terms, " +
+                              $"{builtFacets.TermCount} metadata terms, {buildMilliseconds}ms");
             }
             catch (Exception ex)
             {

@@ -111,7 +111,8 @@ namespace Eclipse.View
             // nothing here does that until a search has produced results.
             Search = new SearchViewModel(
                 new Service.Search.SearchSession(Service.Search.SearchIndexService.Instance,
-                                                 eclipseSettings?.SearchKeyboardLayout ?? Models.SearchKeyboardLayout.Alphabetical));
+                                                 eclipseSettings?.SearchKeyboardLayout ?? Models.SearchKeyboardLayout.Alphabetical,
+                                                 eclipseSettings?.SearchMaxSuggestions ?? Service.Search.SearchSession.DefaultMaxSuggestions));
 
             EclipseStateContext = new EclipseStateContext(this);
         }

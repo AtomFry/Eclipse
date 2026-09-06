@@ -75,19 +75,18 @@ namespace Eclipse.Models
             }
         }
 
-        private ListCategoryType listCategoryType;
-        public ListCategoryType ListCategoryType
-        {
-            get { return listCategoryType; }
-            set
-            {
-                if (listCategoryType != value)
-                {
-                    listCategoryType = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("ListCategoryType"));
-                }
-            }
-        }
+        // A ListCategoryType lived here until B-35(a) was resolved. Nothing ever assigned it, so
+        // every list in the product carried the default; the one place that read it - position
+        // restoration's list match - was therefore comparing a constant against itself and always
+        // passing, matching on ListTypeValue alone.
+        //
+        // Populating it would not have helped. Restoration already switches to the remembered
+        // *set* before searching it, and every list within one set would be given that same set's
+        // category - so the comparison would still have been a constant against itself. There is
+        // no category a custom list could carry that the set does not already say. It was
+        // redundant with rememberedSetCategory rather than under-used, so it is gone.
+        //
+        // VER-BROWSE-005 covers what the match does now.
 
         // to be used with selecting random games and reset the game cycle to the right spot
         public void SetGameIndex(int newIndex)

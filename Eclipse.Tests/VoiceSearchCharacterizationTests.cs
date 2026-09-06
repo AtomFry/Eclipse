@@ -18,12 +18,10 @@ namespace Eclipse.Tests
     /// called out rather than corrected - correcting it here would be a product change wearing
     /// a test's clothes.
     ///
-    /// COVERAGE GAPS, deliberately left open in Stage 1
-    /// ------------------------------------------------
-    /// Two rules cannot be reached from this project, because Eclipse.Tests has no reference to
-    /// Unbroken.LaunchBox.Plugins - the Eclipse project references it with Private=false, so it
-    /// neither copies to output nor flows transitively. Every existing test in this project is
-    /// LaunchBox-free for the same reason.
+    /// THE TWO RULES THAT NEED A WHOLE GAME
+    /// ----------------------------------------
+    /// Two rules need an IGame rather than a title, so they live next door in
+    /// VoiceSearchGrammarTests:
     ///
     ///   RULE-SEARCH-001  a title containing '/' splits into independent titles.
     ///                    Lives in GameTitleGrammarBuilder(IGame), which needs an IGame double.
@@ -32,10 +30,11 @@ namespace Eclipse.Tests
     ///                    Lives in VoiceSearchIndex.BuildPhrasesForGame - private static, and it
     ///                    takes a GameMatch built around an IGame.
     ///
-    /// Both would become reachable by adding a reference to the vendored contract assembly for
-    /// this project only. That is safe - test output never reaches the deployed plugin folder,
-    /// so RULE-INTEGRATE-011 is not in play - but it was out of scope for Stage 1 and is
-    /// recorded here so the gap is visible rather than assumed covered.
+    /// BOTH ARE NOW COVERED, in VoiceSearchGrammarTests. The reference was added to this project
+    /// alone - test output never reaches the deployed plugin folder, so RULE-INTEGRATE-011 is not
+    /// in play - and Fakes/FakeGame implements the interface. This note is kept because it
+    /// records why the split exists: everything here needs only a string, and everything there
+    /// needs a whole game.
     ///
     /// What IS covered below is the whole of the title decomposition that operates on strings,
     /// and the whole of the match scoring.

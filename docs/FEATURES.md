@@ -18,7 +18,7 @@ Ten epics, derived from what the product does rather than how it is built.
 | Epic | Scope |
 |---|---|
 | [EPIC-BROWSE](features/browsing.md) | Turning the LaunchBox library into browsable, navigable lists of games |
-| [EPIC-SEARCH](features/voice-search.md) | Finding a game by speaking its name |
+| [EPIC-SEARCH](features/search.md) | Finding a game by typing or speaking its name |
 | [EPIC-PRESENT](features/presentation.md) | What is on screen: box art row, details, overlays, view modes |
 | [EPIC-MEDIA](features/media.md) | Locating, caching and preparing the artwork and video for a game |
 | [EPIC-LAUNCH](features/launching.md) | Starting a game, including alternate versions |
@@ -45,7 +45,8 @@ Ten epics, derived from what the product does rather than how it is built.
 
 ## Feature inventory
 
-62 features. `†` marks a feature that is supporting rather than directly user-facing.
+72 features, of which 1 is designed but not built. `†` marks a feature that is supporting
+rather than directly user-facing; `‡` marks one that is designed but not built.
 
 ### EPIC-BROWSE — Game Discovery & Browsing
 
@@ -66,7 +67,12 @@ Ten epics, derived from what the product does rather than how it is built.
 | FEAT-BROWSE-013 † | Exclude broken and hidden games from the library |
 | FEAT-BROWSE-014 † | Build the in-memory game index that all lists are derived from |
 
-### EPIC-SEARCH — Voice Search
+### EPIC-SEARCH — Finding a Game
+
+Two modalities, sharing nothing but their purpose. `‡` marks a feature that is designed but not
+built — see *Deliberately not built* in [features/search.md](features/search.md).
+
+**By voice**
 
 | ID | Feature |
 |---|---|
@@ -76,6 +82,21 @@ Ten epics, derived from what the product does rather than how it is built.
 | FEAT-SEARCH-004 | Score each match for relevance |
 | FEAT-SEARCH-005 | Rank and present results as browsable lists |
 | FEAT-SEARCH-006 | Report recognition failures to the user |
+
+**By typing**
+
+| ID | Feature |
+|---|---|
+| FEAT-SEARCH-010 | On-screen keyboard, navigable with the four directions |
+| FEAT-SEARCH-011 | Live title search — the library filters as you type |
+| FEAT-SEARCH-012 ‡ | Typo tolerance |
+| FEAT-SEARCH-013 | Metadata term suggestions, with counts |
+| FEAT-SEARCH-014 | Stacking metadata filters |
+| FEAT-SEARCH-015 | Removing metadata filters |
+| FEAT-SEARCH-016 | Select a result and open the game |
+| FEAT-SEARCH-017 | Remember the query and position across leaving the screen |
+| FEAT-SEARCH-018 | Report the result count, or why there is none |
+| FEAT-SEARCH-019 † | Build the token index every text search is answered from |
 
 ### EPIC-PRESENT — Game Presentation
 
@@ -208,8 +229,9 @@ Key dependency facts:
 * **FEAT-BROWSE-014 is the substrate.** The in-memory game index feeds category lists,
   custom lists, random selection, voice-search matching and attract mode. It is built
   once at startup and rebuilt in full whenever curation changes a game.
-* **EPIC-SEARCH produces EPIC-BROWSE output.** Voice search results are ordinary game
-  lists, so everything downstream of browsing works unchanged.
+* **EPIC-SEARCH produces EPIC-BROWSE output.** Both voice and text search results are ordinary
+  game lists, so everything downstream of browsing works unchanged. Text search goes further and
+  installs them live, on every keystroke, so the search screen has no result row of its own.
 * **EPIC-CURATE feeds back into EPIC-BROWSE.** This is the only backward edge in the
   product, and it is the reason position restoration (FEAT-BROWSE-010) exists.
 * **EPIC-CONFIG is read at first use, not continuously.** Some settings apply live,

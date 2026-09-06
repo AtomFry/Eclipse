@@ -10,10 +10,12 @@ begins.
 ## Current coverage
 
 **A test project exists and is green.** `Eclipse.Tests` (xunit, `net10.0-windows`) runs
-140 passing tests. It arrived with the 16:10 layout work rather than as `B-01`, and for a
+612 passing tests. It arrived with the 16:10 layout work rather than as `B-01`, and for a
 while covered only layout geometry; the media and presentation refactor added six more
-suites - image cropping, the bezel choice, the video failure policy, the selection timings,
-the once-only hydration guard, and the selected-game sequence.
+suites, and text search added ten - the analysis chain, the index, query parsing, ranking,
+query evaluation, the keyboard cursor, the session state machine, the index service, a
+golden corpus of sixty-odd realistic titles, and a per-keystroke performance budget. Voice
+search finally acquired characterization tests as a prerequisite of that work.
 
 That still leaves most of the product verified only by manual play-testing, which remains
 the largest risk to the modernization programme: every planned change is
@@ -24,11 +26,11 @@ infrastructure.
 
 | Layer | Status |
 |---|---|
-| Unit tests | 140 — layout geometry, image cropping, bezel choice, video failure policy, selection timings, once-only hydration, selected-game sequencing |
-| Integration tests | none |
+| Unit tests | 612 — layout geometry, image cropping, bezel choice, video failure policy, selection timings, once-only hydration, selected-game sequencing, voice decomposition and scoring, and the whole text search engine and interaction |
+| Integration tests | the text search golden corpus — the whole engine over a checked-in library of realistic titles |
 | Host-dependent tests | none |
 | Manual regression script | none written down (the plugin README documents usage, not verification) |
-| Performance baseline | browse and startup measured under `B-28`; recorded in `docs/plans/box-art-row-refactor.md`. The instrumentation that produced it has since been removed (`B-34`) |
+| Performance baseline | text search measured per keystroke on a synthetic 100,000-game library (`SearchPerformanceTests`); browse and startup measured under `B-28`; recorded in `docs/plans/box-art-row-refactor.md`. The instrumentation that produced it has since been removed (`B-34`) |
 
 ## What is testable, and when
 
@@ -38,7 +40,7 @@ model — see `S-2` and backlog item `B-12`.
 | Testability | Applies to | Available |
 |---|---|---|
 | Testable **now** | Title decomposition, match scoring, list-window cycling, dynamic filter/sort expression building | Immediately |
-| Testable after `B-11`/`B-12` | Position restoration, alternate-version filtering, media path resolution | After the adapter and game model exist |
+| Testable **now** | Position restoration, and anything else taking an `IGame` - `Eclipse.Tests` references the vendored contract assembly and `Fakes/FakeGame` implements the whole interface. `B-12` would still be worth doing for the product; it is no longer what blocks a test | Immediately |
 | Testable **now** | List construction and custom-list membership - `GameListBuilder` takes an `IGameCatalogSource` since `B-15a`, and `IGame` is an interface in a vendored assembly, so a fixture needs a hand-written fake rather than the full game model | The project exists; the `IGame` fake does not yet |
 | Testable **now** (was `B-18`) | Attract-mode sequencing and presenter call ordering — `IAttractModePresenter` exists and `AttractModeSlideshow` takes it plus its timings by constructor | Immediately |
 | Testable **now** | Image cropping and scaling — `ImageScaler` is static and file-to-file, so a fixture image and an expected rectangle are the whole test | Immediately |
@@ -60,7 +62,7 @@ Each scenario is written so a developer can execute it without reading the code.
 | VER-BROWSE-002 | Pick a game with three genres. Confirm it appears in all three genre lists. | Manual / unit after B-12; also visible in the `B-15` golden dump | RULE-BROWSE-001 |
 | VER-BROWSE-003 | Navigate right from the last game in a list; confirm wrap to the first. Repeat for left, up, down. | Manual | RULE-BROWSE-008 |
 | VER-BROWSE-004 | In a list of 100 games, press the page key; confirm the selection moves 7. In a list of 4, confirm it moves 2. | Manual / unit | RULE-BROWSE-009 |
-| VER-BROWSE-005 | **Position restoration.** Browse to a known game in the Favorites list. Un-favourite it. Confirm the user lands on the next game in that list, not at the top and not in a different list. Repeat for: game still present; list now empty; list gone entirely. | **Characterization — unit** | RULE-BROWSE-010 |
+| VER-BROWSE-005 | **Position restoration.** Browse to a known game in the Favorites list. Un-favourite it. Confirm the user lands on the next game in that list, not at the top and not in a different list. Repeat for: game still present; list now empty; list gone entirely. | **Characterization — automated** | RULE-BROWSE-010 |
 | VER-BROWSE-006 | Define a custom list with a filter, two sort expressions and a max size. Confirm membership matches the filter, order matches both sorts, and the cap selects the top N *after* sorting. | **Covered by probe, not by tests** — `CustomListQueryProbe` runs every field × operator and both sort directions against the real library; it guarded `B-15b`. Still wanted as a unit test (`B-01`), because a probe proves behaviour is unchanged, not that it is right. | RULE-BROWSE-005, 006, 007 |
 | VER-BROWSE-007 | Browse to a list with 3 games with repeat-to-fill on, then off. Confirm the row repeats in the first case and shows gaps in the second. | Manual | RULE-BROWSE-011, 016 |
 | VER-BROWSE-008 | Trigger random game 50 times from a set with one large and one small list; confirm selection is weighted by list size. | Exploratory | RULE-BROWSE-011 (`OQ-002`) |
@@ -74,6 +76,23 @@ Each scenario is written so a developer can execute it without reading the code.
 | VER-SEARCH-003 | Given a phrase, match type and confidence, assert the computed match percentage; assert it never reaches 100. | **Characterization — unit** | RULE-SEARCH-010…012 |
 | VER-SEARCH-004 | Speak a partial game name. Confirm results are grouped by phrase, ordered by best match, and that speaking a nonsense phrase yields a message rather than silence. | Manual | RULE-SEARCH-014…016, 006 |
 | VER-SEARCH-005 | With voice search disabled, confirm the category picker omits it and no grammar is built at startup. | Manual | RULE-SEARCH-020 |
+| VER-SEARCH-010 | Analysis chain: `Pokémon`, `Rock n' Roll`, `Final Fantasy VII`, `Sonic & Knuckles`, `Legend of Zelda, The` each produce the expected token set, including numeral alternates. | **Unit — automated** | RULE-SEARCH-048, 049 |
+| VER-SEARCH-011 | Ranking: the more popular of two equal matches wins; with no ratings the shorter title wins; a better match beats everything stacked against it. | **Unit — automated** | RULE-SEARCH-047 |
+| VER-SEARCH-012 | Typo tolerance. **Currently asserts the absence of it** — `sonik` finds nothing — so that the stage which adds it has a test that flips. | **Unit — automated** | FEAT-SEARCH-012 |
+| VER-SEARCH-013 | Two query terms narrow rather than widen; a term matching nothing empties the result. | **Unit — automated** | text search AND |
+| VER-SEARCH-014 | Keyboard cursor: wraps where no adjacent zone exists, reports when it would leave the grid, clamps into ragged rows, never crosses a zone while held. | **Unit — automated** | RULE-SEARCH-030, 031, 037 |
+| VER-SEARCH-015 | Escape from every zone returns to browsing at the position search was opened from; re-entering restores query, results and place. | Manual | RULE-SEARCH-034, 035, 045 |
+| VER-SEARCH-016 | Enter on a result opens that game, honouring bypass-details, with the browsing surface intact behind the overlay. | Manual | FEAT-SEARCH-016 |
+| VER-SEARCH-017 | With text search disabled, the picker omits it, the page key does nothing, and no index is built. | Manual | FEAT-SEARCH-019 |
+| VER-SEARCH-018 | Query latency stays under 16 ms per keystroke on a 100,000-game library. | **Measured — automated** | performance budget |
+| VER-SEARCH-019 | The golden corpus: `son`, `sonic`, `zelda`, `link past`, `final fantasy 7`, `pokemon`, `rock n roll` each produce the expected ranked list, in order. | **Integration — automated** | the engine as a whole |
+| VER-SEARCH-032 | Moving down into the results fades the whole panel away and leaves the ordinary browsing screen — clear logo, details, artwork, video — with nothing over it; moving back up to the keyboard brings it back. | Manual | RULE-SEARCH-069 |
+| VER-SEARCH-033 | With `sonic` typed and Capcom + Arcade applied, the list heading reads `Search: sonic · Capcom · Arcade`, and still does after committing with Enter and browsing on. | Manual | RULE-SEARCH-070 |
+| VER-SEARCH-034 | With one platform applied, typing another platform's name offers it; its count equals what applying it leaves; the same holds for release year; a second genre still narrows; a widening term adding nothing is withheld. | **Integration — automated** | RULE-SEARCH-052, 072 |
+
+`VER-SEARCH-020` … `VER-SEARCH-031` are specified for the metadata filters in
+[plans/text-search-metadata-filters.md](plans/text-search-metadata-filters.md) and will move here
+as that stage lands.
 
 ### EPIC-PRESENT
 
@@ -186,9 +205,9 @@ a refactor cannot change it silently. These are ranked by (risk of silent breaka
 
 | Rank | Test | Why it matters | Blocked by |
 |---|---|---|---|
-| 1 | **Position restoration** (`VER-BROWSE-005`) | Four-deep fallback, entirely undocumented outside the code, user-visible every time they favourite something, and `B-14` rewrites it. Nearly pure logic. | `B-12` for a clean fixture; a crude version is possible sooner |
-| 2 | **Voice title decomposition** (`VER-SEARCH-001`, `002`) | Pure string functions with many special cases (colon, slash, roman numerals, noise words). The most testable code in the product and completely uncovered. `B-30` would rewrite it. | Nothing — **can be written today** |
-| 3 | **Match scoring** (`VER-SEARCH-003`) | Tuned heuristics the author described as endlessly tweakable. Any change silently reorders results. Pure arithmetic. | Nothing — **can be written today** |
+| 1 | ~~**Position restoration** (`VER-BROWSE-005`)~~ | **Delivered.** Eleven characterization tests over `GameListNavigator`, covering all five steps of the fallback. Unblocked by giving the test project the LaunchBox contract reference and writing a `FakeGame` - which is what `B-12` would have provided, arrived at from the other end. `B-14` now has something to preserve. | — |
+| 2 | ~~**Voice title decomposition** (`VER-SEARCH-001`, `002`)~~ | **Delivered.** `VoiceSearchCharacterizationTests` pins RULE-SEARCH-002…007 as a prerequisite of text search, so the two analysis paths can eventually be converged (`B-30`) without changing voice results by accident. Two rules remain unreachable — see the note below the table. | — |
+| 3 | ~~**Match scoring** (`VER-SEARCH-003`)~~ | **Delivered.** Same file. The base scores, the headroom proportion, the confidence multiply and the never-quite-100 rule are all asserted, including two behaviours that look accidental and are now recorded as such. | — |
 | 4 | **Custom list membership and ordering** (`VER-BROWSE-006`) | **Rationale now partly spent.** The reflection over property-name strings is gone (`B-15b`) - a rename is a compile error - so the silent-break risk it names no longer exists. A test is still wanted to pin what the operators *should* do, which `CustomListQueryProbe` cannot say. | `B-01`; a fixture is easier after `B-12` but not blocked on it |
 | 5 | **Bezel resolution** (`VER-MEDIA-001`) | Five-level chain across three files plus a video-aspect rule. `B-20` consolidates it. | Partially now; fully after `B-11` |
 | 6 | **Clear-logo crop equivalence** (`VER-MEDIA-003`) | `B-29` rewrites the crop algorithm; the only meaningful acceptance criterion is pixel-identical output. | Nothing — **golden files can be captured today** |

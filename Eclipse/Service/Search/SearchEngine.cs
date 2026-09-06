@@ -54,8 +54,14 @@ namespace Eclipse.Service.Search
         /// The most to return. Zero or less means all of them - which is what committing a
         /// search wants, where the whole ranked set becomes a list to browse.
         /// </param>
+        /// <param name="restrictTo">
+        /// Games the metadata filters have left, ascending, or null for no constraint. Applied
+        /// before scoring rather than after, so a heavily filtered search does not pay to rank
+        /// games it is about to discard.
+        /// </param>
         public static IReadOnlyList<SearchHit> Search(SearchQuery query, ISearchIndex index,
-                                                      int maxResults = DefaultMaxResults)
+                                                      int maxResults = DefaultMaxResults,
+                                                      int[] restrictTo = null)
         {
             if (query == null || query.IsEmpty || index == null)
             {
@@ -63,6 +69,12 @@ namespace Eclipse.Service.Search
             }
 
             IReadOnlyList<int> candidates = Candidates(query, index);
+
+            if (restrictTo != null && candidates.Count > 0)
+            {
+                candidates = Intersect(candidates, restrictTo);
+            }
+
             if (candidates.Count == 0)
             {
                 return NoHits;

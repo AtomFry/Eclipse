@@ -18,20 +18,58 @@
         TextSearchState, so the box art row, the selection box, the background artwork, the video
         preview and the selected game's details are all drawn by the browsing surface underneath
         this - unchanged, and behaving exactly as they do anywhere else. This control occupies
-        the upper left, where the clear logo and game details normally sit; the host hides those
-        while search is open.
+        the upper left, which it shares with the clear logo and game details. Which of the two is
+        showing follows what the user is doing: the whole panel while they type, and the game's own
+        identity once they move down into the results. While the panel is hidden the list heading
+        carries the search - see TextSearchState.DescribeSearch - so nothing is lost by it going.
 
         DataContext is the SearchViewModel, assigned by the host in MainWindowView, so every
         binding here is against search state rather than the whole theme's view model.
     -->
 
     <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <myconverters:StringLengthToVisibilityConverter x:Key="EmptyQueryVisibility" Empty="Visible" NonEmpty="Collapsed"/>
+        <myconverters:ListCategoryTypeLabelConverter x:Key="FacetLabel"/>
+
+        <!-- The whole panel gives its space back when the cursor moves into the box art row.
+             Everything: the backing, the query line, the chips, the keys, the suggestions.
+             The screen becomes exactly the ordinary browsing surface, with the selected game's
+             clear logo, details, artwork and video where they always are.
+
+             ALL OF IT, rather than just the keys. Fading only the typing tools left the backing
+             still drawn at ninety percent black over the clear logo, and the query line and chips
+             still drawn on top of it - so the logo showed through at about a tenth, with text
+             across it. Half a swap is worse than either whole one.
+
+             What carries the search while this is hidden is the list heading, which names the
+             list after the query and the filters - see TextSearchState.DescribeSearch. Pressing
+             Up brings all of this back. -->
+        <Style x:Key="PanelFade" TargetType="FrameworkElement">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsOnResults}" Value="True">
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.18"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                    <DataTrigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.18"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.ExitActions>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
 
     <!-- The 32 x 18 design stage, so this lands in the same coordinate space as everything else
          in the theme. Only the upper left of it is used. -->
-    <Grid Name="Grid_Search" IsHitTestVisible="False">
+    <Grid Name="Grid_Search" IsHitTestVisible="False" Style="{StaticResource PanelFade}">
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"/>
             <RowDefinition Height="1*"/>
@@ -91,9 +129,22 @@
         <!-- A soft backing behind the panel only, so the keyboard reads over whatever artwork is
              on the right without blacking the artwork out. Fades away to the right so there is
              no hard edge across the middle of the screen. -->
-        <Rectangle Grid.Row="0" Grid.RowSpan="8" Grid.Column="0" Grid.ColumnSpan="17"
+        <!-- Widened while the suggestion column is showing, so the panel does not black out more
+             of the artwork than it is using. The gradient offsets are proportional, so the fade
+             stays at the panel's own edge either way. -->
+        <Rectangle Grid.Row="0" Grid.RowSpan="8" Grid.Column="0"
                    IsHitTestVisible="False"
                    Fill="Black">
+            <Rectangle.Style>
+                <Style TargetType="Rectangle">
+                    <Setter Property="Grid.ColumnSpan" Value="17"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding HasSuggestions}" Value="True">
+                            <Setter Property="Grid.ColumnSpan" Value="26"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Rectangle.Style>
             <Rectangle.OpacityMask>
                 <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
                     <GradientStop Offset="0" Color="#E6000000"/>
@@ -105,7 +156,7 @@
 
         <!-- ===================== QUERY LINE ===================== -->
 
-        <Grid Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Grid.ColumnSpan="14"
+        <Grid Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Grid.ColumnSpan="10"
               IsHitTestVisible="False">
             <TextBlock Text="{Binding Query}"
                        IsHitTestVisible="False"
@@ -122,15 +173,253 @@
                        Visibility="{Binding Query, Converter={StaticResource EmptyQueryVisibility}}"/>
         </Grid>
 
+        <!-- ===================== APPLIED FILTERS ===================== -->
+
+        <!-- The chips: what has been selected so far, grouped by facet in the order each facet
+             first appeared. Insertion order rather than sorted, because the user built this one
+             step at a time and the row should read as the record of that.
+
+             TWO LINES, not one, and not a scrolling window. This row is the answer to "why am I
+             looking at two games", so every applied filter has to be on screen; a window that
+             hid some of them would take away the one thing the row is for, and would also break
+             the joining words - a window opening mid-row could drop the "or" that explains
+             why two platforms mean either rather than both.
+
+             It spans the query row as well as its own and is anchored to the bottom, so the row
+             grows UP into the gap under the heading - which was empty space anyway - and the
+             keyboard never moves. Line spacing is a top margin on each container rather than a
+             bottom one, so the last line has nothing under it and the row sits as low as the
+             grid allows. Past two lines the overflow is clipped rather than growing a third,
+             because a chip row taller than that would be pushing into the keys. -->
+        <ListBox Grid.Row="1" Grid.RowSpan="2" Grid.Column="1" Grid.ColumnSpan="14"
+                 ItemsSource="{Binding Chips}"
+                 SelectedIndex="{Binding SelectedChipIndex, Mode=OneWay}"
+                 IsHitTestVisible="False"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 Focusable="False"
+                 VerticalAlignment="Bottom"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                 Visibility="{Binding HasFilters, Converter={StaticResource BoolToVis}}">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal"/>
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                    <Setter Property="Padding" Value="0"/>
+                    <Setter Property="Margin" Value="0,6,0,0"/>
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ListBoxItem">
+                                <ContentPresenter/>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ListBox.ItemContainerStyle>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <!-- The joining word, and ONLY when it is "or".
+
+                             RULE-SEARCH-051/052 make two filters of the same facet behave
+                             differently depending on the facet - genres AND, platforms OR - and
+                             that is a rule from the shape of the data, not something a user
+                             should have to know. But only half of it needs saying. Two things
+                             sitting next to each other already read as both, so an "and" between
+                             every pair was three characters restating what adjacency meant, four
+                             times over, in the row with the least space on the panel. "or" is
+                             the half that surprises, so it is the half that is drawn. -->
+                        <TextBlock Margin="0,0,8,0"
+                                   FontFamily="Calibri" FontSize="17" FontStyle="Italic"
+                                   Foreground="#77FFFFFF"
+                                   VerticalAlignment="Center">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Join}" Value="Or">
+                                            <Setter Property="Text" Value="or"/>
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <Border Name="Chip" Margin="0,0,12,0" Padding="10,3" CornerRadius="10"
+                                Background="#33FFFFFF" BorderThickness="2"
+                                BorderBrush="Transparent" IsHitTestVisible="False">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Name="ChipFacet"
+                                           Text="{Binding Facet, Converter={StaticResource FacetLabel}}"
+                                           FontFamily="Calibri" FontSize="17" Foreground="#99FFFFFF"
+                                           VerticalAlignment="Center" Margin="0,0,7,0"/>
+                                <TextBlock Name="ChipValue" Text="{Binding Value}"
+                                           FontFamily="Calibri" FontSize="19" FontWeight="SemiBold"
+                                           Foreground="GhostWhite" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <DataTemplate.Triggers>
+                        <!-- Highlighted and taking input: Enter here removes it, so it is filled
+                             the way the keyboard's live key is. -->
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True"/>
+                                <Condition Binding="{Binding DataContext.IsOnChips, ElementName=SearchUserControl}" Value="True"/>
+                            </MultiDataTrigger.Conditions>
+                            <Setter TargetName="Chip" Property="Background" Value="GhostWhite"/>
+                            <Setter TargetName="ChipValue" Property="Foreground" Value="Black"/>
+                            <Setter TargetName="ChipFacet" Property="Foreground" Value="#88000000"/>
+                        </MultiDataTrigger>
+                        <!-- Highlighted, cursor elsewhere: keep the place with an outline. -->
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True"/>
+                                <Condition Binding="{Binding DataContext.IsOnChips, ElementName=SearchUserControl}" Value="False"/>
+                            </MultiDataTrigger.Conditions>
+                            <Setter TargetName="Chip" Property="BorderBrush" Value="#66FFFFFF"/>
+                        </MultiDataTrigger>
+                    </DataTemplate.Triggers>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
         <!-- The status line, which is mostly the live result count. It is the most useful thing
              on the panel: it says whether the next character will help or whether the user has
-             already over-narrowed. -->
-        <TextBlock Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="14"
+             already over-narrowed.
+
+             It sits at the right-hand end of the QUERY row, not the chip row. It used to share
+             the chip row, right-aligned, on the reasoning that a growing chip row would push
+             nothing around - which was true right up until the chips grew far enough to run
+             underneath it. The query line is the one row on this panel whose width is bounded by
+             something other than its content, so it is where a fixed right-hand element belongs. -->
+        <TextBlock Grid.Row="0" Grid.RowSpan="2" Grid.Column="10" Grid.ColumnSpan="5"
                    Text="{Binding Status}"
                    IsHitTestVisible="False"
                    FontFamily="Calibri" FontWeight="Light" FontSize="22"
                    Foreground="DimGray"
-                   VerticalAlignment="Top"/>
+                   TextAlignment="Right"
+                   VerticalAlignment="Center"/>
+
+        <!-- ===================== SUGGESTIONS ===================== -->
+
+        <!-- Beside the keyboard, so the rightmost key steps into it (RULE-SEARCH-030).
+             A ListBox rather than an ItemsControl purely for selection: SelectedIndex is bound
+             one-way from the session, which owns where the cursor is, and IsSelected then drives
+             the container style. Nothing here is clickable - the whole panel is hit-test
+             transparent and input arrives through Big Box. -->
+        <ListBox Grid.Row="3" Grid.RowSpan="5" Grid.Column="14" Grid.ColumnSpan="11"
+                 ItemsSource="{Binding Suggestions}"
+                 SelectedIndex="{Binding SelectedSuggestionIndex, Mode=OneWay}"
+                 IsHitTestVisible="False"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 Focusable="False"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                 Visibility="{Binding HasSuggestions, Converter={StaticResource BoolToVis}}">
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                    <Setter Property="Padding" Value="0"/>
+                    <Setter Property="Margin" Value="0"/>
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ListBoxItem">
+                                <Border Name="Row" Margin="3,2" Padding="10,6" CornerRadius="4"
+                                        Background="Transparent" BorderThickness="2"
+                                        BorderBrush="Transparent">
+                                    <ContentPresenter/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <!-- Highlighted and taking input. -->
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="True"/>
+                                            <Condition Binding="{Binding DataContext.IsOnSuggestions, ElementName=SearchUserControl}" Value="True"/>
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter TargetName="Row" Property="Background" Value="GhostWhite"/>
+                                    </MultiDataTrigger>
+                                    <!-- Highlighted, but the cursor has gone elsewhere: keep the
+                                         place with an outline rather than a fill, the same way
+                                         the keyboard does. -->
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="True"/>
+                                            <Condition Binding="{Binding DataContext.IsOnSuggestions, ElementName=SearchUserControl}" Value="False"/>
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter TargetName="Row" Property="BorderBrush" Value="#66FFFFFF"/>
+                                    </MultiDataTrigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ListBox.ItemContainerStyle>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0" Text="{Binding Value}"
+                                   FontFamily="Calibri" FontSize="24"
+                                   TextTrimming="CharacterEllipsis"
+                                   VerticalAlignment="Center">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="GhostWhite"/>
+                                    <Setter Property="FontWeight" Value="Normal"/>
+                                    <Style.Triggers>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True"/>
+                                                <Condition Binding="{Binding DataContext.IsOnSuggestions, ElementName=SearchUserControl}" Value="True"/>
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Foreground" Value="Black"/>
+                                            <Setter Property="FontWeight" Value="Bold"/>
+                                        </MultiDataTrigger>
+                                        <!-- Already applied: shown so the user can see what is on
+                                             and take it off again (RULE-SEARCH-061). -->
+                                        <DataTrigger Binding="{Binding IsApplied}" Value="True">
+                                            <Setter Property="TextDecorations" Value="Underline"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding Facet, Converter={StaticResource FacetLabel}}"
+                                   Margin="12,0,12,0"
+                                   FontFamily="Calibri" FontSize="17"
+                                   Foreground="#88FFFFFF"
+                                   VerticalAlignment="Center"/>
+
+                        <!-- The count. On a controller there is no hover and no way to inspect
+                             anything, so this is the whole preview mechanism - it is what turns
+                             a list of guesses into a list of consequences. -->
+                        <TextBlock Grid.Column="2" Text="{Binding Count}"
+                                   MinWidth="34"
+                                   FontFamily="Calibri" FontSize="20"
+                                   Foreground="#AAFFFFFF"
+                                   TextAlignment="Right"
+                                   VerticalAlignment="Center"/>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
 
         <!-- ===================== KEYBOARD ===================== -->
 
@@ -138,7 +427,7 @@
              makes the keys of a row share that row's width, so the function row's three keys are
              wide and a QWERTY row of seven is wider per key than the number row of ten. Nothing
              has to compute a span. -->
-        <ItemsControl Grid.Row="3" Grid.RowSpan="5" Grid.Column="1" Grid.ColumnSpan="14"
+        <ItemsControl Grid.Row="3" Grid.RowSpan="5" Grid.Column="1" Grid.ColumnSpan="13"
                       ItemsSource="{Binding Keyboard.Rows}"
                       IsHitTestVisible="False"
                       HorizontalAlignment="Stretch"
@@ -206,6 +495,19 @@
                                         </MultiDataTrigger.Conditions>
                                         <Setter TargetName="KeyTile" Property="BorderBrush" Value="#66FFFFFF"/>
                                         <Setter TargetName="KeyLabel" Property="Foreground" Value="GhostWhite"/>
+                                    </MultiDataTrigger>
+
+                                    <!-- The clear key says which of its two jobs it will do
+                                         (RULE-SEARCH-038). A context-sensitive destructive key
+                                         that does not announce itself is a surprise waiting to
+                                         happen, so the changing label is part of the rule rather
+                                         than decoration. -->
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding Kind}" Value="Clear"/>
+                                            <Condition Binding="{Binding DataContext.ClearsFilters, ElementName=SearchUserControl}" Value="True"/>
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter TargetName="KeyLabel" Property="Text" Value="clear filters"/>
                                     </MultiDataTrigger>
                                 </DataTemplate.Triggers>
                             </DataTemplate>

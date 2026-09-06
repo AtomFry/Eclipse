@@ -56,6 +56,93 @@ namespace Eclipse.Service.Search
         }
 
         /// <summary>
+        /// The whole library's metadata, ready to index for filtering.
+        ///
+        /// This is prerequisite P4, and like P3 it needs no change to GameCatalog. The plan
+        /// anticipated adding facet posting lists there, beside the category index it already
+        /// builds; doing it here instead keeps the browse interface free of search-shaped data
+        /// and keeps the whole facet engine testable, because what comes out the other side is
+        /// GameFacets rather than GameMatch.
+        ///
+        /// Reading the metadata directly costs the same as GameCatalog.Expand does - the same
+        /// properties, once per game - and avoids needing a reverse map from GameMatch back to
+        /// its catalog position.
+        /// </summary>
+        public static IReadOnlyList<GameFacets> FacetsFromCatalog(IGameCatalogSource catalog)
+        {
+            if (catalog == null)
+            {
+                return new GameFacets[0];
+            }
+
+            IReadOnlyList<GameMatch> games = catalog.Games;
+            List<GameFacets> projected = new List<GameFacets>(games.Count);
+
+            for (int catalogIndex = 0; catalogIndex < games.Count; catalogIndex++)
+            {
+                GameFacets facets = FacetsOf(games[catalogIndex], catalogIndex);
+                if (facets != null)
+                {
+                    projected.Add(facets);
+                }
+            }
+
+            return projected;
+        }
+
+        /// <summary>
+        /// One game's metadata values, or null if there is no game there.
+        ///
+        /// Playlists are deliberately absent, and staying that way. Every other facet comes off
+        /// the game itself, but a playlist is a relationship held elsewhere - GameCatalog gets it
+        /// from PlaylistGameService - so including it would mean threading a second source
+        /// through this whole path. Asked and answered in stage 4e: not wanted. Adding it later
+        /// is a projection change and an entry in Facets.Filterable, nothing more.
+        /// </summary>
+        public static GameFacets FacetsOf(GameMatch gameMatch, int catalogIndex)
+        {
+            IGame game = gameMatch?.Game;
+            if (game == null)
+            {
+                return null;
+            }
+
+            List<FacetValue> values = new List<FacetValue>();
+
+            Add(values, ListCategoryType.Platform, game.Platform);
+            Add(values, ListCategoryType.ReleaseYear, gameMatch.ReleaseYear);
+
+            AddAll(values, ListCategoryType.Series, game.SeriesValues);
+            AddAll(values, ListCategoryType.Genre, game.Genres);
+            AddAll(values, ListCategoryType.Publisher, game.Publishers);
+            AddAll(values, ListCategoryType.Developer, game.Developers);
+            AddAll(values, ListCategoryType.PlayMode, game.PlayModes);
+
+            return new GameFacets(catalogIndex, values);
+        }
+
+        private static void Add(List<FacetValue> values, ListCategoryType facet, string value)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                values.Add(new FacetValue(facet, value));
+            }
+        }
+
+        private static void AddAll(List<FacetValue> values, ListCategoryType facet, IEnumerable<string> from)
+        {
+            if (from == null)
+            {
+                return;
+            }
+
+            foreach (string value in from)
+            {
+                Add(values, facet, value);
+            }
+        }
+
+        /// <summary>
         /// Turns search results back into the catalog's own games, in rank order.
         ///
         /// The return leg of the boundary. The engine deals in catalog indices and knows nothing

@@ -519,18 +519,36 @@
             </Rectangle>
 
             <!-- Selected game logo and details -->
-            <!-- Hidden while the search panel is open: the keyboard and query line occupy this
-                 same upper-left area, and the clear logo would otherwise sit underneath them.
-                 The selected game's identity is not lost by this - the search results are a
-                 normal list, so the row below still shows the artwork and the details band
-                 comes back the moment search closes. -->
+            <!-- The selected game's identity - clear logo, title, year, rating, platform.
+
+                 While searching this shares its space with the on-screen keyboard, and which of
+                 the two is showing follows what the user is doing. Typing: the keyboard has the
+                 space and this is out of the way. Browsing the results: the keyboard has no job,
+                 so it fades out and this fades back in over the same area. The query line and the
+                 filter chips sit above both and never move, so the screen does not stop saying
+                 that a search is open.
+
+                 Outside search it is simply always visible, as it always was. -->
             <Grid Name="Grid_Selected_Game_Heading"
                   IsHitTestVisible="False"
                   Grid.Row="1" Grid.RowSpan="16"
                   Grid.Column="1" Grid.ColumnSpan="16"
                   Panel.ZIndex="500"
-                  Background="Transparent"
-                  Visibility="{Binding IsDisplayingSearch, Converter={StaticResource InvertBooleanToVisibilityConverter}}">
+                  Background="Transparent">
+                <Grid.Style>
+                    <Style TargetType="Grid">
+                        <Setter Property="Visibility" Value="Visible"/>
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding IsDisplayingSearch}" Value="True"/>
+                                    <Condition Binding="{Binding Search.IsOnResults}" Value="False"/>
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Grid.Style>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="5*"/>
                     <RowDefinition Height="*" />

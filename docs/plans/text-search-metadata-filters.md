@@ -182,7 +182,7 @@ first one.
 |---|---|
 | RULE-SEARCH-057 | Suggestions rank by match quality first (exact > whole-value prefix > token prefix > fuzzy), then by resulting result count descending. |
 | RULE-SEARCH-058 | At most `SearchMaxSuggestions` (default 8) are shown, and no more than three from any one facet. |
-| RULE-SEARCH-059 | Suggestions are shown once they are worth showing. The threshold ships at **two typed characters**, but it is a display threshold, not an engine limit. |
+| RULE-SEARCH-059 | Suggestions are shown once they are worth showing. **On trial at one typed character** — it shipped at two, and two was a guess that the threshold itself made unverifiable. A display threshold, not an engine limit. |
 
 RULE-SEARCH-058's second half is the important one. A library with two hundred developers
 starting `ea` would fill the entire list with developers and bury the one genre the user
@@ -192,17 +192,21 @@ developer, play mode, release year, playlist — which mirrors
 `GameListBuilder.MoreLikeThisCategories`, so the two features agree on what "most relevant kind
 of metadata" means.
 
-RULE-SEARCH-059 needs care in how it is implemented. Two characters is a reasonable starting
-point — one character usually matches too much to be informative, and the list would thrash on
-the second keystroke anyway. But on a d-pad **every character is expensive**, so if a single
-character can produce a useful suggestion, refusing to show it is a real cost.
+RULE-SEARCH-059 needs care in how it is implemented. Two characters looked like a reasonable
+starting point — one character usually matches too much to be informative, and the list would
+thrash on the second keystroke anyway. But on a d-pad **every character is expensive**, so if a
+single character can produce a useful suggestion, refusing to show it is a real cost.
 
 So `SuggestionRanker` must be **capable of a one-character query** and must not carry the
-threshold itself. The threshold lives in the session/view as a constant, the ranker is asked
-and answers, and the question of where the line goes is settled by trying it on a real library
-rather than by this document. On a library where `s` yields *Sports*, *Sega Genesis* and
-*Shooter* as the top three, showing them is clearly right; where it yields three arbitrary
-developers, it is clearly wrong. Both are one constant apart.
+threshold itself. The threshold lives in the session as a constant, the ranker is asked and
+answers, and where the line goes is settled by trying it on a real library rather than by this
+document. On a library where `s` yields *Sports*, *Sega Genesis* and *Shooter* as the top three,
+showing them is clearly right; where it yields three arbitrary developers, it is clearly wrong.
+
+**On trial at one (stage 4e).** Two shipped first, and then made itself unverifiable: the
+question is whether a single character is useful, and the threshold was what hid the evidence.
+The golden corpus shows one character answering usefully, but a corpus of 110 metadata terms
+cannot stand in for a library of thousands. It is set to one to be looked at.
 
 ### 5.3 What a suggestion looks like
 
@@ -268,7 +272,7 @@ unreachable, which is the stronger guarantee. `VER-SEARCH-028` is the test.
 
 | ID | Rule |
 |---|---|
-| RULE-SEARCH-063 | Chips display in the order they were added. |
+| RULE-SEARCH-063 | Chips display grouped by facet. Within a facet they are in the order they were added, and the facet groups appear in the order their first chip arrived. |
 | RULE-SEARCH-064 | The chip row is focusable whenever it is non-empty, and Enter on a chip removes it. |
 | RULE-SEARCH-065 | Removing a chip re-runs the query; nothing else is retyped or reset. |
 | RULE-SEARCH-066 | Chips survive leaving the search screen for the session (parent RULE-SEARCH-035). |
@@ -285,9 +289,17 @@ It is deliberately *not* a separate key. The input surface has no room (parent �
 it into `clear` costs nothing as long as the key says which of the two it is about to do — which
 is why the changing label is part of RULE-SEARCH-038 rather than an implementation detail.
 
-Insertion order, not sorted order: the user built this filter one step at a time and the row
-should read as the record of that. Sorting it would move chips underneath a moving selection
-every time one is added.
+**Revised during 4d.** This originally said strict insertion order, on the grounds that the user
+built the filter one step at a time and the row should read as the record of that. Building the
+joining words showed that cannot survive interleaving: apply a platform, then a genre, then a
+second platform, and a pairwise reading renders *"Genesis and Sports or SNES"* — a grouping the
+algebra does not use. Same-facet chips have to be adjacent for RULE-SEARCH-067 to be true where
+it stands.
+
+Grouping keeps what the original rule was protecting. It is not a sort — nothing is alphabetised,
+nothing jumps to the front — so the row still reads as a record of what the user did at the level
+that matters: which facets they narrowed on, and in what order. A new chip joins the end of its
+own facet's run rather than the end of the row.
 
 Removal re-running the query rather than rebuilding from scratch is the whole point of the
 filter set being a computed intersection instead of a destructively narrowed list. Step 6 of
