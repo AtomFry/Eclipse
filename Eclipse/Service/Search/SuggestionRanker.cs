@@ -162,20 +162,42 @@ namespace Eclipse.Service.Search
 
                 if (!isApplied && widening.Contains(term.Facet))
                 {
-                    // The games this would ADD. Everything already surviving stays - a union
-                    // only grows - so the total is what survives now plus what this brings in
-                    // from outside. The two are disjoint by construction, because a game carries
-                    // exactly one value of a single-valued facet, which is why this adds rather
-                    // than needing the union materialised.
+                    // The games this would ADD.
+                    //
+                    // Everything already surviving stays - a union only grows - so the total is
+                    // what survives now plus what this brings in from OUTSIDE the survivors. The
+                    // second half is the subtlety: a game this term reaches may already be here
+                    // under one of the facet's other values, and counting it again would promise
+                    // a number that applying the filter does not deliver.
+                    //
+                    // Writing g for the games the OTHER facets leave, A for the games this
+                    // facet's applied values already reach, and v for this term's games:
+                    //
+                    //     |g ∩ (A ∪ v)| = |g ∩ A| + |g ∩ v| − |g ∩ A ∩ v|
+                    //
+                    // and g ∩ A is exactly the current filter set, so the third term is
+                    // v against the survivors. Two counts, no union materialised.
+                    //
+                    // The old form of this dropped the third term, which was sound only while
+                    // OR was confined to platform and release year - a game carries one of each,
+                    // so v could never overlap the survivors. It does not survive genre, where
+                    // two-thirds of games carry several values and the overlap is the normal case.
                     int[] ground = Ground(withoutFacet, applied, index, term.Facet);
 
-                    int added = ground == null
+                    int reached = ground == null
                         ? term.GameCount
                         : FilterSet.IntersectCount(term.Games, ground);
 
+                    int alreadyHere = filterSet == null
+                        ? 0
+                        : FilterSet.IntersectCount(term.Games, filterSet);
+
+                    int added = reached - alreadyHere;
+
                     // The widening equivalent of RULE-SEARCH-055. Not a dead end but a dead
                     // choice: a term that would bring in nothing promises to widen and then
-                    // leaves the screen exactly as it was.
+                    // leaves the screen exactly as it was. Under a uniform OR this is no longer
+                    // rare - a genre wholly contained in one already applied adds nothing at all.
                     if (added == 0)
                     {
                         continue;
@@ -215,8 +237,11 @@ namespace Eclipse.Service.Search
         }
 
         /// <summary>
-        /// The single-valued facets that already carry a filter - the ones where another value
-        /// would widen the search rather than narrow it.
+        /// The facets that already carry a filter - the ones where another value would widen the
+        /// search rather than narrow it.
+        ///
+        /// Every facet, now that the algebra is uniform (RULE-SEARCH-051). This used to test
+        /// Facets.IsSingleValued as well, back when only platform and release year ORed.
         /// </summary>
         private static HashSet<ListCategoryType> WideningFacets(IReadOnlyList<SearchFilter> applied)
         {
@@ -229,10 +254,7 @@ namespace Eclipse.Service.Search
 
             foreach (SearchFilter filter in applied)
             {
-                if (Facets.IsSingleValued(filter.Facet))
-                {
-                    facets.Add(filter.Facet);
-                }
+                facets.Add(filter.Facet);
             }
 
             return facets;

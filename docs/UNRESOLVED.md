@@ -250,7 +250,7 @@ action key and it behaves differently per row. **Resolve by:** product decision.
 | Suspected dead items | 12 (`DEAD-001` … `DEAD-012`) |
 | — high confidence, safe to remove after a grep | 5 |
 | — requires investigation first | 7 |
-| Open questions | 32 (`OQ-001` … `OQ-032`), of which 2 resolved (`OQ-012`, `OQ-022`) |
+| Open questions | 33 (`OQ-001` … `OQ-033`), of which 2 resolved (`OQ-012`, `OQ-022`) |
 | — product decisions | 13 |
 | — research/experiment tasks | 4 (`OQ-012` resolved) |
 | — external (LaunchBox) questions | 1 |
@@ -336,3 +336,22 @@ Undo of a filter selection; whether committed filters stay visible while browsin
 unused facets should be suppressible; whether a filter should be creatable from the game
 currently selected while browsing. All specified in the sub-feature plan, none built. See that
 document's *Open questions*.
+
+### OQ-033 — should a search that finds nothing show its near misses?
+
+**Feature:** FEAT-SEARCH-013 / stage 5
+
+`RULE-SEARCH-044` hides the browsing surface when the primary row finds nothing, and stage 5c
+deliberately left that alone rather than change shipped behaviour as a side effect. But the
+leave-one-out rows are usually *not* empty when the primary is — dropping the query or the
+last filter is exactly what rescues an over-narrowed search — so the moment the fan-out would
+help most is currently the one moment it is not shown.
+
+The original rationale for 044 was that a stale row would claim to be results that no longer
+exist. That does not apply to rows built from the current constraints; they are freshly
+correct, and each one says in its heading what it is. Against that: a screen that answers a
+query matching nothing by showing several rows of games may read as ignoring what was typed,
+and the status line would have to carry the explanation.
+
+Needs a look on a real library before deciding. Cheap either way — one guard in
+`TextSearchState.PublishResults`.

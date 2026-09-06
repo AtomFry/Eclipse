@@ -310,5 +310,97 @@ namespace Eclipse.Tests
 
             Assert.True(announced > 0);
         }
+
+        // ------------------------------------------------------------------
+        // Jumping to an end of the set - MoveToFirstList / MoveToLastList.
+        //
+        // Text search walks its rows as a block and has to land at one end of it: leaving the
+        // rows downward rewinds them, and wrapping up into them enters at the bottom. Without
+        // that the row is left parked wherever the cursor happened to leave it, and the second
+        // trip round the loop skips the middle rows entirely (RULE-SEARCH-079).
+        // ------------------------------------------------------------------
+
+        private static GameListSet ThreeLists()
+        {
+            return SetOf(ListCategoryType.TextSearch,
+                         ("one", new[] { "a", "b" }),
+                         ("two", new[] { "c", "d" }),
+                         ("three", new[] { "e", "f" }));
+        }
+
+        [Fact]
+        public void Moving_to_the_last_list_lands_on_it()
+        {
+            GameListNavigator navigator = Showing(ThreeLists(), "one", "a");
+
+            navigator.MoveToLastList();
+
+            Assert.Equal(2, navigator.CurrentListIndex);
+            Assert.Equal("three", navigator.CurrentList.ListTypeValue);
+            Assert.True(navigator.IsOnLastList);
+        }
+
+        [Fact]
+        public void Moving_to_the_first_list_lands_on_it()
+        {
+            GameListNavigator navigator = Showing(ThreeLists(), "three", "e");
+
+            navigator.MoveToFirstList();
+
+            Assert.Equal(0, navigator.CurrentListIndex);
+            Assert.Equal("one", navigator.CurrentList.ListTypeValue);
+            Assert.True(navigator.IsOnFirstList);
+        }
+
+        /// <summary>
+        /// The row keeps its own selected game. Rewinding the rows is a move between them, not a
+        /// reset of what is selected inside them - the user who comes back to a row should find
+        /// the game they left on it.
+        /// </summary>
+        [Fact]
+        public void Jumping_between_lists_keeps_each_ones_selected_game()
+        {
+            GameListNavigator navigator = Showing(ThreeLists(), "two", "d");
+
+            navigator.MoveToFirstList();
+            navigator.MoveToList(1);
+
+            Assert.Equal("d", LandedOn(navigator));
+        }
+
+        [Fact]
+        public void Jumping_outside_the_set_does_nothing()
+        {
+            GameListNavigator navigator = Showing(ThreeLists(), "two", "c");
+
+            navigator.MoveToList(-1);
+            navigator.MoveToList(3);
+
+            Assert.Equal(1, navigator.CurrentListIndex);
+        }
+
+        /// <summary>
+        /// The whole of the reported bug, at the level this can be tested: after walking to the
+        /// last row and rewinding - which is what leaving the rows downward now does - the next
+        /// walk starts at the top again rather than at the end it was left at.
+        /// </summary>
+        [Fact]
+        public void Rewinding_lets_the_walk_start_over()
+        {
+            GameListNavigator navigator = Showing(ThreeLists(), "one", "a");
+
+            while (!navigator.IsOnLastList)
+            {
+                navigator.MoveToNextList();
+            }
+
+            navigator.MoveToFirstList();
+
+            Assert.False(navigator.IsOnLastList);
+            Assert.Equal("one", navigator.CurrentList.ListTypeValue);
+
+            navigator.MoveToNextList();
+            Assert.Equal("two", navigator.CurrentList.ListTypeValue);
+        }
     }
 }

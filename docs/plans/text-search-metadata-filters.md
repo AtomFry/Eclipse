@@ -77,8 +77,8 @@ The distinction exists; the filter algebra just has to respect it.
 | ID | Rule |
 |---|---|
 | RULE-SEARCH-050 | Chips of **different** facets combine with AND. |
-| RULE-SEARCH-051 | Chips of the **same multi-valued** facet (genre, developer, publisher, series, play mode, playlist) combine with **AND** — the game must carry every selected value. |
-| RULE-SEARCH-052 | Chips of the **same single-valued** facet (platform, release year) combine with **OR** — the game must carry one of them. |
+| RULE-SEARCH-051 | Chips of the **same facet** combine with **OR** — the game must carry one of them. Every facet, uniformly. |
+| RULE-SEARCH-052 | *(Superseded — merged into 051. This pair once split single-valued facets from multi-valued ones; see docs/features/search.md and the note in FacetIndex for why the split was dropped.)* |
 | RULE-SEARCH-053 | Free text applies as an additional AND over whatever the chips leave. |
 
 **This algebra is settled for v1.** It is the one place in either plan where the interaction
@@ -91,10 +91,17 @@ RULE-SEARCH-052 is not a compromise, it is the more useful behaviour on its own 
 "Genesis or SNES" is a request people actually make, and it is the only thing a second
 platform chip could sensibly mean.
 
-This is also the conventional split. Retail facet rails OR within a facet and AND across
-facets; the only adjustment here is that multi-valued facets AND within themselves, because
-that is what the request asks for and because a game genuinely carrying two genres makes it
-meaningful.
+This is the conventional algebra, unadjusted. Retail facet rails OR within a facet and AND
+across facets, and that is now exactly what Eclipse does.
+
+> **This paragraph used to describe an adjustment**: multi-valued facets ANDing within
+> themselves, because "sports and football" is what the request asked for and a game genuinely
+> carrying two genres makes it meaningful. That shipped, and was removed later. The reasoning was
+> sound for genre and wrong everywhere else — the schema calls developer, publisher, series and
+> play mode multi-valued, but real libraries do not use them that way, so those filters ANDed to
+> nothing and their second value was never even offered. Genre intersection was the price of the
+> single rule. See `docs/features/search.md` RULE-SEARCH-051/052 and the measurement in
+> `FacetIndex`.
 
 ### 3.3 The consequence, and why the display of it is a rule rather than polish
 
@@ -105,7 +112,7 @@ hidden rule; made visible, it is self-explanatory.
 
 | ID | Rule |
 |---|---|
-| RULE-SEARCH-067 | The chip row renders the joining word between chips of the same facet — `and` for multi-valued facets, `or` for single-valued ones. |
+| RULE-SEARCH-067 | The chip row renders `or` between chips of the same facet, and nothing between chips of different facets. |
 
 ```
 [ Genre: Sports ]  and  [ Genre: Football ]      [ Platform: Genesis ]  or  [ Platform: SNES ]
@@ -340,8 +347,7 @@ references, at four bytes instead of eight and without the `ILookup` overhead.
 ```
 filterSet = all games
 for each facet with chips:
-    facetSet = single-valued ? union of the chips' postings      (RULE-SEARCH-052)
-                             : intersection of the chips' postings (RULE-SEARCH-051)
+    facetSet = union of the chips' postings                       (RULE-SEARCH-051)
     filterSet = intersect(filterSet, facetSet)                    (RULE-SEARCH-050)
 ```
 
@@ -465,7 +471,7 @@ should be added to the same fixture rather than to a second one.
 
 | ID | Question |
 |---|---|
-| OQ-028 | RULE-SEARCH-051 ANDs same-facet multi-valued chips, per the request. Retail convention ORs. **Settled for v1 (§3.2) — not to be revisited before the feature has been used.** If real use wants both, the fix is a per-chip toggle; the open part is whether that is worth the interaction cost on a d-pad. |
+| OQ-028 | ~~RULE-SEARCH-051 ANDs same-facet multi-valued chips, per the request. Retail convention ORs.~~ **Resolved** — after use, ORs uniformly. The AND was structurally empty outside genre, and genre intersection was given up for one rule. A per-chip AND/OR toggle remains the fix if real use wants both back; still unproven whether it is worth the interaction cost on a d-pad. |
 | OQ-029 | Should free text and chips be reorderable, i.e. should selecting a suggestion be undoable with an "undo last" rather than by finding the chip? |
 | OQ-030 | Should a committed search's chips be visible while browsing the results, so the user can see what they are inside without re-entering search? |
 | OQ-031 | Should facets the user never uses (playlist, play mode, release year on some libraries) be suppressible in settings, to keep the suggestion list dense? |

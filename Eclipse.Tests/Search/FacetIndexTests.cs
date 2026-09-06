@@ -27,20 +27,65 @@ namespace Eclipse.Tests.Search
         // ------------------------------------------------------------------
 
         /// <summary>
-        /// The split that the whole filter algebra rests on. Getting these two wrong produces a
-        /// filter that can never match anything.
+        /// The algebra the whole filter feature rests on: OR within a facet, AND across facets -
+        /// uniformly, for every facet (RULE-SEARCH-051).
+        ///
+        /// Every facet, deliberately. This was once a split, with platform and release year
+        /// ORing because a game carries only one of each and everything else ANDing because the
+        /// LaunchBox schema says a game can carry several. The schema was right and irrelevant:
+        /// outside genre, real libraries do not use it, so ANDing two developers was empty and
+        /// the second one was never even offered. See the note in FacetIndex for the measurement.
+        ///
+        /// Asserted through Apply rather than against a flag, so what is pinned is the behaviour
+        /// rather than the switch that happens to produce it.
         /// </summary>
         [Theory]
-        [InlineData(ListCategoryType.Platform, true)]
-        [InlineData(ListCategoryType.ReleaseYear, true)]
-        [InlineData(ListCategoryType.Genre, false)]
-        [InlineData(ListCategoryType.Publisher, false)]
-        [InlineData(ListCategoryType.Developer, false)]
-        [InlineData(ListCategoryType.Series, false)]
-        [InlineData(ListCategoryType.PlayMode, false)]
-        public void The_single_valued_facets_are_platform_and_release_year(ListCategoryType facet, bool single)
+        [InlineData(ListCategoryType.Platform)]
+        [InlineData(ListCategoryType.ReleaseYear)]
+        [InlineData(ListCategoryType.Genre)]
+        [InlineData(ListCategoryType.Publisher)]
+        [InlineData(ListCategoryType.Developer)]
+        [InlineData(ListCategoryType.Series)]
+        [InlineData(ListCategoryType.PlayMode)]
+        public void Two_values_of_any_one_facet_mean_either(ListCategoryType facet)
         {
-            Assert.Equal(single, Facets.IsSingleValued(facet));
+            FacetIndex index = FacetIndex.Build(new[]
+            {
+                GameAt(0, (facet, "one")),
+                GameAt(1, (facet, "two")),
+                GameAt(2, (facet, "three"))
+            });
+
+            int[] surviving = FilterSet.Apply(
+                new[] { new SearchFilter(facet, "one"), new SearchFilter(facet, "two") },
+                index);
+
+            Assert.Equal(new[] { 0, 1 }, surviving);
+        }
+
+        /// <summary>
+        /// The other half: different facets still narrow. Without this the uniform OR would have
+        /// turned every filter into a widening one and left no way to narrow at all.
+        /// </summary>
+        [Fact]
+        public void Two_values_of_different_facets_mean_both()
+        {
+            FacetIndex index = FacetIndex.Build(new[]
+            {
+                GameAt(0, (ListCategoryType.Genre, "Shooter"), (ListCategoryType.Developer, "Capcom")),
+                GameAt(1, (ListCategoryType.Genre, "Shooter"), (ListCategoryType.Developer, "Konami")),
+                GameAt(2, (ListCategoryType.Genre, "Puzzle"), (ListCategoryType.Developer, "Capcom"))
+            });
+
+            int[] surviving = FilterSet.Apply(
+                new[]
+                {
+                    new SearchFilter(ListCategoryType.Genre, "Shooter"),
+                    new SearchFilter(ListCategoryType.Developer, "Capcom")
+                },
+                index);
+
+            Assert.Equal(new[] { 0 }, surviving);
         }
 
         /// <summary>

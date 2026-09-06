@@ -1,3 +1,4 @@
+using System;
 using Eclipse.Service;
 using Eclipse.State.GameDetailOptions;
 using Eclipse.State.KeyStrategy;
@@ -14,14 +15,57 @@ namespace Eclipse.State
     {
         private readonly AttractModeService attractModeService;
 
+        // Where Escape goes. Almost always back to browsing, but text search opens this overlay
+        // too and abandoning it there should return to the search rather than dropping the user
+        // out of it - see OnEscape.
+        //
+        // Two fields rather than one because this state is cached and reused: the opener sets
+        // the pending value, EnterState consumes it, and anything that opens the overlay without
+        // asking for a destination gets the default. A stale destination therefore cannot
+        // survive a single use - the same hazard the Reset() below exists for.
+        private Type pendingReturnTo;
+        private Type returnTo = typeof(SelectingGameState);
+
         public GameDetailOptionsState()
         {
             attractModeService = AttractModeService.Instance;
         }
 
+        /// <summary>
+        /// Opens the overlay, saying where Escape should go if the user abandons it.
+        /// </summary>
+        public static void OpenReturningTo(EclipseStateContext eclipseStateContext, Type returnTo)
+        {
+            GameDetailOptionsState state =
+                (GameDetailOptionsState)eclipseStateContext.GetState(typeof(GameDetailOptionsState));
+
+            state.pendingReturnTo = returnTo;
+            eclipseStateContext.TransitionToState(state);
+        }
+
+        /// <summary>
+        /// Re-enters the overlay from a screen the overlay itself opened, keeping the destination
+        /// Escape was given.
+        ///
+        /// Without this, stepping out to the more-info screen and back would quietly reset where
+        /// Escape goes - so a user who reached the overlay from a search, looked at more info,
+        /// came back and then changed their mind would be dropped out of the search rather than
+        /// returned to it.
+        /// </summary>
+        public static void Reopen(EclipseStateContext eclipseStateContext)
+        {
+            GameDetailOptionsState state =
+                (GameDetailOptionsState)eclipseStateContext.GetState(typeof(GameDetailOptionsState));
+
+            OpenReturningTo(eclipseStateContext, state.returnTo);
+        }
+
         public void EnterState(EclipseStateContext eclipseStateContext)
         {
             attractModeService.RestartAttractMode();
+
+            returnTo = pendingReturnTo ?? typeof(SelectingGameState);
+            pendingReturnTo = null;
 
             eclipseStateContext.MainWindowViewModel.IsDisplayingFeature = true;
             eclipseStateContext.MainWindowViewModel.IsDisplayingMoreInfo = true;
@@ -67,7 +111,11 @@ namespace Eclipse.State
 
             eclipseStateContext.MainWindowViewModel.IsDisplayingFeature = false;
             eclipseStateContext.MainWindowViewModel.IsDisplayingMoreInfo = false;
-            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(SelectingGameState)));
+
+            // Back to whoever opened this, which is browsing unless someone said otherwise.
+            // Escape abandons, and abandoning should undo the press that got here rather than
+            // landing the user somewhere neither state chose.
+            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(returnTo));
             return true;
         }
 

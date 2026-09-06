@@ -78,6 +78,7 @@ namespace Eclipse.Service.Search
 
         private static readonly SearchHit[] NoHits = new SearchHit[0];
         private static readonly Suggestion[] NoSuggestions = new Suggestion[0];
+        private static readonly SearchRowResult[] NoRows = new SearchRowResult[0];
 
         private readonly ISearchIndexSource indexSource;
         private readonly StringBuilder query = new StringBuilder();
@@ -117,7 +118,18 @@ namespace Eclipse.Service.Search
 
         public bool HasQuery => query.Length > 0;
 
-        /// <summary>The current results, best first. Empty, never null.</summary>
+        /// <summary>
+        /// Every row this search produces, primary first - see SearchRows. One row until two
+        /// constraints are applied, then one more for each constraint left out.
+        /// </summary>
+        public IReadOnlyList<SearchRowResult> Rows { get; private set; } = NoRows;
+
+        /// <summary>
+        /// The primary rows results, best first. Empty, never null.
+        ///
+        /// The search the user actually asked for, which is what the status line counts and what
+        /// HasResults is about. The near misses beneath it are in Rows.
+        /// </summary>
         public IReadOnlyList<SearchHit> Results { get; private set; }
 
         public int ResultCount => Results.Count;
@@ -184,6 +196,13 @@ namespace Eclipse.Service.Search
         /// the session is the thing that survives leaving the screen.
         /// </summary>
         public int RememberedResultIndex { get; set; }
+
+        /// <summary>
+        /// Which row the user was in, alongside where in it (RULE-SEARCH-073 gave a search more
+        /// than one). Without this, returning to a search would put the user at the right column
+        /// of the wrong row.
+        /// </summary>
+        public int RememberedRowIndex { get; set; }
 
         /// <summary>Whether a search can run at all right now.</summary>
         public SearchAvailability Availability => indexSource?.Availability ?? SearchAvailability.Disabled;
@@ -304,6 +323,7 @@ namespace Eclipse.Service.Search
         private void OnQueryEdited()
         {
             RememberedResultIndex = 0;
+            RememberedRowIndex = 0;
             RunQuery();
         }
 
@@ -557,6 +577,7 @@ namespace Eclipse.Service.Search
 
             query.Length = 0;
             RememberedResultIndex = 0;
+            RememberedRowIndex = 0;
 
             // The cursor goes back to the keyboard, because the list it was standing in is about
             // to be rebuilt around a query that no longer exists.
@@ -580,6 +601,7 @@ namespace Eclipse.Service.Search
 
             filters.RemoveAll(applied => applied.Equals(selected.Value.Filter));
             RememberedResultIndex = 0;
+            RememberedRowIndex = 0;
 
             RecomputeFilterSet();
             RunQuery();
@@ -620,6 +642,7 @@ namespace Eclipse.Service.Search
 
             filters.Clear();
             RememberedResultIndex = 0;
+            RememberedRowIndex = 0;
 
             RecomputeFilterSet();
             RunQuery();
@@ -648,9 +671,10 @@ namespace Eclipse.Service.Search
 
                 if (index > 0)
                 {
-                    bool sameFacet = filters[index].Facet == filters[index - 1].Facet;
-
-                    join = sameFacet && Facets.IsSingleValued(filters[index].Facet)
+                    // Mechanical now that the algebra is uniform: same facet as the chip before
+                    // it means or, a different facet means and. The facet grouping in AddFilter
+                    // is what makes reading it pairwise correct.
+                    join = filters[index].Facet == filters[index - 1].Facet
                         ? FilterJoin.Or
                         : FilterJoin.And;
                 }
@@ -679,28 +703,29 @@ namespace Eclipse.Service.Search
         /// </summary>
         private void RunQuery()
         {
-            ISearchIndex index = indexSource?.Index;
-            SearchQuery parsed = SearchQuery.Parse(Query);
+            List<SearchRowResult> resolved = new List<SearchRowResult>();
 
-            if (index == null)
+            foreach (SearchRow row in SearchRows.For(Query, filters))
             {
-                Results = NoHits;
+                IReadOnlyList<SearchHit> hits = Resolve(row);
+
+                // A secondary row with nothing in it is simply not a row. The primary is kept
+                // whatever it holds, because HasResults is the question "did this search find
+                // anything" and RULE-SEARCH-044 answers it by hiding the browsing surface.
+                //
+                // An empty secondary is rarer than it looks: a row carries every constraint but
+                // one, so it is normally a superset of the primary. The exception is dropping one
+                // of two filters on a single-valued facet, where the OR (RULE-SEARCH-052) makes
+                // the row a subset instead - "NES or SNES" minus SNES can find nothing where the
+                // pair found something.
+                if (row.IsPrimary || hits.Count > 0)
+                {
+                    resolved.Add(new SearchRowResult(row, hits));
+                }
             }
-            else if (!parsed.IsEmpty)
-            {
-                Results = SearchEngine.Search(parsed, index, LiveResultLimit, filterSet);
-            }
-            else if (filterSet != null)
-            {
-                // Filters but no text. The filters are the whole query, so the games they leave
-                // are the results - in catalog order, which is the library's own sort-title
-                // order, because with nothing typed there is no relevance to rank by.
-                Results = Browse(filterSet);
-            }
-            else
-            {
-                Results = NoHits;
-            }
+
+            Rows = resolved;
+            Results = resolved[0].Hits;
 
             RefreshSuggestions();
 
@@ -732,6 +757,36 @@ namespace Eclipse.Service.Search
             {
                 SelectedSuggestionIndex = 0;
             }
+        }
+
+        /// <summary>
+        /// One row's games.
+        ///
+        /// The same three cases the single row always had - text, filters alone, or neither -
+        /// asked of one row's constraints rather than of the session's. The primary reuses the
+        /// filter set already computed for the suggestions; a secondary resolves its own, which
+        /// is the extra work the fan-out costs and what stage 5a measured.
+        /// </summary>
+        private IReadOnlyList<SearchHit> Resolve(SearchRow row)
+        {
+            ISearchIndex index = indexSource?.Index;
+            if (index == null)
+            {
+                return NoHits;
+            }
+
+            int[] games = row.IsPrimary ? filterSet : FilterSet.Apply(row.Filters, indexSource?.Facets);
+            SearchQuery parsed = SearchQuery.Parse(row.Query);
+
+            if (!parsed.IsEmpty)
+            {
+                return SearchEngine.Search(parsed, index, LiveResultLimit, games);
+            }
+
+            // Filters but no text. The filters are the whole query, so the games they leave are
+            // the results - in catalog order, which is the library's own sort-title order,
+            // because with nothing typed there is no relevance to rank by.
+            return games != null ? Browse(games) : NoHits;
         }
 
         private static SearchHit[] Browse(int[] games)

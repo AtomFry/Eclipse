@@ -1369,15 +1369,22 @@ namespace Eclipse.Tests.Search
             Assert.Equal(FilterJoin.Or, session.Chips[1].Join);
         }
 
+        /// <summary>
+        /// Two developers join with "or" as well - every facet does now (RULE-SEARCH-051). This
+        /// asserted "and" until the algebra was made uniform, on the reasoning that a game can
+        /// carry several developers. It can, in the schema; in a real library it does not, so the
+        /// "and" it drew was describing a filter pair that could never match.
+        /// </summary>
         [Fact]
-        public void Two_chips_of_a_multi_valued_facet_join_with_and()
+        public void Two_chips_of_any_one_facet_join_with_or()
         {
             SearchSession session = FilteredSession(Developer("Sonic Team"), Series("Sonic"));
             session.ToggleFilter(Developer("Sega AM2"));
 
             Assert.Equal(2, session.Chips.Count(chip => chip.Facet == ListCategoryType.Developer));
-            Assert.Equal(FilterJoin.And, session.Chips[1].Join);
+            Assert.Equal(FilterJoin.Or, session.Chips[1].Join);
         }
+
 
         /// <summary>
         /// The reason filters are grouped rather than kept strictly chronological. Interleaved -
@@ -1491,6 +1498,136 @@ namespace Eclipse.Tests.Search
 
             session.Clear();
             Assert.Empty(session.Filters);
+        }
+
+        // ------------------------------------------------------------------
+        // Stage 5c - the session resolves every row, not just the primary.
+        // RULE-SEARCH-073 … 078. What the rows ARE is pinned in SearchRowsTests, below this
+        // boundary; what is asked here is that each one finds what its own constraints leave.
+        // ------------------------------------------------------------------
+
+        private static IReadOnlyList<int> RowGames(SearchSession session, int row)
+        {
+            return session.Rows[row].Hits.Select(hit => hit.CatalogIndex).ToList();
+        }
+
+        private static IReadOnlyList<string> RowNames(SearchSession session)
+        {
+            return session.Rows.Select(row => row.Name).ToList();
+        }
+
+        [Fact]
+        public void One_constraint_produces_one_row()
+        {
+            SearchSession session = FilteredSession(Platform("Sega Genesis"));
+
+            Assert.Single(session.Rows);
+            Assert.True(session.Rows[0].IsPrimary);
+        }
+
+        [Fact]
+        public void The_primary_rows_hits_are_the_sessions_results()
+        {
+            SearchSession session = FilteredSession(Platform("Sega Genesis"), Series("Sonic"));
+
+            Assert.Equal(session.Results, session.Rows[0].Hits);
+        }
+
+        /// <summary>
+        /// The heart of it: each row is the search with one constraint taken out, and finds what
+        /// that leaves. Sonic the Hedgehog is the only Genesis game in the Sonic series, so the
+        /// primary is one game while dropping either filter finds two different pairs.
+        /// </summary>
+        [Fact]
+        public void Each_row_finds_what_its_own_constraints_leave()
+        {
+            SearchSession session = FilteredSession(Platform("Sega Genesis"), Series("Sonic"));
+
+            Assert.Equal(3, session.Rows.Count);
+
+            Assert.Equal(new[] { 0 }, RowGames(session, 0));
+            Assert.Equal(new[] { 0, 2 }, RowGames(session, 1));
+            Assert.Equal(new[] { 0, 1 }, RowGames(session, 2));
+
+            Assert.Equal(
+                new[] { "Search: Sega Genesis · Sonic", "Sega Genesis", "Sonic" },
+                RowNames(session));
+        }
+
+        /// <summary>
+        /// RULE-SEARCH-074 - the typed text is a constraint like any other, so it gets a row that
+        /// drops it. Here that row is the only one with anything in it, which is exactly the case
+        /// it exists for: the filters are fine and the spelling is not.
+        /// </summary>
+        [Fact]
+        public void The_query_gets_a_row_that_leaves_it_out()
+        {
+            SearchSession session = FilteredSession(Series("Sonic"));
+            Type(session, "streets");
+
+            Assert.Empty(session.Rows[0].Hits);
+            Assert.Equal(new[] { 0, 1 }, RowGames(session, 1));
+        }
+
+        [Fact]
+        public void A_search_that_finds_nothing_still_has_a_primary_row()
+        {
+            SearchSession session = FilteredSession(Series("Sonic"));
+            Type(session, "streets");
+
+            Assert.True(session.Rows[0].IsPrimary);
+            Assert.False(session.HasResults);
+        }
+
+        /// <summary>
+        /// A secondary row is normally a superset of the primary - it carries every constraint
+        /// but one. The exception is dropping one of two filters on a single-valued facet, where
+        /// the OR (RULE-SEARCH-052) makes the row a SUBSET: "Genesis or Dreamcast" holds Sonic
+        /// Adventure, and taking Dreamcast away leaves a row with nothing in it. Such a row is
+        /// dropped rather than installed as an empty strip under a heading.
+        /// </summary>
+        [Fact]
+        public void A_secondary_row_that_finds_nothing_is_dropped()
+        {
+            SearchSession session = FilteredSession(Platform("Sega Genesis"), Platform("Dreamcast"));
+            Type(session, "adventure");
+
+            Assert.Equal(
+                new[] { "Search: adventure · Sega Genesis · Dreamcast", "Sega Genesis · Dreamcast", "adventure · Dreamcast" },
+                RowNames(session));
+
+            Assert.Equal(new[] { 1 }, RowGames(session, 0));
+            Assert.Equal(new[] { 0, 1, 2 }, RowGames(session, 1));
+            Assert.Equal(new[] { 1 }, RowGames(session, 2));
+        }
+
+        [Fact]
+        public void Removing_a_filter_rebuilds_the_rows()
+        {
+            SearchSession session = FilteredSession(Platform("Sega Genesis"), Series("Sonic"));
+            Assert.Equal(3, session.Rows.Count);
+
+            session.ToggleFilter(Series("Sonic"));
+
+            Assert.Single(session.Rows);
+        }
+
+        /// <summary>
+        /// The remembered place is a row and a column together (RULE-SEARCH-035). An edit clears
+        /// both, for the reason it always cleared the column: a new result set is a new set of
+        /// rows, in which the old place means nothing.
+        /// </summary>
+        [Fact]
+        public void Editing_the_query_forgets_the_row_as_well_as_the_place_in_it()
+        {
+            SearchSession session = FilteredSession(Platform("Sega Genesis"), Series("Sonic"));
+            session.RememberedRowIndex = 2;
+            session.RememberedResultIndex = 1;
+
+            session.Append('s');
+
+            Assert.Equal(0, session.RememberedRowIndex);
+            Assert.Equal(0, session.RememberedResultIndex);
         }
     }
 }

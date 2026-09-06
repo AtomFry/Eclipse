@@ -50,6 +50,17 @@ namespace Eclipse.Service
         /// </summary>
         public bool IsOnFirstList => listCycle?.GetIndexValue(0) == 0;
 
+        /// <summary>Which list of the set is showing.</summary>
+        public int CurrentListIndex => listCycle?.GetIndexValue(0) ?? 0;
+
+        /// <summary>
+        /// Whether the row showing is the last in its set - so a caller that walks the rows knows
+        /// where the walk ends rather than wrapping past it. Text search needs this: Down moves
+        /// through the search's rows and only leaves the results at the bottom.
+        /// </summary>
+        public bool IsOnLastList =>
+            CurrentSet?.GameLists == null || CurrentListIndex >= CurrentSet.GameLists.Count - 1;
+
         /// <summary>Every set, for the callers that build a new one out of the existing lists.</summary>
         public IReadOnlyList<GameListSet> Sets => gameListSets;
 
@@ -115,6 +126,34 @@ namespace Eclipse.Service
         {
             listCycle.CycleBackward();
             RefreshSelection();
+        }
+
+        /// <summary>
+        /// Jumps to a row by position, keeping that row's own selected game.
+        ///
+        /// Unlike MoveToPosition, which is for restoring a remembered place, this is for a caller
+        /// walking the set as a block and needing to land at one end of it.
+        /// </summary>
+        public void MoveToList(int listIndex)
+        {
+            if (CurrentSet?.GameLists == null
+                || listIndex < 0 || listIndex >= CurrentSet.GameLists.Count)
+            {
+                return;
+            }
+
+            listCycle.SetCurrentIndex(listIndex);
+            RefreshSelection();
+        }
+
+        public void MoveToFirstList()
+        {
+            MoveToList(0);
+        }
+
+        public void MoveToLastList()
+        {
+            MoveToList((CurrentSet?.GameLists?.Count ?? 0) - 1);
         }
 
         public void PageForward()
@@ -183,6 +222,24 @@ namespace Eclipse.Service
         /// the game within the list. Does not announce the move; the callers differ on when they
         /// want that.
         /// </summary>
+        /// <summary>
+        /// Puts the selection at a known row and column of the current set, and announces it.
+        ///
+        /// For a caller that remembers a place itself rather than using RememberPosition -
+        /// text search, which has to restore inside its own result set on the way back in.
+        /// </summary>
+        public void MoveToPosition(int listIndex, int gameIndexInList)
+        {
+            if (CurrentSet?.GameLists == null
+                || listIndex < 0 || listIndex >= CurrentSet.GameLists.Count)
+            {
+                return;
+            }
+
+            MoveToGame(listIndex, gameIndexInList);
+            RaiseSelectionChanged();
+        }
+
         private void MoveToGame(int listIndex, int gameIndexInList)
         {
             listCycle.SetCurrentIndex(listIndex);

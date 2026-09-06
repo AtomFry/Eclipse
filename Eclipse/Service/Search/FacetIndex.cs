@@ -38,17 +38,39 @@ namespace Eclipse.Service.Search
             ListCategoryType.ReleaseYear
         };
 
-        /// <summary>
-        /// Whether a game can carry only one value for this facet.
-        ///
-        /// Decides how two filters on the same facet combine: single-valued facets OR, because
-        /// AND could never match; multi-valued facets AND, because a game genuinely carrying
-        /// both is meaningful and is what the feature was asked for.
-        /// </summary>
-        public static bool IsSingleValued(ListCategoryType facet)
-        {
-            return facet == ListCategoryType.Platform || facet == ListCategoryType.ReleaseYear;
-        }
+        // HOW FILTERS COMBINE - and why there is no method here any more.
+        //
+        // OR within a facet, AND across facets. Uniformly, for every facet (RULE-SEARCH-051).
+        // Two platforms mean either; so do two developers, two genres, two years.
+        //
+        // This used to branch on IsSingleValued: platform and release year ORed because a game
+        // carries only one of each and AND could never match, while everything else ANDed on the
+        // reasoning that a game genuinely carrying two genres makes "sports and football"
+        // meaningful. The first half was right. The second was a claim about the data that the
+        // data did not support - measured over a 1,475-game library:
+        //
+        //     genre        1,441 games carry it,  941 carry more than one   (65%)
+        //     play mode    1,435 games carry it,  149 carry more than one   (10%)
+        //     series         497 games carry it,   10 carry more than one   (2.0%)
+        //     developer    1,489 games carry it,   24 carry more than one   (1.6%)
+        //     publisher    1,473 games carry it,    1 carries  more than one (0.07%)
+        //
+        // Developer and publisher are multi-valued only in the LaunchBox schema; in a real
+        // library they are not. So "Capcom and Konami" was structurally empty, and because
+        // RULE-SEARCH-055 never offers a term that would find nothing, Konami was simply never
+        // offered once Capcom was applied - the same dead end platform had, reached by a
+        // different road. Play mode was worse than useless: its only co-occurring pair in the
+        // whole library is "Cooperative; Multiplayer", and every cooperative game is also
+        // multiplayer, so ANDing that pair returns exactly what one of them returns alone.
+        //
+        // Genre was the real trade, and it was made deliberately: "sports AND football" is
+        // meaningful and is no longer expressible. It went because one rule the user never has
+        // to look up is worth more than an intersection available in one facet out of seven -
+        // and because the feature is used to build a list and then search within it, which is
+        // what OR serves.
+        //
+        // If this is ever revisited, re-run the measurement above rather than reasoning about
+        // the schema. The schema says all five of those facets are multi-valued.
 
         /// <summary>
         /// Where a facet sits in Filterable, or its count for one that is not filtered on. Used

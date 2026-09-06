@@ -89,6 +89,11 @@ Each scenario is written so a developer can execute it without reading the code.
 | VER-SEARCH-032 | Moving down into the results fades the whole panel away and leaves the ordinary browsing screen — clear logo, details, artwork, video — with nothing over it; moving back up to the keyboard brings it back. | Manual | RULE-SEARCH-069 |
 | VER-SEARCH-033 | With `sonic` typed and Capcom + Arcade applied, the list heading reads `Search: sonic · Capcom · Arcade`, and still does after committing with Enter and browsing on. | Manual | RULE-SEARCH-070 |
 | VER-SEARCH-034 | With one platform applied, typing another platform's name offers it; its count equals what applying it leaves; the same holds for release year; a second genre still narrows; a widening term adding nothing is withheld. | **Integration — automated** | RULE-SEARCH-052, 072 |
+| VER-SEARCH-035 | Leave-one-out rows cost under the frame budget per keystroke on a 100,000-game library carrying both titles and metadata — measured in two scenarios, an over-narrowed filter set and a deliberately broad one. | **Measured — automated** | plans/text-search-faceted-rows.md §6 |
+| VER-SEARCH-036 | Walk Down through every row to the keyboard, then Down through the keyboard again: the rows are entered at the first, not the one they were left at, and every row is reachable on the second pass. | Manual | RULE-SEARCH-079 |
+| VER-SEARCH-037 | Two values of any one facet accept either — asserted for all seven facets through `FilterSet.Apply` — while two facets still require both. | **Unit — automated** | RULE-SEARCH-051 |
+| VER-SEARCH-038 | A widening suggestion's count equals what applying it leaves, over facets whose values overlap (genre), not merely disjoint ones. | **Integration — automated** | RULE-SEARCH-072 |
+| VER-SEARCH-039 | Enter a game from search results, Escape out of the detail overlay: the search screen returns with the keyboard, the query, the filters and the same row and game selected. Escape again leaves search for the library position search was opened from. Also via the more-info screen and back. | Manual | RULE-SEARCH-080 |
 
 `VER-SEARCH-020` … `VER-SEARCH-031` are specified for the metadata filters in
 [plans/text-search-metadata-filters.md](plans/text-search-metadata-filters.md) and will move here

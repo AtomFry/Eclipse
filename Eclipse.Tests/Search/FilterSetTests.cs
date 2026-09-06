@@ -107,38 +107,65 @@ namespace Eclipse.Tests.Search
         }
 
         // ------------------------------------------------------------------
-        // RULE-SEARCH-051 - multi-valued facets AND.
+        // RULE-SEARCH-051 - OR within a facet, for every facet.
         // ------------------------------------------------------------------
 
         /// <summary>
-        /// VER-SEARCH-020, the half the feature was asked for. A game genuinely carries several
-        /// genres, so requiring both is meaningful and narrows.
+        /// VER-SEARCH-020. Two genres accept either.
+        ///
+        /// THIS TEST USED TO ASSERT THE OPPOSITE, and the reversal was deliberate. Requiring both
+        /// genres is meaningful - a game genuinely carries several, and "sports and football" is
+        /// the example the filter feature was originally asked for. It was given up so that one
+        /// rule covers every facet, because the split it replaced was doing real harm elsewhere:
+        /// ANDing two developers is empty in any real library, so the second developer was never
+        /// even offered. Intersecting within a genre is the price, and it is no longer
+        /// expressible. See the note in FacetIndex for the measurement behind the choice.
         /// </summary>
         [Fact]
-        public void Two_genres_require_both()
+        public void Two_genres_accept_either()
         {
             Assert.Equal(new[] { 0, 1, 2 }, Apply(Genre("Sports")));
-            Assert.Equal(new[] { 0, 2 }, Apply(Genre("Sports"), Genre("Football")));
+            Assert.Equal(new[] { 0, 1, 2, 3 }, Apply(Genre("Sports"), Genre("Puzzle")));
         }
 
+        /// <summary>
+        /// A second value of a facet can only widen it. The mirror of what this file used to
+        /// assert, and the property that makes a same-facet filter impossible to turn into a
+        /// dead end.
+        /// </summary>
         [Fact]
-        public void A_second_genre_can_only_narrow()
+        public void A_second_genre_can_only_widen()
         {
             int[] one = Apply(Genre("Sports"));
-            int[] two = Apply(Genre("Sports"), Genre("Football"));
+            int[] two = Apply(Genre("Sports"), Genre("Puzzle"));
 
-            Assert.True(two.Length <= one.Length);
-            Assert.All(two, game => Assert.Contains(game, one));
+            Assert.True(two.Length >= one.Length);
+            Assert.All(one, game => Assert.Contains(game, two));
         }
 
+        /// <summary>
+        /// Two genres that no game carries together still find every game carrying either -
+        /// where the old algebra found nothing at all.
+        /// </summary>
         [Fact]
-        public void Two_genres_no_game_carries_together_narrow_to_nothing()
+        public void Two_genres_no_game_carries_together_still_find_both_sets()
         {
-            Assert.Empty(Apply(Genre("Sports"), Genre("Puzzle")));
+            Assert.Equal(new[] { 0, 1, 2, 3 }, Apply(Genre("Sports"), Genre("Puzzle")));
+        }
+
+        /// <summary>
+        /// A genre wholly contained in another adds nothing - every football game here is also a
+        /// sports game. Correct, and the case SuggestionRanker declines to offer, because a
+        /// filter that changes nothing is a wasted press.
+        /// </summary>
+        [Fact]
+        public void A_genre_contained_in_one_already_applied_changes_nothing()
+        {
+            Assert.Equal(Apply(Genre("Sports")), Apply(Genre("Sports"), Genre("Football")));
         }
 
         // ------------------------------------------------------------------
-        // RULE-SEARCH-052 - single-valued facets OR.
+        // RULE-SEARCH-052 - the same rule, where it was always true.
         // ------------------------------------------------------------------
 
         /// <summary>
@@ -183,17 +210,23 @@ namespace Eclipse.Tests.Search
         }
 
         /// <summary>
-        /// The worked example from the request: sports, then football, then the publisher, then
-        /// the platform - each one narrowing.
+        /// The worked example from the request, under the uniform algebra: a genre, then a
+        /// second genre, then the publisher, then the platform.
+        ///
+        /// The shape has changed and the change is the whole trade. Adding a second genre no
+        /// longer narrows - it brings in the puzzle game - and it is the filters of OTHER facets
+        /// that cut back down. Narrowing within one facet is gone; narrowing across facets, which
+        /// is what carries the example to a single game, is untouched.
         /// </summary>
         [Fact]
-        public void The_stacking_example_from_the_request_narrows_at_every_step()
+        public void The_stacking_example_from_the_request_still_reaches_one_game()
         {
             Assert.Equal(new[] { 0, 1, 2 }, Apply(Genre("Sports")));
-            Assert.Equal(new[] { 0, 2 }, Apply(Genre("Sports"), Genre("Football")));
-            Assert.Equal(new[] { 0 }, Apply(Genre("Sports"), Genre("Football"), Publisher("EA Sports")));
-            Assert.Equal(new[] { 0 }, Apply(Genre("Sports"), Genre("Football"), Publisher("EA Sports"),
-                                            Platform("Sega Genesis")));
+            Assert.Equal(new[] { 0, 1, 2, 3 }, Apply(Genre("Sports"), Genre("Puzzle")));
+            Assert.Equal(new[] { 0, 1 }, Apply(Genre("Sports"), Genre("Puzzle"), Publisher("EA Sports")));
+            Assert.Equal(new[] { 0, 1 }, Apply(Genre("Sports"), Genre("Puzzle"), Publisher("EA Sports"),
+                                               Platform("Sega Genesis")));
+            Assert.Equal(new[] { 2 }, Apply(Genre("Sports"), Platform("SNES")));
         }
 
         /// <summary>

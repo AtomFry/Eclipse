@@ -57,10 +57,10 @@ namespace Eclipse.Service.Search
         /// <summary>The first filter. Nothing to join to.</summary>
         None,
 
-        /// <summary>Both must hold - across facets, or within a multi-valued one.</summary>
+        /// <summary>Both must hold. Filters of different facets (RULE-SEARCH-050).</summary>
         And,
 
-        /// <summary>Either will do - two values of a facet a game can only have one of.</summary>
+        /// <summary>Either will do. Two values of the same facet (RULE-SEARCH-051).</summary>
         Or
     }
 
@@ -68,10 +68,9 @@ namespace Eclipse.Service.Search
     /// One applied filter as the chip row shows it: the filter, and how it reads against the one
     /// before it.
     ///
-    /// The joining word exists because RULE-SEARCH-051 and 052 make two filters of the same facet
-    /// behave differently depending on the facet — genres AND, platforms OR — and that is a rule
-    /// derived from the shape of the data, not something a user should be expected to know. Left
-    /// implicit it is a hidden rule; rendered between the chips it is self-explanatory.
+    /// The joining word exists because "or" is the half of the algebra that surprises. Two things
+    /// side by side already read as both, so only the OR is drawn (RULE-SEARCH-067) - between two
+    /// filters of one facet, and nowhere else.
     /// </summary>
     public readonly struct AppliedFilter
     {
@@ -102,12 +101,14 @@ namespace Eclipse.Service.Search
     /// result set that is silently always empty:
     ///
     ///   * Filters of <b>different</b> facets combine with AND.               (RULE-SEARCH-050)
-    ///   * Filters of the same <b>multi-valued</b> facet combine with AND.    (RULE-SEARCH-051)
-    ///     A game genuinely carries several genres, so "sports AND football" is meaningful - and
-    ///     it is the example the whole feature was asked for.
-    ///   * Filters of the same <b>single-valued</b> facet combine with OR.    (RULE-SEARCH-052)
-    ///     A game has exactly one platform, so AND across two could never match anything. "Sega
-    ///     Genesis or SNES" is also the only thing a second platform filter could sensibly mean.
+    ///   * Filters of the <b>same</b> facet combine with OR - every facet.    (RULE-SEARCH-051)
+    ///
+    ///     (Platform1 OR Platform2) AND (Genre1 OR Genre2) AND (Developer1 OR Developer2)
+    ///
+    /// A second value of a facet therefore always widens (RULE-SEARCH-052), which is what makes
+    /// a same-facet filter impossible to turn into an empty screen. The uniformity is the point:
+    /// there is no per-facet knowledge to carry, here or in the user's head. See the note in
+    /// FacetIndex for what the earlier split cost and the measurement that ended it.
     ///
     /// Pure. It is given the selected filters and an index and returns catalog indices; it knows
     /// nothing about how the filters were chosen, or by whom.
@@ -154,9 +155,8 @@ namespace Eclipse.Service.Search
 
             foreach (KeyValuePair<ListCategoryType, List<int[]>> facet in byFacet)
             {
-                int[] withinFacet = Facets.IsSingleValued(facet.Key)
-                    ? UnionAll(facet.Value)
-                    : IntersectAll(facet.Value);
+                // OR within the facet, always. Two values of one facet mean either.
+                int[] withinFacet = UnionAll(facet.Value);
 
                 surviving = surviving == null ? withinFacet : Intersect(surviving, withinFacet);
 
@@ -173,7 +173,7 @@ namespace Eclipse.Service.Search
         /// The games surviving every filter <em>except</em> those of one facet - or null when
         /// nothing else constrains, with the same meaning Apply gives it.
         ///
-        /// This is what makes a second value of a single-valued facet countable. Such a filter
+        /// This is what makes a second value of an already-filtered facet countable. Such a filter
         /// widens rather than narrows (RULE-SEARCH-052), so "how many games would this leave"
         /// cannot be answered by intersecting with the current survivors - the answer lies
         /// partly outside them. Taking the facet out and asking what the rest of the filters

@@ -36,7 +36,10 @@ namespace Eclipse.State
             attractModeService.RestartAttractMode();
 
             eclipseStateContext.MainWindowViewModel.IsDisplayingFeature = false;
-            eclipseStateContext.TransitionToState(eclipseStateContext.GetState(typeof(GameDetailOptionsState)));
+
+            // Reopen rather than open: this screen was reached FROM the overlay, so going back
+            // to it must not reset where Escape goes.
+            GameDetailOptionsState.Reopen(eclipseStateContext);
             return true;
         }
 

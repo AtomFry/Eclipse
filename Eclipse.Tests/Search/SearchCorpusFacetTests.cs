@@ -30,11 +30,17 @@ namespace Eclipse.Tests.Search
         // ------------------------------------------------------------------
 
         /// <summary>
-        /// Steps 1 and 2 of the request: type "spo", pick Sports, type "fo", pick Football - and
-        /// only games carrying both genres remain.
+        /// The request's script, as it runs under the uniform algebra: type "spo", pick Sports,
+        /// then narrow with a facet of a different kind.
+        ///
+        /// The original script picked Sports then Football and expected only games carrying both.
+        /// That is no longer expressible - a second genre widens now (RULE-SEARCH-051) - and the
+        /// trade was made knowingly. What the script was really demonstrating, stacking filters
+        /// to reach a small set from a typed word, still works; it is the second constraint that
+        /// has to come from a different facet to do the narrowing.
         /// </summary>
         [Fact]
-        public void The_requested_script_narrows_at_every_step()
+        public void The_requested_script_still_reaches_a_small_set()
         {
             Assert.Contains("Sports", Values(SearchCorpus.Suggest("spo")));
 
@@ -47,10 +53,16 @@ namespace Eclipse.Tests.Search
                 "Tecmo Super Bowl"
             }, SearchCorpus.Filtered(SearchCorpus.Genre("Sports")));
 
-            Assert.Contains("Football", Values(SearchCorpus.Suggest("fo", SearchCorpus.Genre("Sports"))));
+            // And Football is no longer offered at all here. Every football game in the corpus is
+            // also tagged Sports, so under a uniform OR adding it would bring in nothing and
+            // leave the screen exactly as it was - which SuggestionRanker declines to offer. The
+            // old algebra offered it because it narrowed. A user who wants football alone takes
+            // the Sports chip off first; there is no single press that swaps one for the other.
+            Assert.DoesNotContain("Football", Values(SearchCorpus.Suggest("fo", SearchCorpus.Genre("Sports"))));
 
-            Assert.Equal(new[] { "John Madden Football", "Tecmo Super Bowl" },
-                         SearchCorpus.Filtered(SearchCorpus.Genre("Sports"), SearchCorpus.Genre("Football")));
+            Assert.Equal(new[] { "FIFA International Soccer", "John Madden Football", "NHL Hockey" },
+                         SearchCorpus.Filtered(SearchCorpus.Genre("Sports"),
+                                               SearchCorpus.Publisher("EA Sports")));
         }
 
         /// <summary>
@@ -267,11 +279,21 @@ namespace Eclipse.Tests.Search
         // The algebra over realistic metadata - RULE-SEARCH-050, 051, 052.
         // ------------------------------------------------------------------
 
+        /// <summary>
+        /// Two genres accept either, like every other facet. Football is wholly inside Sports in
+        /// this corpus, so a genre that is genuinely separate is used to show the widening.
+        /// </summary>
         [Fact]
-        public void Two_genres_require_both()
+        public void Two_genres_accept_either()
         {
-            Assert.Equal(new[] { "John Madden Football", "Tecmo Super Bowl" },
-                         SearchCorpus.Filtered(SearchCorpus.Genre("Sports"), SearchCorpus.Genre("Football")));
+            IReadOnlyList<string> sports = SearchCorpus.Filtered(SearchCorpus.Genre("Sports"));
+            IReadOnlyList<string> rpg = SearchCorpus.Filtered(SearchCorpus.Genre("RPG"));
+            IReadOnlyList<string> either = SearchCorpus.Filtered(SearchCorpus.Genre("Sports"),
+                                                                SearchCorpus.Genre("RPG"));
+
+            Assert.Equal(sports.Count + rpg.Count, either.Count);
+            Assert.All(sports, title => Assert.Contains(title, either));
+            Assert.All(rpg, title => Assert.Contains(title, either));
         }
 
         /// <summary>
@@ -400,20 +422,56 @@ namespace Eclipse.Tests.Search
         }
 
         /// <summary>
-        /// Widening applies only where the data makes AND impossible. A genre is multi-valued, so
-        /// a second one still narrows and is still counted by intersection - the case the
-        /// feature was originally asked for.
+        /// A widening count is the UNION, not the sum of the two sets - and this is the test the
+        /// uniform algebra needed most.
+        ///
+        /// The widening count was written when only platform and release year ORed. A game
+        /// carries one platform, so the games a new value reaches cannot already be among the
+        /// survivors, and the count was simply added. Genres overlap constantly - this corpus has
+        /// "Action, Adventure" seven times over - so adding would promise a number larger than
+        /// applying the filter delivers, in the one place RULE-SEARCH-056 says the user has no
+        /// other way to see what a press will do.
+        ///
+        /// Asserted as an invariant over several starting points rather than one worked example,
+        /// because the failure is arithmetic and shows up wherever the sets happen to overlap.
+        /// </summary>
+        [Theory]
+        [InlineData("Action", "a")]
+        [InlineData("Sports", "o")]
+        [InlineData("Platform", "a")]
+        [InlineData("RPG", "s")]
+        public void A_widening_count_is_what_applying_it_actually_leaves(string applied, string typed)
+        {
+            SearchFilter start = SearchCorpus.Genre(applied);
+
+            foreach (Suggestion offered in SearchCorpus.Suggest(typed, start))
+            {
+                if (offered.Facet != ListCategoryType.Genre || offered.IsApplied)
+                {
+                    continue;
+                }
+
+                int actual = SearchCorpus.Filtered(start, SearchCorpus.Genre(offered.Value)).Count;
+
+                Assert.True(actual == offered.Count,
+                            $"{applied} + {offered.Value}: offered {offered.Count}, applying leaves {actual}");
+            }
+        }
+
+        /// <summary>
+        /// And the direction reversed from what it used to be: a second genre widens now, where
+        /// under the old algebra it could only narrow.
         /// </summary>
         [Fact]
-        public void A_second_genre_still_narrows()
+        public void A_second_genre_widens()
         {
             int sports = SearchCorpus.Filtered(SearchCorpus.Genre("Sports")).Count;
 
-            foreach (Suggestion offered in SearchCorpus.Suggest("s", SearchCorpus.Genre("Sports")))
+            foreach (Suggestion offered in SearchCorpus.Suggest("o", SearchCorpus.Genre("Sports")))
             {
-                if (offered.Facet == ListCategoryType.Genre && offered.Value != "Sports")
+                if (offered.Facet == ListCategoryType.Genre && !offered.IsApplied)
                 {
-                    Assert.True(offered.Count <= sports,
+                    Assert.True(offered.Count > sports,
                                 $"{offered.Value} claims {offered.Count} against {sports} in Sports");
                 }
             }
