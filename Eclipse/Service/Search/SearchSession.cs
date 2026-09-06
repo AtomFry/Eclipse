@@ -66,13 +66,12 @@ namespace Eclipse.Service.Search
         /// A display threshold, not an engine limit - SuggestionRanker answers a one-character
         /// query perfectly well, and the golden corpus shows it answering usefully.
         ///
-        /// ON TRIAL AT ONE. It shipped at two on the reasoning that one character matches too
-        /// much to be informative and the list would thrash on the next keystroke. That is a
-        /// guess about a real library, and it cannot be checked while the threshold itself hides
-        /// the evidence - so it is set to one to be looked at. The question being answered is
-        /// whether a single letter offers something worth having on a library of thousands, or
-        /// eight arbitrary high-count values. On a d-pad every character is expensive enough that
-        /// the answer is worth finding out rather than assuming.
+        /// SETTLED AT ONE. It shipped at two, on the reasoning that a single character matches too
+        /// much to be informative and the list would thrash on the next keystroke. That was a
+        /// guess about a real library, and it was unverifiable while the threshold itself hid the
+        /// evidence - so it was set to one to be looked at, and a single letter turned out to
+        /// offer terms worth having rather than eight arbitrary high-count values. On a d-pad
+        /// every character is expensive enough that the earlier the list appears the better.
         /// </summary>
         public const int SuggestFromCharacters = 1;
 
@@ -135,6 +134,37 @@ namespace Eclipse.Service.Search
         public int ResultCount => Results.Count;
 
         public bool HasResults => Results.Count > 0;
+
+        /// <summary>
+        /// Whether anything at all is on the browsing surface - the search itself, or any of the
+        /// near misses beneath it.
+        ///
+        /// The question the CURSOR asks, where HasResults is the question the status line asks.
+        /// They part company exactly when a search over-narrows: nothing matches everything, but
+        /// the rows that drop one constraint each still have games in them, and a zone with
+        /// content in it must be reachable (RULE-SEARCH-032).
+        /// </summary>
+        public bool HasRows
+        {
+            get
+            {
+                foreach (SearchRowResult row in Rows)
+                {
+                    if (row.Count > 0)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Whether the search found nothing but something close to it did - which is when the
+        /// screen has to say so, because the first row the user sees is then not their search.
+        /// </summary>
+        public bool HasNearMisses => !HasResults && HasRows;
 
         /// <summary>The metadata terms currently offered, best first. Empty, never null.</summary>
         public IReadOnlyList<Suggestion> Suggestions { get; private set; }
@@ -459,7 +489,7 @@ namespace Eclipse.Service.Search
             {
                 Zone = SearchZone.Chips;
             }
-            else if (HasResults)
+            else if (HasRows)
             {
                 Zone = SearchZone.Results;
             }
@@ -473,7 +503,7 @@ namespace Eclipse.Service.Search
 
         private void LeaveChipsUpward()
         {
-            if (HasResults)
+            if (HasRows)
             {
                 Zone = SearchZone.Results;
                 return;
@@ -498,7 +528,7 @@ namespace Eclipse.Service.Search
             {
                 // Off the bottom of the list and into the results, if there are any - the same
                 // shape as leaving the keyboard's bottom row.
-                if (SelectedSuggestionIndex == Suggestions.Count - 1 && !held && HasResults)
+                if (SelectedSuggestionIndex == Suggestions.Count - 1 && !held && HasRows)
                 {
                     Zone = SearchZone.Results;
                 }
@@ -527,7 +557,7 @@ namespace Eclipse.Service.Search
                 return;
             }
 
-            if (held || !HasResults)
+            if (held || !HasRows)
             {
                 Keyboard.MoveToFirstRow();
                 Raise();
@@ -732,7 +762,7 @@ namespace Eclipse.Service.Search
             // A zone with no content cannot hold the cursor (RULE-SEARCH-032). Being stranded in
             // one that has just vanished is how a user ends up pressing buttons that do nothing -
             // and removing the last chip is exactly that case.
-            if ((!HasResults && Zone == SearchZone.Results)
+            if ((!HasRows && Zone == SearchZone.Results)
                 || (!HasSuggestions && Zone == SearchZone.Suggestions)
                 || (!HasFilters && Zone == SearchZone.Chips))
             {

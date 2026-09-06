@@ -283,12 +283,15 @@ namespace Eclipse.State
             View.MainWindowViewModel viewModel = eclipseStateContext.MainWindowViewModel;
             SearchSession session = viewModel.Search.Session;
 
-            if (!session.HasResults)
-            {
-                viewModel.IsDisplayingResults = false;
-                return;
-            }
-
+            // RULE-SEARCH-044 - a search with nothing in ANY of its rows hides the browsing
+            // surface rather than showing a stale one. Note what that no longer means: an empty
+            // primary is not an empty search while the near misses have games in them. That case
+            // used to blank the screen, which put the fan-out out of sight at the one moment it
+            // was most use - the user has over-narrowed, and the rows that drop one constraint
+            // each are the way out. The rows are freshly built from the current constraints and
+            // each says in its heading what it is, so none of them can claim to be a search the
+            // user did not ask for.
+            //
             // One list per row (RULE-SEARCH-073): the search itself, then the near misses. A row
             // that projects to nothing is dropped rather than installed empty - it would be a
             // heading over a blank strip, and ShowCategory would have to cope with it.

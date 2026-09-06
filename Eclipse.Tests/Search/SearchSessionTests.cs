@@ -1629,5 +1629,90 @@ namespace Eclipse.Tests.Search
             Assert.Equal(0, session.RememberedRowIndex);
             Assert.Equal(0, session.RememberedResultIndex);
         }
+
+        // ------------------------------------------------------------------
+        // OQ-033 - a search that finds nothing still shows its near misses.
+        //
+        // RULE-SEARCH-044 used to hide the browsing surface whenever the primary row was empty,
+        // which put the fan-out out of sight at the one moment it was most use: the user has
+        // over-narrowed, and the rows that drop one constraint each are the way out.
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// The distinction the whole change rests on. HasResults is what the status line counts -
+        /// did the search itself find anything. HasRows is what the cursor asks - is there
+        /// anything down there to stand on.
+        /// </summary>
+        [Fact]
+        public void A_search_that_finds_nothing_can_still_have_rows()
+        {
+            SearchSession session = FilteredSession(Series("Sonic"));
+            Type(session, "streets");
+
+            Assert.False(session.HasResults);
+            Assert.True(session.HasRows);
+            Assert.True(session.HasNearMisses);
+        }
+
+        [Fact]
+        public void A_search_with_nothing_anywhere_has_no_rows()
+        {
+            SearchSession session = SonicSession();
+            Type(session, "nothingmatchesthis");
+
+            Assert.False(session.HasResults);
+            Assert.False(session.HasRows);
+            Assert.False(session.HasNearMisses);
+        }
+
+        /// <summary>
+        /// A search that found something is not a near miss, however many rows it has - the
+        /// phrase means "the search failed but something close to it did not".
+        /// </summary>
+        [Fact]
+        public void A_search_that_finds_something_is_not_a_near_miss()
+        {
+            SearchSession session = FilteredSession(Platform("Sega Genesis"), Series("Sonic"));
+
+            Assert.True(session.HasResults);
+            Assert.True(session.HasRows);
+            Assert.False(session.HasNearMisses);
+        }
+
+        /// <summary>
+        /// The cursor can reach the near misses. RULE-SEARCH-032 says a zone with content must be
+        /// focusable, and before this the results zone was gated on the primary alone - so a user
+        /// who over-narrowed could see nothing and go nowhere.
+        /// </summary>
+        [Fact]
+        public void The_cursor_can_reach_the_rows_when_only_near_misses_have_games()
+        {
+            SearchSession session = FilteredSession(Series("Sonic"));
+            Type(session, "streets");
+
+            for (int guard = 0; guard < 50 && session.Zone != SearchZone.Results; guard++)
+            {
+                session.MoveDown(false);
+            }
+
+            Assert.Equal(SearchZone.Results, session.Zone);
+        }
+
+        /// <summary>
+        /// And it is still kept out when there is genuinely nothing - the half of RULE-SEARCH-032
+        /// that has not changed.
+        /// </summary>
+        [Fact]
+        public void The_cursor_still_cannot_reach_rows_that_do_not_exist()
+        {
+            SearchSession session = SonicSession();
+            Type(session, "nothingmatchesthis");
+
+            for (int press = 0; press < 20; press++)
+            {
+                session.MoveDown(false);
+                Assert.NotEqual(SearchZone.Results, session.Zone);
+            }
+        }
     }
 }

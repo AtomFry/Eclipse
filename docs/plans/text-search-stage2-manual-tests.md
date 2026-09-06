@@ -1,8 +1,9 @@
-# Stage 2 — manual validation checklist
+# Text search — manual validation checklist
 
-Everything in stage 2 of [text-search.md](text-search.md) that a person has to look at, in the
-order it is quickest to work through. 588 automated tests already cover the engine, the
-keyboard cursor and the session state machine; **nothing below repeats those**. What is here is
+Everything a person has to look at, in the order it is quickest to work through. Named for
+stage 2, where it started; it has since grown to cover stages 4 and 5 as those shipped. 658
+automated tests already cover the engine, the filter algebra, the keyboard cursor, the row
+enumeration and the session state machine; **nothing below repeats those**. What is here is
 what only eyes and a controller can answer: does it look right, does it feel right, and does it
 still leave the rest of Eclipse alone.
 
@@ -134,7 +135,7 @@ row does, this row now does — because it *is* that row.
 |---|---|---|
 | T7.1 | 🔴 Type enough to get results. | The normal Eclipse box art row appears at the bottom, with the **white selection box** around the selected game, and the **previous game** half off-screen to the left. There is no "Results" label any more. |
 | T7.2 | 🔴 Compare the row to the main browsing row. | Identical — same box sizes, same margins, same selection chrome, same scroll feel. |
-| T7.3 | 🔴 Look at the artwork area on the right and the list heading. | The selected game's **background artwork** is showing, and the list heading reads your query (e.g. `sonic` or `sonic (12)`). |
+| T7.3 | 🔴 Look at the artwork area on the right and the list heading. | The selected game's **background artwork** is showing, and the list heading reads `Search: sonic` — the query and any filters, so the row says what it is once the panel fades. |
 | T7.4 | 🔴 Press **Up** from the top keyboard row. | Focus moves to the row. The selected key stops being a filled white tile and becomes an **outline** — it keeps your place without looking active. |
 | T7.5 | 🔴 Press **Right** / **Left** in the results row. | Scrolls exactly like the main row: one game per press, selection box stays put, artwork and background follow. |
 | T7.6 | 🔴 Hold **Right** through the row. | Box art keeps up — placeholder then real art, no black boxes, no stalling. This was the worst symptom before. |
@@ -200,14 +201,18 @@ row does, this row now does — because it *is* that row.
 
 | | Step | Expected |
 |---|---|---|
-| T10.1 | 🔴 Search for a game, move into the results row, highlight a game that is **not** the first, press **Enter**. | The search screen closes and the **game detail overlay opens on the game you highlighted** — with its artwork and background, not the previous game's. |
+| T10.1 | 🔴 Search for a game, move into the results row, highlight a game that is **not** the first, press **Enter**. | The search panel goes away and the **game detail overlay opens on the game you highlighted** — with its artwork and background, not the previous game's. |
 | T10.2 | 🔴 Look at the screen carefully at that moment. | Nothing is blank or missing. The box art row, list heading and details are all visible behind the overlay. *(This is a bug I found and fixed late — the overlay lives inside the results grid, so a mistake here shows as a blank screen.)* |
-| T10.3 | 🟡 Press **Escape** from the overlay. | You are browsing a list named after your query — e.g. `sonic`, or `sonic (12)` if "show game count in list" is on. |
-| T10.4 | 🟡 Navigate Left/Right in that list. | Behaves exactly like any other Eclipse list. |
-| T10.5 | 🟡 Press **Up/Down**. | The list set has only one list, so it wraps back to itself. Expected for stage 2 — faceted rows are stage 5. |
+| T10.3 | 🔴 Press **Escape** from the overlay. | **You are back in search**, on the same game in the same row, with the query, filters and keyboard intact and the panel faded out. Escape abandons the game rather than committing to it, so it must not cost you the search (RULE-SEARCH-080). |
+| T10.3a | 🔴 Press **Up** once. | The search panel fades back in and the cursor is on the keyboard - one press, not several. It must not land on `clear filters`. |
+| T10.3b | 🔴 Press **Escape** again. | Now you leave search, and land back at the library position you opened search from - not in the search results. |
+| T10.3c | 🟡 Repeat T10.1, then step out to **more info** and back to the overlay, then Escape. | Still returns to search. The detour must not reset where Escape goes. |
+| T10.4 | 🟡 Navigate Left/Right in the results row. | Behaves exactly like any other Eclipse list. |
+| T10.5 | 🟡 Press **Up/Down**. | With fewer than two constraints applied there is one row, so it wraps back to itself. With two or more, Up/Down walk the faceted rows — see the stage 5 checks below. |
 | T10.6 | 🟡 Play a game from the search results. Exit the game. | Returns normally; History/Favorites lists update as usual. |
 | T10.7 | 🟡 Turn on **"bypass game details"** in settings, restart, repeat T10.1. | The game **launches directly** instead of opening the overlay — matching what Enter does while browsing. |
-| T10.8 | ⚪ Open search, type something matching nothing. | You stay in search with your query intact — the browsing surface is hidden rather than showing a stale row. |
+| T10.8 | ⚪ Open search with **no filters applied**, type something matching nothing. | You stay in search with your query intact — the browsing surface is hidden rather than showing a stale row. |
+| T10.9 | 🔴 Now apply two filters and type something that matches nothing within them. | The surface is **not** hidden: the near-miss rows are shown, each named for the constraints it keeps, and the status line reads `No games match everything` (RULE-SEARCH-044). |
 
 ---
 
@@ -432,8 +437,33 @@ Answered and recorded in the code, so they are not re-litigated:
 * **Playlist filtering** — not wanted. Stays out of the projection.
 * **Eight suggestions** — right for a television.
 
-### The one still open
+### The threshold - settled
 
-**The threshold, now on trial at one character (T20.5).** Everything else in 4e is done. If one
-character is useful it stays at one; if it is noise it goes back to two. Either way it is a
-one-line change, and the tests are written against the constant rather than the number.
+**One character (T20.5).** Tried on a real library and kept: a single letter offers terms worth
+having rather than eight arbitrary high-count values. It shipped at two on a guess the threshold
+itself made unverifiable, since it hid the evidence.
+
+---
+
+## §21 — Faceted result rows (stage 5) 🔴
+
+Apply **two or more constraints** first — the query counts as one, so a query plus a filter is
+enough. Below two there is deliberately only one row (RULE-SEARCH-075).
+
+| | Step | Expected |
+|---|---|---|
+| T21.1 | 🔴 Apply three or four filters. | Below the search's own row there is one row per constraint, each showing the search **without** that one. Only the top row is prefixed `Search:`. |
+| T21.2 | 🔴 Read the row headings. | The query's row comes first, then the filters most-recently-applied first. Each heading names exactly the constraints that row keeps. |
+| T21.3 | 🔴 Type something as well, then look again. | There is now a row carrying every filter and **no** text — the row that rescues a typo. |
+| T21.4 | 🔴 Walk **Down** from the keyboard through every row and past the last. | You reach the keyboard's top row again. |
+| T21.5 | 🔴 Keep pressing Down through the keyboard until you re-enter the rows. | You arrive at the **first** row, not the one you left from, and every row is reachable again (RULE-SEARCH-079). This was a bug — check it deliberately. |
+| T21.6 | 🔴 From the keyboard's top row press **Up** repeatedly. | You wrap into the rows at the **last** one and walk upward through them. |
+| T21.7 | 🟡 Move to a row that is not the first, Escape out of search, re-open search. | You are back in that row, on that game. |
+| T21.8 | 🟡 Apply two filters of the **same** facet — two developers, say. | The chip row reads `or` between them and the row **grows**. Adding a filter making the list bigger is correct here (RULE-SEARCH-051). |
+| T21.9 | 🟡 With two same-facet filters applied, look at the secondary rows. | Dropping one of them makes that row **smaller** than the search, not larger. Correct, and the one case where a near miss is narrower. |
+| T21.10 | ⚪ Over-narrow until nothing matches. | The near-miss rows are still shown and the status line reads `No games match everything`. |
+| T21.11 | ⚪ Watch the responsiveness while typing with several filters applied. | No perceptible lag. Measured at 5.28 ms per keystroke against a 16 ms frame on a synthetic 100,000-game library, but a real library is the judge. |
+
+**One question still open here.** A query plus a *single* filter fans out to three rows, one of
+which is the bare query — a very broad row under a narrow one. Correct by the rule, possibly
+wrong in practice. If it reads badly, the threshold is a one-line change.

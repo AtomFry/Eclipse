@@ -141,7 +141,11 @@ namespace Eclipse.View
 
                 if (!Session.HasResults)
                 {
-                    return "No games found";
+                    // The near-miss case has to say something different, because the screen is
+                    // no longer empty: the rows below are each the search with one constraint
+                    // dropped. "No games found" over a screen full of games would be a
+                    // contradiction the user has to resolve for themselves.
+                    return Session.HasNearMisses ? "No games match everything" : "No games found";
                 }
 
                 return Session.ResultCount == 1 ? "1 game" : $"{Session.ResultCount} games";

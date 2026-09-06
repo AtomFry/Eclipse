@@ -162,17 +162,11 @@ again, in preference order:
 (1) is a design compromise with a clear statement, (2) is a timing behaviour that
 is hard to reason about, (3) makes the feature arbitrary.
 
-## 7. Rules this adds
+## 7. Rules this adds — now shipped
 
 | ID | Rule | Why it matters |
 |---|---|---|
-| RULE-SEARCH-073 | With two or more constraints applied, the results carry one row per constraint beneath the primary, each showing the search **without** that one constraint. | Over-narrowing is the failure mode stacked filters produce, and the user cannot tell which constraint cost them the results. This answers it without their having to take anything off. |
-| RULE-SEARCH-074 | The typed query is a constraint like any other for this purpose, and can be the one left out. | A typo narrows as hard as a wrong year. The row with every filter and no text is often the one wanted. |
-| RULE-SEARCH-075 | No secondary rows below two constraints. | Leaving out the only constraint yields the unfiltered library — a row that is either everything or a duplicate of the primary. |
-| RULE-SEARCH-076 | Each row is named by its own constraint set; only the primary is prefixed `Search:`. | The heading is the only thing telling the rows apart once the panel fades (RULE-SEARCH-069). A secondary row claiming to be the search would be false. |
-| RULE-SEARCH-077 | Down moves through the rows and leaves the results only at the bottom; Up returns to the keyboard from the first row. | The way back must not get longer as rows are added. |
-| RULE-SEARCH-078 | Secondary rows run most-recent-suspect first: the query's row leads, then the filters in reverse order of application. | Free text is the likeliest constraint to be wrong, and after that the last thing added is the likeliest culprit for whatever just disappeared. One rule, both halves. |
-| RULE-SEARCH-079 | The rows are entered and left as a block: leaving them downward rewinds to the first, and wrapping up into them lands on the last. | The zone and the row are two separate cursors. Leaving the row where it was produced a dead end — Down out of the last row parked the rows at the bottom, so coming back down the keyboard re-entered at the last row and left again immediately, making the middle rows unreachable that way round. It read as having lost your place. |
+| — | **Shipped and moved.** `RULE-SEARCH-073` … `079` now live in [features/search.md](../features/search.md) under *Text search — faceted result rows*, which is the single source of truth for rules that are real. They are not repeated here. |
 
 ## 8. What this replaces
 
@@ -202,4 +196,4 @@ degrades to nothing when there is nothing to say.
 | 5a | ~~A combined title + facet perf harness, and the measurement in §6.~~ **Done** — 5.28 ms worst keystroke against a 16 ms target. §6 resolved; nothing is gated on it. | |
 | 5b | ~~The constraint-set enumeration and naming. Pure, tested below the UI boundary.~~ **Done** — `SearchRow` / `SearchRows`, 15 tests. `TextSearchState.DescribeSearch` now delegates to it. No behaviour change. | |
 | 5c | ~~`PublishResults` builds and installs the rows. Row navigation and the remembered place.~~ **Done** — 8 more tests, 642 total. Unverified on a real library; see 5d. | |
-| 5d | Manual verification on a real library; fold the results into the rules above. | |
+| 5d | ~~Manual verification on a real library; fold the results into the rules above.~~ **Done** — verified in use; two bugs found and fixed (row rewind, suspend&resume), rules moved to features/search.md, `OQ-033` resolved. | |

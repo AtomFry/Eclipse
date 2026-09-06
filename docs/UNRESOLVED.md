@@ -250,7 +250,7 @@ action key and it behaves differently per row. **Resolve by:** product decision.
 | Suspected dead items | 12 (`DEAD-001` … `DEAD-012`) |
 | — high confidence, safe to remove after a grep | 5 |
 | — requires investigation first | 7 |
-| Open questions | 33 (`OQ-001` … `OQ-033`), of which 2 resolved (`OQ-012`, `OQ-022`) |
+| Open questions | 33 (`OQ-001` … `OQ-033`), of which 3 resolved (`OQ-012`, `OQ-022`, `OQ-033`) |
 | — product decisions | 13 |
 | — research/experiment tasks | 4 (`OQ-012` resolved) |
 | — external (LaunchBox) questions | 1 |
@@ -337,7 +337,7 @@ unused facets should be suppressible; whether a filter should be creatable from 
 currently selected while browsing. All specified in the sub-feature plan, none built. See that
 document's *Open questions*.
 
-### OQ-033 — should a search that finds nothing show its near misses?
+### ~~OQ-033 — should a search that finds nothing show its near misses?~~ RESOLVED — yes
 
 **Feature:** FEAT-SEARCH-013 / stage 5
 
@@ -353,5 +353,13 @@ correct, and each one says in its heading what it is. Against that: a screen tha
 query matching nothing by showing several rows of games may read as ignoring what was typed,
 and the status line would have to carry the explanation.
 
-Needs a look on a real library before deciding. Cheap either way — one guard in
-`TextSearchState.PublishResults`.
+**Resolved: yes.** The guard now asks whether ANY row has games rather than whether the primary
+does, and the status line says `No games match everything` so the screen does not contradict
+itself. The objection - that showing rows of games in answer to a query matching nothing reads
+as ignoring what was typed - is answered by the headings: the primary row is simply absent, and
+each row present names its own constraints.
+
+The change also split a concept that had been doing two jobs. `HasResults` is what the status
+line counts: did the search itself find anything. `HasRows` is what the cursor asks: is there
+anything down there to stand on. Gating the results zone on the first of those meant a user who
+over-narrowed could see nothing and go nowhere.
